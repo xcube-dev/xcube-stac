@@ -1,0 +1,14 @@
+name: xcube-stac
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Required
+  - pystac-client
+  - stackstac
+  - pytest
+
+
+
+
+
