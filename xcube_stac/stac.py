@@ -31,10 +31,12 @@ class Stac:
         self._url = url
         self.client = pystac_client.Client.open(url)
 
-    def open_dataset(self, **open_params) -> xr.Dataset:
+    def open_dataset(
+        self, client_params: dict, stackstac_params: dict
+    ) -> xr.Dataset:
         try:
-            items = self.client.search(**open_params).item_collection()
-            return stackstac.stack(items)
+            items = self.client.search(**client_params).item_collection()
+            return stackstac.stack(items, **stackstac_params)
         # ToDo: better error message, what is the error?
         except Exception as e:
             print(e)

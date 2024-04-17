@@ -43,7 +43,7 @@ from xcube.util.jsonschema import (
     JsonStringSchema,
 )
 
-from .constants import DATASET_OPENER_ID
+from .constants import DATASET_OPENER_ID, STACKSTAC_STAC_KEYS
 from .stac import Stac
 
 _LOG = logging.getLogger("xcube")
@@ -63,6 +63,7 @@ class StacDataOpener(DataOpener):
     def __init__(self, stac: Stac):
         self.stac = stac
 
+    # ToDo: needs to be adjusted to STAC
     def get_open_data_params_schema(
         self, data_id: str = None
     ) -> JsonObjectSchema:
@@ -94,7 +95,10 @@ class StacDataOpener(DataOpener):
         assert_not_none(data_id, "data_id")
         stac_schema = self.get_open_data_params_schema(data_id)
         stac_schema.validate_instance(open_params)
-        return self.stac.open_dataset(**open_params)
+        client_params, stackstac_params = stac_schema.process_kwargs_subset(
+            open_params, STACKSTAC_STAC_KEYS
+        )
+        return self.stac.open_dataset(client_params, stackstac_params)
 
     def describe_data(self, data_id: str) -> DatasetDescriptor:
         assert_not_none(data_id, "data_id")

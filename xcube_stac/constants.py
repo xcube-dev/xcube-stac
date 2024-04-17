@@ -19,5 +19,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-DATA_STORE_ID = "stac"
-DATASET_OPENER_ID = f"dataset:zarr:{DATA_STORE_ID}"
+DATA_STORE_ID = 'stac'
+DATASET_OPENER_ID = f'dataset:zarr:{DATA_STORE_ID}'
+
+STACKSTAC_STAC_KEYS = (
+    'assets',
+    'espg',
+    'resolution',
+    'bounds',
+    'bounds_latlon',
+    'resampling',
+    'chunksize',
+    'dtype',
+    'fill_value',
+    'sortby_date'
+)
