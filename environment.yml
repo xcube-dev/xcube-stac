@@ -4,8 +4,9 @@ channels:
   - defaults
 dependencies:
   # Required
-  - xarray
   - pystac
+  - xarray
+  - xcube
   # for testing
   - black
   - flake8
