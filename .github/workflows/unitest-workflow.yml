@@ -1,0 +1,29 @@
+name: Build
+
+on:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    env:
+      NUMBA_DISABLE_JIT: 1
+    steps:
+      - name: checkout xcube-stac
+        uses: actions/checkout@v3
+
+      - name: Set up MicroMamba
+        uses: mamba-org/provision-with-micromamba@main
+        with:
+          cache-env: true
+          extra-specs: |
+            python=3.10
+
+      - name: Run unit tests
+        shell: bash -l {0}
+        run: |
+          cd /home/runner/work/xcube-stac/xcube-stac
+          ls
+          pytest 

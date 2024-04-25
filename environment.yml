@@ -1,0 +1,8 @@
+name: xcube-stac
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Required
+  - xarray
+  - pystac
