@@ -6,3 +6,7 @@ dependencies:
   # Required
   - xarray
   - pystac
+  # for testing
+  - black
+  - flake8
+  - pytest
