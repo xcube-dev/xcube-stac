@@ -21,14 +21,15 @@
 
 from typing import Any, Tuple, Iterator, Dict, Container, Union
 
+import logging
 import xarray as xr
-from itertools import chain
 
-import pystac
-from pystac.catalog import Catalog
-from pystac.collection import Collection
+import pystac_client
+from pystac.item import Item
 
 from xcube_stac.constants import MIME_TYPES
+
+_LOG = logging.getLogger("xcube")
 
 
 class Stac:
@@ -52,7 +53,7 @@ class Stac:
         self._url = url
         self._collection_prefix = collection_prefix
         self._data_id_delimiter = data_id_delimiter
-        catalog = pystac.Catalog.from_file(url)
+        catalog = pystac_client.Client.open(url)
         if collection_prefix:
             collection_ids = collection_prefix.split(data_id_delimiter)
             for collection_id in collection_ids:
@@ -81,9 +82,6 @@ class Stac:
 
     def build_data_ids(
         self,
-        pystac_object: Union[Catalog, Collection],
-        path: str = "",
-        recursive: bool = True,
         include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         """ Build the data IDs from the structure of the catalog.
@@ -111,38 +109,37 @@ class Stac:
                 attributes defined by *include_attrs* of data resources provided
                 by this data store.
         """
-        if recursive:
-            if pystac_object == self.catalog:
-                pass
-            else:
-                path += pystac_object.id
-                path += self._data_id_delimiter
-            iter0 = self.build_data_ids(
-                pystac_object,
-                path=path,
-                recursive=False,
-                include_attrs=include_attrs
-            )
-            iter1 = (self.build_data_ids(
-                child,
-                path=path,
-                recursive=True,
-                include_attrs=include_attrs
-            ) for child in pystac_object.get_children())
-            yield from chain(iter0, *iter1)
-        else:
-            return_tuples = include_attrs is not None
-            # TODO: support other attributes in include_attrs
-            include_titles = return_tuples and "title" in include_attrs
-            for item in pystac_object.get_items():
-                for k, v in item.assets.items():
-                    if any(x in MIME_TYPES for x in v.media_type.split("; ")):
-                        data_id = path + item.id + self._data_id_delimiter + k
+        return_tuples = include_attrs is not None
+        # TODO: support other attributes in include_attrs
+        include_titles = return_tuples and "title" in include_attrs
+        for item in self.catalog.get_items():
+            link_item = get_link_self(item)
+            link_catalog = get_link_self(self.catalog)
+            data_id = link_item.replace(link_catalog, "")
+            if self._data_id_delimiter != "/":
+                data_id = data_id.replace(
+                    "/", self._data_id_delimiter
+                )
+            for k, v in item.assets.items():
+                if any(x in MIME_TYPES for x in v.media_type.split("; ")):
+                    data_id += self._data_id_delimiter + k
+                    if include_titles:
                         if hasattr(v, "title"):
                             attrs = {"title": v.title}
                         else:
                             attrs = {}
-                        if include_titles:
-                            yield (data_id, attrs)
-                        else:
-                            yield data_id
+                        yield (data_id, attrs)
+                    else:
+                        yield data_id
+
+
+def get_link_self(item: Item) -> str:
+    for link in item.links:
+        if link.rel == "self":
+            href = link.get_absolute_href()
+            tail = href.split("/")[0]
+            if tail in ["catalog.json", "collection.json", "item.json", ".json"]:
+                href = href.replace(".json", "")
+            return href
+    _LOG.warning(f"No link found for 'self' in item {item.id}")
+    return None
