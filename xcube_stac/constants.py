@@ -21,3 +21,8 @@
 
 DATA_STORE_ID = "stac"
 DATASET_OPENER_ID = f"dataset:zarr:{DATA_STORE_ID}"
+
+MIME_TYPES = [
+    "application/zarr",
+    "image/tiff"
+]

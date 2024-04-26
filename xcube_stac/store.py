@@ -66,7 +66,7 @@ class StacDataOpener(DataOpener):
             JsonObjectSchema: containing the parameters used by the data opener
                 to open data.
         """
-        # ToDo: to be adjusted
+        # TODO: to be adjusted
         open_parms = {}
         stac_schema = JsonObjectSchema(
             properties=dict(**open_parms),
@@ -107,7 +107,7 @@ class StacDataOpener(DataOpener):
             DatasetDescriptor: data descriptor containing meta data of
                 the data resources identified by *data_id*
         """
-        # ToDo: implement describe_data method.
+        # TODO: implement describe_data method.
         raise NotImplementedError("describe_data() operation is not supported yet")
 
 
@@ -184,7 +184,10 @@ class StacDataStore(StacDataOpener, DataStore):
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         """ Get an iterator over the data resource identifiers for the
         given type *data_type*. If *data_type* is omitted, all data
-        resource identifiers are returned.
+        resource identifiers are returned. The data resource identifiers
+        follow the following structure:
+
+            `collection_id_0/../collection_id_n/item_id/asset`
 
         Args:
             data_type (DataTypeLike, optional): If given, only data identifiers
@@ -196,16 +199,13 @@ class StacDataStore(StacDataOpener, DataStore):
                 requested dataset attributes in addition to the data ids.
                 Defaults to None.
 
-        Raises:
-            NotImplementedError:  Not implemented yet.
-
         Returns:
             Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]: An iterator
                 over the identifiers (and additional attributes defined by
                 *include_attrs* of data resources provided by this data store.
         """
-        # ToDo: implement get_data_ids method.
-        raise NotImplementedError("get_data_ids() operation is not supported yet")
+        self._assert_valid_data_type(data_type)
+        return self.stac.build_data_ids(self.stac.catalog, include_attrs=include_attrs)
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         """ Check if the data resource given by *data_id* is available
@@ -226,9 +226,9 @@ class StacDataStore(StacDataOpener, DataStore):
             bool: True, if the data resource is available in this store,
                 False otherwise.
         """
-        # ToDo: get_data_ids() is needed.
-        #       Add this method after get_data_ids() is implemented.
-        raise NotImplementedError("has_data() operation is not supported yet")
+        if self._is_valid_data_type(data_type):
+            return data_id in self.list_data_ids()
+        return False
 
     def describe_data(self, data_id: str, **open_params) -> DataDescriptor:
         """ Get the descriptor for the data resource given by *data_id*.
@@ -328,7 +328,7 @@ class StacDataStore(StacDataOpener, DataStore):
             Iterator[DataDescriptor]: An iterator of data descriptors
                 for the found data resources.
         """
-        # ToDo: implement search_data method.
+        # TODO: implement search_data method.
         raise NotImplementedError("search_data() operation is not supported yet")
 
     @classmethod
@@ -350,7 +350,7 @@ class StacDataStore(StacDataOpener, DataStore):
             JsonObjectSchema: A JSON object schema whose properties
                 describe this store's search parameters.
         """
-        # ToDo: implement get_search_params_schema in
+        # TODO: implement get_search_params_schema in
         #       combination with search_data method.
         raise NotImplementedError(
             "get_search_params_schema() operation is not supported yet"

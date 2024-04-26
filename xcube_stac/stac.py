@@ -19,7 +19,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from typing import Any, Tuple, Iterator, Dict, Container, Union
+
 import xarray as xr
+from itertools import chain
+
+import pystac
+from pystac.catalog import Catalog
+from pystac.collection import Collection
+
+from xcube_stac.constants import MIME_TYPES
 
 
 class Stac:
@@ -43,8 +52,14 @@ class Stac:
         self._url = url
         self._collection_prefix = collection_prefix
         self._data_id_delimiter = data_id_delimiter
-        # ToDo: open Catalog and direct to entry point defined by *collection_prefix*
-        # ToDo: Add a data store "file", which will be used to open the hrefs
+        catalog = pystac.Catalog.from_file(url)
+        if collection_prefix:
+            collection_ids = collection_prefix.split(data_id_delimiter)
+            for collection_id in collection_ids:
+                catalog = catalog.get_child(collection_id)
+        self.catalog = catalog
+        # TODO: Add a data store "file" here when implementing
+        # open_data(), which will be used to open the hrefs
 
     def open_data(self, data_id: str, **open_params) -> xr.Dataset:
         """ Open the data given by the data resource identifier *data_id*
@@ -61,5 +76,73 @@ class Stac:
             xr.Dataset: An in-memory representation of the data resources
                 identified by *data_id* and *open_params*.
         """
-        # ToDo: implement this method using data store "file", see __init__()
+        # TODO: implement this method using data store "file", see __init__()
         raise NotImplementedError("open_data() operation is not supported yet")
+
+    def build_data_ids(
+        self,
+        pystac_object: Union[Catalog, Collection],
+        path: str = "",
+        recursive: bool = True,
+        include_attrs: Container[str] = None
+    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
+        """ Build the data IDs from the structure of the catalog.
+        The data resource identifiers follow the following structure:
+
+            `collection_id_0/../collection_id_n/item_id/asset`
+
+        Args:
+            pystac_object (Union[Catalog, Collection]): either a
+                `pystac.catalog:Catalog` or a `pystac.collection:Collection` object
+            path (str, optional): collection path referring to
+                `collection_id_0/../collection_id_n`. Defaults to "".
+            recursive (bool, optional): If True, data IDs of a multiple collection
+                and/or nested collection STAC catalog can be build. If False,
+                flat STAC catalog hierarchy is assumed consisting only of items.
+                Defaults to True.
+            include_attrs (Container[str], optional): A sequence of names
+                of attributes to be returned for each dataset identifier.
+                If given, the store will attempt to provide the set of
+                requested dataset attributes in addition to the data ids.
+                Defaults to None.
+
+        Yields:
+            Iterator[str]: An iterator over the identifiers (and additional
+                attributes defined by *include_attrs* of data resources provided
+                by this data store.
+        """
+        if recursive:
+            if pystac_object == self.catalog:
+                pass
+            else:
+                path += pystac_object.id
+                path += self._data_id_delimiter
+            iter0 = self.build_data_ids(
+                pystac_object,
+                path=path,
+                recursive=False,
+                include_attrs=include_attrs
+            )
+            iter1 = (self.build_data_ids(
+                child,
+                path=path,
+                recursive=True,
+                include_attrs=include_attrs
+            ) for child in pystac_object.get_children())
+            yield from chain(iter0, *iter1)
+        else:
+            return_tuples = include_attrs is not None
+            # TODO: support other attributes in include_attrs
+            include_titles = return_tuples and "title" in include_attrs
+            for item in pystac_object.get_items():
+                for k, v in item.assets.items():
+                    if any(x in MIME_TYPES for x in v.media_type.split("; ")):
+                        data_id = path + item.id + self._data_id_delimiter + k
+                        if hasattr(v, "title"):
+                            attrs = {"title": v.title}
+                        else:
+                            attrs = {}
+                        if include_titles:
+                            yield (data_id, attrs)
+                        else:
+                            yield data_id
