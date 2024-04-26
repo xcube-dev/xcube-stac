@@ -23,23 +23,23 @@ import xarray as xr
 
 
 class Stac:
-    """ Class containing methods handling STAC catalogs
+    """ Common operations on STAC catalogs.
+
+    Attributes:
+        url: URL to STAC catalog
+        collection_prefix: Path of collection used as
+            entry point. Defaults to None.
+        data_id_delimiter: Delimiter used to separate
+            collections, items and assets from each other.
+            Defaults to "/".
     """
 
     def __init__(
-        self, url: str,
+        self,
+        url: str,
         collection_prefix: str = None,
         data_id_delimiter: str = "/"
     ):
-        """
-        Args:
-            url (str): URL to STAC catalog
-            collection_prefix (str, optional): Path of collection used as
-                entry point. Defaults to None.
-            data_id_delimiter (str, optional): Delimiter used to separate
-                collections, items and assets from each other.
-                Defaults to "/".
-        """
         self._url = url
         self._collection_prefix = collection_prefix
         self._data_id_delimiter = data_id_delimiter
@@ -51,15 +51,15 @@ class Stac:
         using the supplied *open_params*.
 
         Args:
-            data_id (str): An identifier of data that is provided by this
+            data_id: An identifier of data that is provided by this
                 store.
 
         Raises:
             NotImplementedError: Not implemented yet.
 
         Returns:
-            xr.Dataset: An in-memory representation of the data resources
-                identified by *data_id* and *open_params*.
+            An in-memory representation of the data resources
+            identified by *data_id* and *open_params*.
         """
         # ToDo: implement this method using data store "file", see __init__()
         raise NotImplementedError("open_data() operation is not supported yet")

@@ -22,36 +22,7 @@
 import unittest
 
 from xcube.util.jsonschema import JsonObjectSchema
-from xcube_stac.store import StacDataOpener
 from xcube_stac.store import StacDataStore
-from xcube_stac.stac import Stac
-
-
-class StacDataOpenerTest(unittest.TestCase):
-
-    def setUp(self) -> None:
-        stac_instance = Stac("url")
-        self.opener = StacDataOpener(stac_instance)
-
-    def test_get_open_data_params_schema(self):
-        schema = self.opener.get_open_data_params_schema()
-        self.assertIsInstance(schema, JsonObjectSchema)
-
-    def test_open_data(self):
-        with self.assertRaises(NotImplementedError) as cm:
-            self.opener.open_data("data_id1")
-        self.assertEqual(
-            "open_data() operation is not supported yet",
-            f"{cm.exception}",
-        )
-
-    def test_describe_data(self):
-        with self.assertRaises(NotImplementedError) as cm:
-            self.opener.describe_data("data_id1")
-        self.assertEqual(
-            "describe_data() operation is not supported yet",
-            f"{cm.exception}",
-        )
 
 
 class StacDataStoreTest(unittest.TestCase):
