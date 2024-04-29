@@ -31,31 +31,34 @@ from xcube_stac.constants import DATA_STORE_ID
 
 class StacDataOpenerTest(unittest.TestCase):
 
-    @pytest.mark.vcr()
     def setUp(self) -> None:
-        url = (
+        self.url = (
             "https://raw.githubusercontent.com/stac-extensions/"
             "label/main/examples/multidataset/catalog.json"
         )
-        stac_instance = Stac(url)
-        self.opener = StacDataOpener(stac_instance)
         self.data_id = "zanzibar-collection/znz001/raster"
 
+    @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
-        schema = self.opener.get_open_data_params_schema()
+        opener = StacDataOpener(Stac(self.url))
+        schema = opener.get_open_data_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
 
+    @pytest.mark.vcr()
     def test_open_data(self):
+        opener = StacDataOpener(Stac(self.url))
         with self.assertRaises(NotImplementedError) as cm:
-            self.opener.open_data(self.data_id)
+            opener.open_data(self.data_id)
         self.assertEqual(
             "open_data() operation is not supported yet",
             f"{cm.exception}",
         )
 
+    @pytest.mark.vcr()
     def test_describe_data(self):
+        opener = StacDataOpener(Stac(self.url))
         with self.assertRaises(NotImplementedError) as cm:
-            self.opener.describe_data(self.data_id)
+            opener.describe_data(self.data_id)
         self.assertEqual(
             "describe_data() operation is not supported yet",
             f"{cm.exception}",
@@ -64,77 +67,132 @@ class StacDataOpenerTest(unittest.TestCase):
 
 class StacDataStoreTest(unittest.TestCase):
 
-    @pytest.mark.vcr()
     def setUp(self) -> None:
-        url = (
+        self.url = (
             "https://raw.githubusercontent.com/stac-extensions/"
             "label/main/examples/multidataset/catalog.json"
         )
-        self.store = new_data_store(DATA_STORE_ID, url=url)
         self.data_id = "zanzibar-collection/znz001/raster"
 
+    @pytest.mark.vcr()
     def test_get_data_store_params_schema(self):
-        schema = self.store.get_data_store_params_schema()
+        store = new_data_store(DATA_STORE_ID, url=self.url)
+        schema = store.get_data_store_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("url", schema.properties)
         self.assertIn("collection_prefix", schema.properties)
         self.assertIn("data_id_delimiter", schema.properties)
         self.assertIn("url", schema.required)
 
+    @pytest.mark.vcr()
     def test_get_data_types(self):
-        self.assertEqual(("dataset",), self.store.get_data_types())
+        store = new_data_store(DATA_STORE_ID, url=self.url)
+        self.assertEqual(("dataset",), store.get_data_types())
 
+    @pytest.mark.vcr()
     def test_get_data_types_for_data(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
         self.assertEqual(
             ("dataset",),
-            self.store.get_data_types_for_data(self.data_id)
+            store.get_data_types_for_data(self.data_id)
         )
 
-    def test_get_data_ids2(self) -> None:
-        data_ids = self.store.get_data_ids()
-        print(data_ids)
-        assert data_ids is not None
+    @pytest.mark.vcr()
+    def test_get_data_ids(self) -> None:
+        store = new_data_store(DATA_STORE_ID, url=self.url)
+        data_ids = store.get_data_ids()
+        data_ids_expected = [
+            "zanzibar-collection/znz001/raster",
+            "zanzibar-collection/znz029/raster",
+            "spacenet-buildings-collection/AOI_2_Vegas_img2636/raster",
+            "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
+            "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
+        ]
+        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
+            self.assertEqual(data_id, data_id_expected)
 
+    @pytest.mark.vcr()
+    def test_get_data_ids_optional_args(self) -> None:
+        # test collection_prefix and data_id_delimiter
+        store = new_data_store(
+            DATA_STORE_ID,
+            url=self.url,
+            collection_prefix="zanzibar-collection",
+            data_id_delimiter=":"
+        )
+        data_ids = store.get_data_ids()
+        data_ids_expected = [
+            "znz001:raster",
+            "znz029:raster"
+        ]
+        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
+            self.assertEqual(data_id, data_id_expected)
+
+    @pytest.mark.vcr()
     def test_has_data(self):
-        assert self.store.has_data(self.data_id)
+        store = new_data_store(DATA_STORE_ID, url=self.url)
+        assert store.has_data(self.data_id)
 
+    @pytest.mark.vcr()
+    def test_has_data_optional_args(self):
+        store = new_data_store(
+            DATA_STORE_ID,
+            url=self.url,
+            collection_prefix="zanzibar-collection",
+            data_id_delimiter=":"
+        )
+        assert store.has_data("znz001:raster")
+        assert not store.has_data("znz001/raster")
+
+    @pytest.mark.vcr()
     def test_describe_data(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
         with self.assertRaises(NotImplementedError) as cm:
-            self.store.describe_data(self.data_id)
+            store.describe_data(self.data_id)
         self.assertEqual(
             "describe_data() operation is not supported yet",
             f"{cm.exception}",
         )
 
+    @pytest.mark.vcr()
     def test_get_data_opener_ids(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
         self.assertEqual(
             ("dataset:zarr:stac",),
-            self.store.get_data_opener_ids()
+            store.get_data_opener_ids()
         )
 
+    @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
-        schema = self.store.get_open_data_params_schema()
+        store = new_data_store(DATA_STORE_ID, url=self.url)
+        schema = store.get_open_data_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
 
+    @pytest.mark.vcr()
     def test_open_data(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
         with self.assertRaises(NotImplementedError) as cm:
-            self.store.open_data(self.data_id)
+            store.open_data(self.data_id)
         self.assertEqual(
             "open_data() operation is not supported yet",
             f"{cm.exception}",
         )
 
+    @pytest.mark.vcr()
     def test_search_data(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
         with self.assertRaises(NotImplementedError) as cm:
-            self.store.search_data()
+            store.search_data()
         self.assertEqual(
             "search_data() operation is not supported yet",
             f"{cm.exception}",
         )
 
+    @pytest.mark.vcr()
     def test_get_search_params_schema(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
         with self.assertRaises(NotImplementedError) as cm:
-            self.store.get_search_params_schema()
+            store.get_search_params_schema()
         self.assertEqual(
             "get_search_params_schema() operation is not supported yet",
             f"{cm.exception}",

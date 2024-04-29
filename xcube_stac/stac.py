@@ -114,6 +114,8 @@ class Stac:
                 of attributes to be returned for each dataset identifier.
                 If given, the store will attempt to provide the set of
                 requested dataset attributes in addition to the data ids.
+                If no attributes are found, empty dictionary is retured.
+                So far only the attribute 'title' is supported.
                 Defaults to None.
 
         Yields:

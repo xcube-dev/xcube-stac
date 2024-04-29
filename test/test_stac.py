@@ -33,8 +33,9 @@ class StacTest(unittest.TestCase):
             "label/main/examples/multidataset/catalog.json"
         )
         stac_instance = Stac(url)
+        data_id = "zanzibar-collection/znz001/raster"
         with self.assertRaises(NotImplementedError) as cm:
-            stac_instance.open_data("data_id1")
+            stac_instance.open_data(data_id)
         self.assertEqual(
             "open_data() operation is not supported yet",
             f"{cm.exception}",
