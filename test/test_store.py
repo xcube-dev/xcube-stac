@@ -20,18 +20,26 @@
 # SOFTWARE.
 
 import unittest
+import pytest
 
 from xcube.util.jsonschema import JsonObjectSchema
+from xcube.core.store.store import new_data_store
 from xcube_stac.store import StacDataOpener
-from xcube_stac.store import StacDataStore
 from xcube_stac.stac import Stac
+from xcube_stac.constants import DATA_STORE_ID
 
 
 class StacDataOpenerTest(unittest.TestCase):
 
+    @pytest.mark.vcr()
     def setUp(self) -> None:
-        stac_instance = Stac("url")
+        url = (
+            "https://raw.githubusercontent.com/stac-extensions/"
+            "label/main/examples/multidataset/catalog.json"
+        )
+        stac_instance = Stac(url)
         self.opener = StacDataOpener(stac_instance)
+        self.data_id = "zanzibar-collection/znz001/raster"
 
     def test_get_open_data_params_schema(self):
         schema = self.opener.get_open_data_params_schema()
@@ -39,7 +47,7 @@ class StacDataOpenerTest(unittest.TestCase):
 
     def test_open_data(self):
         with self.assertRaises(NotImplementedError) as cm:
-            self.opener.open_data("data_id1")
+            self.opener.open_data(self.data_id)
         self.assertEqual(
             "open_data() operation is not supported yet",
             f"{cm.exception}",
@@ -47,7 +55,7 @@ class StacDataOpenerTest(unittest.TestCase):
 
     def test_describe_data(self):
         with self.assertRaises(NotImplementedError) as cm:
-            self.opener.describe_data("data_id1")
+            self.opener.describe_data(self.data_id)
         self.assertEqual(
             "describe_data() operation is not supported yet",
             f"{cm.exception}",
@@ -56,8 +64,14 @@ class StacDataOpenerTest(unittest.TestCase):
 
 class StacDataStoreTest(unittest.TestCase):
 
+    @pytest.mark.vcr()
     def setUp(self) -> None:
-        self.store = StacDataStore(url="url")
+        url = (
+            "https://raw.githubusercontent.com/stac-extensions/"
+            "label/main/examples/multidataset/catalog.json"
+        )
+        self.store = new_data_store(DATA_STORE_ID, url=url)
+        self.data_id = "zanzibar-collection/znz001/raster"
 
     def test_get_data_store_params_schema(self):
         schema = self.store.get_data_store_params_schema()
@@ -73,28 +87,20 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_data_types_for_data(self):
         self.assertEqual(
             ("dataset",),
-            self.store.get_data_types_for_data("data_id1")
+            self.store.get_data_types_for_data(self.data_id)
         )
 
-    def test_get_data_ids(self):
-        with self.assertRaises(NotImplementedError) as cm:
-            self.store.get_data_ids()
-        self.assertEqual(
-            "get_data_ids() operation is not supported yet",
-            f"{cm.exception}",
-        )
+    def test_get_data_ids2(self) -> None:
+        data_ids = self.store.get_data_ids()
+        print(data_ids)
+        assert data_ids is not None
 
     def test_has_data(self):
-        with self.assertRaises(NotImplementedError) as cm:
-            self.store.has_data("data_id1")
-        self.assertEqual(
-            "has_data() operation is not supported yet",
-            f"{cm.exception}",
-        )
+        assert self.store.has_data(self.data_id)
 
     def test_describe_data(self):
         with self.assertRaises(NotImplementedError) as cm:
-            self.store.describe_data("data_id1")
+            self.store.describe_data(self.data_id)
         self.assertEqual(
             "describe_data() operation is not supported yet",
             f"{cm.exception}",
@@ -112,7 +118,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     def test_open_data(self):
         with self.assertRaises(NotImplementedError) as cm:
-            self.store.open_data("data_id1")
+            self.store.open_data(self.data_id)
         self.assertEqual(
             "open_data() operation is not supported yet",
             f"{cm.exception}",

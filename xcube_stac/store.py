@@ -205,7 +205,7 @@ class StacDataStore(StacDataOpener, DataStore):
                 *include_attrs* of data resources provided by this data store.
         """
         self._assert_valid_data_type(data_type)
-        return self.stac.build_data_ids(include_attrs=include_attrs)
+        return self.stac.build_data_ids(self.stac.catalog, include_attrs=include_attrs)
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         """ Check if the data resource given by *data_id* is available

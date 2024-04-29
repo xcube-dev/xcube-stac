@@ -20,13 +20,19 @@
 # SOFTWARE.
 
 import unittest
+import pytest
 from xcube_stac.stac import Stac
 
 
 class StacTest(unittest.TestCase):
 
+    @pytest.mark.vcr()
     def test_open_data(self):
-        stac_instance = Stac("url")
+        url = (
+            "https://raw.githubusercontent.com/stac-extensions/"
+            "label/main/examples/multidataset/catalog.json"
+        )
+        stac_instance = Stac(url)
         with self.assertRaises(NotImplementedError) as cm:
             stac_instance.open_data("data_id1")
         self.assertEqual(
