@@ -56,7 +56,8 @@ class Stac:
 
         # if STAC catalog is not searchable, pystac_client
         # falls back to pystac; to prevent warnings from pystac_client
-        # use catalog from pystac instead.
+        # use catalog from pystac instead. For more discussion refer to
+        # https://github.com/xcube-dev/xcube-stac/issues/5
         catalog = pystac_client.Client.open(url)
         if not catalog.conforms_to("ITEM_SEARCH"):
             catalog = pystac.Catalog.from_file(url)
