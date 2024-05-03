@@ -18,8 +18,10 @@ readme = {file = "README.md", content-type = "text/markdown"}
 license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
+    "pystac",
+    "pystac-client",
     "xarray",
-    "pystac"
+    "xcube"
 ]
 
 [tool.setuptools.dynamic]
@@ -35,6 +37,7 @@ exclude = [
 dev = [
   "pytest",
   "pytest-cov",
+  "pytest-recording",
   "black",
   "flake8"
 ]
