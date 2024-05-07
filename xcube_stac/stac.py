@@ -69,7 +69,7 @@ class Stac:
         # open_data(), which will be used to open the hrefs
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
-        """ Get the JSON schema for instantiating a new data store.
+        """Get the JSON schema for instantiating a new data store.
 
         Returns:
             The JSON schema for the data store's parameters.
@@ -84,7 +84,7 @@ class Stac:
     def get_item_collection(
         self, **open_params
     ) -> Tuple[ItemCollection, List[str]]:
-        """ Collects all items within the given STAC catalog
+        """Collects all items within the given STAC catalog
         using the supplied *open_params*.
 
         Returns:
@@ -109,7 +109,7 @@ class Stac:
         return items, item_data_ids
 
     def get_item_data_id(self, item: Item) -> str:
-        """ Generates the data ID of an item, which follows the structure:
+        """Generates the data ID of an item, which follows the structure:
 
             `collection_id_0/../collection_id_n/item_id`
 
@@ -128,7 +128,7 @@ class Stac:
         return self._data_id_delimiter.join(id_parts)
 
     def get_item_data_ids(self, items: Iterable[Item]) -> Iterator[str]:
-        """ Generates the data ID of an item collection,
+        """Generates the data ID of an item collection,
         which follows the structure:
 
             `collection_id_0/../collection_id_n/item_id`
@@ -143,7 +143,7 @@ class Stac:
             yield self.get_item_data_id(item)
 
     def list_item_data_ids(self, items: Iterable[Item]) -> List[str]:
-        """ Generates a list of data IDs for a given item collection,
+        """Generates a list of data IDs for a given item collection,
         which follows the structure:
 
             `collection_id_0/../collection_id_n/item_id`
@@ -180,7 +180,7 @@ class Stac:
         recursive: bool = True,
         **open_params
     ) -> Iterator[Tuple[Item, str]]:
-        """ Get the items for a catalog of the catalog, which is not
+        """Get the items for a catalog of the catalog, which is not
         conform with the 'ITEM_SEARCH' specifications.
 
         Args:
@@ -230,7 +230,7 @@ class Stac:
                     yield item
 
     def _assert_datetime(self, item: Item, **open_params) -> bool:
-        """ Assert if the datetime or datetime range of an item fits to the
+        """Assert if the datetime or datetime range of an item fits to the
         'time_range' given by *open_params*.
 
         Args:
@@ -267,7 +267,7 @@ class Stac:
                 return True
 
     def _assert_bbox_intersect(self, item: Item, **open_params) -> bool:
-        """ Checks if two bounding boxes intersect.
+        """Checks if two bounding boxes intersect.
 
         Args:
             item: item/feature

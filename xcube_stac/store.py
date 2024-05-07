@@ -96,7 +96,7 @@ class StacDataStore(StacDataOpener, DataStore):
     def get_item_collection(
         self, **open_params
     ) -> Tuple[ItemCollection, List[str]]:
-        """ Collects all items within the given STAC catalog
+        """Collects all items within the given STAC catalog
         using the supplied *open_params*.
 
         Returns:
