@@ -48,8 +48,6 @@ class StacDataStore(StacDataOpener, DataStore):
 
     Attributes:
         url: URL to STAC catalog
-        collection_prefix: Path of collection used as
-            entry point. Defaults to None.
         data_id_delimiter: Delimiter used to separate
             collections, items and assets from each other.
             Defaults to "/".
@@ -58,12 +56,10 @@ class StacDataStore(StacDataOpener, DataStore):
     def __init__(
         self,
         url: str,
-        collection_prefix: str = None,
         data_id_delimiter: str = "/"
     ):
         super().__init__(stac=Stac(
             url,
-            collection_prefix=collection_prefix,
             data_id_delimiter=data_id_delimiter
         ))
 
@@ -96,6 +92,18 @@ class StacDataStore(StacDataOpener, DataStore):
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         return self.get_data_types()
+
+    def get_item_collection(
+        self, **open_params
+    ) -> Tuple[ItemCollection, List[str]]:
+        """ Collects all items within the given STAC catalog
+        using the supplied *open_params*.
+
+        Returns:
+            A tuple of the item collection containing all items
+            identified by *open_params* and data IDs corresponding to items
+        """
+        return self.stac.get_item_collection(**open_params)
 
     def get_data_ids(
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None

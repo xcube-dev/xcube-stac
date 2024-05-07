@@ -43,14 +43,7 @@ class StacDataOpener(DataOpener):
         self.stac = stac
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
-        # ToDo: to be adjusted
-        open_parms = {}
-        stac_schema = JsonObjectSchema(
-            properties=dict(**open_parms),
-            required=[],
-            additional_properties=False
-        )
-        return stac_schema
+        return self.stac.get_open_data_params_schema(data_id)
 
     def open_data(self, data_id: str, **open_params) -> xr.Dataset:
         """Open the data given by the data resource identifier *data_id*
