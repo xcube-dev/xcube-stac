@@ -43,27 +43,31 @@ _LOG = logging.getLogger("xcube")
 
 
 class StacDataStore(StacDataOpener, DataStore):
-    """ STAC implementation of the data store.
+    """STAC implementation of the data store.
 
     Attributes:
-        **stac_kwargs: Parameters required by the STAC data store.
-            * url: URL to STAC catalog (required)
-            * collection_prefix: Path of collection used as
-                entry point (optional)
-            * data_id_delimiter: Delimiter used to separate
-                collections, items and assets from each other (optional)
+        url: URL to STAC catalog
+        collection_prefix: Path of collection used as
+            entry point. Defaults to None.
+        data_id_delimiter: Delimiter used to separate
+            collections, items and assets from each other.
+            Defaults to "/".
     """
 
-    def __init__(self, **stac_kwargs):
-        super().__init__(stac=Stac(**stac_kwargs))
+    def __init__(
+        self,
+        url: str,
+        collection_prefix: str = None,
+        data_id_delimiter: str = "/"
+    ):
+        super().__init__(stac=Stac(
+            url,
+            collection_prefix=collection_prefix,
+            data_id_delimiter=data_id_delimiter
+        ))
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        """ Get the JSON schema for instantiating a new data store.
-
-        Returns:
-            The JSON schema for the data store's parameters.
-        """
         stac_params = dict(
             url=JsonStringSchema(
                 title="URL to STAC catalog"
@@ -81,6 +85,9 @@ class StacDataStore(StacDataOpener, DataStore):
             )
         )
         return JsonObjectSchema(
+            description=(
+                "Describes the parameters of the xcube data store 'stac'."
+            ),
             properties=stac_params,
             required=["url"],
             additional_properties=False
@@ -88,30 +95,15 @@ class StacDataStore(StacDataOpener, DataStore):
 
     @classmethod
     def get_data_types(cls) -> Tuple[str, ...]:
-        """ Get alias names for all data types supported by this store.
-
-        Returns:
-            A tuple of supported data types.
-        """
         return (DATASET_TYPE.alias,)
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
-        """ Get alias names for of data types that are supported
-        by this store for the given *data_id*.
-
-        Args:
-            data_id: An identifier of data that is provided by this
-                store.
-
-        Returns:
-            A tuple of data types that apply to the given *data_id*.
-        """
         return self.get_data_types()
 
     def get_data_ids(
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """ Get an iterator over the data resource identifiers for the
+        """Get an iterator over the data resource identifiers for the
         given type *data_type*. If *data_type* is omitted, all data
         resource identifiers are returned.
 
@@ -136,30 +128,12 @@ class StacDataStore(StacDataOpener, DataStore):
         raise NotImplementedError("get_data_ids() operation is not supported yet")
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
-        """ Check if the data resource given by *data_id* is available
-        in this store.
-
-        Args:
-            data_id: An identifier of data that is provided by this
-                store.
-            data_type: An optional data type. If given, it will
-                also be checked whether the data is available as the
-                specified type. May be given as type alias name, as a type,
-                or as a :class:`DataType` instance. Defaults to None.
-
-        Raises:
-            NotImplementedError: Not implemented yet.
-
-        Returns:
-            True, if the data resource is available in this store,
-            False otherwise.
-        """
         # ToDo: get_data_ids() is needed.
         #       Add this method after get_data_ids() is implemented.
         raise NotImplementedError("has_data() operation is not supported yet")
 
     def describe_data(self, data_id: str, **open_params) -> DataDescriptor:
-        """ Get the descriptor for the data resource given by *data_id*.
+        """Get the descriptor for the data resource given by *data_id*.
 
         Args:
             data_id: An identifier of data that is provided by this
@@ -174,23 +148,6 @@ class StacDataStore(StacDataOpener, DataStore):
     def get_data_opener_ids(
         self, data_id: str = None, data_type: DataTypeLike = None
     ) -> Tuple[str, ...]:
-        """ Get identifiers of data openers that can be used to open data
-        resources from this store.
-
-        Args:
-            data_id: An identifier of data that is provided by this
-                store. Defaults to None.
-            data_type: Data type that is known to be supported by this
-                data store. May be given as type alias name, as a type,
-                or as a :class:`DataType` instance. Defaults to None.
-
-        Raises:
-            DataStoreError: If an error occurs.
-
-        Returns:
-            A tuple of identifiers of data openers that can be used
-            to open data resources.
-        """
         self._assert_valid_data_type(data_type)
         if data_id is not None and not self.has_data(data_id, data_type=data_type):
             raise DataStoreError(
@@ -206,7 +163,7 @@ class StacDataStore(StacDataOpener, DataStore):
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
-        """ Get the schema for the parameters passed as *open_params* to
+        """Get the schema for the parameters passed as *open_params* to
         :meth:`open_data`.
 
         Args:
@@ -223,7 +180,7 @@ class StacDataStore(StacDataOpener, DataStore):
     def open_data(
         self, data_id: str, opener_id: str = None, **open_params
     ) -> xr.Dataset:
-        """ Open the data given by the data resource identifier *data_id*
+        """Open the data given by the data resource identifier *data_id*
         using the data opener identified by *opener_id* and
         the supplied *open_params*.
 
@@ -242,7 +199,7 @@ class StacDataStore(StacDataOpener, DataStore):
     def search_data(
         self, data_type: DataTypeLike = None, **search_params
     ) -> Iterator[DataDescriptor]:
-        """ Search this store for data resources. If *data_type* is given,
+        """Search this store for data resources. If *data_type* is given,
         the search is restricted to data resources of that type.
 
         Args:
@@ -262,7 +219,7 @@ class StacDataStore(StacDataOpener, DataStore):
     def get_search_params_schema(
         cls, data_type: DataTypeLike = None
     ) -> JsonObjectSchema:
-        """ Get the schema for the parameters that can be passed
+        """Get the schema for the parameters that can be passed
         as *search_params* to :meth:`search_data`. Parameters are
         named and described by the properties of the returned JSON object schema.
 
@@ -288,7 +245,7 @@ class StacDataStore(StacDataOpener, DataStore):
 
     @classmethod
     def _is_valid_data_type(cls, data_type: DataTypeLike) -> bool:
-        """ Auxiliary function to check if data type is supported
+        """Auxiliary function to check if data type is supported
         by the store.
 
         Args:
@@ -301,7 +258,7 @@ class StacDataStore(StacDataOpener, DataStore):
 
     @classmethod
     def _assert_valid_data_type(cls, data_type: DataTypeLike):
-        """ Auxiliary function to assert if data type is supported
+        """Auxiliary function to assert if data type is supported
         by the store.
 
         Args:
@@ -319,7 +276,7 @@ class StacDataStore(StacDataOpener, DataStore):
 
     @classmethod
     def _assert_valid_opener_id(cls, opener_id: str):
-        """ Auxiliary function to assert if data opener identified by
+        """Auxiliary function to assert if data opener identified by
         *opener_id* is supported by the store.
 
         Args:

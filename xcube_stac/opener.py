@@ -33,7 +33,7 @@ _LOG = logging.getLogger("xcube")
 
 
 class StacDataOpener(DataOpener):
-    """ STAC implementation of the data opener.
+    """STAC implementation of the data opener.
 
     Attributes:
         stac: Common operations on STAC catalogs
@@ -43,17 +43,6 @@ class StacDataOpener(DataOpener):
         self.stac = stac
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
-        """ Get the schema for the parameters passed as *open_params* to
-        :meth:`open_data`.
-
-        Args:
-            data_id: An identifier of data that is provided by this
-                store. Defaults to None.
-
-        Returns:
-            Schema containing the parameters used by the data opener
-            to open data.
-        """
         # ToDo: to be adjusted
         open_parms = {}
         stac_schema = JsonObjectSchema(
@@ -64,7 +53,7 @@ class StacDataOpener(DataOpener):
         return stac_schema
 
     def open_data(self, data_id: str, **open_params) -> xr.Dataset:
-        """ Open the data given by the data resource identifier *data_id*
+        """Open the data given by the data resource identifier *data_id*
         using the supplied *open_params*.
 
         Args:
@@ -82,7 +71,7 @@ class StacDataOpener(DataOpener):
     def describe_data(
         self, data_id: str, **open_params
     ) -> DatasetDescriptor:
-        """ Get the descriptor for the data resource given by *data_id*.
+        """Get the descriptor for the data resource given by *data_id*.
 
         Args:
             data_id: An identifier of data that is provided by this

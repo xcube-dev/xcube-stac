@@ -23,7 +23,7 @@ import xarray as xr
 
 
 class Stac:
-    """ Common operations on STAC catalogs.
+    """Common operations on STAC catalogs.
 
     Attributes:
         url: URL to STAC catalog
@@ -47,7 +47,7 @@ class Stac:
         # ToDo: Add a data store "file", which will be used to open the hrefs
 
     def open_data(self, data_id: str, **open_params) -> xr.Dataset:
-        """ Open the data given by the data resource identifier *data_id*
+        """Open the data given by the data resource identifier *data_id*
         using the supplied *open_params*.
 
         Args:
