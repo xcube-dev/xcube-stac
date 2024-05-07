@@ -1,0 +1,14 @@
+name: xcube-stac
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  # Required
+  - python>=3.10
+  - pystac
+  - xarray
+  - xcube
+  # for testing
+  - black
+  - flake8
+  - pytest
