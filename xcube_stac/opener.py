@@ -61,7 +61,7 @@ class StacDataOpener(DataOpener):
                 store.
 
         Returns:
-            An in-memory representation of the data resources
+            A representation of the data resources
             identified by *data_id* and *open_params*.
         """
         stac_schema = self.get_open_data_params_schema()

@@ -190,7 +190,7 @@ class StacDataStore(StacDataOpener, DataStore):
             opener_id: Data opener identifier. Defaults to None.
 
         Returns:
-            An in-memory representation of the data resources identified
+            A representation of the data resources identified
             by *data_id* and *open_params*.
         """
         self._assert_valid_opener_id(opener_id)

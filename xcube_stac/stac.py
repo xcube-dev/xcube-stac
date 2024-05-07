@@ -58,7 +58,7 @@ class Stac:
             NotImplementedError: Not implemented yet.
 
         Returns:
-            An in-memory representation of the data resources
+            A representation of the data resources
             identified by *data_id* and *open_params*.
         """
         # ToDo: implement this method using data store "file", see __init__()

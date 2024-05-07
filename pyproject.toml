@@ -40,6 +40,6 @@ dev = [
 ]
 
 [project.urls]
-Repository = 'https://github.com/xcube-dev/xcube-stac'
-Issues = 'https://github.com/xcube-dev/xcube-stac/issues'
-Changelog = 'https://github.com/xcube-dev/xcube-stac/blob/main/CHANGES.md'
+Repository = "https://github.com/xcube-dev/xcube-stac"
+Issues = "https://github.com/xcube-dev/xcube-stac/issues"
+Changelog = "https://github.com/xcube-dev/xcube-stac/blob/main/CHANGES.md"
