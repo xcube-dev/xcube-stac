@@ -4,6 +4,7 @@ channels:
   - defaults
 dependencies:
   # Required
+  - python>=3.10
   - pystac
   - xarray
   - xcube
