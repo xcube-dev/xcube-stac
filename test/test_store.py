@@ -64,22 +64,52 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_get_data_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.get_data_ids()
-        self.assertEqual(
-            "get_data_ids() operation is not supported yet",
-            f"{cm.exception}",
+        data_ids = store.get_data_ids()
+        data_ids_expected = [
+            "zanzibar-collection/znz001/raster",
+            "zanzibar-collection/znz029/raster",
+            "spacenet-buildings-collection/AOI_2_Vegas_img2636/raster",
+            "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
+            "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
+        ]
+        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
+            self.assertEqual(data_id, data_id_expected)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_optional_args(self):
+        # test data_id_delimiter
+        store = new_data_store(
+            DATA_STORE_ID,
+            url=self.url,
+            data_id_delimiter=":"
         )
+        open_params = dict(collections="zanzibar-collection")
+        data_ids = store.get_data_ids(**open_params)
+        data_ids_expected = [
+            "zanzibar-collection:znz001:raster",
+            "zanzibar-collection:znz029:raster"
+        ]
+        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
+            self.assertEqual(data_id, data_id_expected)
 
     @pytest.mark.vcr()
     def test_has_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.has_data("data_id1")
-        self.assertEqual(
-            "has_data() operation is not supported yet",
-            f"{cm.exception}",
+        self.assertTrue(store.has_data(self.data_id))
+
+    @pytest.mark.vcr()
+    def test_has_data_optional_args(self):
+        store = new_data_store(
+            DATA_STORE_ID,
+            url=self.url,
+            data_id_delimiter=":"
         )
+        self.assertTrue(store.has_data("zanzibar-collection:znz001:raster"))
+        self.assertFalse(store.has_data("zanzibar-collection/znz001/raster"))
+        self.assertFalse(store.has_data(
+            "zanzibar-collection:znz001:raster",
+            data_type=str
+        ))
 
     @pytest.mark.vcr()
     def test_get_item_collection(self):
@@ -113,22 +143,21 @@ class StacDataStoreTest(unittest.TestCase):
             store.get_data_opener_ids()
         )
 
-    # TODO: add this test when has_data() works
-    # @pytest.mark.vcr()
-    # def test_get_data_opener_ids_optional_args(self):
-    #     store = new_data_store(DATA_STORE_ID, url=self.url)
-    #     with self.assertRaises(DataStoreError) as cm:
-    #         store.get_data_opener_ids(data_id="wrong_data_id")
-    #     self.assertEqual(
-    #         "Data resource 'wrong_data_id' is not available.",
-    #         f"{cm.exception}",
-    #     )
-    #     with self.assertRaises(DataStoreError) as cm:
-    #         store.get_data_opener_ids(data_type=str)
-    #     self.assertEqual(
-    #         "Data type must be 'dataset', but got <class 'str'>",
-    #         f"{cm.exception}",
-    #     )
+    @pytest.mark.vcr()
+    def test_get_data_opener_ids_optional_args(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url)
+        with self.assertRaises(DataStoreError) as cm:
+            store.get_data_opener_ids(data_id="wrong_data_id")
+        self.assertEqual(
+            "Data resource 'wrong_data_id' is not available.",
+            f"{cm.exception}",
+        )
+        with self.assertRaises(DataStoreError) as cm:
+            store.get_data_opener_ids(data_type=str)
+        self.assertEqual(
+            "Data type must be 'dataset', but got <class 'str'>",
+            f"{cm.exception}",
+        )
 
     @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):

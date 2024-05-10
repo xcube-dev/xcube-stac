@@ -114,6 +114,97 @@ class StacTest(unittest.TestCase):
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
+    def test_get_data_ids(self):
+        stac_instance = Stac(self.url_nonsearchable)
+        data_ids = stac_instance.get_data_ids()
+        data_ids_expected = [
+            "zanzibar-collection/znz001/raster",
+            "zanzibar-collection/znz029/raster",
+            "spacenet-buildings-collection/AOI_2_Vegas_img2636/raster",
+            "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
+            "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
+        ]
+        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
+            self.assertEqual(data_id, data_id_expected)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_optional_args(self):
+        stac_instance = Stac(
+            self.url_nonsearchable,
+            data_id_delimiter=":"
+        )
+        iterator = stac_instance.get_data_ids(
+            include_attrs=["title"],
+            collections="zanzibar-collection",
+            variable_names=["raster"]
+        )
+        data_ids_expected = [
+            "zanzibar-collection:znz001:raster",
+            "zanzibar-collection:znz029:raster"
+        ]
+        attrss_expected = [
+            {"title": "znz001_previewcog"},
+            {"title": "znz029_previewcog"}
+        ]
+
+        iterable = zip(data_ids_expected, attrss_expected, iterator)
+        for (data_id_expected, attrs_expected, (data_id, attrs)) in iterable:
+            self.assertEqual(data_id, data_id_expected)
+            self.assertDictEqual(attrs, attrs_expected)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_optional_args_empty_args(self):
+        stac_instance = Stac(
+            self.url_nonsearchable,
+            data_id_delimiter=":"
+        )
+        iterator = stac_instance.get_data_ids(
+            include_attrs=["dtype"],
+            collections="zanzibar-collection",
+            variable_names=["raster"]
+        )
+        data_ids_expected = [
+            "zanzibar-collection:znz001:raster",
+            "zanzibar-collection:znz029:raster"
+        ]
+        attrss_expected = [{}, {}]
+
+        iterable = zip(data_ids_expected, attrss_expected, iterator)
+        for (data_id_expected, attrs_expected, (data_id, attrs)) in iterable:
+            self.assertEqual(data_id, data_id_expected)
+            self.assertDictEqual(attrs, attrs_expected)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_from_items(self):
+        stac_instance = Stac(
+            self.url_nonsearchable
+        )
+        items, _ = stac_instance.get_item_collection(
+            collections="zanzibar-collection"
+        )
+        iterator = stac_instance.get_data_ids(
+            items=items
+        )
+        data_ids_expected = [
+            "zanzibar-collection/znz001/raster",
+            "zanzibar-collection/znz029/raster"
+        ]
+        iterable = zip(data_ids_expected, iterator)
+        for (data_id_expected, data_id) in iterable:
+            self.assertEqual(data_id, data_id_expected)
+
+    @pytest.mark.vcr()
+    def test_open_data(self):
+        stac_instance = Stac(self.url_nonsearchable)
+        data_id = "zanzibar-collection/znz001/raster"
+        with self.assertRaises(NotImplementedError) as cm:
+            stac_instance.open_data(data_id)
+        self.assertEqual(
+            "open_data() operation is not supported yet",
+            f"{cm.exception}",
+        )
+
+    @pytest.mark.vcr()
     def test_is_datetime_in_range(self):
         class Item1():
 
