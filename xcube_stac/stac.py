@@ -167,7 +167,7 @@ class Stac:
         include_attrs: Container[str] = None,
         **open_params
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """ Get an iterator over the data resource identifiers for the
+        """Get an iterator over the data resource identifiers for the
         given type *data_type*. If *data_type* is omitted, all data
         resource identifiers are returned. The data resource identifiers
         follow the following structure:
@@ -215,7 +215,7 @@ class Stac:
         include_attrs: Container[str] = None,
         **open_params
     ) -> Iterator[str]:
-        """ Get all assets for a given item, which has a MIME data type
+        """Get all assets for a given item, which has a MIME data type
 
         Args:
             item: item/feature
