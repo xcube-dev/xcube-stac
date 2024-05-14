@@ -19,16 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from pystac import ItemCollection
 from typing import Any, Tuple, Iterator, Dict, Container, Union, List
 
-import logging
 import xarray as xr
-
-from pystac import ItemCollection
-from xcube.util.jsonschema import (
-    JsonObjectSchema,
-    JsonStringSchema
-)
 from xcube.core.store import (
     DATASET_TYPE,
     DataDescriptor,
@@ -36,11 +30,14 @@ from xcube.core.store import (
     DataStoreError,
     DataTypeLike
 )
+from xcube.util.jsonschema import (
+    JsonObjectSchema,
+    JsonStringSchema
+)
+
 from .constants import DATASET_OPENER_ID
 from .opener import StacDataOpener
 from .stac import Stac
-
-_LOG = logging.getLogger("xcube")
 
 
 class StacDataStore(StacDataOpener, DataStore):
@@ -249,7 +246,7 @@ class StacDataStore(StacDataOpener, DataStore):
         by the store.
 
         Args:
-            data_type (DataTypeLike): Data type that is to be checked.
+            data_type: Data type that is to be checked.
 
         Returns:
             bool: True if *data_type* is supported by the store, otherwise False
@@ -262,7 +259,7 @@ class StacDataStore(StacDataOpener, DataStore):
         by the store.
 
         Args:
-            data_type (DataTypeLike): Data type that is to be checked.
+            data_type: Data type that is to be checked.
 
         Raises:
             DataStoreError: Error, if *data_type* is not

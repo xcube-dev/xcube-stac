@@ -19,21 +19,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+from datetime import datetime, timezone
+from itertools import chain
 from typing import Tuple, Iterable, Iterator, Union, List
 
-from datetime import datetime, timezone
+import pystac
+from pystac import Catalog, Collection, ItemCollection, Item
+import pystac_client
 from shapely.geometry import box
 import xarray as xr
-from itertools import chain
-
-import pystac
-
-import pystac_client
-from pystac import Catalog, Collection, ItemCollection, Item
-
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac.constants import STAC_SEARCH_ITEM_PARAMETERS
+from .constants import STAC_SEARCH_ITEM_PARAMETERS
 
 
 class Stac:
@@ -63,10 +60,14 @@ class Stac:
         if not catalog.conforms_to("ITEM_SEARCH"):
             catalog = pystac.Catalog.from_file(url)
             self._searchable = False
-        self.catalog = catalog
+        self._catalog = catalog
 
         # TODO: Add a data store "file" here when implementing
         # open_data(), which will be used to open the hrefs
+
+    @property
+    def catalog(self) -> Catalog:
+        return self._catalog
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
         """Get the JSON schema for instantiating a new data store.
@@ -74,12 +75,11 @@ class Stac:
         Returns:
             The JSON schema for the data store's parameters.
         """
-        stac_schema = JsonObjectSchema(
+        return JsonObjectSchema(
             properties=dict(**STAC_SEARCH_ITEM_PARAMETERS),
             required=[],
             additional_properties=False
         )
-        return stac_schema
 
     def get_item_collection(
         self, **open_params
@@ -92,13 +92,13 @@ class Stac:
             item_data_ids: data IDs corresponding to items
         """
         if self._searchable:
-            open_params_mod = open_params.copy()
-            if "variable_names" in open_params_mod:
-                del open_params_mod["variable_names"]
-            if "time_range" in open_params_mod:
-                open_params_mod["datetime"] = "/".join(open_params_mod["time_range"])
-                del open_params_mod["time_range"]
-            items = self.catalog.search(**open_params_mod).item_collection()
+            # not used
+            open_params.pop("variable_names", None)
+            # rewrite to "datetime"
+            time_range = open_params.pop("time_range", None)
+            if time_range:
+                open_params["datetime"] = "/".join(time_range)
+            items = self.catalog.search(**open_params).item_collection()
         else:
             items = self._get_items_nonsearchable_catalog(
                 self.catalog,
@@ -120,15 +120,15 @@ class Stac:
             data ID of an item
         """
         id_parts = []
-        pystac_object = item
-        while pystac_object.STAC_OBJECT_TYPE != "Catalog":
-            id_parts.append(pystac_object.id)
-            pystac_object = pystac_object.get_parent()
+        parent_item = item
+        while parent_item.STAC_OBJECT_TYPE != "Catalog":
+            id_parts.append(parent_item.id)
+            parent_item = parent_item.get_parent()
         id_parts.reverse()
         return self._data_id_delimiter.join(id_parts)
 
     def get_item_data_ids(self, items: Iterable[Item]) -> Iterator[str]:
-        """Generates the data ID of an item collection,
+        """Generates the data IDs of an item collection,
         which follows the structure:
 
             `collection_id_0/../collection_id_n/item_id`
@@ -180,27 +180,24 @@ class Stac:
         recursive: bool = True,
         **open_params
     ) -> Iterator[Tuple[Item, str]]:
-        """Get the items for a catalog of the catalog, which is not
-        conform with the 'ITEM_SEARCH' specifications.
+        """Get the items of a catalog which does not implement the
+        "STAC API - Item Search" conformance class.
 
         Args:
             pystac_object: either a `pystac.catalog:Catalog` or a
                 `pystac.collection:Collection` object
-            recursive: If True, data IDs of a multiple collection
-                and/or nested collection STAC catalog can be build. If False,
-                flat STAC catalog hierarchy is assumed consisting only of items.
-                Defaults to True.
+            recursive: If True, the data IDs of a multiple-collection
+                and/or nested-collection STAC catalog can be collected. If False,
+                a flat STAC catalog hierarchy is assumed, consisting only of items.
 
         Yields:
             An iterator over the items matching the **open_params.
         """
 
         if (
-            pystac_object.extra_fields["type"] == "Collection" and
-            pystac_object.id not in open_params.get("collections", [pystac_object.id])
+            pystac_object.extra_fields["type"] != "Collection" or
+            pystac_object.id in open_params.get("collections", [pystac_object.id])
         ):
-            pass
-        else:
             if recursive:
                 if any(True for _ in pystac_object.get_children()):
                     iterators = (self._get_items_nonsearchable_catalog(
@@ -220,26 +217,29 @@ class Stac:
                 for item in pystac_object.get_items():
                     # test if item's bbox intersects with the desired bbox
                     if "bbox" in open_params:
-                        if not self._assert_bbox_intersect(item, **open_params):
+                        if not self._do_bboxes_intersect(item, **open_params):
                             continue
                     # test if item fit to desired time range
                     if "time_range" in open_params:
-                        if not self._assert_datetime(item, **open_params):
+                        if not self._is_datetime_in_range(item, **open_params):
                             continue
                     # iterate through assets of item
                     yield item
 
-    def _assert_datetime(self, item: Item, **open_params) -> bool:
-        """Assert if the datetime or datetime range of an item fits to the
-        'time_range' given by *open_params*.
+    def _is_datetime_in_range(self, item: Item, **open_params) -> bool:
+        """Determine whether the datetime or datetime range of an item
+        intersects to the 'time_range' given by *open_params*.
 
         Args:
             item: item/feature
+            open_params: Optional opening parameters which need
+                to include 'time_range'
+
 
         Returns:
             True, if the datetime of an item is within the 'time_range',
-            otherwise False. True, if there is any overlap between the
-            'time_range' and the datetime range of an item.
+            or if there is any overlap between the 'time_range' and
+            the datetime range of an item; otherwise False.
 
         """
         dt_start = datetime.fromisoformat(
@@ -255,22 +255,18 @@ class Stac:
             dt_end_data = datetime.fromisoformat(
                 item.properties["end_datetime"]
             )
-            if dt_end < dt_start_data or dt_start > dt_end_data:
-                return False
-            else:
-                return True
+            return dt_end >= dt_start_data and dt_start <= dt_end_data
         else:
             dt_data = datetime.fromisoformat(item.properties["datetime"])
-            if dt_end < dt_data or dt_start > dt_data:
-                return False
-            else:
-                return True
+            return dt_start <= dt_data <= dt_end
 
-    def _assert_bbox_intersect(self, item: Item, **open_params) -> bool:
-        """Checks if two bounding boxes intersect.
+    def _do_bboxes_intersect(self, item: Item, **open_params) -> bool:
+        """Determine whether two bounding boxes intersect.
 
         Args:
             item: item/feature
+            open_params: Optional opening parameters which need
+                to include 'bbox'
 
         Returns:
             True if the bounding box given by the item intersects with

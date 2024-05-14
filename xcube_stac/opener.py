@@ -19,17 +19,14 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import logging
 import xarray as xr
-
-from xcube.util.jsonschema import JsonObjectSchema
 from xcube.core.store import (
     DataOpener,
     DatasetDescriptor
 )
-from .stac import Stac
+from xcube.util.jsonschema import JsonObjectSchema
 
-_LOG = logging.getLogger("xcube")
+from .stac import Stac
 
 
 class StacDataOpener(DataOpener):
@@ -40,7 +37,11 @@ class StacDataOpener(DataOpener):
     """
 
     def __init__(self, stac: Stac):
-        self.stac = stac
+        self._stac = stac
+
+    @property
+    def stac(self) -> Stac:
+        return self._stac
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
         return self.stac.get_open_data_params_schema(data_id)

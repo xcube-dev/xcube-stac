@@ -35,11 +35,11 @@ exclude = [
 
 [project.optional-dependencies]
 dev = [
+  "black",
+  "flake8",
   "pytest",
   "pytest-cov",
-  "pytest-recording",
-  "black",
-  "flake8"
+  "pytest-recording"
 ]
 
 [project.urls]

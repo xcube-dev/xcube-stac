@@ -20,12 +20,13 @@
 # SOFTWARE.
 
 import unittest
-import pytest
 
 from pystac import ItemCollection
-from xcube.util.jsonschema import JsonObjectSchema
+import pytest
 from xcube.core.store import DataStoreError
 from xcube.core.store.store import new_data_store
+from xcube.util.jsonschema import JsonObjectSchema
+
 from xcube_stac.constants import DATA_STORE_ID
 
 

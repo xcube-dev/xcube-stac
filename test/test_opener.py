@@ -20,11 +20,12 @@
 # SOFTWARE.
 
 import unittest
-import pytest
 
+import pytest
 from xcube.util.jsonschema import JsonObjectSchema
-from xcube_stac.store import StacDataOpener
+
 from xcube_stac.stac import Stac
+from xcube_stac.store import StacDataOpener
 
 
 class StacDataOpenerTest(unittest.TestCase):

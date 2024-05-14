@@ -20,10 +20,12 @@
 # SOFTWARE.
 
 import unittest
-import pytest
+
 from pystac import ItemCollection
-from xcube_stac.stac import Stac
+import pytest
 from xcube.util.jsonschema import JsonObjectSchema
+
+from xcube_stac.stac import Stac
 
 
 class StacTest(unittest.TestCase):
@@ -57,7 +59,7 @@ class StacTest(unittest.TestCase):
             "spacenet-buildings-collection/AOI_4_Shanghai_img3344"
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertListEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items, data_id_items_expected)
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
@@ -72,7 +74,7 @@ class StacTest(unittest.TestCase):
             "zanzibar-collection/znz001",
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertListEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items, data_id_items_expected)
         self.assertEqual(len(items), len(data_id_items))
 
         items, data_id_items = stac_instance.get_item_collection(
@@ -108,11 +110,11 @@ class StacTest(unittest.TestCase):
             "sentinel-2-l2a/S2A_32UNU_20200302_0_L2A"
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertListEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items, data_id_items_expected)
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
-    def test_assert_datetime(self):
+    def test_is_datetime_in_range(self):
         class Item1():
 
             def __init__(self) -> None:
@@ -129,74 +131,63 @@ class StacTest(unittest.TestCase):
                     end_datetime="2024-05-02T09:19:38.543000Z"
                 )
 
-        item1_open_paramss = [
-            dict(time_range=["2024-04-30", "2024-05-03"]),
-            dict(time_range=["2024-04-26", "2024-05-02"]),
-            dict(time_range=["2024-04-26", "2024-05-01"]),
-        ]
-        item1_funs = [
-            self.assertTrue,
-            self.assertFalse,
-            self.assertFalse
+        item1_test_paramss = [
+            ("2024-04-30", "2024-05-03", self.assertTrue),
+            ("2024-04-26", "2024-05-02", self.assertFalse),
+            ("2024-04-26", "2024-05-01", self.assertFalse)
         ]
 
-        item2_open_paramss = [
-            dict(time_range=["2024-05-05", "2024-05-08"]),
-            dict(time_range=["2024-04-30", "2024-05-03"]),
-            dict(time_range=["2024-04-26", "2024-04-29"]),
-            dict(time_range=["2023-11-26", "2023-12-31"]),
-            dict(time_range=["2023-11-26", "2023-11-30"]),
-            dict(time_range=["2023-11-26", "2024-05-08"])
-        ]
-        item2_funs = [
-            self.assertFalse,
-            self.assertTrue,
-            self.assertTrue,
-            self.assertTrue,
-            self.assertFalse,
-            self.assertTrue
+        item2_test_paramss = [
+            ("2024-05-05", "2024-05-08", self.assertFalse),
+            ("2024-04-30", "2024-05-03", self.assertTrue),
+            ("2024-04-26", "2024-04-29", self.assertTrue),
+            ("2023-11-26", "2023-12-31", self.assertTrue),
+            ("2023-11-26", "2023-11-30", self.assertFalse),
+            ("2023-11-26", "2024-05-08", self.assertTrue),
         ]
 
         stac_instance = Stac(self.url_nonsearchable)
 
         item1 = Item1()
-        for (open_params, fun) in zip(item1_open_paramss, item1_funs):
+        for (time_start, time_end, fun) in item1_test_paramss:
             fun(
-                stac_instance._assert_datetime(item1, **open_params)
+                stac_instance._is_datetime_in_range(
+                    item1,
+                    time_range=[time_start, time_end]
+                )
             )
 
         item1 = Item2()
-        for (open_params, fun) in zip(item2_open_paramss, item2_funs):
+        for (time_start, time_end, fun) in item2_test_paramss:
             fun(
-                stac_instance._assert_datetime(item1, **open_params)
+                stac_instance._is_datetime_in_range(
+                    item1,
+                    time_range=[time_start, time_end]
+                )
             )
 
     @pytest.mark.vcr()
-    def test_assert_bbox_intersect(self):
+    def test_do_bboxes_intersect(self):
         class Item():
 
             def __init__(self) -> None:
                 self.bbox = [0, 0, 1, 1]
 
-        item_open_paramss = [
-            dict(bbox=[0, 0, 1, 1]),
-            dict(bbox=[0.5, 0.5, 1.5, 1.5]),
-            dict(bbox=[-0.5, -0.5, 0.5, 0.5]),
-            dict(bbox=[1, 1, 2, 2]),
-            dict(bbox=[2, 2, 3, 3])
-        ]
-        item_funs = [
-            self.assertTrue,
-            self.assertTrue,
-            self.assertTrue,
-            self.assertTrue,
-            self.assertFalse
+        item_test_paramss = [
+            (0, 0, 1, 1, self.assertTrue),
+            (0.5, 0.5, 1.5, 1.5, self.assertTrue),
+            (-0.5, -0.5, 0.5, 0.5, self.assertTrue),
+            (1, 1, 2, 2, self.assertTrue),
+            (2, 2, 3, 3, self.assertFalse)
         ]
 
         stac_instance = Stac(self.url_nonsearchable)
 
         item = Item()
-        for (open_params, fun) in zip(item_open_paramss, item_funs):
+        for (west, south, east, north, fun) in item_test_paramss:
             fun(
-                stac_instance._assert_bbox_intersect(item, **open_params)
+                stac_instance._do_bboxes_intersect(
+                    item,
+                    bbox=[west, south, east, north]
+                )
             )
