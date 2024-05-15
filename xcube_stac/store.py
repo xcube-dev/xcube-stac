@@ -115,7 +115,7 @@ class StacDataStore(StacDataOpener, DataStore):
         resource identifiers are returned. The data resource identifiers
         follow the following structure:
 
-            `collection_id_0/../collection_id_n/item_id/_id`
+            `collection_id_0/../collection_id_n/item_id/asset_id`
 
         Args:
             data_type: If given, only data identifiers
