@@ -8,8 +8,6 @@ on:
 jobs:
   unittest:
     runs-on: ubuntu-latest
-    env:
-      NUMBA_DISABLE_JIT: 1
     steps:
       - name: checkout xcube-stac
         uses: actions/checkout@v4
