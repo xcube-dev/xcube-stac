@@ -21,7 +21,7 @@
 
 from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
 
-from pystac import ItemCollection, Item
+import pystac
 import xarray as xr
 from xcube.core.store import (
     DATASET_TYPE,
@@ -92,7 +92,7 @@ class StacDataStore(StacDataOpener, DataStore):
 
     def get_item_collection(
         self, **open_params
-    ) -> Tuple[ItemCollection, List[str]]:
+    ) -> Tuple[pystac.ItemCollection, List[str]]:
         """Collects all items within the given STAC catalog
         using the supplied *open_params*.
 
@@ -105,7 +105,7 @@ class StacDataStore(StacDataOpener, DataStore):
     def get_data_ids(
         self,
         data_type: DataTypeLike = None,
-        items: Iterable[Item] = None,
+        items: Iterable[pystac.Item] = None,
         item_data_ids: Iterable[str] = None,
         include_attrs: Container[str] = None,
         **open_params

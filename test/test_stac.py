@@ -59,7 +59,7 @@ class StacTest(unittest.TestCase):
             "spacenet-buildings-collection/AOI_4_Shanghai_img3344"
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items_expected, data_id_items)
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
@@ -74,7 +74,7 @@ class StacTest(unittest.TestCase):
             "zanzibar-collection/znz001",
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items_expected, data_id_items)
         self.assertEqual(len(items), len(data_id_items))
 
         items, data_id_items = stac_instance.get_item_collection(
@@ -83,7 +83,7 @@ class StacTest(unittest.TestCase):
             time_range=["2019-04-28", "2019-04-30"]
         )
         self.assertIsInstance(items, ItemCollection)
-        self.assertEqual(len(items), 0)
+        self.assertEqual(0, len(items))
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
@@ -110,7 +110,7 @@ class StacTest(unittest.TestCase):
             "sentinel-2-l2a/S2A_32UNU_20200302_0_L2A"
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items_expected, data_id_items)
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
@@ -125,7 +125,7 @@ class StacTest(unittest.TestCase):
             "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
         ]
         for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
-            self.assertEqual(data_id, data_id_expected)
+            self.assertEqual(data_id_expected, data_id)
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args(self):
@@ -143,8 +143,8 @@ class StacTest(unittest.TestCase):
             ("zanzibar-collection:znz029:raster", {"title": "znz029_previewcog"})
         ]
         for (data_id_test, data_id) in zip(data_ids_test, data_ids):
-            self.assertEqual(data_id[0], data_id_test[0])
-            self.assertDictEqual(data_id[1], data_id_test[1])
+            self.assertEqual(data_id_test[0], data_id[0])
+            self.assertDictEqual(data_id_test[1], data_id[1])
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args_empty_args(self):
@@ -162,8 +162,8 @@ class StacTest(unittest.TestCase):
             ("zanzibar-collection:znz029:raster", {})
         ]
         for (data_id_test, data_id) in zip(data_ids_test, data_ids):
-            self.assertEqual(data_id[0], data_id_test[0])
-            self.assertDictEqual(data_id[1], data_id_test[1])
+            self.assertEqual(data_id_test[0], data_id[0])
+            self.assertDictEqual(data_id_test[1], data_id[1])
 
     @pytest.mark.vcr()
     def test_get_data_ids_from_items(self):
@@ -181,7 +181,7 @@ class StacTest(unittest.TestCase):
             "zanzibar-collection/znz029/raster"
         ]
         for (data_id_expected, data_id) in zip(data_ids_expected, data_ids):
-            self.assertEqual(data_id, data_id_expected)
+            self.assertEqual(data_id_expected, data_id)
 
     @pytest.mark.vcr()
     def test_open_data(self):

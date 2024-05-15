@@ -25,7 +25,6 @@ from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
 
 import pandas as pd
 import pystac
-from pystac import Catalog, Collection, ItemCollection, Item
 import pystac_client
 from shapely.geometry import box
 import xarray as xr
@@ -70,7 +69,7 @@ class Stac:
         # open_data(), which will be used to open the hrefs
 
     @property
-    def catalog(self) -> Catalog:
+    def catalog(self) -> pystac.Catalog:
         return self._catalog
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
@@ -87,7 +86,7 @@ class Stac:
 
     def get_item_collection(
         self, **open_params
-    ) -> Tuple[ItemCollection, List[str]]:
+    ) -> Tuple[pystac.ItemCollection, List[str]]:
         """Collects all items within the given STAC catalog
         using the supplied *open_params*.
 
@@ -108,11 +107,11 @@ class Stac:
                 self.catalog,
                 **open_params
             )
-            items = ItemCollection(items)
+            items = pystac.ItemCollection(items)
         item_data_ids = self.list_item_data_ids(items)
         return items, item_data_ids
 
-    def get_item_data_id(self, item: Item) -> str:
+    def get_item_data_id(self, item: pystac.Item) -> str:
         """Generates the data ID of an item, which follows the structure:
 
             `collection_id_0/../collection_id_n/item_id`
@@ -131,7 +130,7 @@ class Stac:
         id_parts.reverse()
         return self._data_id_delimiter.join(id_parts)
 
-    def get_item_data_ids(self, items: Iterable[Item]) -> Iterator[str]:
+    def get_item_data_ids(self, items: Iterable[pystac.Item]) -> Iterator[str]:
         """Generates the data IDs of an item collection,
         which follows the structure:
 
@@ -146,7 +145,7 @@ class Stac:
         for item in items:
             yield self.get_item_data_id(item)
 
-    def list_item_data_ids(self, items: Iterable[Item]) -> List[str]:
+    def list_item_data_ids(self, items: Iterable[pystac.Item]) -> List[str]:
         """Generates a list of data IDs for a given item collection,
         which follows the structure:
 
@@ -162,7 +161,7 @@ class Stac:
 
     def get_data_ids(
         self,
-        items: Iterable[Item] = None,
+        items: Iterable[pystac.Item] = None,
         item_data_ids: Iterable[str] = None,
         include_attrs: Container[str] = None,
         **open_params
@@ -213,7 +212,7 @@ class Stac:
 
     def get_assets_from_item(
         self,
-        item: Item,
+        item: pystac.Item,
         include_attrs: Container[str] = None,
         **open_params
     ) -> Iterator[str]:
@@ -268,10 +267,10 @@ class Stac:
 
     def _get_items_nonsearchable_catalog(
         self,
-        pystac_object: Union[Catalog, Collection],
+        pystac_object: Union[pystac.Catalog, pystac.Collection],
         recursive: bool = True,
         **open_params
-    ) -> Iterator[Tuple[Item, str]]:
+    ) -> Iterator[Tuple[pystac.Item, str]]:
         """Get the items of a catalog which does not implement the
         "STAC API - Item Search" conformance class.
 
@@ -318,7 +317,7 @@ class Stac:
                     # iterate through assets of item
                     yield item
 
-    def _is_datetime_in_range(self, item: Item, **open_params) -> bool:
+    def _is_datetime_in_range(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether the datetime or datetime range of an item
         intersects to the 'time_range' given by *open_params*.
 
@@ -352,7 +351,7 @@ class Stac:
             dt_data = pd.Timestamp(item.properties["datetime"]).to_pydatetime()
             return dt_start <= dt_data <= dt_end
 
-    def _do_bboxes_intersect(self, item: Item, **open_params) -> bool:
+    def _do_bboxes_intersect(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether two bounding boxes intersect.
 
         Args:
