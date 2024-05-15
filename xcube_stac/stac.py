@@ -19,10 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from datetime import datetime, timezone
+from datetime import timezone
 from itertools import chain
 from typing import Tuple, Iterable, Iterator, Union, List
 
+import pandas as pd
 import pystac
 from pystac import Catalog, Collection, ItemCollection, Item
 import pystac_client
@@ -242,22 +243,22 @@ class Stac:
             the datetime range of an item; otherwise False.
 
         """
-        dt_start = datetime.fromisoformat(
+        dt_start = pd.Timestamp(
             open_params["time_range"][0]
-        ).replace(tzinfo=timezone.utc)
-        dt_end = datetime.fromisoformat(
+        ).to_pydatetime().replace(tzinfo=timezone.utc)
+        dt_end = pd.Timestamp(
             open_params["time_range"][1]
-        ).replace(tzinfo=timezone.utc)
+        ).to_pydatetime().replace(tzinfo=timezone.utc)
         if item.properties["datetime"] == "null":
-            dt_start_data = datetime.fromisoformat(
+            dt_start_data = pd.Timestamp(
                 item.properties["start_datetime"]
-            )
-            dt_end_data = datetime.fromisoformat(
+            ).to_pydatetime()
+            dt_end_data = pd.Timestamp(
                 item.properties["end_datetime"]
-            )
+            ).to_pydatetime()
             return dt_end >= dt_start_data and dt_start <= dt_end_data
         else:
-            dt_data = datetime.fromisoformat(item.properties["datetime"])
+            dt_data = pd.Timestamp(item.properties["datetime"]).to_pydatetime()
             return dt_start <= dt_data <= dt_end
 
     def _do_bboxes_intersect(self, item: Item, **open_params) -> bool:

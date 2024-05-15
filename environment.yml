@@ -4,7 +4,8 @@ channels:
   - defaults
 dependencies:
   # Required
-  - python>=3.11
+  - python>=3.10
+  - pandas
   - pystac
   - pystac-client
   - xarray
