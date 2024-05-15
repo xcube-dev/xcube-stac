@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Tuple, Iterable, Iterator, Dict, Container, Union, List
+from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
 
 from pystac import ItemCollection, Item
 import xarray as xr
@@ -115,7 +115,7 @@ class StacDataStore(StacDataOpener, DataStore):
         resource identifiers are returned. The data resource identifiers
         follow the following structure:
 
-            `collection_id_0/../collection_id_n/item_id/asset`
+            `collection_id_0/../collection_id_n/item_id/_id`
 
         Args:
             data_type: If given, only data identifiers
@@ -123,9 +123,10 @@ class StacDataStore(StacDataOpener, DataStore):
                 all available data identifiers are returned. Defaults to None.
             items: collection of items for which data IDs are desired. If None,
                 items are collected by :meth:`Stac.get_item_collection`
-                using *open_params
+                using *open_params. Defaults to None.
             item_data_ids: data IDs corresponding to items. If None,
-                item_data_ids are collected by :meth:`Stac.get_item_data_ids`
+                item_data_ids are collected by :meth:`Stac.get_item_data_ids`.
+                Defaults to None.
             include_attrs: A sequence of names of attributes to be returned
                 for each dataset identifier. If given, the store will attempt
                 to provide the set of requested dataset attributes in addition
@@ -135,7 +136,7 @@ class StacDataStore(StacDataOpener, DataStore):
 
         Returns:
             An iterator over the identifiers (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store.
+            by *include_attrs* of data resources provided by this data store).
         """
         self._assert_valid_data_type(data_type)
         return self.stac.get_data_ids(

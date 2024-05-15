@@ -33,7 +33,8 @@ DATASET_OPENER_ID = f"dataset:zarr:{DATA_STORE_ID}"
 
 MIME_TYPES = [
     "application/zarr",
-    "image/tiff"
+    "image/tiff",
+    "application/octet-stream"
 ]
 
 STAC_SEARCH_ITEM_PARAMETERS = dict(

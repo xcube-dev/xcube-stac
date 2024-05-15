@@ -133,24 +133,18 @@ class StacTest(unittest.TestCase):
             self.url_nonsearchable,
             data_id_delimiter=":"
         )
-        iterator = stac_instance.get_data_ids(
+        data_ids = stac_instance.get_data_ids(
             include_attrs=["title"],
             collections="zanzibar-collection",
             variable_names=["raster"]
         )
-        data_ids_expected = [
-            "zanzibar-collection:znz001:raster",
-            "zanzibar-collection:znz029:raster"
+        data_ids_test = [
+            ("zanzibar-collection:znz001:raster", {"title": "znz001_previewcog"}),
+            ("zanzibar-collection:znz029:raster", {"title": "znz029_previewcog"})
         ]
-        attrss_expected = [
-            {"title": "znz001_previewcog"},
-            {"title": "znz029_previewcog"}
-        ]
-
-        iterable = zip(data_ids_expected, attrss_expected, iterator)
-        for (data_id_expected, attrs_expected, (data_id, attrs)) in iterable:
-            self.assertEqual(data_id, data_id_expected)
-            self.assertDictEqual(attrs, attrs_expected)
+        for (data_id_test, data_id) in zip(data_ids_test, data_ids):
+            self.assertEqual(data_id[0], data_id_test[0])
+            self.assertDictEqual(data_id[1], data_id_test[1])
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args_empty_args(self):
@@ -158,21 +152,18 @@ class StacTest(unittest.TestCase):
             self.url_nonsearchable,
             data_id_delimiter=":"
         )
-        iterator = stac_instance.get_data_ids(
+        data_ids = stac_instance.get_data_ids(
             include_attrs=["dtype"],
             collections="zanzibar-collection",
             variable_names=["raster"]
         )
-        data_ids_expected = [
-            "zanzibar-collection:znz001:raster",
-            "zanzibar-collection:znz029:raster"
+        data_ids_test = [
+            ("zanzibar-collection:znz001:raster", {}),
+            ("zanzibar-collection:znz029:raster", {})
         ]
-        attrss_expected = [{}, {}]
-
-        iterable = zip(data_ids_expected, attrss_expected, iterator)
-        for (data_id_expected, attrs_expected, (data_id, attrs)) in iterable:
-            self.assertEqual(data_id, data_id_expected)
-            self.assertDictEqual(attrs, attrs_expected)
+        for (data_id_test, data_id) in zip(data_ids_test, data_ids):
+            self.assertEqual(data_id[0], data_id_test[0])
+            self.assertDictEqual(data_id[1], data_id_test[1])
 
     @pytest.mark.vcr()
     def test_get_data_ids_from_items(self):
@@ -182,15 +173,14 @@ class StacTest(unittest.TestCase):
         items, _ = stac_instance.get_item_collection(
             collections="zanzibar-collection"
         )
-        iterator = stac_instance.get_data_ids(
+        data_ids = stac_instance.get_data_ids(
             items=items
         )
         data_ids_expected = [
             "zanzibar-collection/znz001/raster",
             "zanzibar-collection/znz029/raster"
         ]
-        iterable = zip(data_ids_expected, iterator)
-        for (data_id_expected, data_id) in iterable:
+        for (data_id_expected, data_id) in zip(data_ids_expected, data_ids):
             self.assertEqual(data_id, data_id_expected)
 
     @pytest.mark.vcr()

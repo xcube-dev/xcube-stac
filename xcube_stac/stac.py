@@ -21,7 +21,7 @@
 
 from datetime import timezone
 from itertools import chain
-from typing import Any, Dict, Tuple, Iterable, Iterator, Container, Union, List
+from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
 
 import pandas as pd
 import pystac
@@ -172,13 +172,15 @@ class Stac:
         resource identifiers are returned. The data resource identifiers
         follow the following structure:
 
-            `collection_id_0/../collection_id_n/item_id/asset`
+            `collection_id_0/../collection_id_n/item_id/asset_id`
 
         Args:
             items: collection of items for which data IDs are desired. If None,
-                items are collected by :meth:`get_item_collection` using *open_params
+                items are collected by :meth:`get_item_collection` using *open_params*
+                Defaults to None.
             item_data_ids: data IDs corresponding to items. If None,
                 item_data_ids are collected by :meth:`get_item_data_ids`
+                Defaults to None.
             include_attrs: A sequence of names of attributes to be returned
                 for each dataset identifier. If given, the store will attempt
                 to provide the set of requested dataset attributes in addition
@@ -188,7 +190,7 @@ class Stac:
 
         Yields:
             An iterator over the identifiers (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store.
+            by *include_attrs* of data resources provided by this data store).
         """
         if items is None:
             items, item_data_ids = self.get_item_collection(**open_params)
@@ -228,7 +230,7 @@ class Stac:
 
         Yields:
             An iterator over the assets (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store.
+            by *include_attrs* of data resources provided by this data store).
         """
         for k, v in item.assets.items():
             # test if asset is in variable_names and the media type is
