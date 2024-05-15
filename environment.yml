@@ -5,10 +5,14 @@ channels:
 dependencies:
   # Required
   - python>=3.10
+  - pandas
   - pystac
+  - pystac-client
   - xarray
   - xcube
   # for testing
   - black
   - flake8
   - pytest
+  - pytest-cov
+  - pytest-recording

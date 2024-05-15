@@ -19,15 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Tuple, Iterator, Dict, Container, Union
+from pystac import ItemCollection
+from typing import Any, Tuple, Iterator, Dict, Container, Union, List
 
-import logging
 import xarray as xr
-
-from xcube.util.jsonschema import (
-    JsonObjectSchema,
-    JsonStringSchema
-)
 from xcube.core.store import (
     DATASET_TYPE,
     DataDescriptor,
@@ -35,11 +30,14 @@ from xcube.core.store import (
     DataStoreError,
     DataTypeLike
 )
+from xcube.util.jsonschema import (
+    JsonObjectSchema,
+    JsonStringSchema
+)
+
 from .constants import DATASET_OPENER_ID
 from .opener import StacDataOpener
 from .stac import Stac
-
-_LOG = logging.getLogger("xcube")
 
 
 class StacDataStore(StacDataOpener, DataStore):
@@ -47,8 +45,6 @@ class StacDataStore(StacDataOpener, DataStore):
 
     Attributes:
         url: URL to STAC catalog
-        collection_prefix: Path of collection used as
-            entry point. Defaults to None.
         data_id_delimiter: Delimiter used to separate
             collections, items and assets from each other.
             Defaults to "/".
@@ -57,12 +53,10 @@ class StacDataStore(StacDataOpener, DataStore):
     def __init__(
         self,
         url: str,
-        collection_prefix: str = None,
         data_id_delimiter: str = "/"
     ):
         super().__init__(stac=Stac(
             url,
-            collection_prefix=collection_prefix,
             data_id_delimiter=data_id_delimiter
         ))
 
@@ -71,10 +65,6 @@ class StacDataStore(StacDataOpener, DataStore):
         stac_params = dict(
             url=JsonStringSchema(
                 title="URL to STAC catalog"
-            ),
-            collection_prefix=JsonStringSchema(
-                title="Collection prefix",
-                description="Path of collection used as entry point",
             ),
             data_id_delimiter=JsonStringSchema(
                 title="Data ID delimiter",
@@ -99,6 +89,18 @@ class StacDataStore(StacDataOpener, DataStore):
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         return self.get_data_types()
+
+    def get_item_collection(
+        self, **open_params
+    ) -> Tuple[ItemCollection, List[str]]:
+        """Collects all items within the given STAC catalog
+        using the supplied *open_params*.
+
+        Returns:
+            A tuple of the item collection containing all items
+            identified by *open_params* and data IDs corresponding to items
+        """
+        return self.stac.get_item_collection(**open_params)
 
     def get_data_ids(
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
@@ -151,12 +153,7 @@ class StacDataStore(StacDataOpener, DataStore):
         self._assert_valid_data_type(data_type)
         if data_id is not None and not self.has_data(data_id, data_type=data_type):
             raise DataStoreError(
-                f"Data resource {data_id!r}" f" is not available."
-            )
-        if data_type is not None and not DATASET_TYPE.is_super_type_of(data_type):
-            raise DataStoreError(
-                f"Data resource {data_id!r}" f" is not "
-                f"available as type {data_type!r}."
+                f"Data resource {data_id!r} is not available."
             )
         return (DATASET_OPENER_ID,)
 
@@ -252,7 +249,7 @@ class StacDataStore(StacDataOpener, DataStore):
             data_type: Data type that is to be checked.
 
         Returns:
-            True if *data_type* is supported by the store, otherwise False
+            bool: True if *data_type* is supported by the store, otherwise False
         """
         return data_type is None or DATASET_TYPE.is_super_type_of(data_type)
 
@@ -280,7 +277,7 @@ class StacDataStore(StacDataOpener, DataStore):
         *opener_id* is supported by the store.
 
         Args:
-            opener_id: Data opener identifier
+            opener_id (_type_): Data opener identifier
 
         Raises:
             DataStoreError: Error, if *opener_id* is not
@@ -288,7 +285,6 @@ class StacDataStore(StacDataOpener, DataStore):
         """
         if opener_id is not None and opener_id != DATASET_OPENER_ID:
             raise DataStoreError(
-                f"Data opener identifier must be"
-                f' "{DATASET_OPENER_ID}",'
-                f' but got "{opener_id}"'
+                f"Data opener identifier must be "
+                f'{DATASET_OPENER_ID!r}, but got {opener_id!r}'
             )

@@ -22,6 +22,7 @@
 import unittest
 
 from xcube.util.extension import ExtensionRegistry
+
 from xcube_stac.plugin import init_plugin
 
 

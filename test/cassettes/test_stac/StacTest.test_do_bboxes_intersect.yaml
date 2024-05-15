@@ -1,0 +1,150 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
+        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
+        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
+        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
+        \   }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '236'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Tue, 14 May 2024 09:08:52 GMT
+      ETag:
+      - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
+      Expires:
+      - Tue, 14 May 2024 09:13:52 GMT
+      Source-Age:
+      - '0'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '0'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 676dd71a8ff122cdec17e94a3ab8a088bd54d819
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - D0EE:148AA2:18A7844:1A1CD48:66432132
+      X-Served-By:
+      - cache-fra-eddf8230108-FRA
+      X-Timer:
+      - S1715677732.487448,VS0,VE143
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Connection:
+      - close
+      Host:
+      - raw.githubusercontent.com
+      User-Agent:
+      - Python-urllib/3.12
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
+        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
+        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
+        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
+        \   }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - close
+      Content-Length:
+      - '436'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Tue, 14 May 2024 09:08:52 GMT
+      ETag:
+      - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
+      Expires:
+      - Tue, 14 May 2024 09:13:52 GMT
+      Source-Age:
+      - '0'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - MISS
+      X-Cache-Hits:
+      - '0'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 36989abd8874aadf2e50450fc56334d4fe7c358e
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 6A22:312E01:32FCAB4:35F3692:66432A24
+      X-Served-By:
+      - cache-fra-eddf8230147-FRA
+      X-Timer:
+      - S1715677733.682246,VS0,VE177
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+version: 1

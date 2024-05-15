@@ -21,32 +21,47 @@
 
 import unittest
 
+import pytest
 from xcube.util.jsonschema import JsonObjectSchema
-from xcube_stac.store import StacDataOpener
+
 from xcube_stac.stac import Stac
+from xcube_stac.store import StacDataOpener
 
 
 class StacDataOpenerTest(unittest.TestCase):
 
-    def setUp(self) -> None:
-        stac_instance = Stac("url")
-        self.opener = StacDataOpener(stac_instance)
+    def setUp(self):
+        self.url = (
+            "https://raw.githubusercontent.com/stac-extensions/"
+            "label/main/examples/multidataset/catalog.json"
+        )
+        self.data_id = "zanzibar-collection/znz001/raster"
 
+    @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
-        schema = self.opener.get_open_data_params_schema()
+        opener = StacDataOpener(Stac(self.url))
+        schema = opener.get_open_data_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("variable_names", schema.properties)
+        self.assertIn("time_range", schema.properties)
+        self.assertIn("bbox", schema.properties)
+        self.assertIn("collections", schema.properties)
 
+    @pytest.mark.vcr()
     def test_open_data(self):
+        opener = StacDataOpener(Stac(self.url))
         with self.assertRaises(NotImplementedError) as cm:
-            self.opener.open_data("data_id1")
+            opener.open_data(self.data_id)
         self.assertEqual(
             "open_data() operation is not supported yet",
             f"{cm.exception}",
         )
 
+    @pytest.mark.vcr()
     def test_describe_data(self):
+        opener = StacDataOpener(Stac(self.url))
         with self.assertRaises(NotImplementedError) as cm:
-            self.opener.describe_data("data_id1")
+            opener.describe_data(self.data_id)
         self.assertEqual(
             "describe_data() operation is not supported yet",
             f"{cm.exception}",
