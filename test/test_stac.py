@@ -124,8 +124,7 @@ class StacTest(unittest.TestCase):
             "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
             "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
         ]
-        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
-            self.assertEqual(data_id_expected, data_id)
+        self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args(self):
@@ -138,13 +137,11 @@ class StacTest(unittest.TestCase):
             collections="zanzibar-collection",
             variable_names=["raster"]
         )
-        data_ids_test = [
+        data_ids_expected = [
             ("zanzibar-collection:znz001:raster", {"title": "znz001_previewcog"}),
             ("zanzibar-collection:znz029:raster", {"title": "znz029_previewcog"})
         ]
-        for (data_id_test, data_id) in zip(data_ids_test, data_ids):
-            self.assertEqual(data_id_test[0], data_id[0])
-            self.assertDictEqual(data_id_test[1], data_id[1])
+        self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args_empty_args(self):
@@ -157,13 +154,11 @@ class StacTest(unittest.TestCase):
             collections="zanzibar-collection",
             variable_names=["raster"]
         )
-        data_ids_test = [
+        data_ids_expected = [
             ("zanzibar-collection:znz001:raster", {}),
             ("zanzibar-collection:znz029:raster", {})
         ]
-        for (data_id_test, data_id) in zip(data_ids_test, data_ids):
-            self.assertEqual(data_id_test[0], data_id[0])
-            self.assertDictEqual(data_id_test[1], data_id[1])
+        self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_from_items(self):
@@ -180,8 +175,7 @@ class StacTest(unittest.TestCase):
             "zanzibar-collection/znz001/raster",
             "zanzibar-collection/znz029/raster"
         ]
-        for (data_id_expected, data_id) in zip(data_ids_expected, data_ids):
-            self.assertEqual(data_id_expected, data_id)
+        self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_open_data(self):

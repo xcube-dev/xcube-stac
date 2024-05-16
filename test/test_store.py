@@ -72,8 +72,7 @@ class StacDataStoreTest(unittest.TestCase):
             "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
             "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
         ]
-        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
-            self.assertEqual(data_id_expected, data_id)
+        self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args(self):
@@ -89,8 +88,7 @@ class StacDataStoreTest(unittest.TestCase):
             "zanzibar-collection:znz001:raster",
             "zanzibar-collection:znz029:raster"
         ]
-        for (data_id, data_id_expected) in zip(data_ids, data_ids_expected):
-            self.assertEqual(data_id_expected, data_id)
+        self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_has_data(self):

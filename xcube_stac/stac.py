@@ -166,19 +166,17 @@ class Stac:
         include_attrs: Container[str] = None,
         **open_params
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """Get an iterator over the data resource identifiers for the
-        given type *data_type*. If *data_type* is omitted, all data
-        resource identifiers are returned. The data resource identifiers
-        follow the following structure:
+        """Get an iterator over the data resource identifiers The data
+        resource identifiers follow the following structure:
 
             `collection_id_0/../collection_id_n/item_id/asset_id`
 
         Args:
             items: collection of items for which data IDs are desired. If None,
-                items are collected by :meth:`get_item_collection` using *open_params*
-                Defaults to None.
+                items are collected by :meth:`get_item_collection` using
+                *open_params*. Defaults to None.
             item_data_ids: data IDs corresponding to items. If None,
-                item_data_ids are collected by :meth:`get_item_data_ids`
+                item_data_ids are collected by :meth:`get_item_data_ids`.
                 Defaults to None.
             include_attrs: A sequence of names of attributes to be returned
                 for each dataset identifier. If given, the store will attempt
@@ -215,7 +213,7 @@ class Stac:
         item: pystac.Item,
         include_attrs: Container[str] = None,
         **open_params
-    ) -> Iterator[str]:
+    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         """Get all assets for a given item, which has a MIME data type
 
         Args:
