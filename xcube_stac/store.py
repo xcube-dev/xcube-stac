@@ -19,9 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from pystac import ItemCollection
-from typing import Any, Tuple, Iterator, Dict, Container, Union, List
+from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
 
+import pystac
 import xarray as xr
 from xcube.core.store import (
     DATASET_TYPE,
@@ -92,7 +92,7 @@ class StacDataStore(StacDataOpener, DataStore):
 
     def get_item_collection(
         self, **open_params
-    ) -> Tuple[ItemCollection, List[str]]:
+    ) -> Tuple[pystac.ItemCollection, List[str]]:
         """Collects all items within the given STAC catalog
         using the supplied *open_params*.
 
@@ -103,36 +103,53 @@ class StacDataStore(StacDataOpener, DataStore):
         return self.stac.get_item_collection(**open_params)
 
     def get_data_ids(
-        self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
+        self,
+        data_type: DataTypeLike = None,
+        items: Iterable[pystac.Item] = None,
+        item_data_ids: Iterable[str] = None,
+        include_attrs: Container[str] = None,
+        **open_params
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         """Get an iterator over the data resource identifiers for the
         given type *data_type*. If *data_type* is omitted, all data
-        resource identifiers are returned.
+        resource identifiers are returned. The data resource identifiers
+        follow the following structure:
+
+            `collection_id_0/../collection_id_n/item_id/asset_id`
 
         Args:
             data_type: If given, only data identifiers
                 that are available as this type are returned. If this is None,
                 all available data identifiers are returned. Defaults to None.
-            include_attrs: A sequence of names
-                of attributes to be returned for each dataset identifier.
-                If given, the store will attempt to provide the set of
-                requested dataset attributes in addition to the data ids.
+            items: collection of items for which data IDs are desired. If None,
+                items are collected by :meth:`Stac.get_item_collection`
+                using *open_params. Defaults to None.
+            item_data_ids: data IDs corresponding to items. If None,
+                item_data_ids are collected by :meth:`Stac.get_item_data_ids`.
                 Defaults to None.
-
-        Raises:
-            NotImplementedError:  Not implemented yet.
+            include_attrs: A sequence of names of attributes to be returned
+                for each dataset identifier. If given, the store will attempt
+                to provide the set of requested dataset attributes in addition
+                to the data ids. If no attributes are found, empty dictionary
+                is returned. So far only the attribute 'title' is supported.
+                Defaults to None.
 
         Returns:
             An iterator over the identifiers (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store.
+            by *include_attrs* of data resources provided by this data store).
         """
-        # ToDo: implement get_data_ids method.
-        raise NotImplementedError("get_data_ids() operation is not supported yet")
+        self._assert_valid_data_type(data_type)
+        return self.stac.get_data_ids(
+            items=items,
+            item_data_ids=item_data_ids,
+            include_attrs=include_attrs,
+            **open_params
+        )
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
-        # ToDo: get_data_ids() is needed.
-        #       Add this method after get_data_ids() is implemented.
-        raise NotImplementedError("has_data() operation is not supported yet")
+        if self._is_valid_data_type(data_type):
+            return data_id in self.list_data_ids()
+        return False
 
     def describe_data(self, data_id: str, **open_params) -> DataDescriptor:
         """Get the descriptor for the data resource given by *data_id*.
@@ -160,17 +177,6 @@ class StacDataStore(StacDataOpener, DataStore):
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
-        """Get the schema for the parameters passed as *open_params* to
-        :meth:`open_data`.
-
-        Args:
-            data_id: An identifier of data that is provided by this
-                store. Defaults to None.
-            opener_id: Data opener identifier. Defaults to None.
-
-        Returns:
-            The schema for the parameters in *open_params*.
-        """
         self._assert_valid_opener_id(opener_id)
         return super().get_open_data_params_schema(data_id)
 

@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 03 May 2024 15:25:29 GMT
+      - Fri, 10 May 2024 07:09:28 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Fri, 03 May 2024 15:30:29 GMT
+      - Fri, 10 May 2024 07:14:28 GMT
       Source-Age:
-      - '20'
+      - '5'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 0150f4b8fb35d2d65a21a67da291495921fa6c19
+      - f31a7b7cf924941255a352cd1457a3efdfb976f6
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - BACE:2E8F4B:1CE9F67:1E6FB08:6634FE90
+      - 5BAC:6DBF6:F7A385:105F80C:663DC822
       X-Served-By:
-      - cache-cph2320041-CPH
+      - cache-fra-eddf8230144-FRA
       X-Timer:
-      - S1714749929.285087,VS0,VE1
+      - S1715324969.917206,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 03 May 2024 15:25:29 GMT
+      - Fri, 10 May 2024 07:09:28 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Fri, 03 May 2024 15:30:29 GMT
+      - Fri, 10 May 2024 07:14:28 GMT
       Source-Age:
-      - '20'
+      - '5'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 8db1a2730a5dba7c9c1415ee2f04a8305228051c
+      - 5b8dd2955737a6c17d1d2ca6ed853f70aa005799
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - BACE:2E8F4B:1CE9F92:1E6FB29:6634FE90
+      - 5BAC:6DBF6:F7A39E:105F82D:663DC823
       X-Served-By:
-      - cache-cph2320059-CPH
+      - cache-fra-eddf8230031-FRA
       X-Timer:
-      - S1714749929.324218,VS0,VE1
+      - S1715324969.988517,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -203,13 +203,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 10 May 2024 07:09:30 GMT
+      - Fri, 10 May 2024 07:09:29 GMT
       ETag:
       - '"ddd340bc27c120dd2e43868bcde0510a326a6223dac1b0c47c05100e20d1397e"'
       Expires:
-      - Fri, 10 May 2024 07:14:30 GMT
+      - Fri, 10 May 2024 07:14:29 GMT
       Source-Age:
-      - '7'
+      - '5'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -223,15 +223,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 5272c529369f27d6125e2051d190def57879b522
+      - 7518c1590b56ad5b652afcb45cd5eeaba2598786
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
       - 27EE:3635F7:5B574A:611F18:663DC823
       X-Served-By:
-      - cache-fra-eddf8230092-FRA
+      - cache-fra-eddf8230145-FRA
       X-Timer:
-      - S1715324971.632284,VS0,VE1
+      - S1715324969.068276,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -287,13 +287,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 10 May 2024 07:09:30 GMT
+      - Fri, 10 May 2024 07:09:29 GMT
       ETag:
       - '"3263faca1f19517d02862736694703cc8519bed9344039cace8aa2c5f9379bcf"'
       Expires:
-      - Fri, 10 May 2024 07:14:30 GMT
+      - Fri, 10 May 2024 07:14:29 GMT
       Source-Age:
-      - '6'
+      - '5'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -307,15 +307,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - be44f60a2cc5b0cbfac23c9beb00cdbf01711326
+      - 9c331e7565f05fdb7ea8ac388b68aa75a8409dc9
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
       - E09A:28EC35:F3998B:101ED8D:663DC822
       X-Served-By:
-      - cache-fra-eddf8230135-FRA
+      - cache-fra-eddf8230121-FRA
       X-Timer:
-      - S1715324971.702297,VS0,VE1
+      - S1715324969.163934,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -387,13 +387,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 10 May 2024 07:09:30 GMT
+      - Fri, 10 May 2024 07:09:29 GMT
       ETag:
       - '"80ec96bc0acf2e604a03f109bd730426aa82e442d44946231cbe82a531b944f7"'
       Expires:
-      - Fri, 10 May 2024 07:14:30 GMT
+      - Fri, 10 May 2024 07:14:29 GMT
       Source-Age:
-      - '6'
+      - '5'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -407,15 +407,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 85676f8d1ccd7ad438e56963a537d58b4445864f
+      - e97ab3512577b2eb114cc3c89fff6e80ac949bc8
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
       - 3D42:208DB8:E6CE03:F4739A:663DC824
       X-Served-By:
-      - cache-fra-eddf8230032-FRA
+      - cache-fra-eddf8230113-FRA
       X-Timer:
-      - S1715324971.772990,VS0,VE1
+      - S1715324969.238517,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -487,13 +487,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 10 May 2024 07:09:30 GMT
+      - Fri, 10 May 2024 07:09:29 GMT
       ETag:
       - '"726870312c74ead0b10c3125045c301e8600929684c49447d64c2db72dc779fc"'
       Expires:
-      - Fri, 10 May 2024 07:14:30 GMT
+      - Fri, 10 May 2024 07:14:29 GMT
       Source-Age:
-      - '6'
+      - '5'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -507,303 +507,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 289840dae091ae2c85ee4bdb140da6fa037f2df7
+      - 7f11a08069ece623357e7a8f97d1e6c9d03c5c77
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
       - 25B8:28EC35:F399B5:101EDC3:663DC823
       X-Served-By:
-      - cache-fra-eddf8230039-FRA
+      - cache-fra-eddf8230096-FRA
       X-Timer:
-      - S1715324971.846867,VS0,VE1
-      X-XSS-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Connection:
-      - close
-      Host:
-      - raw.githubusercontent.com
-      User-Agent:
-      - Python-urllib/3.12
-    method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/spacenet-buildings/AOI_2_Vegas_img2636.json
-  response:
-    body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"AOI_2_Vegas_img2636\",\n  \"type\": \"Feature\",\n  \"bbox\":
-        [\n    -115.23556259985658,\n    36.12654269972625,\n    -115.23412932899998,\n
-        \   36.12829769972975\n  ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n
-        \   \"coordinates\": [\n      [\n        [\n          -115.23556259985658,\n
-        \         36.12654269972625\n        ],\n        [\n          -115.23556259985658,\n
-        \         36.12829769972975\n        ],\n        [\n          -115.23412932899998,\n
-        \         36.12829769972975\n        ],\n        [\n          -115.23412932899998,\n
-        \         36.12654269972625\n        ]\n      ]\n    ]\n  },\n  \"assets\":
-        {\n    \"labels\": {\n      \"title\": \"AOI_2_Vegas_img2636_label\",\n      \"href\":
-        \"https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/geojson_buildings/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img2636.geojson\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"AOI_2_Vegas_img2636_previewcog\",\n      \"href\": \"https://spacenet-dataset.s3.amazonaws.com/AOIs/AOI_2_Vegas/PS-MS/AOI_2_Vegas_PS-MS_COG.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   }\n  },\n  \"properties\": {\n    \"datetime\": \"2016-08-26T22:41:55Z\",\n
-        \   \"license\": \"CC-BY-SA-4.0\",\n    \"label:properties\": [\n      \"OBJECTID_1\"\n
-        \   ],\n    \"label:description\": \"building footprints manually labeled\",\n
-        \   \"label:tasks\": [\n      \"segmentation\"\n    ],\n    \"label:type\":
-        \"vector\",\n    \"label:methods\": [\n      \"manual\"\n    ],\n    \"version\":
-        \"1\",\n    \"label:classes\": [\n      {\n        \"name\": \"OBJECTID_1\",\n
-        \       \"classes\": [\n          \"0\"\n        ]\n      }\n    ],\n    \"label:overviews\":
-        [\n      {\n        \"property_key\": \"OBJECTID_1\",\n        \"counts\":
-        [\n          {\n            \"name\": \"0\",\n            \"count\": 27\n
-        \         }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\":
-        \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n      \"rel\":
-        \"parent\",\n      \"href\": \"collection.json\"\n    },\n    {\n      \"rel\":
-        \"collection\",\n      \"href\": \"collection.json\"\n    },\n    {\n      \"rel\":
-        \"source\",\n      \"href\": \"https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/PS-RGB/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img2636.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"OBJECTID_1\"\n      ]\n    }\n  ]\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
-      - '*'
-      Cache-Control:
-      - max-age=300
-      Connection:
-      - close
-      Content-Length:
-      - '2533'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
-      Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
-      Date:
-      - Fri, 10 May 2024 07:09:30 GMT
-      ETag:
-      - '"ce41324ef0ed1993e9becda97e8bd6e7186e24be35178941b14e6f895823f452"'
-      Expires:
-      - Fri, 10 May 2024 07:14:30 GMT
-      Source-Age:
-      - '6'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
-      Via:
-      - 1.1 varnish
-      X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '1'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - fa979648e6c6e0a70323efa0556a8be631e9ca4d
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - 464C:31B7DA:494AB4:4E5AED:663DC824
-      X-Served-By:
-      - cache-fra-eddf8230142-FRA
-      X-Timer:
-      - S1715324971.919472,VS0,VE3
-      X-XSS-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Connection:
-      - close
-      Host:
-      - raw.githubusercontent.com
-      User-Agent:
-      - Python-urllib/3.12
-    method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/spacenet-buildings/AOI_3_Paris_img1648.json
-  response:
-    body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"AOI_3_Paris_img1648\",\n  \"type\": \"Feature\",\n  \"bbox\":
-        [\n    2.288201399928881,\n    49.00383090002822,\n    2.289956399928177,\n
-        \   49.00558590002751\n  ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n
-        \   \"coordinates\": [\n      [\n        [\n          2.288201399928881,\n
-        \         49.00383090002822\n        ],\n        [\n          2.289956399928177,\n
-        \         49.00383090002822\n        ],\n        [\n          2.289956399928177,\n
-        \         49.00558590002751\n        ],\n        [\n          2.288201399928881,\n
-        \         49.00558590002751\n        ]\n      ]\n    ]\n  },\n  \"assets\":
-        {\n    \"labels\": {\n      \"title\": \"AOI_3_Paris_img1648_label\",\n      \"href\":
-        \"https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/geojson_buildings/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img1648.geojson\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"AOI_3_Paris_img1648_previewcog\",\n      \"href\": \"https://spacenet-dataset.s3.amazonaws.com/AOIs/AOI_3_Paris/PS-MS/AOI_3_Paris_PS-MS_COG.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   }\n  },\n  \"properties\": {\n    \"datetime\": \"2016-08-26T22:41:55Z\",\n
-        \   \"license\": \"CC-BY-SA-4.0\",\n    \"label:properties\": [\n      \"OBJECTID_1\"\n
-        \   ],\n    \"label:description\": \"building footprints manually labeled\",\n
-        \   \"label:tasks\": [\n      \"segmentation\"\n    ],\n    \"label:type\":
-        \"vector\",\n    \"label:methods\": [\n      \"manual\"\n    ],\n    \"version\":
-        \"1\",\n    \"label:classes\": [\n      {\n        \"name\": \"OBJECTID_1\",\n
-        \       \"classes\": [\n          \"0\"\n        ]\n      }\n    ],\n    \"label:overviews\":
-        [\n      {\n        \"property_key\": \"OBJECTID_1\",\n        \"counts\":
-        [\n          {\n            \"name\": \"0\",\n            \"count\": 39\n
-        \         }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\":
-        \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n      \"rel\":
-        \"parent\",\n      \"href\": \"collection.json\"\n    },\n    {\n      \"rel\":
-        \"collection\",\n      \"href\": \"collection.json\"\n    },\n    {\n      \"rel\":
-        \"source\",\n      \"href\": \"https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/PS-RGB/SN2_buildings_train_AOI_3_Paris_PS-RGB_img1648.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"OBJECTID_1\"\n      ]\n    }\n  ]\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
-      - '*'
-      Cache-Control:
-      - max-age=300
-      Connection:
-      - close
-      Content-Length:
-      - '2521'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
-      Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
-      Date:
-      - Fri, 10 May 2024 07:09:30 GMT
-      ETag:
-      - '"64208ffa092e62b99037d93a9865ac76f7b075e742e951fa01a6cc4318f9f91d"'
-      Expires:
-      - Fri, 10 May 2024 07:14:30 GMT
-      Source-Age:
-      - '6'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
-      Via:
-      - 1.1 varnish
-      X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '1'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - 7fab116d2b08550521b79e532a6f35ae033c02fa
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - 0968:2C39F8:F59BAF:103E592:663DC824
-      X-Served-By:
-      - cache-fra-eddf8230144-FRA
-      X-Timer:
-      - S1715324971.993086,VS0,VE1
-      X-XSS-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Connection:
-      - close
-      Host:
-      - raw.githubusercontent.com
-      User-Agent:
-      - Python-urllib/3.12
-    method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/spacenet-buildings/AOI_4_Shanghai_img3344.json
-  response:
-    body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"AOI_4_Shanghai_img3344\",\n  \"type\": \"Feature\",\n  \"bbox\":
-        [\n    121.66563419996653,\n    31.234725900085653,\n    121.66738919996575,\n
-        \   31.236480900084874\n  ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n
-        \   \"coordinates\": [\n      [\n        [\n          121.66563419996653,\n
-        \         31.234725900085653\n        ],\n        [\n          121.66563419996653,\n
-        \         31.236480900084874\n        ],\n        [\n          121.66738919996575,\n
-        \         31.236480900084874\n        ],\n        [\n          121.66738919996575,\n
-        \         31.234725900085653\n        ]\n      ]\n    ]\n  },\n  \"assets\":
-        {\n    \"labels\": {\n      \"title\": \"AOI_4_Shanghai_img3344_label\",\n
-        \     \"href\": \"https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_4_Shanghai/geojson_buildings/SN2_buildings_train_AOI_4_Shanghai_geojson_buildings_img3344.geojson\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"AOI_4_Shanghai_img3344_previewcog\",\n      \"href\": \"https://spacenet-dataset.s3.amazonaws.com/AOIs/AOI_4_Shanghai/PS-MS/AOI_4_Shanghai_PS-MS_COG.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   }\n  },\n  \"properties\": {\n    \"datetime\": \"2016-08-26T22:41:55Z\",\n
-        \   \"license\": \"CC-BY-SA-4.0\",\n    \"label:properties\": [\n      \"OBJECTID_1\"\n
-        \   ],\n    \"label:description\": \"building footprints manually labeled\",\n
-        \   \"label:tasks\": [\n      \"segmentation\"\n    ],\n    \"label:type\":
-        \"vector\",\n    \"label:methods\": [\n      \"manual\"\n    ],\n    \"version\":
-        \"1\",\n    \"label:classes\": [\n      {\n        \"name\": \"OBJECTID_1\",\n
-        \       \"classes\": [\n          \"0\"\n        ]\n      }\n    ],\n    \"label:overviews\":
-        [\n      {\n        \"property_key\": \"OBJECTID_1\",\n        \"counts\":
-        [\n          {\n            \"name\": \"0\",\n            \"count\": 8\n          }\n
-        \       ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"../catalog.json\"\n    },\n    {\n      \"rel\": \"parent\",\n
-        \     \"href\": \"collection.json\"\n    },\n    {\n      \"rel\": \"collection\",\n
-        \     \"href\": \"collection.json\"\n    },\n    {\n      \"rel\": \"source\",\n
-        \     \"href\": \"https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_4_Shanghai/PS-RGB/SN2_buildings_train_AOI_4_Shanghai_PS-RGB_img3344.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"OBJECTID_1\"\n      ]\n    }\n  ]\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
-      - '*'
-      Cache-Control:
-      - max-age=300
-      Connection:
-      - close
-      Content-Length:
-      - '2559'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
-      Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
-      Date:
-      - Fri, 10 May 2024 07:09:31 GMT
-      ETag:
-      - '"b013010acfbb8a7c7479cba0a48831d129ecd605ac31316930d1d2f804634dbc"'
-      Expires:
-      - Fri, 10 May 2024 07:14:31 GMT
-      Source-Age:
-      - '6'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
-      Via:
-      - 1.1 varnish
-      X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '1'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - bbcf3838fffa8dc3f9cb02a5168aef4a0205e8a9
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - 5BAC:6DBF6:F7A44E:105F8EA:663DC824
-      X-Served-By:
-      - cache-fra-eddf8230155-FRA
-      X-Timer:
-      - S1715324971.065512,VS0,VE1
+      - S1715324969.313457,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

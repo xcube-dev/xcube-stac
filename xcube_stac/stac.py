@@ -21,17 +21,19 @@
 
 from datetime import timezone
 from itertools import chain
-from typing import Tuple, Iterable, Iterator, Union, List
+from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
 
 import pandas as pd
 import pystac
-from pystac import Catalog, Collection, ItemCollection, Item
 import pystac_client
 from shapely.geometry import box
 import xarray as xr
 from xcube.util.jsonschema import JsonObjectSchema
 
-from .constants import STAC_SEARCH_ITEM_PARAMETERS
+from .constants import (
+    MIME_TYPES,
+    STAC_SEARCH_ITEM_PARAMETERS
+)
 
 
 class Stac:
@@ -67,7 +69,7 @@ class Stac:
         # open_data(), which will be used to open the hrefs
 
     @property
-    def catalog(self) -> Catalog:
+    def catalog(self) -> pystac.Catalog:
         return self._catalog
 
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
@@ -84,7 +86,7 @@ class Stac:
 
     def get_item_collection(
         self, **open_params
-    ) -> Tuple[ItemCollection, List[str]]:
+    ) -> Tuple[pystac.ItemCollection, List[str]]:
         """Collects all items within the given STAC catalog
         using the supplied *open_params*.
 
@@ -105,11 +107,11 @@ class Stac:
                 self.catalog,
                 **open_params
             )
-            items = ItemCollection(items)
+            items = pystac.ItemCollection(items)
         item_data_ids = self.list_item_data_ids(items)
         return items, item_data_ids
 
-    def get_item_data_id(self, item: Item) -> str:
+    def get_item_data_id(self, item: pystac.Item) -> str:
         """Generates the data ID of an item, which follows the structure:
 
             `collection_id_0/../collection_id_n/item_id`
@@ -128,7 +130,7 @@ class Stac:
         id_parts.reverse()
         return self._data_id_delimiter.join(id_parts)
 
-    def get_item_data_ids(self, items: Iterable[Item]) -> Iterator[str]:
+    def get_item_data_ids(self, items: Iterable[pystac.Item]) -> Iterator[str]:
         """Generates the data IDs of an item collection,
         which follows the structure:
 
@@ -143,7 +145,7 @@ class Stac:
         for item in items:
             yield self.get_item_data_id(item)
 
-    def list_item_data_ids(self, items: Iterable[Item]) -> List[str]:
+    def list_item_data_ids(self, items: Iterable[pystac.Item]) -> List[str]:
         """Generates a list of data IDs for a given item collection,
         which follows the structure:
 
@@ -156,6 +158,92 @@ class Stac:
             list of data IDs for a given item collection
         """
         return list(self.get_item_data_ids(items))
+
+    def get_data_ids(
+        self,
+        items: Iterable[pystac.Item] = None,
+        item_data_ids: Iterable[str] = None,
+        include_attrs: Container[str] = None,
+        **open_params
+    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
+        """Get an iterator over the data resource identifiers The data
+        resource identifiers follow the following structure:
+
+            `collection_id_0/../collection_id_n/item_id/asset_id`
+
+        Args:
+            items: collection of items for which data IDs are desired. If None,
+                items are collected by :meth:`get_item_collection` using
+                *open_params*. Defaults to None.
+            item_data_ids: data IDs corresponding to items. If None,
+                item_data_ids are collected by :meth:`get_item_data_ids`.
+                Defaults to None.
+            include_attrs: A sequence of names of attributes to be returned
+                for each dataset identifier. If given, the store will attempt
+                to provide the set of requested dataset attributes in addition
+                to the data ids. If no attributes are found, empty dictionary
+                is returned. So far only the attribute 'title' is supported.
+                Defaults to None.
+
+        Yields:
+            An iterator over the identifiers (and additional attributes defined
+            by *include_attrs* of data resources provided by this data store).
+        """
+        if items is None:
+            items, item_data_ids = self.get_item_collection(**open_params)
+        if item_data_ids is None:
+            item_data_ids = self.get_item_data_ids(items)
+
+        for (item, item_data_id) in zip(items, item_data_ids):
+            for asset in self.get_assets_from_item(
+                item, include_attrs, **open_params
+            ):
+                if include_attrs is not None:
+                    (asset, attrs) = asset
+                    data_id = (
+                        item_data_id + self._data_id_delimiter + asset
+                    )
+                    yield (data_id, attrs)
+                else:
+                    data_id = item_data_id + self._data_id_delimiter + asset
+                    yield data_id
+
+    def get_assets_from_item(
+        self,
+        item: pystac.Item,
+        include_attrs: Container[str] = None,
+        **open_params
+    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
+        """Get all assets for a given item, which has a MIME data type
+
+        Args:
+            item: item/feature
+            include_attrs: A sequence of names of attributes to be returned
+                for each dataset identifier. If given, the store will attempt
+                to provide the set of requested dataset attributes in addition
+                to the data ids. If no attributes are found, empty dictionary
+                is returned. So far only the attribute 'title' is supported.
+                Defaults to None.
+
+        Yields:
+            An iterator over the assets (and additional attributes defined
+            by *include_attrs* of data resources provided by this data store).
+        """
+        for k, v in item.assets.items():
+            # test if asset is in variable_names and the media type is
+            # one of the predefined MIME types
+            if (
+                k in open_params.get("variable_names", [k]) and
+                any(x in MIME_TYPES for x in v.media_type.split("; "))
+            ):
+                # TODO: support more attributes
+                if include_attrs is not None:
+                    attrs = {}
+                    if "title" in include_attrs and hasattr(v, "title"):
+                        attrs["title"] = v.title
+                    yield (k, attrs)
+                else:
+                    yield k
 
     def open_data(self, data_id: str, **open_params) -> xr.Dataset:
         """Open the data given by the data resource identifier *data_id*
@@ -177,10 +265,10 @@ class Stac:
 
     def _get_items_nonsearchable_catalog(
         self,
-        pystac_object: Union[Catalog, Collection],
+        pystac_object: Union[pystac.Catalog, pystac.Collection],
         recursive: bool = True,
         **open_params
-    ) -> Iterator[Tuple[Item, str]]:
+    ) -> Iterator[Tuple[pystac.Item, str]]:
         """Get the items of a catalog which does not implement the
         "STAC API - Item Search" conformance class.
 
@@ -227,7 +315,7 @@ class Stac:
                     # iterate through assets of item
                     yield item
 
-    def _is_datetime_in_range(self, item: Item, **open_params) -> bool:
+    def _is_datetime_in_range(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether the datetime or datetime range of an item
         intersects to the 'time_range' given by *open_params*.
 
@@ -261,7 +349,7 @@ class Stac:
             dt_data = pd.Timestamp(item.properties["datetime"]).to_pydatetime()
             return dt_start <= dt_data <= dt_end
 
-    def _do_bboxes_intersect(self, item: Item, **open_params) -> bool:
+    def _do_bboxes_intersect(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether two bounding boxes intersect.
 
         Args:

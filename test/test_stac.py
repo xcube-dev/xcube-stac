@@ -59,7 +59,7 @@ class StacTest(unittest.TestCase):
             "spacenet-buildings-collection/AOI_4_Shanghai_img3344"
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items_expected, data_id_items)
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
@@ -74,7 +74,7 @@ class StacTest(unittest.TestCase):
             "zanzibar-collection/znz001",
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items_expected, data_id_items)
         self.assertEqual(len(items), len(data_id_items))
 
         items, data_id_items = stac_instance.get_item_collection(
@@ -83,7 +83,7 @@ class StacTest(unittest.TestCase):
             time_range=["2019-04-28", "2019-04-30"]
         )
         self.assertIsInstance(items, ItemCollection)
-        self.assertEqual(len(items), 0)
+        self.assertEqual(0, len(items))
         self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
@@ -110,8 +110,83 @@ class StacTest(unittest.TestCase):
             "sentinel-2-l2a/S2A_32UNU_20200302_0_L2A"
         ]
         self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items, data_id_items_expected)
+        self.assertCountEqual(data_id_items_expected, data_id_items)
         self.assertEqual(len(items), len(data_id_items))
+
+    @pytest.mark.vcr()
+    def test_get_data_ids(self):
+        stac_instance = Stac(self.url_nonsearchable)
+        data_ids = stac_instance.get_data_ids()
+        data_ids_expected = [
+            "zanzibar-collection/znz001/raster",
+            "zanzibar-collection/znz029/raster",
+            "spacenet-buildings-collection/AOI_2_Vegas_img2636/raster",
+            "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
+            "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
+        ]
+        self.assertCountEqual(data_ids_expected, data_ids)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_optional_args(self):
+        stac_instance = Stac(
+            self.url_nonsearchable,
+            data_id_delimiter=":"
+        )
+        data_ids = stac_instance.get_data_ids(
+            include_attrs=["title"],
+            collections="zanzibar-collection",
+            variable_names=["raster"]
+        )
+        data_ids_expected = [
+            ("zanzibar-collection:znz001:raster", {"title": "znz001_previewcog"}),
+            ("zanzibar-collection:znz029:raster", {"title": "znz029_previewcog"})
+        ]
+        self.assertCountEqual(data_ids_expected, data_ids)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_optional_args_empty_args(self):
+        stac_instance = Stac(
+            self.url_nonsearchable,
+            data_id_delimiter=":"
+        )
+        data_ids = stac_instance.get_data_ids(
+            include_attrs=["dtype"],
+            collections="zanzibar-collection",
+            variable_names=["raster"]
+        )
+        data_ids_expected = [
+            ("zanzibar-collection:znz001:raster", {}),
+            ("zanzibar-collection:znz029:raster", {})
+        ]
+        self.assertCountEqual(data_ids_expected, data_ids)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_from_items(self):
+        stac_instance = Stac(
+            self.url_nonsearchable
+        )
+        items, _ = stac_instance.get_item_collection(
+            collections="zanzibar-collection"
+        )
+        data_ids = stac_instance.get_data_ids(
+            items=items
+        )
+        data_ids_expected = [
+            "zanzibar-collection/znz001/raster",
+            "zanzibar-collection/znz029/raster"
+        ]
+        self.assertCountEqual(data_ids_expected, data_ids)
+
+    @pytest.mark.vcr()
+    def test_open_data(self):
+        stac_instance = Stac(self.url_nonsearchable)
+        data_id = "zanzibar-collection/znz001/raster"
+        with self.assertRaises(NotImplementedError) as cm:
+            stac_instance.open_data(data_id)
+        self.assertEqual(
+            "open_data() operation is not supported yet",
+            f"{cm.exception}",
+        )
 
     @pytest.mark.vcr()
     def test_is_datetime_in_range(self):
