@@ -44,6 +44,7 @@ from xcube.util.jsonschema import (
 from .constants import (
     DATASET_OPENER_ID,
     MIME_TYPES,
+    STAC_OPEN_PARAMETERS,
     STAC_SEARCH_PARAMETERS
 )
 
@@ -108,9 +109,7 @@ class StacDataStore(DataStore):
         return self.get_data_types()
 
     def get_data_ids(
-        self,
-        data_type: DataTypeLike = None,
-        include_attrs: Container[str] = None
+        self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         self._assert_valid_data_type(data_type)
         for item in self._catalog.get_items(recursive=True):
@@ -140,22 +139,23 @@ class StacDataStore(DataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         self._assert_valid_opener_id(opener_id)
-        # ToDo: implement open_data method.
-        raise NotImplementedError(
-            "get_open_data_params_schema() operation is not supported yet"
+        # ToDo: Further parameters needs to be added for actual data access.
+        return JsonObjectSchema(
+            properties=dict(**STAC_OPEN_PARAMETERS),
+            required=[],
+            additional_properties=False
         )
 
     def open_data(
         self, data_id: str, opener_id: str = None, **open_params
     ) -> List[pystac.Asset]:
+        # ToDo: Actual access of the data needs to be implemented.
+        stac_schema = self.get_open_data_params_schema()
+        stac_schema.validate_instance(open_params)
         self._assert_valid_opener_id(opener_id)
         item = self._access_item(data_id)
-        assets = self._get_assets_from_item(item)
+        assets = self._get_assets_from_item(item, **open_params)
         return list(assets)
-
-        # ToDo: Actual access of the data needs to be implemented.
-        # stac_schema = self.get_open_data_params_schema()
-        # stac_schema.validate_instance(open_params)
 
     def describe_data(
         self, data_id: str, data_type: DataTypeLike = None
@@ -164,7 +164,7 @@ class StacDataStore(DataStore):
         item = self._access_item(data_id)
 
         # prepare metadata
-        if item.properties["datetime"] == "null":
+        if "start_datetime" in item.properties and "end_datetime" in item.properties:
             time_range = (
                 self._convert_datetime2str(
                     self._convert_str2datetime(item.properties["start_datetime"]).date()
@@ -173,12 +173,17 @@ class StacDataStore(DataStore):
                     self._convert_str2datetime(item.properties["end_datetime"]).date()
                 )
             )
-        else:
+        elif "datetime" in item.properties:
             time_range = (
                 self._convert_datetime2str(
                     self._convert_str2datetime(item.properties["datetime"]).date()
                 ),
                 None
+            )
+        else:
+            DataStoreError(
+                "Either 'start_datetime' and 'end_datetime' or 'datetime' "
+                "needs to be determine in the STAC item."
             )
         metadata = dict(
             bbox=item.bbox,
@@ -191,8 +196,6 @@ class StacDataStore(DataStore):
     ) -> Iterator[DatasetDescriptor]:
         self._assert_valid_data_type(data_type)
         if self._searchable:
-            # not used
-            search_params.pop("variable_names", None)
             # rewrite to "datetime"
             time_range = search_params.pop("time_range", None)
             if time_range:
@@ -365,7 +368,7 @@ class StacDataStore(DataStore):
         """
         dt_start = self._convert_str2datetime(open_params["time_range"][0])
         dt_end = self._convert_str2datetime(open_params["time_range"][1])
-        if item.properties["datetime"] == "null":
+        if "start_datetime" in item.properties and "end_datetime" in item.properties:
             dt_start_data = self._convert_str2datetime(
                 item.properties["start_datetime"]
             )
@@ -373,9 +376,14 @@ class StacDataStore(DataStore):
                 item.properties["end_datetime"]
             )
             return dt_end >= dt_start_data and dt_start <= dt_end_data
-        else:
+        elif "datetime" in item.properties:
             dt_data = self._convert_str2datetime(item.properties["datetime"])
             return dt_start <= dt_data <= dt_end
+        else:
+            DataStoreError(
+                "Either 'start_datetime' and 'end_datetime' or 'datetime' "
+                "needs to be determine in the STAC item."
+            )
 
     def _do_bboxes_intersect(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether two bounding boxes intersect.
@@ -426,10 +434,10 @@ class StacDataStore(DataStore):
             An iterator over the assets
         """
         for k, v in item.assets.items():
-            # test if asset is in variable_names and the media type is
+            # test if asset is in 'asset_names' and the media type is
             # one of the predefined MIME types
             if (
-                k in open_params.get("variable_names", [k]) and
+                k in open_params.get("asset_names", [k]) and
                 any(x in MIME_TYPES for x in v.media_type.split("; "))
             ):
                 v.extra_fields["id"] = k

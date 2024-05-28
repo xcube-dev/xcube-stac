@@ -38,14 +38,6 @@ MIME_TYPES = [
 ]
 
 STAC_SEARCH_PARAMETERS = dict(
-    variable_names=JsonArraySchema(
-        items=(JsonStringSchema(min_length=0)),
-        unique_items=True,
-        title="Variable names in xarray.Dataset",
-        description=(
-            "Variable names are defined by assets"
-        )
-    ),
     time_range=JsonArraySchema(
         items=[
             JsonDateSchema(nullable=True),
@@ -53,7 +45,7 @@ STAC_SEARCH_PARAMETERS = dict(
         ],
         title="Time Range",
         description=(
-            "Time range given as pair of start and stop dates.  "
+            "Time range given as pair of start and stop dates. "
             "Dates must be given using format 'YYYY-MM-DD'. "
             "Start and stop are inclusive."
         )
@@ -65,7 +57,7 @@ STAC_SEARCH_PARAMETERS = dict(
             JsonNumberSchema(),
             JsonNumberSchema(),
         ),
-        title="Bounding box [x1,y1, x2,y2] in geographical coordinates",
+        title="Bounding box [x1,y1,x2,y2] in geographical coordinates",
     ),
     collections=JsonArraySchema(
         items=(JsonStringSchema(min_length=0)),
@@ -73,6 +65,17 @@ STAC_SEARCH_PARAMETERS = dict(
         title="Collection IDs",
         description=(
             "Collection IDs to be included in the search request."
+        )
+    )
+)
+
+STAC_OPEN_PARAMETERS = dict(
+    asset_names=JsonArraySchema(
+        items=(JsonStringSchema(min_length=0)),
+        unique_items=True,
+        title="Names of assets",
+        description=(
+            "Names of assets which will be included in the data cube."
         )
     )
 )

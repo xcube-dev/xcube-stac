@@ -40,11 +40,20 @@ class StacDataStoreTest(unittest.TestCase):
             "https://raw.githubusercontent.com/stac-extensions/"
             "label/main/examples/multidataset/catalog.json"
         )
-        self.url_searchable = "https://earth-search.aws.element84.com/v1"
+        self.url_searchable = (
+            "https://earth-search.aws.element84.com/v1"
+        )
+        self.url_time_range = (
+            "https://s3.eu-central-1.wasabisys.com/stac/odse/catalog.json"
+        )
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_IW_GRDH_1SDV_20240527T112327_20240527T112352_054056_069290"
+            "S1A_EW_GRDM_1SDH_20240528T100847_20240528T100950_054070_06930C"
+        )
+        self.data_id_time_range = (
+            "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
+            "..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json"
         )
 
     @pytest.mark.vcr()
@@ -131,17 +140,26 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.get_open_data_params_schema()
-        self.assertEqual(
-            "get_open_data_params_schema() operation is not supported yet",
-            f"{cm.exception}",
-        )
+        schema = store.get_open_data_params_schema()
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("asset_names", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
+
+        # open data without open_params
         assets = store.open_data(self.data_id_nonsearchable)
+        self.assertTrue(1, len(assets))
+        self.assertEqual("znz001_previewcog", assets[0].title)
+        self.assertEqual(
+            ("https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/"
+             "0/5afeda152b6a08001185f11b.tif"),
+            assets[0].href
+        )
+
+        # open data with open_params
+        assets = store.open_data(self.data_id_nonsearchable, asset_names=["raster"])
         self.assertTrue(1, len(assets))
         self.assertEqual("znz001_previewcog", assets[0].title)
         self.assertEqual(
@@ -193,7 +211,6 @@ class StacDataStoreTest(unittest.TestCase):
     def test_search_data_searchable_catalog(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         descriptors = list(store.search_data(
-            variable_names="red",
             collections=["sentinel-2-l2a"],
             bbox=[9, 47, 10, 48],
             time_range=["2020-03-01", "2020-03-05"]
@@ -223,17 +240,63 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         self.assertEqual(12, len(descriptors))
-        for (d, data_id) in zip(descriptors, data_ids_expected):
+        for d in descriptors:
             self.assertIsInstance(d, DatasetDescriptor)
-            self.assertEqual(data_id, d.data_id)
+        self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
+
+    @pytest.mark.vcr()
+    def test_search_data_time_range(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
+        descriptors = list(store.search_data(
+            collections=["lcv_blue_landsat.glad.ard"],
+            bbox=[-10, 40, 40, 70],
+            time_range=["2000-01-01", "2000-04-01"]
+        ))
+
+        expected_descriptors = [
+            dict(
+                data_id=(
+                    "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999"
+                    ".12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02"
+                    "..2000.03.20.json"
+                ),
+                data_type="dataset",
+                bbox=[
+                    -23.550818268711048,
+                    24.399543432891665,
+                    63.352379098951936,
+                    77.69295185585888
+                ],
+                time_range=["1999-12-02", "2000-03-20"]
+            ),
+            dict(
+                data_id=(
+                    "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_2000"
+                    ".03.21..2000.06.24/lcv_blue_landsat.glad.ard_2000.03.21"
+                    "..2000.06.24.json"
+                ),
+                data_type="dataset",
+                bbox=[
+                    -23.550818268711048,
+                    24.399543432891665,
+                    63.352379098951936,
+                    77.69295185585888
+                ],
+                time_range=["2000-03-21", "2000-06-24"]
+            )
+        ]
+
+        self.assertEqual(2, len(descriptors))
+        for d in descriptors:
+            self.assertIsInstance(d, DatasetDescriptor)
+        self.assertEqual(expected_descriptors, [d.to_dict() for d in descriptors])
 
     @pytest.mark.vcr()
     def test_get_search_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         schema = store.get_search_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("variable_names", schema.properties)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
         self.assertIn("collections", schema.properties)
@@ -325,7 +388,6 @@ class StacDataStoreTest(unittest.TestCase):
 
     def test_access_item_failed(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        
         with self.assertRaises(requests.exceptions.HTTPError) as cm:
             store._access_item(self.data_id_nonsearchable.replace("z", "s"))
         self.assertIn(
