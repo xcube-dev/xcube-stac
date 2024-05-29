@@ -200,6 +200,11 @@ class StacDataStore(DataStore):
             `collection_id_0/../collection_id_n/item_id/asset_id`
 
         Args:
+            data_type: If given, only data identifiers
+                that are available as this type are returned. If this is None,
+                all available data identifiers are returned. Note that it is
+                not used yet, and a warning will be emitted if it is set to a
+                value other than the default. Defaults to None.
             items: collection of items for which data IDs are desired. If None,
                 items are collected by :meth:`get_item_collection` using
                 *open_params*. Defaults to None.
@@ -227,7 +232,7 @@ class StacDataStore(DataStore):
             item_data_ids = self.get_item_data_ids(items)
 
         for (item, item_data_id) in zip(items, item_data_ids):
-            for asset in self.get_assets_from_item(
+            for asset in self._get_assets_from_item(
                 item, include_attrs, **open_params
             ):
                 if include_attrs is not None:
@@ -244,43 +249,6 @@ class StacDataStore(DataStore):
         if self._is_valid_data_type(data_type):
             return data_id in self.list_data_ids()
         return False
-
-    def get_assets_from_item(
-        self,
-        item: pystac.Item,
-        include_attrs: Container[str] = None,
-        **open_params
-    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """Get all assets for a given item, which has a MIME data type
-
-        Args:
-            item: item/feature
-            include_attrs: A sequence of names of attributes to be returned
-                for each dataset identifier. If given, the store will attempt
-                to provide the set of requested dataset attributes in addition
-                to the data ids. If no attributes are found, empty dictionary
-                is returned. So far only the attribute 'title' is supported.
-                Defaults to None.
-
-        Yields:
-            An iterator over the assets (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store).
-        """
-        for k, v in item.assets.items():
-            # test if asset is in variable_names and the media type is
-            # one of the predefined MIME types
-            if (
-                k in open_params.get("variable_names", [k]) and
-                any(x in MIME_TYPES for x in v.media_type.split("; "))
-            ):
-                # TODO: support more attributes
-                if include_attrs is not None:
-                    attrs = {}
-                    if "title" in include_attrs and hasattr(v, "title"):
-                        attrs["title"] = v.title
-                    yield (k, attrs)
-                else:
-                    yield k
 
     def get_data_opener_ids(
         self, data_id: str = None, data_type: DataTypeLike = None
@@ -490,6 +458,43 @@ class StacDataStore(DataStore):
                             continue
                     # iterate through assets of item
                     yield item
+
+    def _get_assets_from_item(
+        self,
+        item: pystac.Item,
+        include_attrs: Container[str] = None,
+        **open_params
+    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
+        """Get all assets for a given item, which has a MIME data type
+
+        Args:
+            item: item/feature
+            include_attrs: A sequence of names of attributes to be returned
+                for each dataset identifier. If given, the store will attempt
+                to provide the set of requested dataset attributes in addition
+                to the data ids. If no attributes are found, empty dictionary
+                is returned. So far only the attribute 'title' is supported.
+                Defaults to None.
+
+        Yields:
+            An iterator over the assets (and additional attributes defined
+            by *include_attrs* of data resources provided by this data store).
+        """
+        for k, v in item.assets.items():
+            # test if asset is in variable_names and the media type is
+            # one of the predefined MIME types
+            if (
+                k in open_params.get("variable_names", [k]) and
+                any(x in MIME_TYPES for x in v.media_type.split("; "))
+            ):
+                # TODO: support more attributes
+                if include_attrs is not None:
+                    attrs = {}
+                    if "title" in include_attrs and hasattr(v, "title"):
+                        attrs["title"] = v.title
+                    yield (k, attrs)
+                else:
+                    yield k
 
     def _is_datetime_in_range(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether the datetime or datetime range of an item
