@@ -22,6 +22,7 @@
 from datetime import timezone
 from itertools import chain
 from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
+import warnings
 
 import pandas as pd
 import pystac
@@ -51,7 +52,7 @@ from .constants import (
 class StacDataStore(DataStore):
     """STAC implementation of the data store.
 
-    Attributes:
+    Args:
         url: URL to STAC catalog
         data_id_delimiter: Delimiter used to separate
             collections, items and assets from each other.
@@ -187,12 +188,13 @@ class StacDataStore(DataStore):
 
     def get_data_ids(
         self,
+        data_type: DataTypeLike = None,
         items: Iterable[pystac.Item] = None,
         item_data_ids: Iterable[str] = None,
         include_attrs: Container[str] = None,
         **open_params
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """Get an iterator over the data resource identifiers The data
+        """Get an iterator over the data resource identifiers. The data
         resource identifiers follow the following structure:
 
             `collection_id_0/../collection_id_n/item_id/asset_id`
@@ -215,6 +217,10 @@ class StacDataStore(DataStore):
             An iterator over the identifiers (and additional attributes defined
             by *include_attrs* of data resources provided by this data store).
         """
+        if data_type is not None:
+            warnings.warn(
+                f'data_type is set to {data_type}, but is not used.'
+            )
         if items is None:
             items, item_data_ids = self.get_item_collection(**open_params)
         if item_data_ids is None:
@@ -438,7 +444,7 @@ class StacDataStore(DataStore):
         pystac_object: Union[pystac.Catalog, pystac.Collection],
         recursive: bool = True,
         **open_params
-    ) -> Iterator[Tuple[pystac.Item, str]]:
+    ) -> Iterator[pystac.Item]:
         """Get the items of a catalog which does not implement the
         "STAC API - Item Search" conformance class.
 
