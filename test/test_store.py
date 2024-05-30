@@ -21,9 +21,12 @@
 
 import unittest
 
-from pystac import ItemCollection
 import pytest
-from xcube.core.store import DataStoreError
+import requests
+from xcube.core.store import (
+    DatasetDescriptor,
+    DataStoreError
+)
 from xcube.core.store.store import new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
@@ -38,7 +41,11 @@ class StacDataStoreTest(unittest.TestCase):
             "label/main/examples/multidataset/catalog.json"
         )
         self.url_searchable = "https://earth-search.aws.element84.com/v1"
-        self.data_id = "zanzibar-collection/znz001/raster"
+        self.data_id_nonsearchable = "zanzibar/znz001.json"
+        self.data_id_searchable = (
+            "collections/sentinel-1-grd/items/"
+            "S1A_IW_GRDH_1SDV_20240527T112327_20240527T112352_054056_069290"
+        )
 
     @pytest.mark.vcr()
     def test_get_data_store_params_schema(self):
@@ -46,7 +53,6 @@ class StacDataStoreTest(unittest.TestCase):
         schema = store.get_data_store_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("url", schema.properties)
-        self.assertIn("data_id_delimiter", schema.properties)
         self.assertIn("url", schema.required)
 
     @pytest.mark.vcr()
@@ -56,163 +62,47 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_get_data_types_for_data(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
+        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         self.assertEqual(
             ("dataset",),
-            store.get_data_types_for_data(self.data_id)
+            store.get_data_types_for_data(self.data_id_nonsearchable)
         )
-
-    @pytest.mark.vcr()
-    def test_get_item_collection(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        items, data_id_items = store.get_item_collection()
-        data_id_items_expected = [
-            "zanzibar-collection/znz001",
-            "zanzibar-collection/znz029",
-            "spacenet-buildings-collection/AOI_2_Vegas_img2636",
-            "spacenet-buildings-collection/AOI_3_Paris_img1648",
-            "spacenet-buildings-collection/AOI_4_Shanghai_img3344"
-        ]
-        self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items_expected, data_id_items)
-        self.assertEqual(len(items), len(data_id_items))
-
-    @pytest.mark.vcr()
-    def test_get_item_collection_open_params(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        items, data_id_items = store.get_item_collection(
-            collections="zanzibar-collection",
-            bbox=[39.28, -5.74, 39.31, -5.72],
-            time_range=["2019-04-23", "2019-04-24"]
-        )
-        data_id_items_expected = [
-            "zanzibar-collection/znz001",
-        ]
-        self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items_expected, data_id_items)
-        self.assertEqual(len(items), len(data_id_items))
-
-        items, data_id_items = store.get_item_collection(
-            collections="zanzibar-collection",
-            bbox=[39, -5., 41, -6],
-            time_range=["2019-04-28", "2019-04-30"]
-        )
-        self.assertIsInstance(items, ItemCollection)
-        self.assertEqual(0, len(items))
-        self.assertEqual(len(items), len(data_id_items))
-
-    @pytest.mark.vcr()
-    def test_get_item_collection_searchable_catalog(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
-        items, data_id_items = store.get_item_collection(
-            variable_names="red",
-            collections=["sentinel-2-l2a"],
-            bbox=[9, 47, 10, 48],
-            time_range=["2020-03-01", "2020-03-05"]
-        )
-        data_id_items_expected = [
-            "sentinel-2-l2a/S2A_32TMT_20200305_0_L2A",
-            "sentinel-2-l2a/S2A_32TNT_20200305_0_L2A",
-            "sentinel-2-l2a/S2A_32UMU_20200305_0_L2A",
-            "sentinel-2-l2a/S2A_32UNU_20200305_0_L2A",
-            "sentinel-2-l2a/S2A_32TMT_20200302_1_L2A",
-            "sentinel-2-l2a/S2A_32TMT_20200302_0_L2A",
-            "sentinel-2-l2a/S2A_32TNT_20200302_1_L2A",
-            "sentinel-2-l2a/S2A_32TNT_20200302_0_L2A",
-            "sentinel-2-l2a/S2A_32UMU_20200302_1_L2A",
-            "sentinel-2-l2a/S2A_32UMU_20200302_0_L2A",
-            "sentinel-2-l2a/S2A_32UNU_20200302_1_L2A",
-            "sentinel-2-l2a/S2A_32UNU_20200302_0_L2A"
-        ]
-        self.assertIsInstance(items, ItemCollection)
-        self.assertCountEqual(data_id_items_expected, data_id_items)
-        self.assertEqual(len(items), len(data_id_items))
 
     @pytest.mark.vcr()
     def test_get_data_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         data_ids = store.get_data_ids()
         data_ids_expected = [
-            "zanzibar-collection/znz001/raster",
-            "zanzibar-collection/znz029/raster",
-            "spacenet-buildings-collection/AOI_2_Vegas_img2636/raster",
-            "spacenet-buildings-collection/AOI_3_Paris_img1648/raster",
-            "spacenet-buildings-collection/AOI_4_Shanghai_img3344/raster"
+            "zanzibar/znz001.json",
+            "zanzibar/znz029.json",
+            "spacenet-buildings/AOI_2_Vegas_img2636.json",
+            "spacenet-buildings/AOI_3_Paris_img1648.json",
+            "spacenet-buildings/AOI_4_Shanghai_img3344.json"
         ]
         self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
-    def test_get_data_ids_optional_args(self):
-        store = new_data_store(
-            DATA_STORE_ID,
-            url=self.url_nonsearchable,
-            data_id_delimiter=":"
-        )
-        data_ids = store.get_data_ids(
-            include_attrs=["title"],
-            collections="zanzibar-collection",
-            variable_names=["raster"]
-        )
-        data_ids_expected = [
-            ("zanzibar-collection:znz001:raster", {"title": "znz001_previewcog"}),
-            ("zanzibar-collection:znz029:raster", {"title": "znz029_previewcog"})
+    def test_get_data_ids_include_attrs(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
+        include_attrs = [
+            "id", "bbox", "geometry", "properties", "links", "assets"
         ]
-        self.assertCountEqual(data_ids_expected, data_ids)
+        data_id, attrs = next(store.get_data_ids(include_attrs=include_attrs))
+        self.assertEqual(self.data_id_searchable, data_id)
+        self.assertCountEqual(include_attrs, list(attrs.keys()))
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args_empty_args(self):
-        store = new_data_store(
-            DATA_STORE_ID,
-            url=self.url_nonsearchable,
-            data_id_delimiter=":"
-        )
-        data_ids = store.get_data_ids(
-            include_attrs=["dtype"],
-            collections="zanzibar-collection",
-            variable_names=["raster"]
-        )
-        data_ids_expected = [
-            ("zanzibar-collection:znz001:raster", {}),
-            ("zanzibar-collection:znz029:raster", {})
-        ]
-        self.assertCountEqual(data_ids_expected, data_ids)
-
-    @pytest.mark.vcr()
-    def test_get_data_ids_from_items(self):
-        store = new_data_store(
-            DATA_STORE_ID,
-            url=self.url_nonsearchable
-        )
-        items, _ = store.get_item_collection(
-            collections="zanzibar-collection"
-        )
-        data_ids = store.get_data_ids(
-            items=items
-        )
-        data_ids_expected = [
-            "zanzibar-collection/znz001/raster",
-            "zanzibar-collection/znz029/raster"
-        ]
-        self.assertCountEqual(data_ids_expected, data_ids)
+        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
+        data_id, attrs = next(store.get_data_ids(include_attrs=["dtype"]))
+        self.assertEqual("zanzibar/znz001.json", data_id)
+        self.assertFalse(attrs)
 
     @pytest.mark.vcr()
     def test_has_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        self.assertTrue(store.has_data(self.data_id))
-
-    @pytest.mark.vcr()
-    def test_has_data_optional_args(self):
-        store = new_data_store(
-            DATA_STORE_ID,
-            url=self.url_nonsearchable,
-            data_id_delimiter=":"
-        )
-        self.assertTrue(store.has_data("zanzibar-collection:znz001:raster"))
-        self.assertFalse(store.has_data("zanzibar-collection/znz001/raster"))
-        self.assertFalse(store.has_data(
-            "zanzibar-collection:znz001:raster",
-            data_type=str
-        ))
+        self.assertTrue(store.has_data(self.data_id_nonsearchable))
+        self.assertFalse(store.has_data(self.data_id_nonsearchable, data_type=str))
 
     @pytest.mark.vcr()
     def test_get_data_opener_ids(self):
@@ -241,28 +131,33 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        schema = store.get_open_data_params_schema()
-        self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("variable_names", schema.properties)
-        self.assertIn("time_range", schema.properties)
-        self.assertIn("bbox", schema.properties)
-        self.assertIn("collections", schema.properties)
+        with self.assertRaises(NotImplementedError) as cm:
+            store.get_open_data_params_schema()
+        self.assertEqual(
+            "get_open_data_params_schema() operation is not supported yet",
+            f"{cm.exception}",
+        )
 
     @pytest.mark.vcr()
     def test_open_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.open_data(self.data_id)
+        assets = store.open_data(self.data_id_nonsearchable)
+        self.assertTrue(1, len(assets))
+        self.assertEqual("znz001_previewcog", assets[0].title)
         self.assertEqual(
-            "open_data() operation is not supported yet",
-            f"{cm.exception}",
+            ("https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/"
+             "0/5afeda152b6a08001185f11b.tif"),
+            assets[0].href
         )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         with self.assertRaises(DataStoreError) as cm:
-            store.open_data(self.data_id, opener_id="wrong_opener_id")
+            store.open_data(
+                self.data_id_nonsearchable,
+                opener_id="wrong_opener_id"
+            )
         self.assertEqual(
             "Data opener identifier must be 'dataset:zarr:stac', "
             "but got 'wrong_opener_id'",
@@ -270,34 +165,78 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     @pytest.mark.vcr()
-    def test_describe_data(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.describe_data(self.data_id)
-        self.assertEqual(
-            "describe_data() operation is not supported yet",
-            f"{cm.exception}",
-        )
-
-    @pytest.mark.vcr()
     def test_search_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.search_data()
-        self.assertEqual(
-            "search_data() operation is not supported yet",
-            f"{cm.exception}",
+        descriptors = list(store.search_data(
+            collections="zanzibar-collection",
+            bbox=[39.28, -5.74, 39.31, -5.72],
+            time_range=["2019-04-23", "2019-04-24"]
+        ))
+
+        expected_descriptor = dict(
+            data_id="zanzibar/znz001.json",
+            data_type="dataset",
+            bbox=[
+                39.28919876472999,
+                -5.743028283012867,
+                39.31302874892266,
+                -5.722212794937691
+            ],
+            time_range=["2019-04-23", None]
         )
+
+        self.assertEqual(1, len(descriptors))
+        self.assertIsInstance(descriptors[0], DatasetDescriptor)
+        self.assertEqual(expected_descriptor, descriptors[0].to_dict())
+
+    @pytest.mark.vcr()
+    def test_search_data_searchable_catalog(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
+        descriptors = list(store.search_data(
+            variable_names="red",
+            collections=["sentinel-2-l2a"],
+            bbox=[9, 47, 10, 48],
+            time_range=["2020-03-01", "2020-03-05"]
+        ))
+
+        prefix = "collections/sentinel-2-l2a/items/"
+        data_ids_expected = [
+            "S2A_32TMT_20200305_0_L2A", "S2A_32TNT_20200305_0_L2A",
+            "S2A_32UMU_20200305_0_L2A", "S2A_32UNU_20200305_0_L2A",
+            "S2A_32TMT_20200302_1_L2A", "S2A_32TMT_20200302_0_L2A",
+            "S2A_32TNT_20200302_1_L2A", "S2A_32TNT_20200302_0_L2A",
+            "S2A_32UMU_20200302_1_L2A", "S2A_32UMU_20200302_0_L2A",
+            "S2A_32UNU_20200302_1_L2A", "S2A_32UNU_20200302_0_L2A"
+        ]
+        data_ids_expected = [prefix + id for id in data_ids_expected]
+
+        expected_descriptor = dict(
+            data_id=data_ids_expected[0],
+            data_type="dataset",
+            bbox=[
+                7.662878883910047,
+                46.85818510451771,
+                9.130456971519783,
+                47.85361872923358
+            ],
+            time_range=["2020-03-05", None]
+        )
+
+        self.assertEqual(12, len(descriptors))
+        for (d, data_id) in zip(descriptors, data_ids_expected):
+            self.assertIsInstance(d, DatasetDescriptor)
+            self.assertEqual(data_id, d.data_id)
+        self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
     @pytest.mark.vcr()
     def test_get_search_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(NotImplementedError) as cm:
-            store.get_search_params_schema()
-        self.assertEqual(
-            "get_search_params_schema() operation is not supported yet",
-            f"{cm.exception}",
-        )
+        schema = store.get_search_params_schema()
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("variable_names", schema.properties)
+        self.assertIn("time_range", schema.properties)
+        self.assertIn("bbox", schema.properties)
+        self.assertIn("collections", schema.properties)
 
     @pytest.mark.vcr()
     def test_is_datetime_in_range(self):
@@ -383,3 +322,13 @@ class StacDataStoreTest(unittest.TestCase):
                     bbox=[west, south, east, north]
                 )
             )
+
+    def test_access_item_failed(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
+        
+        with self.assertRaises(requests.exceptions.HTTPError) as cm:
+            store._access_item(self.data_id_nonsearchable.replace("z", "s"))
+        self.assertIn(
+            "404 Client Error: Not Found for url",
+            f"{cm.exception}"
+        )

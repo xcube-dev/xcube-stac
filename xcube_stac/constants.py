@@ -37,7 +37,7 @@ MIME_TYPES = [
     "application/octet-stream"
 ]
 
-STAC_SEARCH_ITEM_PARAMETERS = dict(
+STAC_SEARCH_PARAMETERS = dict(
     variable_names=JsonArraySchema(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,

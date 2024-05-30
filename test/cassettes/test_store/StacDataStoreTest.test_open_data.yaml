@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:27 GMT
+      - Mon, 27 May 2024 15:28:26 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Fri, 24 May 2024 09:03:27 GMT
+      - Mon, 27 May 2024 15:33:26 GMT
       Source-Age:
-      - '26'
+      - '7'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - f34e0980e36c76b1fc21a0ecd90f45e3358561b3
+      - ea81503a099e86f0f4fcb59f9a4cc45dd0142cc6
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36D3:107820:22CCEEE:24A2ADC:665050BD
+      - 7F0B:19D255:E0B286:EDDD7E:66548E32
       X-Served-By:
-      - cache-fra-eddf8230133-FRA
+      - cache-fra-eddf8230036-FRA
       X-Timer:
-      - S1716541108.696285,VS0,VE1
+      - S1716823706.177790,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:27 GMT
+      - Mon, 27 May 2024 15:28:26 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Fri, 24 May 2024 09:03:27 GMT
+      - Mon, 27 May 2024 15:33:26 GMT
       Source-Age:
-      - '26'
+      - '7'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +133,119 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - b4d50e30196babc58432ffbc42360c1eeff3b209
+      - 2181419a4ee326364c74b703e94e8e36c4cdec3b
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36CD:107820:22CCF1B:24A2B05:665050BD
+      - 7F0B:19D255:E0B2A9:EDDDA5:66548E32
       X-Served-By:
-      - cache-fra-eddf8230046-FRA
+      - cache-fra-eddf8230098-FRA
       X-Timer:
-      - S1716541108.753686,VS0,VE2
+      - S1716823706.231201,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.31.0
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Mon, 27 May 2024 15:28:26 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Mon, 27 May 2024 15:33:26 GMT
+      Source-Age:
+      - '0'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '0'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - f93eb8a921afc9c14d9c2e2ac25f7169fe69f7af
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 5358:3EB50A:1402D4C:15239B8:66548E33
+      X-Served-By:
+      - cache-fra-eddf8230109-FRA
+      X-Timer:
+      - S1716823706.290914,VS0,VE137
       X-XSS-Protection:
       - 1; mode=block
     status:

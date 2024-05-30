@@ -19,19 +19,18 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from datetime import timezone
-from itertools import chain
-from typing import Any, Container, Dict, Iterable, Iterator, List, Tuple, Union
-import warnings
+import datetime
+import itertools
+import json
+from typing import Any, Container, Dict, Iterator, List, Tuple, Union
 
 import pandas as pd
 import pystac
 import pystac_client
+import requests
 from shapely.geometry import box
-import xarray as xr
 from xcube.core.store import (
     DATASET_TYPE,
-    DataDescriptor,
     DatasetDescriptor,
     DataStore,
     DataStoreError,
@@ -45,7 +44,7 @@ from xcube.util.jsonschema import (
 from .constants import (
     DATASET_OPENER_ID,
     MIME_TYPES,
-    STAC_SEARCH_ITEM_PARAMETERS
+    STAC_SEARCH_PARAMETERS
 )
 
 
@@ -62,10 +61,14 @@ class StacDataStore(DataStore):
     def __init__(
         self,
         url: str,
-        data_id_delimiter: str = "/"
     ):
         self._url = url
-        self._data_id_delimiter = data_id_delimiter
+        url_mod = url
+        if url_mod[-12:] == "catalog.json":
+            url_mod = url_mod[:-12]
+        if url_mod[-1] != "/":
+            url_mod += "/"
+        self._url_mod = url_mod
 
         # if STAC catalog is not searchable, pystac_client
         # falls back to pystac; to prevent warnings from pystac_client
@@ -86,13 +89,6 @@ class StacDataStore(DataStore):
         stac_params = dict(
             url=JsonStringSchema(
                 title="URL to STAC catalog"
-            ),
-            data_id_delimiter=JsonStringSchema(
-                title="Data ID delimiter",
-                description=(
-                    "Delimiter used to separate collections, "
-                    "items and assets from each other"
-                ),
             )
         )
         return JsonObjectSchema(
@@ -111,139 +107,19 @@ class StacDataStore(DataStore):
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         return self.get_data_types()
 
-    def get_item_collection(
-        self, **open_params
-    ) -> Tuple[pystac.ItemCollection, List[str]]:
-        """Collects all items within the given STAC catalog
-        using the supplied *open_params*.
-
-        Returns:
-            items: item collection containing all items identified by *open_params*
-            item_data_ids: data IDs corresponding to items
-        """
-        if self._searchable:
-            # not used
-            open_params.pop("variable_names", None)
-            # rewrite to "datetime"
-            time_range = open_params.pop("time_range", None)
-            if time_range:
-                open_params["datetime"] = "/".join(time_range)
-            items = self._catalog.search(**open_params).item_collection()
-        else:
-            items = self._get_items_nonsearchable_catalog(
-                self._catalog,
-                **open_params
-            )
-            items = pystac.ItemCollection(items)
-        item_data_ids = self.list_item_data_ids(items)
-        return items, item_data_ids
-
-    def get_item_data_id(self, item: pystac.Item) -> str:
-        """Generates the data ID of an item, which follows the structure:
-
-            `collection_id_0/../collection_id_n/item_id`
-
-        Args:
-            item: item/feature
-
-        Returns:
-            data ID of an item
-        """
-        id_parts = []
-        parent_item = item
-        while parent_item.STAC_OBJECT_TYPE != "Catalog":
-            id_parts.append(parent_item.id)
-            parent_item = parent_item.get_parent()
-        id_parts.reverse()
-        return self._data_id_delimiter.join(id_parts)
-
-    def get_item_data_ids(self, items: Iterable[pystac.Item]) -> Iterator[str]:
-        """Generates the data IDs of an item collection,
-        which follows the structure:
-
-            `collection_id_0/../collection_id_n/item_id`
-
-        Args:
-            items: item collection
-
-        Yields:
-            data ID of an item
-        """
-        for item in items:
-            yield self.get_item_data_id(item)
-
-    def list_item_data_ids(self, items: Iterable[pystac.Item]) -> List[str]:
-        """Generates a list of data IDs for a given item collection,
-        which follows the structure:
-
-            `collection_id_0/../collection_id_n/item_id`
-
-        Args:
-            items: item collection
-
-        Returns:
-            list of data IDs for a given item collection
-        """
-        return list(self.get_item_data_ids(items))
-
     def get_data_ids(
         self,
         data_type: DataTypeLike = None,
-        items: Iterable[pystac.Item] = None,
-        item_data_ids: Iterable[str] = None,
-        include_attrs: Container[str] = None,
-        **open_params
+        include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """Get an iterator over the data resource identifiers. The data
-        resource identifiers follow the following structure:
-
-            `collection_id_0/../collection_id_n/item_id/asset_id`
-
-        Args:
-            data_type: If given, only data identifiers
-                that are available as this type are returned. If this is None,
-                all available data identifiers are returned. Note that it is
-                not used yet, and a warning will be emitted if it is set to a
-                value other than the default. Defaults to None.
-            items: collection of items for which data IDs are desired. If None,
-                items are collected by :meth:`get_item_collection` using
-                *open_params*. Defaults to None.
-            item_data_ids: data IDs corresponding to items. If None,
-                item_data_ids are collected by :meth:`get_item_data_ids`.
-                Defaults to None.
-            include_attrs: A sequence of names of attributes to be returned
-                for each dataset identifier. If given, the store will attempt
-                to provide the set of requested dataset attributes in addition
-                to the data ids. If no attributes are found, empty dictionary
-                is returned. So far only the attribute 'title' is supported.
-                Defaults to None.
-
-        Yields:
-            An iterator over the identifiers (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store).
-        """
-        if data_type is not None:
-            warnings.warn(
-                f'data_type is set to {data_type}, but is not used.'
-            )
-        if items is None:
-            items, item_data_ids = self.get_item_collection(**open_params)
-        if item_data_ids is None:
-            item_data_ids = self.get_item_data_ids(items)
-
-        for (item, item_data_id) in zip(items, item_data_ids):
-            for asset in self._get_assets_from_item(
-                item, include_attrs, **open_params
-            ):
-                if include_attrs is not None:
-                    (asset, attrs) = asset
-                    data_id = (
-                        item_data_id + self._data_id_delimiter + asset
-                    )
-                    yield (data_id, attrs)
-                else:
-                    data_id = item_data_id + self._data_id_delimiter + asset
-                    yield data_id
+        self._assert_valid_data_type(data_type)
+        for item in self._catalog.get_items(recursive=True):
+            data_id = self._get_data_id_from_item(item)
+            if include_attrs is None:
+                yield data_id
+            else:
+                attrs = self._get_attrs_from_item(item, include_attrs)
+                yield (data_id, attrs)
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         if self._is_valid_data_type(data_type):
@@ -264,95 +140,81 @@ class StacDataStore(DataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         self._assert_valid_opener_id(opener_id)
-        return JsonObjectSchema(
-            properties=dict(**STAC_SEARCH_ITEM_PARAMETERS),
-            required=[],
-            additional_properties=False
+        # ToDo: implement open_data method.
+        raise NotImplementedError(
+            "get_open_data_params_schema() operation is not supported yet"
         )
 
     def open_data(
         self, data_id: str, opener_id: str = None, **open_params
-    ) -> xr.Dataset:
-        """Open the data given by the data resource identifier *data_id*
-        using the data opener identified by *opener_id* and
-        the supplied *open_params*.
-
-        Args:
-            data_id: An identifier of data that is provided by this
-                store.
-            opener_id: Data opener identifier. Defaults to None.
-
-        Returns:
-            A representation of the data resources identified
-            by *data_id* and *open_params*.
-        """
+    ) -> List[pystac.Asset]:
         self._assert_valid_opener_id(opener_id)
-        stac_schema = self.get_open_data_params_schema()
-        stac_schema.validate_instance(open_params)
-        # ToDo: implement open_data method.
-        raise NotImplementedError("open_data() operation is not supported yet")
+        item = self._access_item(data_id)
+        assets = self._get_assets_from_item(item)
+        return list(assets)
+
+        # ToDo: Actual access of the data needs to be implemented.
+        # stac_schema = self.get_open_data_params_schema()
+        # stac_schema.validate_instance(open_params)
 
     def describe_data(
-        self, data_id: str, **open_params
+        self, data_id: str, data_type: DataTypeLike = None
     ) -> DatasetDescriptor:
-        """Get the descriptor for the data resource given by *data_id*.
+        self._assert_valid_data_type(data_type)
+        item = self._access_item(data_id)
 
-        Args:
-            data_id: An identifier of data that is provided by this
-                store.
-
-        Raises:
-            NotImplementedError: Not implemented yet.
-
-        Returns:
-            Data descriptor containing meta data of
-            the data resources identified by *data_id*
-        """
-        # ToDo: implement describe_data method.
-        raise NotImplementedError("describe_data() operation is not supported yet")
+        # prepare metadata
+        if item.properties["datetime"] == "null":
+            time_range = (
+                self._convert_datetime2str(
+                    self._convert_str2datetime(item.properties["start_datetime"]).date()
+                ),
+                self._convert_datetime2str(
+                    self._convert_str2datetime(item.properties["end_datetime"]).date()
+                )
+            )
+        else:
+            time_range = (
+                self._convert_datetime2str(
+                    self._convert_str2datetime(item.properties["datetime"]).date()
+                ),
+                None
+            )
+        metadata = dict(
+            bbox=item.bbox,
+            time_range=time_range
+        )
+        return DatasetDescriptor(data_id, **metadata)
 
     def search_data(
         self, data_type: DataTypeLike = None, **search_params
-    ) -> Iterator[DataDescriptor]:
-        """Search this store for data resources. If *data_type* is given,
-        the search is restricted to data resources of that type.
-
-        Args:
-            data_type: Data type that is known to be
-                supported by this data store. Defaults to None.
-
-        Raises:
-            NotImplementedError: Not implemented yet.
-
-        Yields:
-            An iterator of data descriptors for the found data resources.
-        """
-        # ToDo: implement search_data method.
-        raise NotImplementedError("search_data() operation is not supported yet")
+    ) -> Iterator[DatasetDescriptor]:
+        self._assert_valid_data_type(data_type)
+        if self._searchable:
+            # not used
+            search_params.pop("variable_names", None)
+            # rewrite to "datetime"
+            time_range = search_params.pop("time_range", None)
+            if time_range:
+                search_params["datetime"] = "/".join(time_range)
+            items = self._catalog.search(**search_params).items()
+        else:
+            items = self._search_nonsearchable_catalog(
+                self._catalog,
+                **search_params
+            )
+        for item in items:
+            data_id = self._get_data_id_from_item(item)
+            yield self.describe_data(data_id, data_type=data_type)
 
     @classmethod
     def get_search_params_schema(
         cls, data_type: DataTypeLike = None
     ) -> JsonObjectSchema:
-        """Get the schema for the parameters that can be passed
-        as *search_params* to :meth:`search_data`. Parameters are
-        named and described by the properties of the returned JSON object schema.
-
-        Args:
-            data_type: Data type that is known to be
-                supported by this data store. Defaults to None.
-
-        Raises:
-            NotImplementedError: Not implemented yet.
-
-        Returns:
-            A JSON object schema whose properties describe this
-            store's search parameters.
-        """
-        # ToDo: implement get_search_params_schema in
-        #       combination with search_data method.
-        raise NotImplementedError(
-            "get_search_params_schema() operation is not supported yet"
+        return JsonObjectSchema(
+            properties=dict(**STAC_SEARCH_PARAMETERS),
+            required=[],
+            additional_properties=False
         )
 
     ##########################################################################
@@ -395,7 +257,7 @@ class StacDataStore(DataStore):
         *opener_id* is supported by the store.
 
         Args:
-            opener_id (_type_): Data opener identifier
+            opener_id: Data opener identifier
 
         Raises:
             DataStoreError: Error, if *opener_id* is not
@@ -407,11 +269,11 @@ class StacDataStore(DataStore):
                 f'{DATASET_OPENER_ID!r}, but got {opener_id!r}'
             )
 
-    def _get_items_nonsearchable_catalog(
+    def _search_nonsearchable_catalog(
         self,
         pystac_object: Union[pystac.Catalog, pystac.Collection],
         recursive: bool = True,
-        **open_params
+        **search_params
     ) -> Iterator[pystac.Item]:
         """Get the items of a catalog which does not implement the
         "STAC API - Item Search" conformance class.
@@ -429,72 +291,61 @@ class StacDataStore(DataStore):
 
         if (
             pystac_object.extra_fields["type"] != "Collection" or
-            pystac_object.id in open_params.get("collections", [pystac_object.id])
+            pystac_object.id in search_params.get("collections", [pystac_object.id])
         ):
             if recursive:
                 if any(True for _ in pystac_object.get_children()):
-                    iterators = (self._get_items_nonsearchable_catalog(
+                    iterators = (self._search_nonsearchable_catalog(
                         child,
                         recursive=True,
-                        **open_params
+                        **search_params
                     ) for child in pystac_object.get_children())
-                    yield from chain(*iterators)
+                    yield from itertools.chain(*iterators)
                 else:
-                    iterator = self._get_items_nonsearchable_catalog(
+                    iterator = self._search_nonsearchable_catalog(
                         pystac_object,
                         recursive=False,
-                        **open_params
+                        **search_params
                     )
                     yield from iterator
             else:
                 for item in pystac_object.get_items():
                     # test if item's bbox intersects with the desired bbox
-                    if "bbox" in open_params:
-                        if not self._do_bboxes_intersect(item, **open_params):
+                    if "bbox" in search_params:
+                        if not self._do_bboxes_intersect(item, **search_params):
                             continue
                     # test if item fit to desired time range
-                    if "time_range" in open_params:
-                        if not self._is_datetime_in_range(item, **open_params):
+                    if "time_range" in search_params:
+                        if not self._is_datetime_in_range(item, **search_params):
                             continue
                     # iterate through assets of item
                     yield item
 
-    def _get_assets_from_item(
-        self,
-        item: pystac.Item,
-        include_attrs: Container[str] = None,
-        **open_params
-    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        """Get all assets for a given item, which has a MIME data type
+    def _convert_str2datetime(self, datetime_str: str) -> datetime.datetime:
+        """Converting datetime string to a datetime object, which can handle
+        the ISO 8601 suffix 'Z'.
 
         Args:
-            item: item/feature
-            include_attrs: A sequence of names of attributes to be returned
-                for each dataset identifier. If given, the store will attempt
-                to provide the set of requested dataset attributes in addition
-                to the data ids. If no attributes are found, empty dictionary
-                is returned. So far only the attribute 'title' is supported.
-                Defaults to None.
+            datetime_str: datetime string
 
-        Yields:
-            An iterator over the assets (and additional attributes defined
-            by *include_attrs* of data resources provided by this data store).
+        Returns:
+            dt: datetime object
         """
-        for k, v in item.assets.items():
-            # test if asset is in variable_names and the media type is
-            # one of the predefined MIME types
-            if (
-                k in open_params.get("variable_names", [k]) and
-                any(x in MIME_TYPES for x in v.media_type.split("; "))
-            ):
-                # TODO: support more attributes
-                if include_attrs is not None:
-                    attrs = {}
-                    if "title" in include_attrs and hasattr(v, "title"):
-                        attrs["title"] = v.title
-                    yield (k, attrs)
-                else:
-                    yield k
+        dt = pd.Timestamp(datetime_str).to_pydatetime()
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=datetime.timezone.utc)
+        return dt
+
+    def _convert_datetime2str(self, dt: datetime.datetime) -> str:
+        """Converting datetime to ISO 8601 string.
+
+        Args:
+            dt: datetime object
+
+        Returns:
+            datetime string
+        """
+        return dt.isoformat()
 
     def _is_datetime_in_range(self, item: pystac.Item, **open_params) -> bool:
         """Determine whether the datetime or datetime range of an item
@@ -512,22 +363,18 @@ class StacDataStore(DataStore):
             the datetime range of an item; otherwise False.
 
         """
-        dt_start = pd.Timestamp(
-            open_params["time_range"][0]
-        ).to_pydatetime().replace(tzinfo=timezone.utc)
-        dt_end = pd.Timestamp(
-            open_params["time_range"][1]
-        ).to_pydatetime().replace(tzinfo=timezone.utc)
+        dt_start = self._convert_str2datetime(open_params["time_range"][0])
+        dt_end = self._convert_str2datetime(open_params["time_range"][1])
         if item.properties["datetime"] == "null":
-            dt_start_data = pd.Timestamp(
+            dt_start_data = self._convert_str2datetime(
                 item.properties["start_datetime"]
-            ).to_pydatetime()
-            dt_end_data = pd.Timestamp(
+            )
+            dt_end_data = self._convert_str2datetime(
                 item.properties["end_datetime"]
-            ).to_pydatetime()
+            )
             return dt_end >= dt_start_data and dt_start <= dt_end_data
         else:
-            dt_data = pd.Timestamp(item.properties["datetime"]).to_pydatetime()
+            dt_data = self._convert_str2datetime(item.properties["datetime"])
             return dt_start <= dt_data <= dt_end
 
     def _do_bboxes_intersect(self, item: pystac.Item, **open_params) -> bool:
@@ -543,3 +390,94 @@ class StacDataStore(DataStore):
             the bounding box given by *open_params*. Otherwise False.
         """
         return box(*item.bbox).intersects(box(*open_params["bbox"]))
+
+    def _access_item(self, data_id: str) -> pystac.Item:
+        """Access item for a given data ID.
+
+        Args:
+            data_id: An identifier of data that is provided by this
+                store.
+
+        Returns:
+            item object
+        """
+        response = requests.request(method="GET", url=self._url_mod + data_id)
+        if response.status_code == 200:
+            return pystac.Item.from_dict(
+                json.loads(response.text),
+                href=self._url + data_id,
+                root=self._catalog,
+                preserve_dict=False
+            )
+        else:
+            DataStoreError(response.raise_for_status())
+
+    def _get_assets_from_item(
+        self,
+        item: pystac.Item,
+        **open_params
+    ) -> Iterator[pystac.Asset]:
+        """Get all assets for a given item, which has a MIME data type
+
+        Args:
+            item: item/feature
+
+        Yields:
+            An iterator over the assets
+        """
+        for k, v in item.assets.items():
+            # test if asset is in variable_names and the media type is
+            # one of the predefined MIME types
+            if (
+                k in open_params.get("variable_names", [k]) and
+                any(x in MIME_TYPES for x in v.media_type.split("; "))
+            ):
+                v.extra_fields["id"] = k
+                yield v
+
+    def _get_data_id_from_item(self, item: pystac.Item) -> str:
+        """Extracts the data ID from an item object.
+
+        Args:
+            item: Item object
+
+        Returns:
+            data ID consisting the URL section of an item
+            following the catalog URL.
+        """
+        links = [link for link in item.links if link.rel == "self"]
+        assert len(links) == 1
+        return links[0].href.replace(self._url_mod, "")
+
+    def _get_attrs_from_item(
+            self, item: pystac.Item,
+            include_attrs: Container[str]
+    ) -> str:
+        """Extracts the desired attributes from an item object.
+
+        Args:
+            item: Item object
+            include_attrs: A sequence of names of attributes to be returned
+                for each dataset identifier. If given, the store will attempt
+                to provide the set of requested dataset attributes in addition
+                to the data ids. If no attributes are found, empty dictionary
+                is returned.
+
+        Returns:
+            dictionary containing the attributes defined by *include_attrs*
+            of data resources provided by this data store
+        """
+        attrs = {}
+        if "id" in include_attrs and hasattr(item, "id"):
+            attrs["id"] = item.id
+        if "bbox" in include_attrs and hasattr(item, "bbox"):
+            attrs["bbox"] = item.bbox
+        if "geometry" in include_attrs and hasattr(item, "geometry"):
+            attrs["geometry"] = item.geometry
+        if "properties" in include_attrs and hasattr(item, "properties"):
+            attrs["properties"] = item.properties
+        if "links" in include_attrs and hasattr(item, "links"):
+            attrs["links"] = item.links
+        if "assets" in include_attrs and hasattr(item, "assets"):
+            attrs["assets"] = item.assets
+        return attrs
