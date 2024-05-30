@@ -435,7 +435,8 @@ class StacDataStore(DataStore):
         """
         for k, v in item.assets.items():
             # test if asset is in 'asset_names' and the media type is
-            # one of the predefined MIME types
+            # one of the predefined MIME types; note that if asset_names
+            # is ot given all assets are returned matching the MINE types;
             if (
                 k in open_params.get("asset_names", [k]) and
                 any(x in MIME_TYPES for x in v.media_type.split("; "))
