@@ -11,139 +11,42 @@ interactions:
       User-Agent:
       - python-requests/2.31.0
     method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
+    uri: https://earth-search.aws.element84.com/v1
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
-        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
-        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
-        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
-        \   }\n  ]\n}"
+      string: '{"stac_version":"1.0.0","type":"Catalog","id":"earth-search-aws","title":"Earth
+        Search by Element 84","description":"A STAC API of public datasets on AWS","links":[{"rel":"self","type":"application/json","href":"https://earth-search.aws.element84.com/v1"},{"rel":"root","type":"application/json","href":"https://earth-search.aws.element84.com/v1"},{"rel":"conformance","type":"application/json","href":"https://earth-search.aws.element84.com/v1/conformance"},{"rel":"data","type":"application/json","href":"https://earth-search.aws.element84.com/v1/collections"},{"rel":"search","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/search","method":"POST"},{"rel":"aggregate","type":"application/json","href":"https://earth-search.aws.element84.com/v1/aggregate","method":"GET"},{"rel":"aggregations","type":"application/json","href":"https://earth-search.aws.element84.com/v1/aggregations"},{"rel":"service-desc","type":"application/vnd.oai.openapi","href":"https://earth-search.aws.element84.com/v1/api"},{"rel":"service-doc","type":"text/html","href":"https://earth-search.aws.element84.com/v1/api.html"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","href":"https://earth-search.aws.element84.com/v1/queryables"},{"rel":"server","type":"text/html","href":"https://stac-utils.github.io/stac-server/"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/sentinel-2-pre-c1-l2a"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/cop-dem-glo-30"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/naip"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/cop-dem-glo-90"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/landsat-c2-l2"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/sentinel-2-l2a"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/sentinel-2-l1c"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/sentinel-2-c1-l2a"},{"rel":"child","type":"application/geo+json","href":"https://earth-search.aws.element84.com/v1/collections/sentinel-1-grd"}],"conformsTo":["https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/ogcapi-features#fields","https://api.stacspec.org/v1.0.0/ogcapi-features#sort","https://api.stacspec.org/v1.0.0/ogcapi-features#query","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v0.3.0/aggregation","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"]}'
     headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
-      - '*'
-      Cache-Control:
-      - max-age=300
       Connection:
       - keep-alive
-      Content-Encoding:
-      - gzip
       Content-Length:
-      - '236'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      - '3369'
       Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
+      - application/json; charset=utf-8
       Date:
-      - Fri, 03 May 2024 15:25:28 GMT
-      ETag:
-      - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
-      Expires:
-      - Fri, 03 May 2024 15:30:28 GMT
-      Source-Age:
-      - '19'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Fri, 24 May 2024 08:58:07 GMT
       Via:
-      - 1.1 varnish
+      - 1.1 ee34f7af76b54660352564a750b131f6.cloudfront.net (CloudFront)
+      X-Amz-Cf-Id:
+      - A0FsFaGfpkpxbT8nepeIHwpx7nd6EfxwNblnrLpir0K0fIhIY8udhA==
+      X-Amz-Cf-Pop:
+      - TXL50-P5
+      X-Amzn-Trace-Id:
+      - Root=1-6650569f-6c66e2ed6603afbf4e2f7c11;Parent=339c964491289915;Sampled=0;lineage=9e2884e9:0
       X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '1'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - 4b7cb81caf229cb6f791d1a241a42082b2f53acb
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - BACE:2E8F4B:1CE9F67:1E6FB08:6634FE90
-      X-Served-By:
-      - cache-cph2320029-CPH
-      X-Timer:
-      - S1714749929.708700,VS0,VE1
-      X-XSS-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Connection:
-      - close
-      Host:
-      - raw.githubusercontent.com
-      User-Agent:
-      - Python-urllib/3.12
-    method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
-  response:
-    body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
-        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
-        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
-        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
-        \   }\n  ]\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
+      - Miss from cloudfront
+      access-control-allow-origin:
       - '*'
-      Cache-Control:
-      - max-age=300
-      Connection:
-      - close
-      Content-Length:
-      - '436'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
-      Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
-      Date:
-      - Fri, 03 May 2024 15:25:28 GMT
-      ETag:
-      - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
-      Expires:
-      - Fri, 03 May 2024 15:30:28 GMT
-      Source-Age:
-      - '19'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
-      Via:
-      - 1.1 varnish
-      X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '2'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - 9494a8411ae039c8600d90f07bbb4c747f7ab739
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - BACE:2E8F4B:1CE9F92:1E6FB29:6634FE90
-      X-Served-By:
-      - cache-cph2320033-CPH
-      X-Timer:
-      - S1714749929.737587,VS0,VE0
-      X-XSS-Protection:
-      - 1; mode=block
+      etag:
+      - W/"d29-QPs+H0wJLUX32EZKNgzG3k6wfQ8"
+      x-amz-apigw-id:
+      - YRJ49FVGvHcELkA=
+      x-amzn-Remapped-content-length:
+      - '3369'
+      x-amzn-RequestId:
+      - 2fbda55c-345a-4df1-b460-9ba3cf0add6d
+      x-powered-by:
+      - Express
     status:
       code: 200
       message: OK
