@@ -23,10 +23,8 @@ import unittest
 
 import pytest
 import requests
-from xcube.core.store import (
-    DatasetDescriptor,
-    DataStoreError
-)
+import xarray as xr
+from xcube.core.store import DatasetDescriptor, DataStoreError
 from xcube.core.store.store import new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
@@ -40,9 +38,7 @@ class StacDataStoreTest(unittest.TestCase):
             "https://raw.githubusercontent.com/stac-extensions/"
             "label/main/examples/multidataset/catalog.json"
         )
-        self.url_searchable = (
-            "https://earth-search.aws.element84.com/v1"
-        )
+        self.url_searchable = "https://earth-search.aws.element84.com/v1"
         self.url_time_range = (
             "https://s3.eu-central-1.wasabisys.com/stac/odse/catalog.json"
         )
@@ -73,8 +69,7 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_data_types_for_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         self.assertEqual(
-            ("dataset",),
-            store.get_data_types_for_data(self.data_id_nonsearchable)
+            ("dataset",), store.get_data_types_for_data(self.data_id_nonsearchable)
         )
 
     @pytest.mark.vcr()
@@ -86,16 +81,14 @@ class StacDataStoreTest(unittest.TestCase):
             "zanzibar/znz029.json",
             "spacenet-buildings/AOI_2_Vegas_img2636.json",
             "spacenet-buildings/AOI_3_Paris_img1648.json",
-            "spacenet-buildings/AOI_4_Shanghai_img3344.json"
+            "spacenet-buildings/AOI_4_Shanghai_img3344.json",
         ]
         self.assertCountEqual(data_ids_expected, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
-        include_attrs = [
-            "id", "bbox", "geometry", "properties", "links", "assets"
-        ]
+        include_attrs = ["id", "bbox", "geometry", "properties", "links", "assets"]
         data_id, attrs = next(store.get_data_ids(include_attrs=include_attrs))
         self.assertEqual(self.data_id_searchable, data_id)
         self.assertCountEqual(include_attrs, list(attrs.keys()))
@@ -116,10 +109,11 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_get_data_opener_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        self.assertEqual(
-            ("dataset:zarr:stac",),
-            store.get_data_opener_ids()
+        opener_ids = (
+            'dataset:geotiff:https', 'dataset:geotiff:s3', 'dataset:netcdf:https',
+            'dataset:netcdf:s3', 'dataset:zarr:https', 'dataset:zarr:s3'
         )
+        self.assertEqual(opener_ids, store.get_data_opener_ids())
 
     @pytest.mark.vcr()
     def test_get_data_opener_ids_optional_args(self):
@@ -145,51 +139,102 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("asset_names", schema.properties)
 
     @pytest.mark.vcr()
-    def test_open_data(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
+    def test_open_data_tiff(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
 
         # open data without open_params
-        assets = store.open_data(self.data_id_nonsearchable)
-        self.assertTrue(1, len(assets))
-        self.assertEqual("znz001_previewcog", assets[0].title)
-        self.assertEqual(
-            ("https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/"
-             "0/5afeda152b6a08001185f11b.tif"),
-            assets[0].href
+        ds = store.open_data(self.data_id_time_range)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            ["blue_p50", "blue_p25", "blue_p75", "qa_f"],
+            list(ds.data_vars)
+        )
+        self.assertCountEqual(
+            [151000, 188000], [ds.sizes["y"], ds.sizes["x"]]
+        )
+        self.assertCountEqual(
+            [512, 512],
+            [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+        )
+        self.assertDictEqual(
+            dict(
+                AREA_OR_POINT="Area",
+                _FillValue=0,
+                scale_factor=1.,
+                add_offset=0.,
+                grid_mapping="spatial_ref"
+            ),
+            ds.blue_p25.attrs
+
         )
 
         # open data with open_params
-        assets = store.open_data(self.data_id_nonsearchable, asset_names=["raster"])
-        self.assertTrue(1, len(assets))
-        self.assertEqual("znz001_previewcog", assets[0].title)
-        self.assertEqual(
-            ("https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/"
-             "0/5afeda152b6a08001185f11b.tif"),
-            assets[0].href
+        ds = store.open_data(self.data_id_time_range, asset_names=["blue_p25"])
+        self.assertCountEqual(["blue_p25"], list(ds.data_vars))
+        self.assertCountEqual(
+            [151000, 188000], [ds.sizes["y"], ds.sizes["x"]]
+        )
+        self.assertCountEqual(
+            [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+        )
+
+    # @pytest.mark.vcr()
+    def test_open_data_netcdf(self):
+        store = new_data_store(
+            DATA_STORE_ID,
+            url="https://planetarycomputer.microsoft.com/api/stac/v1")
+
+        # open data without open_params
+        ds = store.open_data(
+            "collections/nasa-nex-gddp-cmip6/items/CESM2-WACCM.ssp245.2100"
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            ["red", "green", "blue"],
+            list(ds.data_vars)
+        )
+        self.assertCountEqual(
+            [10980, 10980], [ds.sizes["y"], ds.sizes["x"]]
+        )
+        self.assertCountEqual(
+            [512, 512],
+            [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+        )
+        self.assertDictEqual(
+            dict(
+                AREA_OR_POINT="Area",
+                OVR_RESAMPLING_ALG="AVERAGE",
+                _FillValue=0,
+                scale_factor=1.,
+                add_offset=0.,
+                grid_mapping="spatial_ref"
+            ),
+            ds.red.attrs
+
         )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         with self.assertRaises(DataStoreError) as cm:
-            store.open_data(
-                self.data_id_nonsearchable,
-                opener_id="wrong_opener_id"
-            )
+            store.open_data(self.data_id_nonsearchable, opener_id="wrong_opener_id")
         self.assertEqual(
-            "Data opener identifier must be 'dataset:zarr:stac', "
-            "but got 'wrong_opener_id'",
+            "Data opener identifier must be one of ('dataset:geotiff:https', "
+            "'dataset:geotiff:s3', 'dataset:netcdf:https', 'dataset:netcdf:s3', "
+            "'dataset:zarr:https', 'dataset:zarr:s3'), but got 'wrong_opener_id'",
             f"{cm.exception}",
         )
 
     @pytest.mark.vcr()
     def test_search_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        descriptors = list(store.search_data(
-            collections="zanzibar-collection",
-            bbox=[39.28, -5.74, 39.31, -5.72],
-            time_range=["2019-04-23", "2019-04-24"]
-        ))
+        descriptors = list(
+            store.search_data(
+                collections="zanzibar-collection",
+                bbox=[39.28, -5.74, 39.31, -5.72],
+                time_range=["2019-04-23", "2019-04-24"],
+            )
+        )
 
         expected_descriptor = dict(
             data_id="zanzibar/znz001.json",
@@ -198,9 +243,9 @@ class StacDataStoreTest(unittest.TestCase):
                 39.28919876472999,
                 -5.743028283012867,
                 39.31302874892266,
-                -5.722212794937691
+                -5.722212794937691,
             ],
-            time_range=["2019-04-23", None]
+            time_range=["2019-04-23", None],
         )
 
         self.assertEqual(1, len(descriptors))
@@ -210,20 +255,28 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_search_data_searchable_catalog(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
-        descriptors = list(store.search_data(
-            collections=["sentinel-2-l2a"],
-            bbox=[9, 47, 10, 48],
-            time_range=["2020-03-01", "2020-03-05"]
-        ))
+        descriptors = list(
+            store.search_data(
+                collections=["sentinel-2-l2a"],
+                bbox=[9, 47, 10, 48],
+                time_range=["2020-03-01", "2020-03-05"],
+            )
+        )
 
         prefix = "collections/sentinel-2-l2a/items/"
         data_ids_expected = [
-            "S2A_32TMT_20200305_0_L2A", "S2A_32TNT_20200305_0_L2A",
-            "S2A_32UMU_20200305_0_L2A", "S2A_32UNU_20200305_0_L2A",
-            "S2A_32TMT_20200302_1_L2A", "S2A_32TMT_20200302_0_L2A",
-            "S2A_32TNT_20200302_1_L2A", "S2A_32TNT_20200302_0_L2A",
-            "S2A_32UMU_20200302_1_L2A", "S2A_32UMU_20200302_0_L2A",
-            "S2A_32UNU_20200302_1_L2A", "S2A_32UNU_20200302_0_L2A"
+            "S2A_32TMT_20200305_0_L2A",
+            "S2A_32TNT_20200305_0_L2A",
+            "S2A_32UMU_20200305_0_L2A",
+            "S2A_32UNU_20200305_0_L2A",
+            "S2A_32TMT_20200302_1_L2A",
+            "S2A_32TMT_20200302_0_L2A",
+            "S2A_32TNT_20200302_1_L2A",
+            "S2A_32TNT_20200302_0_L2A",
+            "S2A_32UMU_20200302_1_L2A",
+            "S2A_32UMU_20200302_0_L2A",
+            "S2A_32UNU_20200302_1_L2A",
+            "S2A_32UNU_20200302_0_L2A",
         ]
         data_ids_expected = [prefix + id for id in data_ids_expected]
 
@@ -234,9 +287,9 @@ class StacDataStoreTest(unittest.TestCase):
                 7.662878883910047,
                 46.85818510451771,
                 9.130456971519783,
-                47.85361872923358
+                47.85361872923358,
             ],
-            time_range=["2020-03-05", None]
+            time_range=["2020-03-05", None],
         )
 
         self.assertEqual(12, len(descriptors))
@@ -248,11 +301,13 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_search_data_time_range(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
-        descriptors = list(store.search_data(
-            collections=["lcv_blue_landsat.glad.ard"],
-            bbox=[-10, 40, 40, 70],
-            time_range=["2000-01-01", "2000-04-01"]
-        ))
+        descriptors = list(
+            store.search_data(
+                collections=["lcv_blue_landsat.glad.ard"],
+                bbox=[-10, 40, 40, 70],
+                time_range=["2000-01-01", "2000-04-01"],
+            )
+        )
 
         expected_descriptors = [
             dict(
@@ -266,9 +321,9 @@ class StacDataStoreTest(unittest.TestCase):
                     -23.550818268711048,
                     24.399543432891665,
                     63.352379098951936,
-                    77.69295185585888
+                    77.69295185585888,
                 ],
-                time_range=["1999-12-02", "2000-03-20"]
+                time_range=["1999-12-02", "2000-03-20"],
             ),
             dict(
                 data_id=(
@@ -281,10 +336,10 @@ class StacDataStoreTest(unittest.TestCase):
                     -23.550818268711048,
                     24.399543432891665,
                     63.352379098951936,
-                    77.69295185585888
+                    77.69295185585888,
                 ],
-                time_range=["2000-03-21", "2000-06-24"]
-            )
+                time_range=["2000-03-21", "2000-06-24"],
+            ),
         ]
 
         self.assertEqual(2, len(descriptors))
@@ -303,26 +358,24 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_is_datetime_in_range(self):
-        class Item1():
+        class Item1:
 
             def __init__(self) -> None:
-                self.properties = dict(
-                    datetime="2024-05-02T09:19:38.543000Z"
-                )
+                self.properties = dict(datetime="2024-05-02T09:19:38.543000Z")
 
-        class Item2():
+        class Item2:
 
             def __init__(self) -> None:
                 self.properties = dict(
                     datetime="null",
                     start_datetime="2023-12-02T09:19:38.543000Z",
-                    end_datetime="2024-05-02T09:19:38.543000Z"
+                    end_datetime="2024-05-02T09:19:38.543000Z",
                 )
 
         item1_test_paramss = [
             ("2024-04-30", "2024-05-03", self.assertTrue),
             ("2024-04-26", "2024-05-02", self.assertFalse),
-            ("2024-04-26", "2024-05-01", self.assertFalse)
+            ("2024-04-26", "2024-05-01", self.assertFalse),
         ]
 
         item2_test_paramss = [
@@ -334,32 +387,19 @@ class StacDataStoreTest(unittest.TestCase):
             ("2023-11-26", "2024-05-08", self.assertTrue),
         ]
 
-        store = new_data_store(
-            DATA_STORE_ID,
-            url=self.url_nonsearchable
-        )
+        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
 
         item1 = Item1()
-        for (time_start, time_end, fun) in item1_test_paramss:
-            fun(
-                store._is_datetime_in_range(
-                    item1,
-                    time_range=[time_start, time_end]
-                )
-            )
+        for time_start, time_end, fun in item1_test_paramss:
+            fun(store._is_datetime_in_range(item1, time_range=[time_start, time_end]))
 
         item1 = Item2()
-        for (time_start, time_end, fun) in item2_test_paramss:
-            fun(
-                store._is_datetime_in_range(
-                    item1,
-                    time_range=[time_start, time_end]
-                )
-            )
+        for time_start, time_end, fun in item2_test_paramss:
+            fun(store._is_datetime_in_range(item1, time_range=[time_start, time_end]))
 
     @pytest.mark.vcr()
     def test_do_bboxes_intersect(self):
-        class Item():
+        class Item:
 
             def __init__(self) -> None:
                 self.bbox = [0, 0, 1, 1]
@@ -369,28 +409,81 @@ class StacDataStoreTest(unittest.TestCase):
             (0.5, 0.5, 1.5, 1.5, self.assertTrue),
             (-0.5, -0.5, 0.5, 0.5, self.assertTrue),
             (1, 1, 2, 2, self.assertTrue),
-            (2, 2, 3, 3, self.assertFalse)
+            (2, 2, 3, 3, self.assertFalse),
         ]
 
-        store = new_data_store(
-            DATA_STORE_ID,
-            url=self.url_nonsearchable
-        )
+        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
 
         item = Item()
-        for (west, south, east, north, fun) in item_test_paramss:
-            fun(
-                store._do_bboxes_intersect(
-                    item,
-                    bbox=[west, south, east, north]
-                )
-            )
+        for west, south, east, north, fun in item_test_paramss:
+            fun(store._do_bboxes_intersect(item, bbox=[west, south, east, north]))
 
     def test_access_item_failed(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         with self.assertRaises(requests.exceptions.HTTPError) as cm:
             store._access_item(self.data_id_nonsearchable.replace("z", "s"))
-        self.assertIn(
-            "404 Client Error: Not Found for url",
-            f"{cm.exception}"
-        )
+        self.assertIn("404 Client Error: Not Found for url", f"{cm.exception}")
+
+    def test_decode_href(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
+        hrefs = [
+            "https://s3.amazonaws.com/bucket-name/filename",
+            "s3://bucket-name/filename",
+            "https://bucket-name.s3.amazonaws.com/filename",
+            "https://s3-us-east-1.amazonaws.com/bucket-name/filename",
+            "https://bucket-name.s3-us-east-1.amazonaws.com/filename",
+            "https://bucket-name.s3.us-east-1.amazonaws.com/filename",
+            (
+                "https://s3.eu-central-1.wasabisys.com/eumap/lcv/"
+                "lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12."
+                "02..2000.03.20_eumap_epsg3035_v1.1.tif"
+            ),
+            (
+                "https://download.geoservice.dlr.de/ENMAP/files/L0/2024/05/21/"
+                "ENMAP01-_____L0-DT0000074151_20240521T055623Z_002_V010402_"
+                "20240521T143405Z-QL_VNIR_COG.TIF"
+            ),
+            (
+                "https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/"
+                "55/X/EJ/2024/05/22/S2B_MSIL2A_20240522T032519_N0510_R018_"
+                "T55XEJ_20240522T060936.SAFE/GRANULE/L2A_T55XEJ_A037653_"
+                "20240522T032513/IMG_DATA/R60m/T55XEJ_20240522T032519_B01_60m.tif"
+            ),
+        ]
+
+        expected_fs_paths = [
+            (
+                "eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999"
+                ".12.02..2000.03.20_eumap_epsg3035_v1.1.tif"
+            ),
+            (
+                "ENMAP/files/L0/2024/05/21/ENMAP01-_____L0-DT0000074151_"
+                "20240521T055623Z_002_V010402_20240521T143405Z-QL_"
+                "VNIR_COG.TIF"
+            ),
+            (
+                "sentinel2-l2/55/X/EJ/2024/05/22/S2B_MSIL2A_20240522T032519"
+                "_N0510_R018_T55XEJ_20240522T060936.SAFE/"
+                "GRANULE/L2A_T55XEJ_A037653_20240522T032513/IMG_DATA/R60m/"
+                "T55XEJ_20240522T032519_B01_60m.tif"
+            ),
+        ]
+        expected_roots = [
+            "s3.eu-central-1.wasabisys.com",
+            "download.geoservice.dlr.de",
+            "sentinel2l2a01.blob.core.windows.net",
+        ]
+        expected_returns = [
+            ("s3", "bucket-name", "filename", None),
+            ("s3", "bucket-name", "filename", None),
+            ("s3", "bucket-name", "filename", None),
+            ("s3", "bucket-name", "filename", "us-east-1"),
+            ("s3", "bucket-name", "filename", "us-east-1"),
+            ("s3", "bucket-name", "filename", "us-east-1"),
+            ("https", expected_roots[0], expected_fs_paths[0], None),
+            ("https", expected_roots[1], expected_fs_paths[1], None),
+            ("https", expected_roots[2], expected_fs_paths[2], None),
+        ]
+
+        for expected, href in zip(expected_returns, hrefs):
+            self.assertEqual(expected, store._decode_href(href), msg=href)
