@@ -59,5 +59,9 @@ HTTP request. During development run
 pytest -v -s --record-mode new_episodes
 ```
 
-which saves the responses to `cassettes/**.yaml`. The testing can be then
-performed as usual.
+which saves the responses to `cassettes/**.yaml`. Note that `--record-mode new_episodes`
+overwrites all cassettes. If the user only wants to write cassettes which are not saved
+already, `--record-mode once` can be used.
+[pytest-recording](https://pypi.org/project/pytest-recording/) supports all records modes
+given by [VCR.py](https://vcrpy.readthedocs.io/en/latest/usage.html#record-modes).
+After recording the cassettes, testing can be then performed as usual.

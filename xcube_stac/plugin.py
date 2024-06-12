@@ -19,16 +19,10 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from xcube.constants import (
-    EXTENSION_POINT_DATA_OPENERS,
-    EXTENSION_POINT_DATA_STORES
-)
+from xcube.constants import EXTENSION_POINT_DATA_STORES
 from xcube.util import extension
 
-from .constants import (
-    DATASET_OPENER_ID,
-    DATA_STORE_ID
-)
+from .constants import DATA_STORE_ID
 
 
 def init_plugin(ext_registry: extension.ExtensionRegistry):
@@ -38,11 +32,4 @@ def init_plugin(ext_registry: extension.ExtensionRegistry):
         point=EXTENSION_POINT_DATA_STORES,
         name=DATA_STORE_ID,
         description="STAC DataStore",
-    )
-    # xcube DataOpener extensions
-    ext_registry.add_extension(
-        loader=extension.import_component("xcube_stac.store:StacDatasetOpener"),
-        point=EXTENSION_POINT_DATA_OPENERS,
-        name=DATASET_OPENER_ID,
-        description="xarray.Dataset from STAC API",
     )
