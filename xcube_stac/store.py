@@ -155,7 +155,7 @@ class StacDataStore(DataStore):
             )
             if opener_id is not None:
                 if len(opener_ids) != 1 and opener_ids[0] != opener_id:
-                    DataStoreError(
+                    raise DataStoreError(
                         f"The data ID {data_id} can be opened by the "
                         f"data opener {opener_ids}, but 'opener_id' "
                         f"is set to {opener_id}."
@@ -210,7 +210,7 @@ class StacDataStore(DataStore):
                 None,
             )
         else:
-            DataStoreError(
+            raise DataStoreError(
                 "Either 'start_datetime' and 'end_datetime' or 'datetime' "
                 "needs to be determine in the STAC item."
             )
@@ -403,7 +403,7 @@ class StacDataStore(DataStore):
             dt_data = self._convert_str2datetime(item.properties["datetime"])
             return dt_start <= dt_data <= dt_end
         else:
-            DataStoreError(
+            raise DataStoreError(
                 "Either 'start_datetime' and 'end_datetime' or 'datetime' "
                 "needs to be determined in the STAC item."
             )
@@ -444,7 +444,7 @@ class StacDataStore(DataStore):
                 preserve_dict=False,
             )
         else:
-            DataStoreError(response.raise_for_status())
+            raise DataStoreError(response.raise_for_status())
 
     def _get_assets_from_item(
         self,
@@ -585,13 +585,13 @@ class StacDataStore(DataStore):
 
         if root is not None:
             if re.search(AWS_REGEX_BUCKET_NAME, root) is None:
-                DataStoreError(
+                raise DataStoreError(
                     f"Bucket name '{root}' extracted from the href {href} "
                     "does not follow the AWS S3 bucket naming rules."
                 )
         if region_name is not None:
             if region_name not in AWS_REGION_NAMES:
-                DataStoreError(
+                raise DataStoreError(
                     f"Region name '{region_name}' extracted from the "
                     "href {href} is not supported by AWS S3"
                 )
@@ -641,7 +641,7 @@ class StacDataStore(DataStore):
                 ds_asset = self._store_https.open_data(
                     fs_path, opener_id=opener_id_asset[0], **open_params
                 )
-            if protocol == "s3":
+            elif protocol == "s3":
                 if self._store_s3 is None:
                     self._initialize_new_s3_data_store(root, region_name)
                 else:
@@ -662,6 +662,8 @@ class StacDataStore(DataStore):
                 ds_asset = self._store_s3.open_data(
                     fs_path, opener_id=opener_id_asset[1], **open_params
                 )
+            else:
+                raise DataStoreError("Only 's3' and 'https' protocols are supported.")
 
             for varname, da in ds_asset.data_vars.items():
                 if len(ds_asset) == 1:
