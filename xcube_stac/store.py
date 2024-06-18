@@ -44,6 +44,7 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
+from .opener import HttpsNetcdfDataOpener, HttpsTiffDataOpener, HttpsZarrDataOpener
 from .constants import (
     AWS_REGEX_BUCKET_NAME,
     AWS_REGION_NAMES,
@@ -59,9 +60,6 @@ class StacDataStore(DataStore):
 
     Args:
         url: URL to STAC catalog
-        data_id_delimiter: Delimiter used to separate
-            collections, items and assets from each other.
-            Defaults to "/".
     """
 
     def __init__(
@@ -102,7 +100,7 @@ class StacDataStore(DataStore):
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         stac_params = dict(url=JsonStringSchema(title="URL to STAC catalog"))
         return JsonObjectSchema(
-            description=("Describes the parameters of the xcube data store 'stac'."),
+            description="Describes the parameters of the xcube data store 'stac'.",
             properties=stac_params,
             required=["url"],
             additional_properties=False,
@@ -125,7 +123,7 @@ class StacDataStore(DataStore):
                 yield data_id
             else:
                 attrs = self._get_attrs_from_item(item, include_attrs)
-                yield (data_id, attrs)
+                yield data_id, attrs
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         if self._is_valid_data_type(data_type):
@@ -177,7 +175,6 @@ class StacDataStore(DataStore):
     def open_data(
         self, data_id: str, opener_id: str = None, **open_params
     ) -> xr.Dataset:
-        # ToDo: Actual access of the data needs to be implemented.
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
         self._assert_valid_opener_id(opener_id)
@@ -422,7 +419,7 @@ class StacDataStore(DataStore):
         """
         return box(*item.bbox).intersects(box(*open_params["bbox"]))
 
-    def _access_item(self, data_id: str) -> pystac.Item:
+    def _access_item(self, data_id: str) -> Union[pystac.Item, str]:
         """Access item for a given data ID.
 
         Args:
@@ -488,7 +485,7 @@ class StacDataStore(DataStore):
 
     def _get_attrs_from_item(
         self, item: pystac.Item, include_attrs: Container[str]
-    ) -> str:
+    ) -> Dict[str, Any]:
         """Extracts the desired attributes from an item object.
 
         Args:
@@ -550,22 +547,22 @@ class StacDataStore(DataStore):
         if re.search(r"^https://s3\.amazonaws\.com/.{3,63}/", href) is not None:
             tmp = href[8:].split("/")
             root = tmp[1]
-            fs_path = ("/").join(tmp[2:])
+            fs_path = "/".join(tmp[2:])
         elif re.search(r"^s3://.{3,63}/", href) is not None:
             tmp = href[5:].split("/")
             root = tmp[0]
-            fs_path = ("/").join(tmp[1:])
+            fs_path = "/".join(tmp[1:])
         elif re.search(r"^https://.{3,63}\.s3\.amazonaws\.com/", href) is not None:
             tmp = href[8:].split("/")
             root = tmp[0][:-17]
-            fs_path = ("/").join(tmp[1:])
+            fs_path = "/".join(tmp[1:])
         elif (
             re.search(r"^https://s3-.{9,14}\.amazonaws\.com/.{3,63}/", href) is not None
         ):
             tmp = href[8:].split("/")
             region_name = tmp[0][3:-14]
             root = tmp[1]
-            fs_path = ("/").join(tmp[2:])
+            fs_path = "/".join(tmp[2:])
         elif (
             re.search(r"^https://.{3,63}\.s3-.{9,14}\.amazonaws\.com/", href)
             is not None
@@ -573,7 +570,7 @@ class StacDataStore(DataStore):
             tmp = href[8:].split("/")
             region_name = tmp[0].split(".s3-")[-1][:-14]
             root = tmp[0].replace(".s3-" + region_name + ".amazonaws.com", "")
-            fs_path = ("/").join(tmp[1:])
+            fs_path = "/".join(tmp[1:])
         elif (
             re.search(r"^https://.{3,63}\.s3\..{9,14}\.amazonaws\.com/", href)
             is not None
@@ -636,11 +633,9 @@ class StacDataStore(DataStore):
                 href = asset.href
             (protocol, root, fs_path, region_name) = self._decode_href(href)
             if protocol == "https":
-                if self._store_https is None:
-                    self._store_https = new_data_store("https", root=root)
-                ds_asset = self._store_https.open_data(
-                    fs_path, opener_id=opener_id_asset[0], **open_params
-                )
+                uri = protocol + "://" + root + fs_path
+                opener = self._get_https_opener_id(opener_id)
+                opener.open_data(data_id=uri, **open_params)
             elif protocol == "s3":
                 if self._store_s3 is None:
                     self._initialize_new_s3_data_store(root, region_name)
@@ -686,3 +681,20 @@ class StacDataStore(DataStore):
         )
         self._store_s3_root = root
         self._store_s3_region_name = region_name
+
+    def _get_https_opener_id(
+        self, opener_id: str
+    ) -> type[HttpsNetcdfDataOpener | HttpsTiffDataOpener | HttpsZarrDataOpener]:
+        data_format = opener_id.split(":")[1]
+        if data_format == "netcdf":
+            opener = HttpsNetcdfDataOpener
+        elif data_format == "geotiff":
+            opener = HttpsTiffDataOpener
+        elif data_format == "zarr":
+            opener = HttpsZarrDataOpener
+        else:
+            raise DataStoreError(
+                f"The opener IDs {DATASET_OPENER_ID} are supported, but {opener_id} is given."
+            )
+
+        return opener
