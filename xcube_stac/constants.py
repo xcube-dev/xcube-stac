@@ -19,8 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
 
-import numpy as np
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonDateSchema,
@@ -30,20 +30,31 @@ from xcube.util.jsonschema import (
 
 
 DATA_STORE_ID = "stac"
+LOG = logging.getLogger("xcube.stac")
 
-MAP_MIME_TYP_DATAOPENER_ID = {
-    "application/netcdf": ("dataset:netcdf:https", "dataset:netcdf:s3"),
-    "application/x-netcdf": ("dataset:netcdf:https", "dataset:netcdf:s3"),
-    "application/vnd+zarr": ("dataset:zarr:https", "dataset:zarr:s3"),
-    "application/zarr": ("dataset:zarr:https", "dataset:zarr:s3"),
-    "image/jp2": ("dataset:geotiff:https", "dataset:geotiff:s3"),
-    "image/tiff": ("dataset:geotiff:https", "dataset:geotiff:s3"),
+MAP_MIME_TYP_FORMAT = {
+    "application/netcdf": "netcdf",
+    "application/x-netcdf": "netcdf",
+    "application/vnd+zarr": "zarr",
+    "application/zarr": "zarr",
+    "image/jp2": "geotiff",
+    "image/tiff": "geotiff",
 }
-DATASET_OPENER_ID = []
-for vals in MAP_MIME_TYP_DATAOPENER_ID.values():
-    for val in vals:
-        DATASET_OPENER_ID.append(val)
-DATASET_OPENER_ID = tuple(np.unique(DATASET_OPENER_ID))
+
+DATA_OPENER_IDS = (
+    "dataset:netcdf:https",
+    "dataset:zarr:https",
+    "dataset:geotiff:https",
+    "mldataset:geotiff:https",
+    "dataset:levels:https",
+    "mldataset:levels:https",
+    "dataset:netcdf:s3",
+    "dataset:zarr:s3",
+    "dataset:geotiff:s3",
+    "mldataset:geotiff:s3",
+    "dataset:levels:s3",
+    "mldataset:levels:s3",
+)
 
 STAC_SEARCH_PARAMETERS = dict(
     time_range=JsonArraySchema(
@@ -71,7 +82,7 @@ STAC_SEARCH_PARAMETERS = dict(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,
         title="Collection IDs",
-        description=("Collection IDs to be included in the search request."),
+        description="Collection IDs to be included in the search request.",
     ),
 )
 
@@ -80,48 +91,6 @@ STAC_OPEN_PARAMETERS = dict(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,
         title="Names of assets",
-        description=("Names of assets which will be included in the data cube."),
+        description="Names of assets which will be included in the data cube.",
     )
 )
-
-# Bucket naming rules:
-# https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
-AWS_REGEX_BUCKET_NAME = (
-    r"(?!^([0-9]{1,3}\.){3}[0-9]{1,3}$)"
-    r"(?!(^xn--|^sthree-|^sthree-configurator|"
-    r".+--ol-s3$|.+-s3alias$))"
-    r"^[a-z0-9][a-z0-9.-]{1,61}[a-z0-9]$"
-)
-# Region names: https://docs.aws.amazon.com/general/latest/gr/s3.html
-AWS_REGION_NAMES = [
-    "us-east-1",
-    "us-east-2",
-    "us-west-1",
-    "us-west-1",
-    "af-south-1",
-    "ap-east-1",
-    "ap-south-1",
-    "ap-south-2",
-    "ap-southeast-1",
-    "ap-southeast-2",
-    "ap-southeast-3",
-    "ap-southeast-4",
-    "ap-northeast-1",
-    "ap-northeast-2",
-    "ap-northeast-3",
-    "ca-central-1",
-    "eu-central-2",
-    "ca-west-1",
-    "eu-central-1",
-    "eu-west-1",
-    "eu-west-2",
-    "eu-west-3",
-    "eu-south-1",
-    "eu-south-2",
-    "eu-north-1",
-    "il-central-1",
-    "me-south-1",
-    "sa-east-1",
-    "us-gov-east-1",
-    "us-gov-east-1",
-]

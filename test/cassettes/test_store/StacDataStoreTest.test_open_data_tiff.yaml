@@ -416,17 +416,19 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Jun 2024 06:58:51 GMT
+      - Mon, 01 Jul 2024 13:47:23 GMT
       ETag:
       - '"326fbfb3eeb064cf4c2092261381fb89"'
       Last-Modified:
       - Fri, 15 Jul 2022 14:06:49 GMT
       Server:
-      - WasabiS3/7.18.4828-2024-02-12-543e1ba234 (head18)
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (F8-R407-U17)
       x-amz-id-2:
-      - qf0kHb6NNv4RHjI4YIMHU9gUbvPLysbOOZn0+OSYx3Oj0HrsqvYayUOO8wj1AFQ87g+IgqTHsfVb
+      - EW3jQonzeHLU+K4FSzgjFNwsa7Qm/WFuqV+/9U3lXuVeSrcGe6qAIKqF6BSEJhsyrSkF3MWV1GQk
       x-amz-request-id:
-      - 6D56215B17C695D1:A
+      - 94406B614BF26B04:B
+      x-wasabi-cm-reference-id:
+      - 1719841643075 130.117.252.103 ConID:546413410/EngineConID:5182779/Core:75
     status:
       code: 200
       message: OK
@@ -847,17 +849,19 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Jun 2024 06:58:52 GMT
+      - Mon, 01 Jul 2024 13:47:23 GMT
       ETag:
       - '"326fbfb3eeb064cf4c2092261381fb89"'
       Last-Modified:
       - Fri, 15 Jul 2022 14:06:49 GMT
       Server:
-      - WasabiS3/7.18.4828-2024-02-12-543e1ba234 (head24)
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (F8-R407-U16)
       x-amz-id-2:
-      - D73rGQ60cMPjxkXH2+JvWCk2apr/RD46lDBHcx9oJweh4IpcFHtIb1/vdgGF4bHgiTWv+ucT5g5u
+      - XGCnxfrp9ja05K1zNo68nu4UTqj4PF8Bko3/mEo98ssKoGQcbL25CYmRYvTdW/8gEH7DPv5sqt6B
       x-amz-request-id:
-      - 9323A162B2DE9BBA:B
+      - 3F24AC19E6E90CEC:B
+      x-wasabi-cm-reference-id:
+      - 1719841643182 130.117.252.103 ConID:546413429/EngineConID:5245528/Core:5
     status:
       code: 200
       message: OK
@@ -923,17 +927,17 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Jun 2024 06:58:52 GMT
+      - Mon, 01 Jul 2024 13:47:23 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
       - Thu, 19 May 2022 19:07:42 GMT
       Server:
-      - WasabiS3/7.18.4828-2024-02-12-543e1ba234 (head14)
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head12)
       x-amz-id-2:
-      - KY6uUqbAg2FHUJF3wmnFVLtJUfskCmYZzTVHvSRB6TOLDwuuhyiAnsNkgYXsanBbdgoP+lUXdAs2
+      - nb/cdvupbC1rnWB+ftZuq+E2zr52jJojx7WqGRPh24XVohrKQaRGD5lIfz3pI3GGRX3YRWdHbQ1G
       x-amz-request-id:
-      - 2CCF8A78FCE9E509:A
+      - 1BA359A7128A8942:B
     status:
       code: 200
       message: OK
@@ -999,17 +1003,93 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Jun 2024 06:58:54 GMT
+      - Mon, 01 Jul 2024 13:47:25 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
       - Thu, 19 May 2022 19:07:42 GMT
       Server:
-      - WasabiS3/7.18.4828-2024-02-12-543e1ba234 (head18)
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head22)
       x-amz-id-2:
-      - fDhBXpiSBJXbEY+RgSSffLFlNYvRG33Wr5zP3fD9+/2WFz4D/gFTgvENVLdqUZx+Ig/fd0WifOSB
+      - 7rtwWPlWMUXgFGmioI+htFKUcokAYb4qbD3/PXkNsOYVCsCrQ5bzdfaLFomjREsiT6rGp2dCtAZM
       x-amz-request-id:
-      - 9C40FA9127F1BCAB:A
+      - 3160D5CD17868DDA:B
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+  response:
+    body:
+      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
+        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
+        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
+        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
+        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
+        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
+        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
+        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
+        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
+        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
+        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
+        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
+        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
+        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
+        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
+        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
+        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
+        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '3945'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 01 Jul 2024 13:47:26 GMT
+      ETag:
+      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
+      Last-Modified:
+      - Thu, 19 May 2022 19:07:42 GMT
+      Server:
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head16)
+      x-amz-id-2:
+      - KTZ5PdT++jwCMgUbG+X67zmlVe1+H6SojRGbxM79j6mLp3eZKFf0MzEh1y0RB+JhxhZ+JZhEDrbN
+      x-amz-request-id:
+      - 56892BC3F24A3FD4:A
     status:
       code: 200
       message: OK
