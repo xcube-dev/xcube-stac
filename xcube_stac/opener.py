@@ -19,126 +19,106 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import rioxarray
 import xarray as xr
-from xcube.util.jsonschema import (
-    JsonArraySchema,
-    JsonBooleanSchema,
-    JsonNumberSchema,
-    JsonObjectSchema,
-    JsonStringSchema,
-)
-from xcube.core.store import DataOpener
-from xcube.core.store.fs.impl.dataset import GEOTIFF_OPEN_DATA_PARAMS_SCHEMA
+from xcube.util.jsonschema import JsonObjectSchema
+from xcube.core.store import DataOpener, new_data_store
 
 
-class HttpsNetcdfDataOpener(DataOpener):
+class HttpsDataOpener(DataOpener):
     """Implementation of the data opener supporting
+    the zarr, geotiff and netcdf format via the https protocol.
+    """
+
+    def __init__(self, root: str, opener_id: str):
+        self._root = root
+        self._opener_id = opener_id
+        if opener_id.split(":")[1] == "netcdf":
+            self._https_accessor = HttpsNetcdfDataAccessor(root=root)
+        else:
+            self._https_accessor = new_data_store("https", root=root, read_only=True)
+
+    @property
+    def root(self):
+        return self._root
+
+    def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
+        return self._https_accessor.get_open_data_params_schema(
+            data_id=data_id, opener_id=self._opener_id
+        )
+
+    def open_data(self, data_id: str, **open_params) -> xr.Dataset:
+        stac_schema = self.get_open_data_params_schema()
+        stac_schema.validate_instance(open_params)
+        return self._https_accessor.open_data(
+            data_id=data_id, opener_id=self._opener_id, **open_params
+        )
+
+
+class HttpsNetcdfDataAccessor:
+    """Implementation of the data accessor supporting
     the netcdf format via the https protocol.
     """
 
-    def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
-        open_parms = dict(
-            tile_size=JsonArraySchema(
-                items=(
-                    JsonNumberSchema(minimum=256, default=512),
-                    JsonNumberSchema(minimum=256, default=512),
-                ),
-                title="Tile size [y, x] for chunking",
-                default=[512, 512],
-            ),
-        )
+    def __init__(self, root: str):
+        self._root = root
+
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        open_parms = {}
         return JsonObjectSchema(
             properties=dict(**open_parms),
             required=[],
             additional_properties=False,
         )
 
-    def open_data(self, data_id: str, **open_params) -> xr.Dataset:
+    def open_data(
+        self, data_id: str, opener_id: str = None, **open_params
+    ) -> xr.Dataset:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
         tile_size = open_params.get("tile_size", (512, 512))
-        return rioxarray.open_rasterio(data_id, chunks=dict(zip(("x", "y"), tile_size)))
+        fs_path = "https://" + self._root + "/" + data_id + "#mode=bytes"
+        return xr.open_dataset(fs_path, chunks={})
 
 
-class HttpsTiffDataOpener(DataOpener):
+class S3DataOpener(DataOpener):
     """Implementation of the data opener supporting
-    the tiff and geotiff format via the https protocol.
+    the zarr, geotiff and netcdf format via the https protocol.
     """
 
-    def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
-        return GEOTIFF_OPEN_DATA_PARAMS_SCHEMA
-
-    def open_data(self, data_id: str, **open_params) -> xr.Dataset:
-        stac_schema = self.get_open_data_params_schema()
-        stac_schema.validate_instance(open_params)
-        tile_size = open_params.get("tile_size", (512, 512))
-        overview_level = open_params.get("overview_level", None)
-        return rioxarray.open_rasterio(
-            data_id,
-            overview_level=overview_level,
-            chunks=dict(zip(("x", "y"), tile_size)),
+    def __init__(
+        self,
+        root: str,
+        opener_id: str,
+        storage_options: dict,
+    ):
+        self._root = root
+        self._opener_id = opener_id
+        self._storage_options = storage_options
+        if "anon" not in storage_options:
+            storage_options["anon"] = True
+        self._s3_accessor = new_data_store(
+            "s3",
+            root=root,
+            read_only=True,
+            storage_options=storage_options,
         )
 
+    @property
+    def root(self):
+        return self._root
 
-class HttpsZarrDataOpener(DataOpener):
-    """Implementation of the data opener supporting
-    the zarr format via the https protocol.
-    """
-
-    def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
-        open_parms = dict(
-            group=JsonStringSchema(
-                description="Group path." " (a.k.a. path in zarr terminology.).",
-                min_length=1,
-            ),
-            chunks=JsonObjectSchema(
-                description="Optional chunk sizes along each dimension."
-                ' Chunk size values may be None, "auto"'
-                " or an integer value.",
-                examples=[
-                    {"time": None, "lat": "auto", "lon": 90},
-                    {"time": 1, "y": 512, "x": 512},
-                ],
-                additional_properties=True,
-            ),
-            decode_cf=JsonBooleanSchema(
-                description="Whether to decode these variables,"
-                " assuming they were saved according to"
-                " CF conventions.",
-                default=True,
-            ),
-            mask_and_scale=JsonBooleanSchema(
-                description="If True, replace array values equal"
-                ' to attribute "_FillValue" with NaN. '
-                ' Use "scale_factor" and "add_offset"'
-                " attributes to compute actual values.",
-                default=True,
-            ),
-            decode_times=JsonBooleanSchema(
-                description="If True, decode times encoded in the"
-                " standard NetCDF datetime format "
-                "into datetime objects. Otherwise,"
-                " leave them encoded as numbers.",
-                default=True,
-            ),
-            decode_coords=JsonBooleanSchema(
-                description='If True, decode the "coordinates"'
-                " attribute to identify coordinates in "
-                "the resulting dataset.",
-                default=True,
-            ),
-            drop_variables=JsonArraySchema(
-                items=JsonStringSchema(min_length=1),
-            ),
-        )
-        return JsonObjectSchema(
-            properties=dict(**open_parms),
-            required=[],
-            additional_properties=False,
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        return self._s3_accessor.get_open_data_params_schema(
+            data_id=data_id, opener_id=opener_id
         )
 
     def open_data(self, data_id: str, **open_params) -> xr.Dataset:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
-        return xr.open_zarr(data_id, **open_params)
+        return self._s3_accessor.open_data(
+            data_id=data_id, opener_id=self._opener_id, **open_params
+        )
