@@ -312,11 +312,11 @@ class StacDataStore(DataStore):
         Raises:
             DataStoreError: Error, if the item json cannot be accessed.
         """
-        response = requests.request(method="GET", url=self._url_mod + data_id)
+        response = requests.request(method="GET", url=f"{self._url_mod}{data_id}")
         if response.status_code == 200:
             return pystac.Item.from_dict(
                 json.loads(response.text),
-                href=self._url + data_id,
+                href=f"{self._url_mod}{data_id}",
                 root=self._catalog,
                 preserve_dict=False,
             )
@@ -381,7 +381,7 @@ class StacDataStore(DataStore):
                 if len(ds_asset) == 1:
                     key = asset.extra_fields["id"]
                 else:
-                    key = asset.extra_fields["id"] + "_" + varname
+                    key = f"{asset.extra_fields['id']}_varname"
                 ds[key] = da
         return ds
 

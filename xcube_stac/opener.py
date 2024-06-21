@@ -78,7 +78,7 @@ class HttpsNetcdfDataAccessor:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
         tile_size = open_params.get("tile_size", (512, 512))
-        fs_path = "https://" + self._root + "/" + data_id + "#mode=bytes"
+        fs_path = f"https://{self._root}/{data_id}#mode=bytes"
         return xr.open_dataset(fs_path, chunks={})
 
 

@@ -100,7 +100,7 @@ def _decode_href(href: str) -> Tuple[str, str, str, dict]:
         if root is None:
             protocol, remain = href.split("://")
             root = remain.split("/")[0]
-            fs_path = remain.replace(root + "/", "")
+            fs_path = remain.replace(f"{root}/", "")
             storage_options = {}
 
     return protocol, root, fs_path, storage_options
@@ -163,12 +163,12 @@ def _decode_aws_s3_href(href: str):
     elif re.search(r"^https://.{3,63}\.s3-.{9,14}\.amazonaws\.com/", href) is not None:
         tmp = href[8:].split("/")
         region_name = tmp[0].split(".s3-")[-1][:-14]
-        root = tmp[0].replace(".s3-" + region_name + ".amazonaws.com", "")
+        root = tmp[0].replace(f".s3-{region_name}.amazonaws.com", "")
         fs_path = "/".join(tmp[1:])
     elif re.search(r"^https://.{3,63}\.s3\..{9,14}\.amazonaws\.com/", href) is not None:
         tmp = href[8:].split("/")
         region_name = tmp[0].split(".s3.")[-1][:-14]
-        root = tmp[0].replace(".s3." + region_name + ".amazonaws.com", "")
+        root = tmp[0].replace(f".s3.{region_name}.amazonaws.com", "")
         fs_path = "/".join(tmp[1:])
 
     if root is not None:
