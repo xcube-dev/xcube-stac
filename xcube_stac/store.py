@@ -23,7 +23,6 @@ import json
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 import warnings
 
-import numpy as np
 import planetary_computer as pc
 import pystac
 import pystac_client
@@ -41,22 +40,19 @@ from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
 from .constants import (
     DATA_OPENER_ID,
-    MAP_MIME_TYP_FORMAT,
     STAC_OPEN_PARAMETERS,
     STAC_SEARCH_PARAMETERS,
 )
 from .href_parse import _decode_href
 from .opener import HttpsDataOpener, S3DataOpener
-from .stac import (
-    _get_attrs_from_item,
-    _get_assets_from_item,
-    _search_nonsearchable_catalog,
-)
 from .utils import (
     _convert_datetime2str,
     _convert_str2datetime,
+    _get_attrs_from_item,
+    _get_assets_from_item,
     _get_formats,
-    _select_opener_id,
+    _get_opener_id,
+    _search_nonsearchable_catalog,
     _update_nested_dict,
 )
 
@@ -114,13 +110,13 @@ class StacDataStore(DataStore):
 
     @classmethod
     def get_data_types(cls) -> Tuple[str, ...]:
-        return ("dataset", "mldataset")
+        return "dataset", "mldataset"
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         item = self._access_item(data_id)
         formats = _get_formats(item)
         if len(formats) == 1 and formats[0] == "geotiff":
-            return ("mldataset", "dataset")
+            return "mldataset", "dataset"
         else:
             return ("dataset",)
 
@@ -343,7 +339,7 @@ class StacDataStore(DataStore):
 
     def _build_dataset(
         self, item: pystac.Item, opener_id: str = None, **open_params
-    ) -> xr.Dataset:
+    ) -> Union[xr.Dataset,]:
         """Builds a dataset where the data variable names correspond
         to the asset keys. If the loaded data consists of multiple
         data variables, the variable name follows the structure
@@ -367,7 +363,9 @@ class StacDataStore(DataStore):
             self._storage_options_s3 = _update_nested_dict(
                 self._storage_options_s3, storage_options
             )
-            opener_id_asset = _select_opener_id(asset, formats, protocol)
+            opener_id_asset = _get_opener_id(
+                asset, formats, protocol, opener_id=opener_id
+            )
             if protocol == "https":
                 opener = self._get_https_opener(root, opener_id_asset)
                 ds_asset = opener.open_data(data_id=fs_path, **open_params)
