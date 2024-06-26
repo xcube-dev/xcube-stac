@@ -39,7 +39,7 @@ MAP_MIME_TYP_FORMAT = {
     "image/jp2": "geotiff",
     "image/tiff": "geotiff",
 }
-DATA_OPENER_ID = [
+DATA_OPENER_ID = (
     "dataset:netcdf:https",
     "dataset:zarr:https",
     "dataset:geotiff:https",
@@ -48,7 +48,7 @@ DATA_OPENER_ID = [
     "dataset:zarr:s3",
     "dataset:geotiff:s3",
     "mldataset:geotiff:s3",
-]
+)
 
 STAC_SEARCH_PARAMETERS = dict(
     time_range=JsonArraySchema(

@@ -4,6 +4,8 @@ DatasetAttribution:
 DataStores:
   - Identifier: local_datasets
     StoreId: file
+    StoreParams:
+      root: xcube_server
     Datasets:
       - Path: cube.nc
         Title: NetCDF file

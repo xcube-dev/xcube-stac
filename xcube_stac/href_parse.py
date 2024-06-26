@@ -107,16 +107,25 @@ def _decode_href(href: str) -> Tuple[str, str, str, dict]:
 
 
 def _decode_xcube_href(href: str):
+    """Decodes a href for datasets published by xcube server.
+
+    Args:
+        href: href string of data resource
+
+    Returns: protocol, root, remaining file path, and storage options
+
+    """
     protocol = "s3"
     root = "datasets"
-    endpoint_url, fs_path = href.split("/s3/datasets/")[1]
+    endpoint_url, fs_path = href.split("/datasets/")
     storage_options = {"anon": True, "client_kwargs": {"endpoint_url": endpoint_url}}
-    return protocol, root, endpoint_url, storage_options
+    return protocol, root, fs_path, storage_options
 
 
 def _decode_aws_s3_href(href: str):
-    """Decodes a href into protocol, root, remaining file path,
-    and region name if given.
+    """Decodes an AWS S3 href into protocol, root, remaining file path,
+    and storage options needed for the S3 data store. If href does not fit to
+    the AWS S3 pattern, root, fs_path and region_name will be None.
 
     Note:
         The aws s3 URI formats are given by
@@ -172,16 +181,19 @@ def _decode_aws_s3_href(href: str):
         fs_path = "/".join(tmp[1:])
 
     if root is not None:
-        _is_aws_s3_bucket(root, href)
+        _assert_aws_s3_bucket(root, href)
     if region_name is not None:
-        _is_aws_s3_region_name(region_name, href)
+        _assert_aws_s3_region_name(region_name, href)
 
-    storage_options = {"client_kwargs": {"region_name": region_name}}
+    if region_name is None:
+        storage_options = {}
+    else:
+        storage_options = {"client_kwargs": {"region_name": region_name}}
 
     return protocol, root, fs_path, storage_options
 
 
-def _is_aws_s3_bucket(bucket: str, href: str):
+def _assert_aws_s3_bucket(bucket: str, href: str):
     """Test if bucket name follows the prescribed AWS S3 naming rules.
 
     Note:
@@ -203,7 +215,7 @@ def _is_aws_s3_bucket(bucket: str, href: str):
         )
 
 
-def _is_aws_s3_region_name(region_name: str, href: str):
+def _assert_aws_s3_region_name(region_name: str, href: str):
     """Test if region name is a valid AWS S3 region name.
 
     Note:

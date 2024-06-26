@@ -1,0 +1,158 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1
+  response:
+    body:
+      string: '{"title":"EOC EO Products Service","description":"*BETA* Provides interoperable
+        access to metadata from EO collections and products of DLR''s Earth Observation
+        Center (EOC). *BETA*","links":[{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fjson","rel":"self","type":"application/json","title":"This
+        document"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fx-yaml","rel":"alternate","type":"application/x-yaml","title":"This
+        document as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml","rel":"alternate","type":"text/html","title":"This
+        document as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fvnd.oai.openapi%2Bjson%3Bversion%3D3.0","rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"API
+        definition for this endpoint as application/vnd.oai.openapi+json;version=3.0"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fx-yaml","rel":"service-desc","type":"application/x-yaml","title":"API
+        definition for this endpoint as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=text%2Fhtml","rel":"service-doc","type":"text/html","title":"API
+        definition for this endpoint as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson","rel":"conformance","type":"application/json","title":"Conformance
+        declaration as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fx-yaml","rel":"conformance","type":"application/x-yaml","title":"Conformance
+        declaration as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml","rel":"conformance","type":"text/html","title":"Conformance
+        declaration as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","rel":"data","type":"application/json","title":"Collections
+        Metadata as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","rel":"data","type":"text/html","title":"Collections
+        Metadata as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Collect","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L4_P1D_NO2surf","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_DEM_90","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L3A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_FNF_50","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_RH95_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_AGBD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_COMP_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L0_QL","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L1B","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_NONRES_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L3A_WASP","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SUPERSITES","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2015","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_NONRES_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_Evolution","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2019","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_COMP_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Scene","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_COVER_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_VOLUME_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_HEIGHT_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        as application/geo+json","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
+        as text/html","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application%2Fjson","rel":"root","type":"application/json","title":"Root
+        Catalog as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        as application/geo+json","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
+        as text/html","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"text/html","title":"Queryables
+        as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"application/schema+json","title":"Sortables
+        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"text/html","title":"Sortables
+        as text/html"}],"id":"GeoserverSTACLandingPage","conformsTo":["http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#filter","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/item-search#fields","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/filter","http://geoserver.org/spec/ecql/1.0/req/gs-ecql","http://geoserver.org/spec/ecql/1.0/req/ecql-text","http://www.opengis.net/spec/cql2/1.0/req/basic-cql2","http://www.opengis.net/spec/cql2/1.0/req/advanced-comparison-operators","http://www.opengis.net/spec/cql2/1.0/req/arithmetic","http://www.opengis.net/spec/cql2/1.0/req/property-property","http://www.opengis.net/spec/cql2/1.0/req/basic-spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/functions","http://www.opengis.net/spec/cql2/1.0/req/cql2-text"],"type":"Catalog","stac_version":"1.0.0"}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 25 Jun 2024 13:07:42 GMT
+      Link:
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
+        rel="self"; type="application/json"; title="This document"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fx-yaml>;
+        rel="alternate"; type="application/x-yaml"; title="This document as application/x-yaml"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml>; rel="alternate";
+        type="text/html"; title="This document as text/html"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fjson>; rel="self";
+        type="application/json"; title="This document"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fx-yaml>; rel="alternate";
+        type="application/x-yaml"; title="This document as application/x-yaml"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml>; rel="alternate";
+        type="text/html"; title="This document as text/html"
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_3223c849:1904e693337:5497
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json"],"id":"S5P_DLR_NRTI_01_040201_L3_CF_20240619","collection":"S5P_TROPOMI_L3_P1D_CF","geometry":{"type":"Polygon","coordinates":[[[-180,-90],[180,-90],[180,90],[-180,90],[-180,-90]]]},"bbox":[-180.0,-90.0,180.0,90.0],"properties":{"created":"2024-06-19T04:01:09.684+00:00","updated":"2024-06-20T06:01:02.560+00:00","datetime":"2024-06-19T00:00:00Z","platform":"Sentinel
+        5 Precursor","constellation":"Sentinel-5P","instruments":"TROPOMI","license":"CC-BY
+        4.0","proj:epsg":4326,"processing:facility":"Remote Sensing Technology Institute
+        (IMF)","processing:level":"L3","processing:software":{"UMAS":"4.2.1","UMAS":"4.2.1"},"proj:bbox":[-180.0,-90.0,180.0,90.0],"proj:shape":[1800,3600],"s5p:collection_identifier":"01","s5p:datasource":"Sentinel-5P,
+        TROPOMI, space-borne remote sensing","s5p:head_facility":"German Aerospace
+        Center (DLR)","s5p:l2_algorithm_version":"UPAS-CLOUD-ROCINN-4.1.0","s5p:processing_mode":"NRTI","s5p:product_name":"cf","s5p:spatial_resolution":"5.5
+        x 3.5 km2"},"assets":{"data":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.nc","type":"application/netcdf","title":"Metadata","description":"Original
+        S5P \"CF\" NetCDF File. Can also be loaded as data file and contains important
+        metadata information.","roles":["metadata","data"]},"overview":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_overview.tif","type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","title":"Overview","description":"Full-resolution
+        overview as Cloud-Optimized GeoTiff of the \"radiometric_cloud_fraction\"
+        variable.","roles":["overview"]},"cf":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_cf.tif","type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","title":"CF","description":"TROPOMI/S5P
+        L3 data of radiometric cloud fraction with a global coverage and a 5.5 x 3.5
+        km2 spatial resolution.","raster:bands":[{"data_type":"float32","scale":1.0,"offset":0.0,"sampling":"area","nodata":9.969209968386869E36,"unit":"1","statistics":{"mean":0.42738193794594204,"minimum":-0.06974887102842331,"maximum":1.0863522291183472,"stddev":0.3422094075839206,"valid_percent":84.17911529541016},"histogram":{"count":11,"min":-0.06974887102842331,"max":1.0863522291183472,"buckets":[68801,70446,49926,42691,36739,32766,31390,30181,35760,42641]}}],"roles":["data"]},"thumbnail":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_thumbnail.png","type":"image/png","title":"Thumbnail","description":"Thumbnail
+        of the \"radiometric_cloud_fraction\" variable.","roles":["thumbnail"]},"quicklook":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.png","type":"image/png","title":"Quicklook","description":"High-resolution
+        quicklook of the \"radiometric_cloud_fraction\" variable.","roles":["quicklook"]}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
+        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
+        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=application%2Fjson","type":"application/json"},{"title":"Collection
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
+        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
+        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '6179'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Tue, 25 Jun 2024 13:07:43 GMT
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_-49d36d6b:1904e84e5d7:32f0
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+version: 1

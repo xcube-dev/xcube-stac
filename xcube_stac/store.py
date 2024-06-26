@@ -30,6 +30,7 @@ import requests
 import xarray as xr
 from xcube.core.store import (
     DATASET_TYPE,
+    MULTI_LEVEL_DATASET_TYPE,
     DatasetDescriptor,
     DataStore,
     DataStoreError,
@@ -49,8 +50,9 @@ from .utils import (
     _convert_datetime2str,
     _convert_str2datetime,
     _get_attrs_from_item,
-    _get_assets_from_item,
-    _get_formats,
+    _list_assets_from_item,
+    _get_formats_from_assets,
+    _get_formats_from_item,
     _get_opener_id,
     _search_nonsearchable_catalog,
     _update_nested_dict,
@@ -114,7 +116,7 @@ class StacDataStore(DataStore):
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         item = self._access_item(data_id)
-        formats = _get_formats(item)
+        formats = _get_formats_from_item(item)
         if len(formats) == 1 and formats[0] == "geotiff":
             return "mldataset", "dataset"
         else:
@@ -151,27 +153,20 @@ class StacDataStore(DataStore):
         self._assert_valid_opener_id(opener_id)
         if data_id is not None:
             item = self._access_item(data_id)
-            formats = _get_formats(item)
-            if opener_id is not None:
+            formats = _get_formats_from_item(item)
+            if len(formats) != 1:
+                warnings.warn(
+                    f"The data ID '{data_id}' contains the formats {list(formats)}. "
+                    "Please, do not specify 'opener_id' as multiple openers "
+                    "will be used."
+                )
+            elif opener_id is not None:
                 opener_id_format = opener_id.split(":")[1]
-                if len(formats) != 1:
-                    raise DataStoreError(
-                        f"The data ID {data_id} contains the formats {formats}. "
-                        "Please, do not specific 'opener_id' as multiple openers "
-                        "will be used."
-                    )
-                elif formats[0] != opener_id_format:
-                    raise DataStoreError(
-                        f"The data ID {data_id} contains the format {formats[0]}, "
-                        f"but 'opener_id' is set to {opener_id}, which can only "
-                        f"open the {opener_id_format} format."
-                    )
-            else:
-                if len(formats) != 1:
+                if formats[0] != opener_id_format:
                     warnings.warn(
-                        "Assets are found which point to data resources"
-                        "with different data formats. Different data opener "
-                        "will be used."
+                        f"The data ID '{data_id}' contains the format '{formats[0]}', "
+                        f"but 'opener_id' is set to '{opener_id}'. The 'opener_id' "
+                        "will be changed in the open_data method."
                     )
 
         return JsonObjectSchema(
@@ -198,6 +193,7 @@ class StacDataStore(DataStore):
         item = self._access_item(data_id)
 
         # prepare metadata
+        time_range = (None, None)
         if "start_datetime" in item.properties and "end_datetime" in item.properties:
             time_range = (
                 _convert_datetime2str(
@@ -213,11 +209,6 @@ class StacDataStore(DataStore):
                     _convert_str2datetime(item.properties["datetime"]).date()
                 ),
                 None,
-            )
-        else:
-            raise DataStoreError(
-                "Either 'start_datetime' and 'end_datetime' or 'datetime' "
-                "needs to be determine in the STAC item."
             )
         metadata = dict(bbox=item.bbox, time_range=time_range)
         return DatasetDescriptor(data_id, **metadata)
@@ -262,7 +253,11 @@ class StacDataStore(DataStore):
         Returns:
             bool: True if *data_type* is supported by the store, otherwise False
         """
-        return data_type is None or DATASET_TYPE.is_super_type_of(data_type)
+        return (
+            data_type is None
+            or DATASET_TYPE.is_super_type_of(data_type)
+            or MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
+        )
 
     @classmethod
     def _assert_valid_data_type(cls, data_type: DataTypeLike):
@@ -278,7 +273,8 @@ class StacDataStore(DataStore):
         """
         if not cls._is_valid_data_type(data_type):
             raise DataStoreError(
-                f"Data type must be {DATASET_TYPE!r}, " f"but got {data_type!r}"
+                f"Data type must be {DATASET_TYPE!r} or {MULTI_LEVEL_DATASET_TYPE!r}, "
+                f"but got {data_type!r}."
             )
 
     @classmethod
@@ -296,7 +292,7 @@ class StacDataStore(DataStore):
         if opener_id is not None and opener_id not in DATA_OPENER_ID:
             raise DataStoreError(
                 f"Data opener identifier must be one of "
-                f"{DATA_OPENER_ID!r}, but got {opener_id!r}"
+                f"{DATA_OPENER_ID!r}, but got {opener_id!r}."
             )
 
     def _access_item(self, data_id: str) -> Union[pystac.Item, str]:
@@ -323,6 +319,19 @@ class StacDataStore(DataStore):
         else:
             raise DataStoreError(response.raise_for_status())
 
+    def _get_url_from_item(self, item: pystac.Item) -> str:
+        """Extracts the URL an item object.
+
+        Args:
+            item: Item object
+
+        Returns:
+            the URL of an item.
+        """
+        links = [link for link in item.links if link.rel == "self"]
+        assert len(links) == 1
+        return links[0].href
+
     def _get_data_id_from_item(self, item: pystac.Item) -> str:
         """Extracts the data ID from an item object.
 
@@ -333,9 +342,7 @@ class StacDataStore(DataStore):
             data ID consisting the URL section of an item
             following the catalog URL.
         """
-        links = [link for link in item.links if link.rel == "self"]
-        assert len(links) == 1
-        return links[0].href.replace(self._url_mod, "")
+        return self._get_url_from_item(item).replace(self._url_mod, "")
 
     def _build_dataset(
         self, item: pystac.Item, opener_id: str = None, **open_params
@@ -353,9 +360,9 @@ class StacDataStore(DataStore):
             Dataset representation of the data resources identified
             by *data_id* and *open_params*.
         """
-        formats = _get_formats(item)
         asset_names = open_params.pop("asset_names", None)
-        assets = _get_assets_from_item(item, asset_names=asset_names)
+        assets = _list_assets_from_item(item, asset_names=asset_names)
+        formats = _get_formats_from_assets(assets)
 
         ds = xr.Dataset()
         for asset in assets:
@@ -375,13 +382,18 @@ class StacDataStore(DataStore):
                 )
                 ds_asset = opener.open_data(data_id=fs_path, **open_params)
             else:
-                raise DataStoreError("Only 's3' and 'https' protocols are supported.")
+                url = self._get_url_from_item(item)
+                raise DataStoreError(
+                    f"Only 's3' and 'https' protocols are supported, not '{protocol}'. "
+                    f"The asset '{asset.extra_fields['id']}' has a href '{asset.href}'."
+                    f" The item's url is given by '{url}'."
+                )
 
             for varname, da in ds_asset.data_vars.items():
                 if len(ds_asset) == 1:
                     key = asset.extra_fields["id"]
                 else:
-                    key = f"{asset.extra_fields['id']}_varname"
+                    key = f"{asset.extra_fields['id']}_{varname}"
                 ds[key] = da
         return ds
 

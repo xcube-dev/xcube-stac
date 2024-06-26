@@ -59,6 +59,24 @@ def _get_assets_from_item(
             yield v
 
 
+def _list_assets_from_item(
+    item: pystac.Item,
+    asset_names: Container[str] = None,
+) -> list[pystac.Asset]:
+    """Get all assets for a given item, which has a MIME data type
+
+    Args:
+        item: item/feature
+        asset_names: Names of assets which will be included
+            in the data cube. If None, all assets will be
+            included which can be opened by the data store.
+
+    Yields:
+        An iterator over the assets
+    """
+    return list(_get_assets_from_item(item, asset_names=asset_names))
+
+
 def _search_nonsearchable_catalog(
     pystac_object: Union[pystac.Catalog, pystac.Collection],
     recursive: bool = True,
@@ -240,16 +258,34 @@ def _update_nested_dict(dic: dict, dic_update: dict):
     return dic
 
 
-def _get_formats(item: pystac.Item) -> np.array:
-    """It transforms the MIME-types of all assets to the data types used in xcube
+def _get_formats_from_item(
+    item: pystac.Item, asset_names: Container[str] = None
+) -> np.array:
+    """It transforms the MIME-types of selected assets stored within an item to the
+    data types used in xcube.
 
     Args:
         item: item/feature
+        asset_names: Names of assets which will be included
+            in the data cube. If None, all assets will be
+            included which can be opened by the data store.
 
     Returns:
         array containing all formats
     """
-    assets = list(_get_assets_from_item(item))
+    assets = _list_assets_from_item(item, asset_names=asset_names)
+    return _get_formats_from_assets(assets)
+
+
+def _get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
+    """It transforms the MIME-types of all assets to the data types used in xcube
+
+    Args:
+        assets: assets
+
+    Returns:
+        array containing all formats
+    """
     return np.unique(
         np.array(
             [MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]] for asset in assets]
@@ -280,9 +316,14 @@ def _get_opener_id(
         asset_format = MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
         if opener_id.split(":")[1] != asset_format:
             opener_id_asset = _select_opener_id(asset, formats, protocol)
+            if (
+                opener_id.split(":")[0] == "dataset"
+                and "mldataset:geotiff" in opener_id_asset
+            ):
+                opener_id_asset = opener_id_asset.replace("mldataset", "dataset")
             warnings.warn(
-                f"The format of the asset {asset.title} is {asset_format}. "
-                f"The opener is changed from {opener_id} to {opener_id_asset}"
+                f"The format of the asset '{asset.title}' is {asset_format}. "
+                f"The opener is changed from '{opener_id}' to '{opener_id_asset}'"
             )
         else:
             opener_id_asset = opener_id
@@ -290,9 +331,20 @@ def _get_opener_id(
 
 
 def _select_opener_id(asset: pystac.Asset, formats: np.array, protocol: str) -> str:
+    """It selects the opener ID for a given asset MIME-type. If all assets are geotiffs,
+    a mldataset, otherwise a dataset will be used.
+
+    Args:
+        asset: asset object
+        formats: formats of all assets in one item extracted from the MIME-type
+        protocol: protocol extracted from the href
+
+    Returns:
+        opener_id_asset: opener identifier for the asset
+    """
     if len(formats) == 1 and formats[0] == "geotiff":
         opener_id_asset = f"mldataset:geotiff:{protocol}"
     else:
         asset_format = MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
-        opener_id_asset = f"mldataset:{asset_format}:{protocol}"
+        opener_id_asset = f"dataset:{asset_format}:{protocol}"
     return opener_id_asset
