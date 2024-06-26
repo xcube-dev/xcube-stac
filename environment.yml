@@ -6,7 +6,7 @@ dependencies:
   # Required
   - python>=3.10
   - pandas
-  - planetary_computer
+  - planetary-computer
   - pystac
   - pystac-client
   - xarray
