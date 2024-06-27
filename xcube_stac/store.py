@@ -156,7 +156,7 @@ class StacDataStore(DataStore):
             formats = _get_formats_from_item(item)
             if len(formats) != 1:
                 warnings.warn(
-                    f"The data ID '{data_id}' contains the formats {list(formats)}. "
+                    f"The data ID '{data_id}' contains the formats {formats}. "
                     "Please, do not specify 'opener_id' as multiple openers "
                     "will be used."
                 )

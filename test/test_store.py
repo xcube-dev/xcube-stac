@@ -190,7 +190,7 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertEqual(1, len(w))
             warn_msg = (
                 f"The data ID '{self.data_id_netcdf}' contains the formats "
-                "['geotiff', 'netcdf']. Please, do not specify 'opener_id' as "
+                "['geotiff' 'netcdf']. Please, do not specify 'opener_id' as "
                 "multiple openers will be used."
             )
             self.assertEqual(warn_msg, str(w[-1].message))
