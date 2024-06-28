@@ -34,7 +34,6 @@ class HrefParseTest(unittest.TestCase):
 
     def test_decode_href(self):
         hrefs = [
-            "http://127.0.0.1:8080/s3/datasets/zarr_file.zarr",
             "https://s3.amazonaws.com/bucket-name/filename",
             "s3://bucket-name/filename",
             "https://bucket-name.s3.amazonaws.com/filename",
@@ -82,11 +81,7 @@ class HrefParseTest(unittest.TestCase):
             "sentinel2l2a01.blob.core.windows.net",
         ]
         storage_options_region = dict(client_kwargs=dict(region_name="us-east-1"))
-        storage_options_xcube_server = dict(
-            anon=True, client_kwargs=dict(endpoint_url="http://127.0.0.1:8080/s3")
-        )
         expected_returns = [
-            ("s3", "datasets", "zarr_file.zarr", storage_options_xcube_server),
             ("s3", "bucket-name", "filename", {}),
             ("s3", "bucket-name", "filename", {}),
             ("s3", "bucket-name", "filename", {}),

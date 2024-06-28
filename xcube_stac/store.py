@@ -366,7 +366,14 @@ class StacDataStore(DataStore):
 
         ds = xr.Dataset()
         for asset in assets:
-            protocol, root, fs_path, storage_options = _decode_href(asset.href)
+            if "xcube:store_kwargs" in asset.extra_fields:
+                store_kwargs = asset.extra_fields["xcube:store_kwargs"]
+                protocol = store_kwargs["data_store_id"]
+                root = store_kwargs["root"]
+                storage_options = store_kwargs["storage_options"]
+                fs_path = asset.extra_fields["xcube:open_kwargs"]["data_id"]
+            else:
+                protocol, root, fs_path, storage_options = _decode_href(asset.href)
             self._storage_options_s3 = _update_nested_dict(
                 self._storage_options_s3, storage_options
             )

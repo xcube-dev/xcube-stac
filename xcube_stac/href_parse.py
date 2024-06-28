@@ -93,32 +93,13 @@ def _decode_href(href: str) -> Tuple[str, str, str, dict]:
         DataStoreError: Error, AWS S3 root cannot be decoded since
             it does not follow the uri pattern mentioned in Note.
     """
-    if "/s3/datasets/" in href:
-        protocol, root, fs_path, storage_options = _decode_xcube_href(href)
-    else:
-        protocol, root, fs_path, storage_options = _decode_aws_s3_href(href)
-        if root is None:
-            protocol, remain = href.split("://")
-            root = remain.split("/")[0]
-            fs_path = remain.replace(f"{root}/", "")
-            storage_options = {}
+    protocol, root, fs_path, storage_options = _decode_aws_s3_href(href)
+    if root is None:
+        protocol, remain = href.split("://")
+        root = remain.split("/")[0]
+        fs_path = remain.replace(f"{root}/", "")
+        storage_options = {}
 
-    return protocol, root, fs_path, storage_options
-
-
-def _decode_xcube_href(href: str):
-    """Decodes a href for datasets published by xcube server.
-
-    Args:
-        href: href string of data resource
-
-    Returns: protocol, root, remaining file path, and storage options
-
-    """
-    protocol = "s3"
-    root = "datasets"
-    endpoint_url, fs_path = href.split("/datasets/")
-    storage_options = {"anon": True, "client_kwargs": {"endpoint_url": endpoint_url}}
     return protocol, root, fs_path, storage_options
 
 

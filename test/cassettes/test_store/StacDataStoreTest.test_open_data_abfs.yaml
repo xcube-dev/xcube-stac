@@ -163,7 +163,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 27 Jun 2024 10:36:30 GMT
+      - Fri, 28 Jun 2024 14:17:20 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       X-Cache:
@@ -173,7 +173,7 @@ interactions:
       vary:
       - Accept-Encoding
       x-azure-ref:
-      - 20240627T103630Z-r16b4c9c64dpf7xzq9mfyssp9800000003cg00000000gr1h
+      - 20240628T141720Z-r16b4c9c64d9ndrgwr6tpuhs7c000000058g000000002gwg
     status:
       code: 200
       message: OK
@@ -244,7 +244,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 27 Jun 2024 10:36:30 GMT
+      - Fri, 28 Jun 2024 14:17:21 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       X-Cache:
@@ -254,7 +254,7 @@ interactions:
       vary:
       - Accept-Encoding
       x-azure-ref:
-      - 20240627T103630Z-r16b4c9c64dttrcr5ttp4r37bs00000003ng00000000zqf4
+      - 20240628T141720Z-r16b4c9c64dpf7xzq9mfyssp98000000052g00000000hwca
     status:
       code: 200
       message: OK
@@ -273,18 +273,18 @@ interactions:
     uri: https://planetarycomputer.microsoft.com/api/sas/v1/token/cpdataeuwest/era5
   response:
     body:
-      string: '{"msft:expiry":"2024-06-27T11:21:30Z","token":"st=2024-06-26T10%3A36%3A30Z&se=2024-06-27T11%3A21%3A30Z&sp=rl&sv=2024-05-04&sr=c&skoid=9c8ff44a-6a2c-4dfb-b298-1c9212f64d9a&sktid=72f988bf-86f1-41af-91ab-2d7cd011db47&skt=2024-06-25T07%3A40%3A01Z&ske=2024-07-02T07%3A40%3A01Z&sks=b&skv=2024-05-04&sig=nG8cxqwpOs1viynxatjY%2B57eKDTorV3nGT2DPKVGQfk%3D"}'
+      string: '{"msft:expiry":"2024-06-28T15:02:21Z","token":"st=2024-06-27T14%3A17%3A21Z&se=2024-06-28T15%3A02%3A21Z&sp=rl&sv=2024-05-04&sr=c&skoid=9c8ff44a-6a2c-4dfb-b298-1c9212f64d9a&sktid=72f988bf-86f1-41af-91ab-2d7cd011db47&skt=2024-06-27T16%3A29%3A39Z&ske=2024-07-04T16%3A29%3A39Z&sks=b&skv=2024-05-04&sig=mhOqQXY8zcfKPArTB4hGFRQQEbcqlx5ftzKtxA8fh6w%3D"}'
     headers:
       Accept-Ranges:
       - bytes
       Connection:
       - keep-alive
       Content-Length:
-      - '347'
+      - '345'
       Content-Type:
       - application/json
       Date:
-      - Thu, 27 Jun 2024 10:36:30 GMT
+      - Fri, 28 Jun 2024 14:17:21 GMT
       Request-Context:
       - appId=cid-v1:75161b1b-6883-4b66-9410-715040c44427
       Strict-Transport-Security:
@@ -292,7 +292,7 @@ interactions:
       X-Cache:
       - CONFIG_NOCACHE
       x-azure-ref:
-      - 20240627T103630Z-r16b4c9c64dkjwxnu435st6c6n000000043g000000000nyw
+      - 20240628T141721Z-r16b4c9c64dkjwxnu435st6c6n00000005rg00000000n2q4
     status:
       code: 200
       message: OK

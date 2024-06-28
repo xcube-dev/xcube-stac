@@ -284,11 +284,13 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
+    # run server example in xcube-stac/examples/xcube_server by running
+    # "xcube serve --verbose -c examples/xcube_server/config.yml" in the terminal
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_open_data_xcube_server_zarr(self):
         store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
 
-        # open data without open_params
+        # open data store in zarr format
         ds = store.open_data("collections/datacubes/items/zarr_file")
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
@@ -307,6 +309,48 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(
             [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
         )
+        # open data store in levels format
+        ds = store.open_data("collections/datacubes/items/levels_file")
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            [
+                "analytic_c2rcc_flags",
+                "analytic_conc_chl",
+                "analytic_conc_tsm",
+                "analytic_kd489",
+                "analytic_quality_flags",
+            ],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual(
+            [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
+        )
+        # open data store in tif format
+        ds = store.open_data("collections/datacubes/items/geotiff_file")
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            [
+                "analytic_band_1",
+                "analytic_band_2",
+                "analytic_band_3",
+                "analytic_spatial_ref",
+            ],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual([1387, 1491], [ds.sizes["y"], ds.sizes["x"]])
+        # open data store in cloud-optimized tif format
+        ds = store.open_data("collections/datacubes/items/cog_geotiff_file")
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            [
+                "analytic_band_1",
+                "analytic_band_2",
+                "analytic_band_3",
+                "analytic_spatial_ref",
+            ],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual([343, 343], [ds.sizes["y"], ds.sizes["x"]])
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
@@ -374,7 +418,7 @@ class StacDataStoreTest(unittest.TestCase):
             "S2A_32UNU_20200302_1_L2A",
             "S2A_32UNU_20200302_0_L2A",
         ]
-        data_ids_expected = [prefix + id for id in data_ids_expected]
+        data_ids_expected = [prefix + data_id for data_id in data_ids_expected]
 
         expected_descriptor = dict(
             data_id=data_ids_expected[0],
