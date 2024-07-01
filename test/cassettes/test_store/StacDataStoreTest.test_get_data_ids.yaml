@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:01 GMT
+      - Tue, 25 Jun 2024 12:52:49 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Fri, 24 May 2024 09:03:01 GMT
+      - Tue, 25 Jun 2024 12:57:49 GMT
       Source-Age:
-      - '0'
+      - '1'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - fd0a60f34e7a38e3341ba43838d5f61e8ebda6b7
+      - 9617c3a42ac8fcdc0c81dced1ff6125c867df21b
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36D3:107820:22CCEEE:24A2ADC:665050BD
+      - A6A5:34162E:543787:58AB63:667AB86E
       X-Served-By:
-      - cache-fra-eddf8230110-FRA
+      - cache-cph2320048-CPH
       X-Timer:
-      - S1716541082.724441,VS0,VE2
+      - S1719319970.652606,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,11 +113,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:01 GMT
+      - Tue, 25 Jun 2024 12:52:49 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Fri, 24 May 2024 09:03:01 GMT
+      - Tue, 25 Jun 2024 12:57:49 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - eae9e2161525ddf248905b768559bc742882d407
+      - 08f95daedcdb61c34e206bf5507d42e24ba1eccd
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36CD:107820:22CCF1B:24A2B05:665050BD
+      - A6A5:34162E:5437AA:58AB86:667AB86E
       X-Served-By:
-      - cache-fra-eddf8230125-FRA
+      - cache-cph2320052-CPH
       X-Timer:
-      - S1716541082.778933,VS0,VE2
+      - S1719319970.678952,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -203,11 +203,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:01 GMT
+      - Tue, 25 Jun 2024 12:52:49 GMT
       ETag:
       - '"ddd340bc27c120dd2e43868bcde0510a326a6223dac1b0c47c05100e20d1397e"'
       Expires:
-      - Fri, 24 May 2024 09:03:01 GMT
+      - Tue, 25 Jun 2024 12:57:49 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -217,21 +217,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - eff90285210edad60c7127be81283beb74278707
+      - efe626a49cb6a53498550b5eb27a2ed949bc5cd0
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 7F34:D7055:26F806E:29015C2:66505262
+      - 23FB:2EE21C:57517A:5BE565:667ABDA1
       X-Served-By:
-      - cache-fra-eddf8230113-FRA
+      - cache-cph2320026-CPH
       X-Timer:
-      - S1716541082.832115,VS0,VE154
+      - S1719319970.704242,VS0,VE181
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -287,11 +287,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:02 GMT
+      - Tue, 25 Jun 2024 12:52:50 GMT
       ETag:
       - '"3263faca1f19517d02862736694703cc8519bed9344039cace8aa2c5f9379bcf"'
       Expires:
-      - Fri, 24 May 2024 09:03:02 GMT
+      - Tue, 25 Jun 2024 12:57:50 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -301,21 +301,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 48890f1eb225b7674f219c53895b6960c7070e25
+      - bd8e0a15c0160c588ba0e8026334f08c816b7949
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 5554:366126:1E0E130:1F94C3C:66505262
+      - 4CA6:144DE7:575F8F:5BF082:667ABDA1
       X-Served-By:
-      - cache-fra-eddf8230137-FRA
+      - cache-cph2320055-CPH
       X-Timer:
-      - S1716541082.041981,VS0,VE185
+      - S1719319970.911676,VS0,VE184
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -387,11 +387,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:02 GMT
+      - Tue, 25 Jun 2024 12:52:50 GMT
       ETag:
       - '"80ec96bc0acf2e604a03f109bd730426aa82e442d44946231cbe82a531b944f7"'
       Expires:
-      - Fri, 24 May 2024 09:03:02 GMT
+      - Tue, 25 Jun 2024 12:57:50 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -401,21 +401,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 9b797c830dd7f06feb10850b67d3bc65d745d302
+      - 09969febe0bd15d633abf986fa57c95cff5ffe60
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 6B90:37C204:1CC468F:1E3D692:66505261
+      - 4CA0:144DE7:575FAD:5BF0AC:667ABDA1
       X-Served-By:
-      - cache-fra-eddf8230028-FRA
+      - cache-cph2320050-CPH
       X-Timer:
-      - S1716541082.468583,VS0,VE152
+      - S1719319970.126471,VS0,VE170
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -487,11 +487,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:02 GMT
+      - Tue, 25 Jun 2024 12:52:50 GMT
       ETag:
       - '"726870312c74ead0b10c3125045c301e8600929684c49447d64c2db72dc779fc"'
       Expires:
-      - Fri, 24 May 2024 09:03:02 GMT
+      - Tue, 25 Jun 2024 12:57:50 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -501,21 +501,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - a9e03b555bacfc573ed3ffce76b25ed4a8789bdf
+      - 1ba4fe64a7557d9d6241c8953b0634356bb2c765
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - D9D6:198FA3:2BF2E8A:2E48E77:66505263
+      - 9853:23A218:55381A:59CBFE:667ABDA2
       X-Served-By:
-      - cache-fra-eddf8230145-FRA
+      - cache-cph2320050-CPH
       X-Timer:
-      - S1716541083.673491,VS0,VE166
+      - S1719319970.321122,VS0,VE193
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -583,11 +583,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:03 GMT
+      - Tue, 25 Jun 2024 12:52:50 GMT
       ETag:
       - '"ce41324ef0ed1993e9becda97e8bd6e7186e24be35178941b14e6f895823f452"'
       Expires:
-      - Fri, 24 May 2024 09:03:03 GMT
+      - Tue, 25 Jun 2024 12:57:50 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -597,21 +597,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 3d9db954537352f3d458c2813ac25848471de2d9
+      - 237b385daf42ab4daf08760eaa25c183648d309a
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - A3B0:2F2389:1860BF0:19B2BED:66505264
+      - E799:297120:5776FE:5C06FD:667ABDA2
       X-Served-By:
-      - cache-fra-eddf8230109-FRA
+      - cache-cph2320035-CPH
       X-Timer:
-      - S1716541083.892545,VS0,VE150
+      - S1719319971.553326,VS0,VE165
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -679,11 +679,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:03 GMT
+      - Tue, 25 Jun 2024 12:52:50 GMT
       ETag:
       - '"64208ffa092e62b99037d93a9865ac76f7b075e742e951fa01a6cc4318f9f91d"'
       Expires:
-      - Fri, 24 May 2024 09:03:03 GMT
+      - Tue, 25 Jun 2024 12:57:50 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -693,21 +693,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 09c7d128b3088638f8b11583e3464f520135d26e
+      - 2a7351eef49ab421c133da4468c3a5436ff1ebcd
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 89B0:343D51:70A407:76EC44:66505264
+      - B6D7:268425:553E41:59CFB2:667ABDA2
       X-Served-By:
-      - cache-fra-eddf8230116-FRA
+      - cache-cph2320036-CPH
       X-Timer:
-      - S1716541083.096757,VS0,VE169
+      - S1719319971.744887,VS0,VE188
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -775,11 +775,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:03 GMT
+      - Tue, 25 Jun 2024 12:52:51 GMT
       ETag:
       - '"b013010acfbb8a7c7479cba0a48831d129ecd605ac31316930d1d2f804634dbc"'
       Expires:
-      - Fri, 24 May 2024 09:03:03 GMT
+      - Tue, 25 Jun 2024 12:57:51 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -789,21 +789,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - cca933c42e3cbdefd2c05eda4c27e028835821c8
+      - 73616bc01355aa698fad079bfd29b08c39d60495
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 6970:1A1B9A:2254DAB:242883D:66505264
+      - EADC:2EE21C:575249:5BE635:667ABDA2
       X-Served-By:
-      - cache-fra-eddf8230049-FRA
+      - cache-cph2320022-CPH
       X-Timer:
-      - S1716541083.319772,VS0,VE157
+      - S1719319971.958127,VS0,VE179
       X-XSS-Protection:
       - 1; mode=block
     status:

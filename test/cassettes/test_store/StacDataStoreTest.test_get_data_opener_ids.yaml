@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,11 +41,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:05 GMT
+      - Tue, 25 Jun 2024 12:52:53 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Fri, 24 May 2024 09:03:05 GMT
+      - Tue, 25 Jun 2024 12:57:53 GMT
       Source-Age:
       - '4'
       Strict-Transport-Security:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - dd1315af903842a5a4f2aa7d97161830c5faf6ee
+      - a4d4da730d66bf55d6d21cf7bf24b1d87b395c9c
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36D3:107820:22CCEEE:24A2ADC:665050BD
+      - A6A5:34162E:543787:58AB63:667AB86E
       X-Served-By:
-      - cache-fra-eddf8230053-FRA
+      - cache-cph2320039-CPH
       X-Timer:
-      - S1716541085.146954,VS0,VE1
+      - S1719319973.264302,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,11 +113,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:05 GMT
+      - Tue, 25 Jun 2024 12:52:53 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Fri, 24 May 2024 09:03:05 GMT
+      - Tue, 25 Jun 2024 12:57:53 GMT
       Source-Age:
       - '4'
       Strict-Transport-Security:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - b8bef633200b02546bfcc68a451f3f7ed8dd2696
+      - 099cc55d82a4a22156eb7ad56a54b6a1f8a2e679
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36CD:107820:22CCF1B:24A2B05:665050BD
+      - A6A5:34162E:5437AA:58AB86:667AB86E
       X-Served-By:
-      - cache-fra-eddf8230114-FRA
+      - cache-cph2320028-CPH
       X-Timer:
-      - S1716541085.231558,VS0,VE14
+      - S1719319973.302774,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

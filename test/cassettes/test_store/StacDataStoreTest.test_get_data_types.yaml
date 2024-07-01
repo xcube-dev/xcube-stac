@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://earth-search.aws.element84.com/v1
   response:
@@ -24,15 +24,15 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Fri, 24 May 2024 08:58:06 GMT
+      - Tue, 25 Jun 2024 12:52:54 GMT
       Via:
-      - 1.1 89c50b6a052f3d7c2c7b36108c6288f2.cloudfront.net (CloudFront)
+      - 1.1 09214cdb11d6af8d53ef4beca9b33e3c.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - BV8PzMxFdIKGNSV5o_kareebOcVWL5zJr7C12m-Bc-vIidTWQxJang==
+      - Gdp-49HLoXtp-1eNZjycKy8RLFvponFZ1F7u9p3fgySqi0ehH1lBGA==
       X-Amz-Cf-Pop:
-      - TXL50-P5
+      - CPH50-P1
       X-Amzn-Trace-Id:
-      - Root=1-6650569e-46fff81c6c22cea56ffbd65a;Parent=2ed6a5b14451123b;Sampled=0;lineage=9e2884e9:0
+      - Root=1-667abda6-195366f7125e9a5e129126ac;Parent=10905c8069b837a7;Sampled=0;lineage=9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -40,11 +40,11 @@ interactions:
       etag:
       - W/"d29-QPs+H0wJLUX32EZKNgzG3k6wfQ8"
       x-amz-apigw-id:
-      - YRJ43Gz2PHcEr6w=
+      - Z7KSEFPLvHcEh4A=
       x-amzn-Remapped-content-length:
       - '3369'
       x-amzn-RequestId:
-      - 0a63ed79-b2c3-4c68-b788-f70b8a0eadd6
+      - 13947465-d4f2-457e-b829-81383ee0ed63
       x-powered-by:
       - Express
     status:

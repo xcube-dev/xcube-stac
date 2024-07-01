@@ -20,32 +20,37 @@
 # SOFTWARE.
 
 
+import numpy as np
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonDateSchema,
     JsonNumberSchema,
-    JsonStringSchema
+    JsonStringSchema,
 )
 
 
 DATA_STORE_ID = "stac"
-DATASET_OPENER_ID = f"dataset:zarr:{DATA_STORE_ID}"
 
-MIME_TYPES = [
-    "application/zarr",
-    "image/tiff",
-    "application/octet-stream"
-]
+MAP_MIME_TYP_FORMAT = {
+    "application/netcdf": "netcdf",
+    "application/x-netcdf": "netcdf",
+    "application/vnd+zarr": "zarr",
+    "application/zarr": "zarr",
+    "image/jp2": "geotiff",
+    "image/tiff": "geotiff",
+}
+DATA_OPENER_ID = (
+    "dataset:netcdf:https",
+    "dataset:zarr:https",
+    "dataset:geotiff:https",
+    "mldataset:geotiff:https",
+    "dataset:netcdf:s3",
+    "dataset:zarr:s3",
+    "dataset:geotiff:s3",
+    "mldataset:geotiff:s3",
+)
 
-STAC_SEARCH_ITEM_PARAMETERS = dict(
-    variable_names=JsonArraySchema(
-        items=(JsonStringSchema(min_length=0)),
-        unique_items=True,
-        title="Variable names in xarray.Dataset",
-        description=(
-            "Variable names are defined by assets"
-        )
-    ),
+STAC_SEARCH_PARAMETERS = dict(
     time_range=JsonArraySchema(
         items=[
             JsonDateSchema(nullable=True),
@@ -53,10 +58,10 @@ STAC_SEARCH_ITEM_PARAMETERS = dict(
         ],
         title="Time Range",
         description=(
-            "Time range given as pair of start and stop dates.  "
+            "Time range given as pair of start and stop dates. "
             "Dates must be given using format 'YYYY-MM-DD'. "
             "Start and stop are inclusive."
-        )
+        ),
     ),
     bbox=JsonArraySchema(
         items=(
@@ -65,14 +70,21 @@ STAC_SEARCH_ITEM_PARAMETERS = dict(
             JsonNumberSchema(),
             JsonNumberSchema(),
         ),
-        title="Bounding box [x1,y1, x2,y2] in geographical coordinates",
+        title="Bounding box [x1,y1,x2,y2] in geographical coordinates",
     ),
     collections=JsonArraySchema(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,
         title="Collection IDs",
-        description=(
-            "Collection IDs to be included in the search request."
-        )
+        description="Collection IDs to be included in the search request.",
+    ),
+)
+
+STAC_OPEN_PARAMETERS = dict(
+    asset_names=JsonArraySchema(
+        items=(JsonStringSchema(min_length=0)),
+        unique_items=True,
+        title="Names of assets",
+        description="Names of assets which will be included in the data cube.",
     )
 )

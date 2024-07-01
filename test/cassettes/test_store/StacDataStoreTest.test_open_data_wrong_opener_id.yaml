@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:27 GMT
+      - Tue, 25 Jun 2024 12:52:59 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Fri, 24 May 2024 09:03:27 GMT
+      - Tue, 25 Jun 2024 12:57:59 GMT
       Source-Age:
-      - '26'
+      - '10'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 7128abbef96338beadfb5aa3816294b64c0d6a37
+      - 19251511ed18547d82ac5ff3fb63265014d345b2
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36D3:107820:22CCEEE:24A2ADC:665050BD
+      - A6A5:34162E:543787:58AB63:667AB86E
       X-Served-By:
-      - cache-fra-eddf8230156-FRA
+      - cache-cph2320054-CPH
       X-Timer:
-      - S1716541108.822708,VS0,VE3
+      - S1719319979.461154,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Fri, 24 May 2024 08:58:27 GMT
+      - Tue, 25 Jun 2024 12:52:59 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Fri, 24 May 2024 09:03:27 GMT
+      - Tue, 25 Jun 2024 12:57:59 GMT
       Source-Age:
-      - '26'
+      - '10'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - ee10adf22694ffe6bc3c23477324e13bd2c1c3c9
+      - a06a4849d6700c1a9b3a35fde34d2293c7e99a1d
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 36CD:107820:22CCF1B:24A2B05:665050BD
+      - A6A5:34162E:5437AA:58AB86:667AB86E
       X-Served-By:
-      - cache-fra-eddf8230032-FRA
+      - cache-cph2320022-CPH
       X-Timer:
-      - S1716541108.893953,VS0,VE1
+      - S1719319979.491905,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
