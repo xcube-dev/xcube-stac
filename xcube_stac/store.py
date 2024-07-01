@@ -28,6 +28,7 @@ import pystac
 import pystac_client
 import requests
 import xarray as xr
+from xcube.core.mldataset import MultiLevelDataset, CombinedMultiLevelDataset
 from xcube.core.store import (
     DATASET_TYPE,
     MULTI_LEVEL_DATASET_TYPE,
@@ -56,6 +57,7 @@ from .utils import (
     _get_opener_id,
     _search_nonsearchable_catalog,
     _update_nested_dict,
+    _xarray_rename_vars,
 )
 
 
@@ -177,13 +179,11 @@ class StacDataStore(DataStore):
 
     def open_data(
         self, data_id: str, opener_id: str = None, **open_params
-    ) -> xr.Dataset:
+    ) -> Union[xr.Dataset, MultiLevelDataset]:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
         self._assert_valid_opener_id(opener_id)
         item = self._access_item(data_id)
-        if self._pc:
-            item = pc.sign(item)
         return self._build_dataset(item, opener_id=opener_id, **open_params)
 
     def describe_data(
@@ -346,7 +346,7 @@ class StacDataStore(DataStore):
 
     def _build_dataset(
         self, item: pystac.Item, opener_id: str = None, **open_params
-    ) -> Union[xr.Dataset,]:
+    ) -> Union[xr.Dataset, MultiLevelDataset]:
         """Builds a dataset where the data variable names correspond
         to the asset keys. If the loaded data consists of multiple
         data variables, the variable name follows the structure
@@ -364,8 +364,10 @@ class StacDataStore(DataStore):
         assets = _list_assets_from_item(item, asset_names=asset_names)
         formats = _get_formats_from_assets(assets)
 
-        ds = xr.Dataset()
+        list_ds_asset = []
         for asset in assets:
+            if self._pc:
+                asset = pc.sign(asset)
             if "xcube:store_kwargs" in asset.extra_fields:
                 store_kwargs = asset.extra_fields["xcube:store_kwargs"]
                 protocol = store_kwargs["data_store_id"]
@@ -395,13 +397,34 @@ class StacDataStore(DataStore):
                     f"The asset '{asset.extra_fields['id']}' has a href '{asset.href}'."
                     f" The item's url is given by '{url}'."
                 )
+            if isinstance(ds_asset, MultiLevelDataset):
+                var_names = list(ds_asset.base_dataset.keys())
+            else:
+                var_names = list(ds_asset.keys())
+            if len(var_names) == 1:
+                name_dict = {var_names[0]: asset.extra_fields["id"]}
+            else:
+                name_dict = {
+                    var_name: f"{asset.extra_fields['id']}_{var_name}"
+                    for var_name in var_names
+                }
+            if isinstance(ds_asset, MultiLevelDataset):
+                ds_asset = ds_asset.apply(
+                    _xarray_rename_vars, dict(name_dict=name_dict)
+                )
+            else:
+                ds_asset = ds_asset.rename_vars(name_dict=name_dict)
+            list_ds_asset.append(ds_asset)
 
-            for varname, da in ds_asset.data_vars.items():
-                if len(ds_asset) == 1:
-                    key = asset.extra_fields["id"]
-                else:
-                    key = f"{asset.extra_fields['id']}_{varname}"
-                ds[key] = da
+        if len(list_ds_asset) == 1:
+            ds = list_ds_asset[0]
+        else:
+            if all(isinstance(ds, MultiLevelDataset) for ds in list_ds_asset):
+                ds = CombinedMultiLevelDataset(list_ds_asset)
+            else:
+                ds = list_ds_asset[0].copy()
+                for ds_asset in list_ds_asset[1:]:
+                    ds.update(ds_asset)
         return ds
 
     def _get_s3_opener(
@@ -421,6 +444,10 @@ class StacDataStore(DataStore):
                 self._s3_opener = S3DataOpener(
                     root, opener_id, storage_options=storage_options
                 )
+            if not self._s3_opener.opener_id == opener_id:
+                self._s3_opener = S3DataOpener(
+                    root, opener_id, storage_options=storage_options
+                )
         return self._s3_opener
 
     def _get_https_opener(self, root: str, opener_id: str) -> HttpsDataOpener:
@@ -433,5 +460,7 @@ class StacDataStore(DataStore):
                     f"https data opener changed to '{root}'. "
                     "A new https data opener will be initialized."
                 )
+                self._https_opener = HttpsDataOpener(root, opener_id)
+            if not self._https_opener.opener_id == opener_id:
                 self._https_opener = HttpsDataOpener(root, opener_id)
         return self._https_opener

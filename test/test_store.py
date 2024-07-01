@@ -26,6 +26,7 @@ import urllib.request
 import pytest
 import requests
 import xarray as xr
+from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DatasetDescriptor, DataStoreError
 from xcube.core.store.store import new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
@@ -238,8 +239,22 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data with open_params
-        ds = store.open_data(self.data_id_time_range, asset_names=["blue_p25"])
+        mlds = store.open_data(self.data_id_time_range, asset_names=["blue_p25"])
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        ds = mlds.base_dataset
         self.assertCountEqual(["blue_p25"], list(ds.data_vars))
+        self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
+        self.assertCountEqual(
+            [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+        )
+
+        # open data where multiple assets are stored in one mldataset
+        mlds = store.open_data(
+            self.data_id_time_range, asset_names=["blue_p25", "blue_p75"]
+        )
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        ds = mlds.base_dataset
+        self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -272,7 +287,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data without open_params
         data_id = "collections/era5-pds/items/era5-pds-2020-12-an"
         with self.assertRaises(DataStoreError) as cm:
-            _ = store.open_data(data_id)
+            _ = store.open_data(data_id, asset_names=["surface_air_pressure"])
         self.assertEqual(
             (
                 "Only 's3' and 'https' protocols are supported, not 'abfs'. The asset "
@@ -339,7 +354,26 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual([1387, 1491], [ds.sizes["y"], ds.sizes["x"]])
         # open data store in cloud-optimized tif format
-        ds = store.open_data("collections/datacubes/items/cog_geotiff_file")
+        ds = store.open_data(
+            "collections/datacubes/items/cog_geotiff_file",
+            opener_id="dataset:geotiff:s3",
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            [
+                "analytic_band_1",
+                "analytic_band_2",
+                "analytic_band_3",
+                "analytic_spatial_ref",
+            ],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual([343, 343], [ds.sizes["y"], ds.sizes["x"]])
+        # open data store in cloud-optimized tif format in mldataaset
+        ds = store.open_data(
+            "collections/datacubes/items/cog_geotiff_file",
+            opener_id="mldataset:geotiff:s3",
+        )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [

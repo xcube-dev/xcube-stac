@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 import pystac
 from shapely.geometry import box
+import xarray as xr
 from xcube.core.store import DataStoreError
 
 from .constants import MAP_MIME_TYP_FORMAT
@@ -348,3 +349,9 @@ def _select_opener_id(asset: pystac.Asset, formats: np.array, protocol: str) -> 
         asset_format = MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
         opener_id_asset = f"dataset:{asset_format}:{protocol}"
     return opener_id_asset
+
+
+def _xarray_rename_vars(
+    ds: Union[xr.Dataset, xr.DataArray], name_dict: dict
+) -> Union[xr.Dataset, xr.DataArray]:
+    return ds.rename_vars(name_dict)

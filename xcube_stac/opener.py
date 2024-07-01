@@ -18,9 +18,11 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+from typing import Union
 
 import xarray as xr
 from xcube.util.jsonschema import JsonObjectSchema
+from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataOpener, new_data_store
 
 
@@ -41,12 +43,18 @@ class HttpsDataOpener(DataOpener):
     def root(self):
         return self._root
 
+    @property
+    def opener_id(self):
+        return self._opener_id
+
     def get_open_data_params_schema(self, data_id: str = None) -> JsonObjectSchema:
         return self._https_accessor.get_open_data_params_schema(
             data_id=data_id, opener_id=self._opener_id
         )
 
-    def open_data(self, data_id: str, **open_params) -> xr.Dataset:
+    def open_data(
+        self, data_id: str, **open_params
+    ) -> Union[xr.Dataset, MultiLevelDataset]:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
         return self._https_accessor.open_data(
@@ -109,6 +117,10 @@ class S3DataOpener(DataOpener):
     def root(self):
         return self._root
 
+    @property
+    def opener_id(self):
+        return self._opener_id
+
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
@@ -116,7 +128,9 @@ class S3DataOpener(DataOpener):
             data_id=data_id, opener_id=opener_id
         )
 
-    def open_data(self, data_id: str, **open_params) -> xr.Dataset:
+    def open_data(
+        self, data_id: str, **open_params
+    ) -> Union[xr.Dataset, MultiLevelDataset]:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
         return self._s3_accessor.open_data(
