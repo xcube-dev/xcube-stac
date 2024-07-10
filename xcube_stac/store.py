@@ -365,8 +365,8 @@ class StacDataStore(DataStore):
             return dt_start <= dt_data <= dt_end
         else:
             DataStoreError(
-                "Either 'start_datetime' and 'end_datetime' or 'datetime' "
-                "needs to be determine in the STAC item."
+                "The item`s property needs to contain either 'start_datetime' and "
+                "'end_datetime' or 'datetime'."
             )
 
     def _do_bboxes_intersect(self, item: pystac.Item, **open_params) -> bool:
