@@ -50,14 +50,42 @@ from .constants import (
 from .href_parse import _decode_href
 from .accessor import HttpsDataAccessor, S3DataAccessor
 from .utils import (
+    _assert_valid_data_type,
     _get_attrs_from_item,
     _list_assets_from_item,
     _get_format_from_asset,
     _get_formats_from_item,
     _get_url_from_item,
+    _is_valid_data_type,
+    _is_valid_ml_data_type,
+    _assert_valid_opener_id,
     _search_nonsearchable_catalog,
     _update_dict,
     _xarray_rename_vars,
+)
+
+
+_CATALOG_JSON = "catalog.json"
+
+https_store = new_data_store("https")
+_OPEN_DATA_PARAMETERS = {}
+_OPEN_DATA_PARAMETERS["dataset:netcdf"] = https_store.get_open_data_params_schema(
+    opener_id="dataset:netcdf:https"
+)
+_OPEN_DATA_PARAMETERS["dataset:zarr"] = https_store.get_open_data_params_schema(
+    opener_id="dataset:zarr:https"
+)
+_OPEN_DATA_PARAMETERS["dataset:geotiff"] = https_store.get_open_data_params_schema(
+    opener_id="dataset:geotiff:https"
+)
+_OPEN_DATA_PARAMETERS["mldataset:geotiff"] = https_store.get_open_data_params_schema(
+    opener_id="mldataset:geotiff:https"
+)
+_OPEN_DATA_PARAMETERS["dataset:levels"] = https_store.get_open_data_params_schema(
+    opener_id="dataset:levels:https"
+)
+_OPEN_DATA_PARAMETERS["mldataset:levels"] = https_store.get_open_data_params_schema(
+    opener_id="mldataset:levels:https"
 )
 
 
@@ -72,7 +100,7 @@ class StacDataStore(DataStore):
     def __init__(self, url: str, **storage_options_s3):
         self._url = url
         url_mod = url
-        if url_mod[-12:] == "catalog.json":
+        if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
             url_mod = url_mod[:-12]
         if url_mod[-1] != "/":
             url_mod += "/"
@@ -118,9 +146,9 @@ class StacDataStore(DataStore):
     def get_data_ids(
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        self._assert_valid_data_type(data_type)
+        _assert_valid_data_type(data_type)
         for item in self._catalog.get_items(recursive=True):
-            if self._is_valid_ml_data_type(data_type):
+            if _is_valid_ml_data_type(data_type):
                 formats = _get_formats_from_item(item)
                 if not (len(formats) == 1 and formats[0] == "geotiff"):
                     continue
@@ -132,7 +160,7 @@ class StacDataStore(DataStore):
                 yield data_id, attrs
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
-        if self._is_valid_data_type(data_type):
+        if _is_valid_data_type(data_type):
             in_store = True
             try:
                 _ = self._access_item(data_id)
@@ -141,7 +169,7 @@ class StacDataStore(DataStore):
             if not in_store:
                 return False
             else:
-                if self._is_valid_ml_data_type(data_type):
+                if _is_valid_ml_data_type(data_type):
                     return self._are_all_assets_geotiffs(data_id)
                 return True
         return False
@@ -149,12 +177,13 @@ class StacDataStore(DataStore):
     def get_data_opener_ids(
         self, data_id: str = None, data_type: DataTypeLike = None
     ) -> Tuple[str, ...]:
-        self._assert_valid_data_type(data_type)
+        _assert_valid_data_type(data_type)
+        if data_id is not None:
+            if not self.has_data(data_id, data_type=data_type):
+                raise DataStoreError(f"Data resource {data_id!r} is not available.")
         if data_type is None:
             return DATA_OPENER_IDS
         else:
-            if not self.has_data(data_id, data_type=data_type):
-                raise DataStoreError(f"Data resource {data_id!r} is not available.")
             data_type = DataType.normalize(data_type)
             return tuple(
                 opener_id
@@ -165,11 +194,22 @@ class StacDataStore(DataStore):
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
-        self._assert_valid_opener_id(opener_id)
-        store = new_data_store("https")
-        properties = store.get_open_data_params_schema(opener_id=opener_id).properties
+        _assert_valid_opener_id(opener_id)
+        properties = {}
+        if opener_id is not None:
+            key = ":".join(opener_id.split(":")[:2])
+            properties[key] = _OPEN_DATA_PARAMETERS[key]
+        if data_id is not None:
+            item = self._access_item(data_id)
+            formats = _get_formats_from_item(item)
+            for form in formats:
+                for key in _OPEN_DATA_PARAMETERS.keys():
+                    if form == key.split(":")[1]:
+                        properties[key] = _OPEN_DATA_PARAMETERS[key]
+        if not properties:
+            properties = _OPEN_DATA_PARAMETERS
         return JsonObjectSchema(
-            properties=_update_dict(properties, STAC_OPEN_PARAMETERS),
+            properties=_update_dict(properties, STAC_OPEN_PARAMETERS, inplace=False),
             required=[],
             additional_properties=False,
         )
@@ -183,8 +223,8 @@ class StacDataStore(DataStore):
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         stac_schema = self.get_open_data_params_schema()
         stac_schema.validate_instance(open_params)
-        self._assert_valid_data_type(data_type)
-        self._assert_valid_opener_id(opener_id)
+        _assert_valid_data_type(data_type)
+        _assert_valid_opener_id(opener_id)
         item = self._access_item(data_id)
         return self._build_dataset(
             item, opener_id=opener_id, data_type=data_type, **open_params
@@ -193,7 +233,7 @@ class StacDataStore(DataStore):
     def describe_data(
         self, data_id: str, data_type: DataTypeLike = None
     ) -> Union[DatasetDescriptor, MultiLevelDatasetDescriptor]:
-        self._assert_valid_data_type(data_type)
+        _assert_valid_data_type(data_type)
         item = self._access_item(data_id)
 
         # prepare metadata
@@ -206,15 +246,19 @@ class StacDataStore(DataStore):
         elif "datetime" in item.properties:
             time_range = (item.properties["datetime"], None)
         metadata = dict(bbox=item.bbox, time_range=time_range)
-        if self._are_all_assets_geotiffs(data_id) and self._is_valid_ml_data_type(
-            data_type
-        ):
-            mlds = self.open_data(data_id)
+        if self._is_xcube_server_item(data_id):
+            if _is_valid_ml_data_type(data_type):
+                mlds = self.open_data(data_id, data_type=data_type)
+                return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
+            else:
+                DatasetDescriptor(data_id, **metadata)
+        if self._are_all_assets_geotiffs(data_id) and _is_valid_ml_data_type(data_type):
+            mlds = self.open_data(data_id, data_type=data_type)
             return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
         else:
-            if self._is_valid_ml_data_type(data_type):
+            if _is_valid_ml_data_type(data_type):
                 LOG.info(
-                    f"The data ID {data_id!r} also not only assets in geotiff "
+                    f"The data ID {data_id!r} contains not only assets in geotiff "
                     f"format. Therefore, data_type is set to {DATASET_TYPE.alias!r}"
                 )
             return DatasetDescriptor(data_id, **metadata)
@@ -222,7 +266,7 @@ class StacDataStore(DataStore):
     def search_data(
         self, data_type: DataTypeLike = None, **search_params
     ) -> Iterator[Union[DatasetDescriptor, MultiLevelDatasetDescriptor]]:
-        self._assert_valid_data_type(data_type)
+        _assert_valid_data_type(data_type)
         if self._searchable:
             # rewrite to "datetime"
             time_range = search_params.pop("time_range", None)
@@ -247,72 +291,6 @@ class StacDataStore(DataStore):
 
     ##########################################################################
     # Implementation helpers
-
-    @classmethod
-    def _is_valid_data_type(cls, data_type: DataTypeLike) -> bool:
-        """Auxiliary function to check if data type is supported
-        by the store.
-
-        Args:
-            data_type: Data type that is to be checked.
-
-        Returns:
-            bool: True if *data_type* is supported by the store, otherwise False
-        """
-        return (
-            data_type is None
-            or DATASET_TYPE.is_super_type_of(data_type)
-            or MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
-        )
-
-    @classmethod
-    def _assert_valid_data_type(cls, data_type: DataTypeLike):
-        """Auxiliary function to assert if data type is supported
-        by the store.
-
-        Args:
-            data_type: Data type that is to be checked.
-
-        Raises:
-            DataStoreError: Error, if *data_type* is not
-                supported by the store.
-        """
-        if not cls._is_valid_data_type(data_type):
-            raise DataStoreError(
-                f"Data type must be {DATASET_TYPE.alias!r} or "
-                f"{MULTI_LEVEL_DATASET_TYPE.alias!r}, but got {data_type!r}."
-            )
-
-    @classmethod
-    def _is_valid_ml_data_type(cls, data_type: DataTypeLike) -> bool:
-        """Auxiliary function to check if data type is a multi-level
-        dataset type.
-
-        Args:
-            data_type: Data type that is to be checked.
-
-        Returns:
-            bool: True if *data_type* is a multi-level dataset type, otherwise False
-        """
-        return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
-
-    @classmethod
-    def _assert_valid_opener_id(cls, opener_id: str):
-        """Auxiliary function to assert if data opener identified by
-        *opener_id* is supported by the store.
-
-        Args:
-            opener_id: Data opener identifier
-
-        Raises:
-            DataStoreError: Error, if *opener_id* is not
-                supported by the store.
-        """
-        if opener_id is not None and opener_id not in DATA_OPENER_IDS:
-            raise DataStoreError(
-                f"Data opener identifier must be one of "
-                f"{DATA_OPENER_IDS}, but got {opener_id!r}."
-            )
 
     def _are_all_assets_geotiffs(self, data_id: str) -> bool:
         """Auxiliary function to check if all assets are tifs, tiffs, or geotiffs.
@@ -354,7 +332,7 @@ class StacDataStore(DataStore):
         """
         if isinstance(asset, list):
             asset = asset[0]
-        return "xcube:store_kwargs" in asset.extra_fields
+        return "xcube:data_store_id" in asset.extra_fields
 
     def _select_xcube_server_asset(
         self,
@@ -362,8 +340,24 @@ class StacDataStore(DataStore):
         asset_names: list[str] = None,
         data_type: DataTypeLike = None,
     ):
+        """Selects the asset from item published by xcube server according to
+        the data type. If no data type is given, the asset linking to 'dataset'
+        will be returned.
+
+        Args:
+            assets: list of asset object
+            asset_names: asset names given in *open_params* in :meth:`open_data`
+            data_type: required data type of the return value in :meth:`open_data`
+
+        Returns:
+            assets: selected asset
+
+        Raises:
+            DataStoreError: Error, if "analytic" and "analytic_multires" is selected
+                in *asset_names*
+        """
         if asset_names is None:
-            if self._is_valid_ml_data_type(data_type):
+            if _is_valid_ml_data_type(data_type):
                 assets = [assets[1]]
             else:
                 assets = [assets[0]]
@@ -377,11 +371,24 @@ class StacDataStore(DataStore):
         return assets
 
     def _extract_params_xcube_server_asset(self, asset: pystac.Asset):
-        store_kwargs = asset.extra_fields["xcube:store_kwargs"]
-        protocol = store_kwargs["data_store_id"]
-        root = store_kwargs["root"]
-        storage_options = store_kwargs["storage_options"]
-        fs_path = asset.extra_fields["xcube:open_kwargs"]["data_id"]
+        """Extracts the data store parameters and the data ID from an asset
+        published by xcube server.
+
+        Args:
+            asset: asset object
+
+        Returns:
+            protocol: protocol needed for the data store ID
+            root: bucket for S3 or root url for https
+            fs_path: path to file which is equivalent to data ID needed
+                to open the data
+            storage_options: additional storage options
+        """
+        protocol = asset.extra_fields["xcube:data_store_id"]
+        data_store_params = asset.extra_fields["xcube:data_store_params"]
+        root = data_store_params["root"]
+        storage_options = data_store_params["storage_options"]
+        fs_path = asset.extra_fields["xcube:open_data_params"]["data_id"]
         return protocol, root, fs_path, storage_options
 
     def _access_item(self, data_id: str) -> Union[pystac.Item, str]:
@@ -398,7 +405,7 @@ class StacDataStore(DataStore):
             DataStoreError: Error, if the item json cannot be accessed.
         """
         response = requests.request(method="GET", url=f"{self._url_mod}{data_id}")
-        if response.status_code == 200:
+        if response.ok:
             return pystac.Item.from_dict(
                 json.loads(response.text),
                 href=f"{self._url_mod}{data_id}",
@@ -462,7 +469,6 @@ class StacDataStore(DataStore):
                 self._storage_options_s3 = _update_dict(
                     self._storage_options_s3, storage_options
                 )
-
             if protocol == "https":
                 opener = self._get_https_accessor(root)
                 format_id = _get_format_from_asset(asset)
@@ -558,14 +564,14 @@ class StacDataStore(DataStore):
         Returns:
             HTTPS data opener
         """
-        if self.https_accessor is None:
-            self.https_accessor = HttpsDataAccessor(root)
+        if self._https_accessor is None:
+            self._https_accessor = HttpsDataAccessor(root)
         else:
-            if not self.https_accessor.root == root:
+            if not self._https_accessor.root == root:
                 LOG.debug(
-                    f"The root {self.https_accessor.root!r} of the "
+                    f"The root {self._https_accessor.root!r} of the "
                     f"https data opener changed to {root!r}. "
                     "A new https data opener will be initialized."
                 )
-                self.https_accessor = HttpsDataAccessor(root)
-        return self.https_accessor
+                self._https_accessor = HttpsDataAccessor(root)
+        return self._https_accessor

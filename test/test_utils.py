@@ -29,7 +29,6 @@ from xcube_stac.utils import (
     _convert_datetime2str,
     _convert_str2datetime,
     _do_bboxes_intersect,
-    _get_opener_id,
     _is_datetime_in_range,
     _update_dict,
 )
@@ -101,8 +100,8 @@ class UtilsTest(unittest.TestCase):
                 item3, time_range=[item1_test_paramss[0][0], item1_test_paramss[0][1]]
             )
         self.assertEqual(
-            "Either 'start_datetime' and 'end_datetime' or 'datetime' "
-            "needs to be determined in the STAC item.",
+            "The item`s property needs to contain either 'start_datetime' and "
+            "'end_datetime' or 'datetime'.",
             f"{cm.exception}",
         )
 
@@ -131,41 +130,3 @@ class UtilsTest(unittest.TestCase):
         dic_update = dict(d=1, b=dict(c=5, e=8))
         dic_expected = dict(a=1, d=1, b=dict(c=5, e=8))
         self.assertDictEqual(dic_expected, _update_dict(dic, dic_update))
-
-    def test_get_opener_id(self):
-        asset = pystac.Asset(
-            href="https://path/to/data/resource",
-            title="data",
-            media_type="image/tiff; application=…profile=cloud-optimized",
-        )
-        formats = ["geotiff"]
-        protocol = "https"
-        self.assertEqual(
-            "mldataset:geotiff:https", _get_opener_id(asset, formats, protocol)
-        )
-        self.assertEqual(
-            "dataset:geotiff:https",
-            _get_opener_id(asset, formats, protocol, opener_id="dataset:geotiff:https"),
-        )
-        with self.assertLogs("xcube.stac", level="WARNING") as cm:
-            opener_id = _get_opener_id(
-                asset, formats, protocol, opener_id="dataset:netcdf:https"
-            )
-        self.assertEqual("dataset:geotiff:https", opener_id)
-        self.assertEqual(1, len(cm.output))
-        msg = (
-            "WARNING:xcube.stac:The format of the asset 'data' is 'geotiff'. "
-            "The opener is changed from 'dataset:netcdf:https' "
-            "to 'dataset:geotiff:https'."
-        )
-        self.assertEqual(msg, str(cm.output[-1]))
-
-    def test_get_opener_id_zarr(self):
-        asset = pystac.Asset(
-            href="https://path/to/data/resource",
-            title="data",
-            media_type="application/zarr",
-        )
-        formats = ["geotiff", "zarr", "netcdf"]
-        protocol = "s3"
-        self.assertEqual("dataset:zarr:s3", _get_opener_id(asset, formats, protocol))

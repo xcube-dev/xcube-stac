@@ -163,7 +163,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 01 Jul 2024 06:55:56 GMT
+      - Wed, 10 Jul 2024 15:25:54 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       X-Cache:
@@ -173,7 +173,7 @@ interactions:
       vary:
       - Accept-Encoding
       x-azure-ref:
-      - 20240701T065556Z-1586678d48fvb4sdmzpm9r2n1s00000009f000000000nk4u
+      - 20240710T152554Z-17c86fbf54dv6wb5cbydndbt5n000000030g000000016vk2
     status:
       code: 200
       message: OK
@@ -244,7 +244,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Mon, 01 Jul 2024 06:55:56 GMT
+      - Wed, 10 Jul 2024 15:25:54 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       X-Cache:
@@ -254,45 +254,7 @@ interactions:
       vary:
       - Accept-Encoding
       x-azure-ref:
-      - 20240701T065556Z-16dbcf9f44cgmttlasnpk649ss0000000a9g00000000bb13
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://planetarycomputer.microsoft.com/api/sas/v1/token/cpdataeuwest/era5
-  response:
-    body:
-      string: '{"msft:expiry":"2024-07-01T07:40:56Z","token":"st=2024-06-30T06%3A55%3A56Z&se=2024-07-01T07%3A40%3A56Z&sp=rl&sv=2024-05-04&sr=c&skoid=9c8ff44a-6a2c-4dfb-b298-1c9212f64d9a&sktid=72f988bf-86f1-41af-91ab-2d7cd011db47&skt=2024-06-30T03%3A12%3A52Z&ske=2024-07-07T03%3A12%3A52Z&sks=b&skv=2024-05-04&sig=UmlrxTFBYe39lA/B4%2BTzD5xpiTrVIv%2BUPv6dPBgd6tI%3D"}'
-    headers:
-      Accept-Ranges:
-      - bytes
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '349'
-      Content-Type:
-      - application/json
-      Date:
-      - Mon, 01 Jul 2024 06:55:56 GMT
-      Request-Context:
-      - appId=cid-v1:75161b1b-6883-4b66-9410-715040c44427
-      Strict-Transport-Security:
-      - max-age=31536000; includeSubDomains
-      X-Cache:
-      - CONFIG_NOCACHE
-      x-azure-ref:
-      - 20240701T065556Z-16dbcf9f44cgmttlasnpk649ss0000000a7g00000000r1zn
+      - 20240710T152554Z-17c86fbf54dvn8sduu3z013kbg00000002z000000001600q
     status:
       code: 200
       message: OK

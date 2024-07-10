@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import copy
 import datetime
 import itertools
 from typing import Any, Container, Dict, Iterator, Union
@@ -28,9 +29,14 @@ import pandas as pd
 import pystac
 from shapely.geometry import box
 import xarray as xr
-from xcube.core.store import DataStoreError
+from xcube.core.store import (
+    DATASET_TYPE,
+    MULTI_LEVEL_DATASET_TYPE,
+    DataStoreError,
+    DataTypeLike,
+)
 
-from .constants import MAP_MIME_TYP_FORMAT
+from .constants import DATA_OPENER_IDS, MAP_MIME_TYP_FORMAT
 
 
 def _get_assets_from_item(
@@ -220,8 +226,8 @@ def _is_datetime_in_range(item: pystac.Item, **open_params) -> bool:
         return dt_start <= dt_data <= dt_end
     else:
         raise DataStoreError(
-            "Either 'start_datetime' and 'end_datetime' or 'datetime' "
-            "needs to be determined in the STAC item."
+            "The item`s property needs to contain either 'start_datetime' and "
+            "'end_datetime' or 'datetime'."
         )
 
 
@@ -240,16 +246,20 @@ def _do_bboxes_intersect(item: pystac.Item, **open_params) -> bool:
     return box(*item.bbox).intersects(box(*open_params["bbox"]))
 
 
-def _update_dict(dic: dict, dic_update: dict):
+def _update_dict(dic: dict, dic_update: dict, inplace: bool = True):
     """It updates a dictionary recursively.
 
     Args:
         dic: dictionary to be updated
         dic_update: update dictionary
+        inplace: if True *dic* will be overwritten; if False copy if *dic* is
+            performed before it is updated.
 
     Returns:
         dic: updated dictionary
     """
+    if not inplace:
+        dic = copy.deepcopy(dic)
     for key, val in dic_update.items():
         if isinstance(val, dict):
             dic[key] = _update_dict(dic.get(key, {}), val)
@@ -332,3 +342,69 @@ def _xarray_rename_vars(
         Dataset with renamed variables
     """
     return ds.rename_vars(name_dict)
+
+
+def _is_valid_data_type(data_type: DataTypeLike) -> bool:
+    """Auxiliary function to check if data type is supported
+    by the store.
+
+    Args:
+        data_type: Data type that is to be checked.
+
+    Returns:
+        True if *data_type* is supported by the store, otherwise False
+    """
+    return (
+        data_type is None
+        or DATASET_TYPE.is_super_type_of(data_type)
+        or MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
+    )
+
+
+def _assert_valid_data_type(data_type: DataTypeLike):
+    """Auxiliary function to assert if data type is supported
+    by the store.
+
+    Args:
+        data_type: Data type that is to be checked.
+
+    Raises:
+        DataStoreError: Error, if *data_type* is not
+            supported by the store.
+    """
+    if not _is_valid_data_type(data_type):
+        raise DataStoreError(
+            f"Data type must be {DATASET_TYPE.alias!r} or "
+            f"{MULTI_LEVEL_DATASET_TYPE.alias!r}, but got {data_type!r}."
+        )
+
+
+def _is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
+    """Auxiliary function to check if data type is a multi-level
+    dataset type.
+
+    Args:
+        data_type: Data type that is to be checked.
+
+    Returns:
+        True if *data_type* is a multi-level dataset type, otherwise False
+    """
+    return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
+
+
+def _assert_valid_opener_id(opener_id: str):
+    """Auxiliary function to assert if data opener identified by
+    *opener_id* is supported by the store.
+
+    Args:
+        opener_id: Data opener identifier
+
+    Raises:
+        DataStoreError: Error, if *opener_id* is not
+            supported by the store.
+    """
+    if opener_id is not None and opener_id not in DATA_OPENER_IDS:
+        raise DataStoreError(
+            f"Data opener identifier must be one of "
+            f"{DATA_OPENER_IDS}, but got {opener_id!r}."
+        )

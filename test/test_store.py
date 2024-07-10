@@ -37,7 +37,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.utils import _get_formats_from_item
-from xcube_stac.opener import HttpsDataOpener, S3DataOpener
+from xcube_stac.accessor import HttpsDataAccessor, S3DataAccessor
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -75,7 +75,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_EW_GRDM_1SDH_20240625T111656_20240625T111758_054479_06A12E"
+            "S1A_EW_GRDM_1SDH_20240710T123038_20240710T123059_054698_06A8D2"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -170,15 +170,21 @@ class StacDataStoreTest(unittest.TestCase):
             "dataset:zarr:https",
             "dataset:geotiff:https",
             "mldataset:geotiff:https",
+            "dataset:levels:https",
+            "mldataset:levels:https",
             "dataset:netcdf:s3",
             "dataset:zarr:s3",
             "dataset:geotiff:s3",
             "mldataset:geotiff:s3",
+            "dataset:levels:s3",
+            "mldataset:levels:s3",
         )
         self.assertEqual(opener_ids, store.get_data_opener_ids())
         opener_ids = (
             "mldataset:geotiff:https",
+            "mldataset:levels:https",
             "mldataset:geotiff:s3",
+            "mldataset:levels:s3",
         )
         self.assertEqual(opener_ids, store.get_data_opener_ids(data_type="mldataset"))
 
@@ -200,19 +206,38 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
-        # no optional arguments
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         schema = store.get_open_data_params_schema()
+        # no optional arguments
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("log_access", schema.properties)
-        self.assertIn("cache_size", schema.properties)
-        self.assertIn("group", schema.properties)
-        self.assertIn("chunks", schema.properties)
-        self.assertIn("mask_and_scale", schema.properties)
-        self.assertIn("decode_times", schema.properties)
-        self.assertIn("decode_coords", schema.properties)
-        self.assertIn("drop_variables", schema.properties)
-        self.assertIn("consolidated", schema.properties)
+        self.assertIn("asset_names", schema.properties)
+        self.assertIn("dataset:netcdf", schema.properties)
+        self.assertIn("dataset:zarr", schema.properties)
+        self.assertIn("dataset:geotiff", schema.properties)
+        self.assertIn("mldataset:geotiff", schema.properties)
+        self.assertIn("dataset:levels", schema.properties)
+        self.assertIn("mldataset:levels", schema.properties)
+
+        # test opener_id argument
+        schema = store.get_open_data_params_schema(opener_id="dataset:zarr:https")
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("asset_names", schema.properties)
+        self.assertIn("dataset:zarr", schema.properties)
+        self.assertIn("log_access", schema.properties["dataset:zarr"].properties)
+        self.assertIn("cache_size", schema.properties["dataset:zarr"].properties)
+        self.assertIn("group", schema.properties["dataset:zarr"].properties)
+        self.assertIn("chunks", schema.properties["dataset:zarr"].properties)
+        self.assertIn("mask_and_scale", schema.properties["dataset:zarr"].properties)
+        self.assertIn("decode_times", schema.properties["dataset:zarr"].properties)
+        self.assertIn("decode_coords", schema.properties["dataset:zarr"].properties)
+        self.assertIn("drop_variables", schema.properties["dataset:zarr"].properties)
+        self.assertIn("consolidated", schema.properties["dataset:zarr"].properties)
+
+        # test data_id argument
+        schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
+        self.assertIn("asset_names", schema.properties)
+        self.assertIn("dataset:geotiff", schema.properties)
+        self.assertIn("mldataset:geotiff", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -300,14 +325,14 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    # run server example in xcube-stac/examples/xcube_server by running
-    # "xcube serve --verbose -c examples/xcube_server/config.yml" in the terminal
+    # run server demo in xcube/examples/serve/demo by running
+    # "xcube serve --verbose -c examples/serve/demo/config.yml" in the terminal
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
-    def test_open_data_xcube_server_zarr(self):
+    def test_open_data_xcube_server(self):
         store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
 
-        # open data store in zarr format
-        ds = store.open_data("collections/datacubes/items/zarr_file")
+        # open data in zarr format
+        ds = store.open_data("collections/datacubes/items/local_ts")
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
@@ -325,16 +350,21 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(
             [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
         )
-        # open data store in levels format
-        ds = store.open_data("collections/datacubes/items/levels_file")
+        # open data in levels format
+        ds = store.open_data("collections/datacubes/items/local")
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
                 "analytic_c2rcc_flags",
+                "analytic_chl_category",
+                "analytic_chl_tsm_sum",
                 "analytic_conc_chl",
                 "analytic_conc_tsm",
                 "analytic_kd489",
+                "analytic_lat_bnds",
+                "analytic_lon_bnds",
                 "analytic_quality_flags",
+                "analytic_time_bnds",
             ],
             list(ds.data_vars),
         )
@@ -342,46 +372,19 @@ class StacDataStoreTest(unittest.TestCase):
             [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
         )
         # open data store in tif format
-        ds = store.open_data("collections/datacubes/items/geotiff_file")
+        mlds = store.open_data(
+            "collections/datacubes/items/cog_local", data_type="mldataset"
+        )
+        ds = mlds.base_dataset
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        self.assertEqual(3, mlds.num_levels)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
-                "analytic_band_1",
-                "analytic_band_2",
-                "analytic_band_3",
-                "analytic_spatial_ref",
-            ],
-            list(ds.data_vars),
-        )
-        self.assertCountEqual([1387, 1491], [ds.sizes["y"], ds.sizes["x"]])
-        # open data store in cloud-optimized tif format
-        ds = store.open_data(
-            "collections/datacubes/items/cog_geotiff_file",
-            opener_id="dataset:geotiff:s3",
-        )
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            [
-                "analytic_band_1",
-                "analytic_band_2",
-                "analytic_band_3",
-                "analytic_spatial_ref",
-            ],
-            list(ds.data_vars),
-        )
-        self.assertCountEqual([343, 343], [ds.sizes["y"], ds.sizes["x"]])
-        # open data store in cloud-optimized tif format in mldataaset
-        ds = store.open_data(
-            "collections/datacubes/items/cog_geotiff_file",
-            opener_id="mldataset:geotiff:s3",
-        )
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            [
-                "analytic_band_1",
-                "analytic_band_2",
-                "analytic_band_3",
-                "analytic_spatial_ref",
+                "analytic_multires_band_1",
+                "analytic_multires_band_2",
+                "analytic_multires_band_3",
+                "analytic_multires_spatial_ref",
             ],
             list(ds.data_vars),
         )
@@ -395,8 +398,10 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(
             "Data opener identifier must be one of ('dataset:netcdf:https', "
             "'dataset:zarr:https', 'dataset:geotiff:https', 'mldataset:geotiff:https', "
+            "'dataset:levels:https', 'mldataset:levels:https', "
             "'dataset:netcdf:s3', 'dataset:zarr:s3', 'dataset:geotiff:s3', "
-            "'mldataset:geotiff:s3'), but got 'wrong_opener_id'.",
+            "'mldataset:geotiff:s3', 'dataset:levels:s3', 'mldataset:levels:s3'), "
+            "but got 'wrong_opener_id'.",
             f"{cm.exception}",
         )
 
@@ -420,7 +425,7 @@ class StacDataStoreTest(unittest.TestCase):
                 39.31302874892266,
                 -5.722212794937691,
             ],
-            time_range=["2019-04-23", None],
+            time_range=("2019-04-23T00:00:00Z", None),
         )
 
         self.assertEqual(1, len(descriptors))
@@ -440,9 +445,13 @@ class StacDataStoreTest(unittest.TestCase):
 
         prefix = "collections/sentinel-2-l2a/items/"
         data_ids_expected = [
+            "S2A_32TMT_20200305_1_L2A",
             "S2A_32TMT_20200305_0_L2A",
+            "S2A_32TNT_20200305_1_L2A",
             "S2A_32TNT_20200305_0_L2A",
+            "S2A_32UMU_20200305_1_L2A",
             "S2A_32UMU_20200305_0_L2A",
+            "S2A_32UNU_20200305_1_L2A",
             "S2A_32UNU_20200305_0_L2A",
             "S2A_32TMT_20200302_1_L2A",
             "S2A_32TMT_20200302_0_L2A",
@@ -464,10 +473,10 @@ class StacDataStoreTest(unittest.TestCase):
                 9.130456971519783,
                 47.85361872923358,
             ],
-            time_range=["2020-03-05", None],
+            time_range=("2020-03-05T10:37:41.587000Z", None),
         )
 
-        self.assertEqual(12, len(descriptors))
+        self.assertEqual(16, len(descriptors))
         for d in descriptors:
             self.assertIsInstance(d, DatasetDescriptor)
         self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
@@ -498,7 +507,7 @@ class StacDataStoreTest(unittest.TestCase):
                     63.352379098951936,
                     77.69295185585888,
                 ],
-                time_range=["1999-12-02", "2000-03-20"],
+                time_range=("1999-12-02", "2000-03-20"),
             ),
             dict(
                 data_id=(
@@ -513,7 +522,7 @@ class StacDataStoreTest(unittest.TestCase):
                     63.352379098951936,
                     77.69295185585888,
                 ],
-                time_range=["2000-03-21", "2000-06-24"],
+                time_range=("2000-03-21", "2000-06-24"),
             ),
         ]
 
@@ -540,7 +549,7 @@ class StacDataStoreTest(unittest.TestCase):
                 37.86349678056911,
                 -14.169830229695073,
             ],
-            time_range=["2023-10-31", None],
+            time_range=("2023-10-31T00:00:00.000+00:00", None),
         )
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
@@ -553,7 +562,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(descriptor, DatasetDescriptor)
         self.assertEqual(1, len(cm.output))
         msg = (
-            f"INFO:xcube.stac:The data ID {self.data_id_netcdf!r} also not only "
+            f"INFO:xcube.stac:The data ID {self.data_id_netcdf!r} contains not only "
             f"assets in geotiff format. Therefore, data_type is set to 'dataset'"
         )
         self.assertEqual(msg, str(cm.output[-1]))
@@ -561,7 +570,7 @@ class StacDataStoreTest(unittest.TestCase):
             data_id=self.data_id_netcdf,
             data_type="dataset",
             bbox=[-180.0, -90.0, 180.0, 90.0],
-            time_range=["2024-06-19", None],
+            time_range=("2024-06-19T00:00:00Z", None),
         )
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
 
@@ -582,20 +591,16 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("404 Client Error: Not Found for url", f"{cm.exception}")
 
     @pytest.mark.vcr()
-    def test_get_s3_opener(self):
+    def test_get_s3_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        opener = store._get_s3_opener(
-            root="datasets", opener_id="dataset:netcdf:s3", storage_options={}
-        )
-        self.assertIsInstance(opener, S3DataOpener)
+        opener = store._get_s3_accessor(root="datasets", storage_options={})
+        self.assertIsInstance(opener, S3DataAccessor)
         self.assertEqual("datasets", opener.root)
 
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._get_s3_opener(
-                root="datasets2", opener_id="dataset:netcdf:s3", storage_options={}
-            )
-        self.assertIsInstance(opener2, S3DataOpener)
+            opener2 = store._get_s3_accessor(root="datasets2", storage_options={})
+        self.assertIsInstance(opener2, S3DataAccessor)
         self.assertEqual("datasets2", opener2.root)
         self.assertEqual(1, len(cm.output))
         msg = (
@@ -605,20 +610,16 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(msg, str(cm.output[-1]))
 
     @pytest.mark.vcr()
-    def test_get_https_opener(self):
+    def test_get_https_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        opener = store._get_https_opener(
-            root="earth-search.aws.element84.com", opener_id="dataset:netcdf:https"
-        )
-        self.assertIsInstance(opener, HttpsDataOpener)
+        opener = store._get_https_accessor(root="earth-search.aws.element84.com")
+        self.assertIsInstance(opener, HttpsDataAccessor)
         self.assertEqual("earth-search.aws.element84.com", opener.root)
 
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._get_https_opener(
-                root="planetarycomputer.microsoft.com", opener_id="dataset:netcdf:s3"
-            )
-        self.assertIsInstance(opener2, HttpsDataOpener)
+            opener2 = store._get_https_accessor(root="planetarycomputer.microsoft.com")
+        self.assertIsInstance(opener2, HttpsDataAccessor)
         self.assertEqual("planetarycomputer.microsoft.com", opener2.root)
         self.assertEqual(1, len(cm.output))
         msg = (
