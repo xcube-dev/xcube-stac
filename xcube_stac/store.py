@@ -465,9 +465,23 @@ class StacDataStore(DataStore):
 
             if protocol == "https":
                 opener = self._get_https_accessor(root)
+                format_id = _get_format_from_asset(asset)
+                ds_asset = opener.open_data(
+                    fs_path,
+                    format_id,
+                    opener_id=opener_id,
+                    data_type=data_type,
+                    **open_params,
+                )
             elif protocol == "s3":
                 opener = self._get_s3_accessor(
                     root, storage_options=self._storage_options_s3
+                )
+                ds_asset = opener.open_data(
+                    fs_path,
+                    opener_id=opener_id,
+                    data_type=data_type,
+                    **open_params,
                 )
             else:
                 url = _get_url_from_item(item)
@@ -476,14 +490,6 @@ class StacDataStore(DataStore):
                     f"The asset {asset.extra_fields['id']!r} has a href {asset.href!r}."
                     f" The item's url is given by {url!r}."
                 )
-            format_id = _get_format_from_asset(asset)
-            ds_asset = opener.open_data(
-                fs_path,
-                format_id,
-                opener_id=opener_id,
-                data_type=data_type,
-                **open_params,
-            )
 
             if isinstance(ds_asset, MultiLevelDataset):
                 var_names = list(ds_asset.base_dataset.keys())
@@ -541,14 +547,13 @@ class StacDataStore(DataStore):
                 )
         return self._s3_accessor
 
-    def _get_https_accessor(self, root: str, opener_id: str) -> HttpsDataAccessor:
+    def _get_https_accessor(self, root: str) -> HttpsDataAccessor:
         """This function returns the HTTPS data opener associated with the
         *root* url and the *opener_id*. It creates the HTTPS data opener
         only if it is not created yet or if *root* or *opener_id* changes.
 
         Args:
             root: root of URL
-            opener_id: data opener identifier
 
         Returns:
             HTTPS data opener

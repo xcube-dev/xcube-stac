@@ -18,12 +18,12 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 from typing import Union
 
 import xarray as xr
-from xcube.util.jsonschema import JsonObjectSchema
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import DataOpener, DataTypeLike, new_data_store
+from xcube.core.store import DataTypeLike, new_data_store
 
 
 class HttpsDataAccessor:

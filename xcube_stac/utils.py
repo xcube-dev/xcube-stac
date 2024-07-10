@@ -30,7 +30,7 @@ from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import DataStoreError
 
-from .constants import LOG, MAP_MIME_TYP_FORMAT
+from .constants import MAP_MIME_TYP_FORMAT
 
 
 def _get_assets_from_item(
@@ -276,7 +276,7 @@ def _get_formats_from_item(
     item: pystac.Item, asset_names: Container[str] = None
 ) -> np.array:
     """It transforms the MIME-types of selected assets stored within an item to the
-    data types used in xcube.
+    format IDs used in xcube.
 
     Args:
         item: item/feature
@@ -292,19 +292,27 @@ def _get_formats_from_item(
 
 
 def _get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
-    """It transforms the MIME-types of one or multiple assets to the
-    data types used in xcube
+    """It transforms the MIME-types of multiple assets to the
+    format IDs used in xcube.
 
     Args:
-        assets: one r multiple assets
+        assets: list of assets
 
     Returns:
-        array containing all formats
+        array containing all format IDs
     """
     return np.unique(np.array([_get_format_from_asset(asset) for asset in assets]))
 
 
 def _get_format_from_asset(asset: pystac.Asset):
+    """It transforms the MIME-types of one assets to the format IDs used in xcube.
+
+    Args:
+        asset: one asset object
+
+    Returns: format ID
+
+    """
     return MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
 
 
@@ -318,7 +326,7 @@ def _xarray_rename_vars(
     Args:
         ds: Dataset or DataArray
         name_dict: Dictionary whose keys are current variable names and whose values
-        are the desired names.
+            are the desired names.
 
     Returns:
         Dataset with renamed variables
