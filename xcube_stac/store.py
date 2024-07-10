@@ -34,19 +34,19 @@ from xcube.core.store import (
     DatasetDescriptor,
     DataStore,
     DataStoreError,
-    DataTypeLike
+    DataTypeLike,
 )
-from xcube.util.jsonschema import (
-    JsonObjectSchema,
-    JsonStringSchema
-)
+from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
 from .constants import (
     DATASET_OPENER_ID,
     MIME_TYPES,
     STAC_OPEN_PARAMETERS,
-    STAC_SEARCH_PARAMETERS
+    STAC_SEARCH_PARAMETERS,
 )
+
+
+_CATALOG_JSON = "catalog.json"
 
 
 class StacDataStore(DataStore):
@@ -65,7 +65,7 @@ class StacDataStore(DataStore):
     ):
         self._url = url
         url_mod = url
-        if url_mod[-12:] == "catalog.json":
+        if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
             url_mod = url_mod[:-12]
         if url_mod[-1] != "/":
             url_mod += "/"
@@ -87,18 +87,12 @@ class StacDataStore(DataStore):
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        stac_params = dict(
-            url=JsonStringSchema(
-                title="URL to STAC catalog"
-            )
-        )
+        stac_params = dict(url=JsonStringSchema(title="URL to STAC catalog"))
         return JsonObjectSchema(
-            description=(
-                "Describes the parameters of the xcube data store 'stac'."
-            ),
+            description=("Describes the parameters of the xcube data store 'stac'."),
             properties=stac_params,
             required=["url"],
-            additional_properties=False
+            additional_properties=False,
         )
 
     @classmethod
@@ -130,9 +124,7 @@ class StacDataStore(DataStore):
     ) -> Tuple[str, ...]:
         self._assert_valid_data_type(data_type)
         if data_id is not None and not self.has_data(data_id, data_type=data_type):
-            raise DataStoreError(
-                f"Data resource {data_id!r} is not available."
-            )
+            raise DataStoreError(f"Data resource {data_id!r} is not available.")
         return (DATASET_OPENER_ID,)
 
     def get_open_data_params_schema(
@@ -143,7 +135,7 @@ class StacDataStore(DataStore):
         return JsonObjectSchema(
             properties=dict(**STAC_OPEN_PARAMETERS),
             required=[],
-            additional_properties=False
+            additional_properties=False,
         )
 
     def open_data(
@@ -171,24 +163,22 @@ class StacDataStore(DataStore):
                 ),
                 self._convert_datetime2str(
                     self._convert_str2datetime(item.properties["end_datetime"]).date()
-                )
+                ),
             )
         elif "datetime" in item.properties:
             time_range = (
                 self._convert_datetime2str(
                     self._convert_str2datetime(item.properties["datetime"]).date()
                 ),
-                None
+                None,
             )
         else:
             DataStoreError(
-                "Either 'start_datetime' and 'end_datetime' or 'datetime' "
-                "needs to be determine in the STAC item."
+                f"The item with the data ID {data_id!r} cannot be described."
+                "The item`s property needs to contain either 'start_datetime' and "
+                "'end_datetime' or 'datetime'."
             )
-        metadata = dict(
-            bbox=item.bbox,
-            time_range=time_range
-        )
+        metadata = dict(bbox=item.bbox, time_range=time_range)
         return DatasetDescriptor(data_id, **metadata)
 
     def search_data(
@@ -202,10 +192,7 @@ class StacDataStore(DataStore):
                 search_params["datetime"] = "/".join(time_range)
             items = self._catalog.search(**search_params).items()
         else:
-            items = self._search_nonsearchable_catalog(
-                self._catalog,
-                **search_params
-            )
+            items = self._search_nonsearchable_catalog(self._catalog, **search_params)
         for item in items:
             data_id = self._get_data_id_from_item(item)
             yield self.describe_data(data_id, data_type=data_type)
@@ -217,7 +204,7 @@ class StacDataStore(DataStore):
         return JsonObjectSchema(
             properties=dict(**STAC_SEARCH_PARAMETERS),
             required=[],
-            additional_properties=False
+            additional_properties=False,
         )
 
     ##########################################################################
@@ -250,8 +237,7 @@ class StacDataStore(DataStore):
         """
         if not cls._is_valid_data_type(data_type):
             raise DataStoreError(
-                f"Data type must be {DATASET_TYPE!r}, "
-                f"but got {data_type!r}"
+                f"Data type must be {DATASET_TYPE!r}, " f"but got {data_type!r}"
             )
 
     @classmethod
@@ -269,14 +255,14 @@ class StacDataStore(DataStore):
         if opener_id is not None and opener_id != DATASET_OPENER_ID:
             raise DataStoreError(
                 f"Data opener identifier must be "
-                f'{DATASET_OPENER_ID!r}, but got {opener_id!r}'
+                f"{DATASET_OPENER_ID!r}, but got {opener_id!r}"
             )
 
     def _search_nonsearchable_catalog(
         self,
         pystac_object: Union[pystac.Catalog, pystac.Collection],
         recursive: bool = True,
-        **search_params
+        **search_params,
     ) -> Iterator[pystac.Item]:
         """Get the items of a catalog which does not implement the
         "STAC API - Item Search" conformance class.
@@ -292,23 +278,23 @@ class StacDataStore(DataStore):
             An iterator over the items matching the **open_params.
         """
 
-        if (
-            pystac_object.extra_fields["type"] != "Collection" or
-            pystac_object.id in search_params.get("collections", [pystac_object.id])
+        if pystac_object.extra_fields[
+            "type"
+        ] != "Collection" or pystac_object.id in search_params.get(
+            "collections", [pystac_object.id]
         ):
             if recursive:
                 if any(True for _ in pystac_object.get_children()):
-                    iterators = (self._search_nonsearchable_catalog(
-                        child,
-                        recursive=True,
-                        **search_params
-                    ) for child in pystac_object.get_children())
+                    iterators = (
+                        self._search_nonsearchable_catalog(
+                            child, recursive=True, **search_params
+                        )
+                        for child in pystac_object.get_children()
+                    )
                     yield from itertools.chain(*iterators)
                 else:
                     iterator = self._search_nonsearchable_catalog(
-                        pystac_object,
-                        recursive=False,
-                        **search_params
+                        pystac_object, recursive=False, **search_params
                     )
                     yield from iterator
             else:
@@ -372,9 +358,7 @@ class StacDataStore(DataStore):
             dt_start_data = self._convert_str2datetime(
                 item.properties["start_datetime"]
             )
-            dt_end_data = self._convert_str2datetime(
-                item.properties["end_datetime"]
-            )
+            dt_end_data = self._convert_str2datetime(item.properties["end_datetime"])
             return dt_end >= dt_start_data and dt_start <= dt_end_data
         elif "datetime" in item.properties:
             dt_data = self._convert_str2datetime(item.properties["datetime"])
@@ -410,20 +394,18 @@ class StacDataStore(DataStore):
             item object
         """
         response = requests.request(method="GET", url=self._url_mod + data_id)
-        if response.status_code == 200:
+        if response.ok:
             return pystac.Item.from_dict(
                 json.loads(response.text),
                 href=self._url + data_id,
                 root=self._catalog,
-                preserve_dict=False
+                preserve_dict=False,
             )
         else:
             DataStoreError(response.raise_for_status())
 
     def _get_assets_from_item(
-        self,
-        item: pystac.Item,
-        **open_params
+        self, item: pystac.Item, **open_params
     ) -> Iterator[pystac.Asset]:
         """Get all assets for a given item, which has a MIME data type
 
@@ -437,9 +419,8 @@ class StacDataStore(DataStore):
             # test if asset is in 'asset_names' and the media type is
             # one of the predefined MIME types; note that if asset_names
             # is ot given all assets are returned matching the MINE types;
-            if (
-                k in open_params.get("asset_names", [k]) and
-                any(x in MIME_TYPES for x in v.media_type.split("; "))
+            if k in open_params.get("asset_names", [k]) and any(
+                x in MIME_TYPES for x in v.media_type.split("; ")
             ):
                 v.extra_fields["id"] = k
                 yield v
@@ -459,8 +440,7 @@ class StacDataStore(DataStore):
         return links[0].href.replace(self._url_mod, "")
 
     def _get_attrs_from_item(
-            self, item: pystac.Item,
-            include_attrs: Container[str]
+        self, item: pystac.Item, include_attrs: Container[str]
     ) -> str:
         """Extracts the desired attributes from an item object.
 
