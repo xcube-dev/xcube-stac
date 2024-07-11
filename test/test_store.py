@@ -163,7 +163,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertFalse(store.has_data(data_id, data_type=str))
         self.assertTrue(store.has_data(data_id, data_type="mldataset"))
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_opener_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         opener_ids = (
