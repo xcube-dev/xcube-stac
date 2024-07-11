@@ -13,6 +13,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: xcube-dev/xcube
+          path: xcube
 
       - name: checkout xcube-stac
         uses: actions/checkout@v4
@@ -25,7 +26,7 @@ jobs:
       - name: Install xcube
         shell: bash -l {0}
         run: |
-          cd /home/runner/work/xcube/xcube
+          cd /home/runner/work/xcube-stac/xcube
           ls
           pip install .
 

@@ -67,26 +67,27 @@ from .utils import (
 
 _CATALOG_JSON = "catalog.json"
 
-https_store = new_data_store("https")
-_OPEN_DATA_PARAMETERS = {}
-_OPEN_DATA_PARAMETERS["dataset:netcdf"] = https_store.get_open_data_params_schema(
-    opener_id="dataset:netcdf:https"
-)
-_OPEN_DATA_PARAMETERS["dataset:zarr"] = https_store.get_open_data_params_schema(
-    opener_id="dataset:zarr:https"
-)
-_OPEN_DATA_PARAMETERS["dataset:geotiff"] = https_store.get_open_data_params_schema(
-    opener_id="dataset:geotiff:https"
-)
-_OPEN_DATA_PARAMETERS["mldataset:geotiff"] = https_store.get_open_data_params_schema(
-    opener_id="mldataset:geotiff:https"
-)
-_OPEN_DATA_PARAMETERS["dataset:levels"] = https_store.get_open_data_params_schema(
-    opener_id="dataset:levels:https"
-)
-_OPEN_DATA_PARAMETERS["mldataset:levels"] = https_store.get_open_data_params_schema(
-    opener_id="mldataset:levels:https"
-)
+_HTTPS_STORE = new_data_store("https")
+_OPEN_DATA_PARAMETERS = {
+    "dataset:netcdf": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:netcdf:https"
+    ),
+    "dataset:zarr": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:zarr:https"
+    ),
+    "dataset:geotiff": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:geotiff:https"
+    ),
+    "mldataset:geotiff": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="mldataset:geotiff:https"
+    ),
+    "dataset:levels": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:levels:https"
+    ),
+    "mldataset:levels": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="mldataset:levels:https"
+    ),
+}
 
 
 class StacDataStore(DataStore):
