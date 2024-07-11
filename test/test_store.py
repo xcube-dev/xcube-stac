@@ -449,7 +449,6 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_search_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        # assigned data_type to dataset
         descriptors = list(
             store.search_data(
                 data_type="dataset",
@@ -473,31 +472,6 @@ class StacDataStoreTest(unittest.TestCase):
 
         self.assertEqual(1, len(descriptors))
         self.assertIsInstance(descriptors[0], DatasetDescriptor)
-        self.assertEqual(expected_descriptor, descriptors[0].to_dict())
-        # no data_type assigned
-        descriptors = list(
-            store.search_data(
-                collections="zanzibar-collection",
-                bbox=[39.28, -5.74, 39.31, -5.72],
-                time_range=["2019-04-23", "2019-04-24"],
-            )
-        )
-
-        expected_descriptor = dict(
-            data_id="zanzibar/znz001.json",
-            data_type="mldataset",
-            num_levels=8,
-            bbox=[
-                39.28919876472999,
-                -5.743028283012867,
-                39.31302874892266,
-                -5.722212794937691,
-            ],
-            time_range=("2019-04-23T00:00:00Z", None),
-        )
-
-        self.assertEqual(1, len(descriptors))
-        self.assertIsInstance(descriptors[0], MultiLevelDatasetDescriptor)
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
     @pytest.mark.vcr()
@@ -552,7 +526,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
     @pytest.mark.vcr()
-    def test_search_data_time_range(self):
+    def test_search_data_multi_level(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
         descriptors = list(
             store.search_data(

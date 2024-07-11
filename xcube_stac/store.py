@@ -267,7 +267,12 @@ class StacDataStore(DataStore):
                 )
 
         if get_mldd:
-            mlds = self.open_data(data_id, data_type=data_type)
+            assets = _list_assets_from_item(item)
+            mlds = self.open_data(
+                data_id,
+                data_type="mldataset",
+                asset_names=[assets[0].extra_fields["id"]],
+            )
             return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
         else:
             return DatasetDescriptor(data_id, **metadata)
