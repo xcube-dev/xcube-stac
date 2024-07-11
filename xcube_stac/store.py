@@ -58,6 +58,7 @@ from .utils import (
     _get_formats_from_item,
     _get_url_from_item,
     _is_valid_data_type,
+    _is_valid_dataset_data_type,
     _is_valid_ml_data_type,
     _assert_valid_opener_id,
     _search_nonsearchable_catalog,
@@ -249,21 +250,26 @@ class StacDataStore(DataStore):
         elif "datetime" in item.properties:
             time_range = (item.properties["datetime"], None)
         metadata = dict(bbox=item.bbox, time_range=time_range)
-        if self._is_xcube_server_item(data_id):
-            if _is_valid_ml_data_type(data_type):
-                mlds = self.open_data(data_id, data_type=data_type)
-                return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
-            else:
-                DatasetDescriptor(data_id, **metadata)
-        if self._are_all_assets_geotiffs(data_id) and _is_valid_ml_data_type(data_type):
-            mlds = self.open_data(data_id, data_type=data_type)
-            return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
+
+        # decision between MultiLevelDatasetDescriptor and DatasetDescriptor
+        get_mldd = False
+        if self._is_xcube_server_item(data_id) and _is_valid_ml_data_type(data_type):
+            get_mldd = True
+        elif self._are_all_assets_geotiffs(data_id) and not _is_valid_dataset_data_type(
+            data_type
+        ):
+            get_mldd = True
         else:
             if _is_valid_ml_data_type(data_type):
                 LOG.info(
                     f"The data ID {data_id!r} contains not only assets in geotiff "
                     f"format. Therefore, data_type is set to {DATASET_TYPE.alias!r}"
                 )
+
+        if get_mldd:
+            mlds = self.open_data(data_id, data_type=data_type)
+            return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
+        else:
             return DatasetDescriptor(data_id, **metadata)
 
     def search_data(
@@ -342,7 +348,7 @@ class StacDataStore(DataStore):
         assets: list[pystac.Asset],
         asset_names: list[str] = None,
         data_type: DataTypeLike = None,
-    ):
+    ) -> list[str]:
         """Selects the asset from item published by xcube server according to
         the data type. If no data type is given, the asset linking to 'dataset'
         will be returned.
@@ -373,7 +379,9 @@ class StacDataStore(DataStore):
             )
         return assets
 
-    def _extract_params_xcube_server_asset(self, asset: pystac.Asset):
+    def _extract_params_xcube_server_asset(
+        self, asset: pystac.Asset
+    ) -> tuple[str, str, str, dict]:
         """Extracts the data store parameters and the data ID from an asset
         published by xcube server.
 

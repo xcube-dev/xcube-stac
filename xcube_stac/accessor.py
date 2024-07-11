@@ -39,7 +39,7 @@ class HttpsDataAccessor:
         self._https_accessor = new_data_store("https", root=root, read_only=True)
 
     @property
-    def root(self):
+    def root(self) -> str:
         return self._root
 
     def open_data(
@@ -87,7 +87,7 @@ class S3DataAccessor:
         )
 
     @property
-    def root(self):
+    def root(self) -> str:
         return self._root
 
     def open_data(

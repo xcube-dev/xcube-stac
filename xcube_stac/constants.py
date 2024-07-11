@@ -37,7 +37,6 @@ MAP_MIME_TYP_FORMAT = {
     "application/x-netcdf": "netcdf",
     "application/vnd+zarr": "zarr",
     "application/zarr": "zarr",
-    "image/jp2": "geotiff",
     "image/tiff": "geotiff",
 }
 

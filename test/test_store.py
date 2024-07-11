@@ -449,8 +449,10 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_search_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
+        # assigned data_type to dataset
         descriptors = list(
             store.search_data(
+                data_type="dataset",
                 collections="zanzibar-collection",
                 bbox=[39.28, -5.74, 39.31, -5.72],
                 time_range=["2019-04-23", "2019-04-24"],
@@ -472,12 +474,38 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, len(descriptors))
         self.assertIsInstance(descriptors[0], DatasetDescriptor)
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
+        # no data_type assigned
+        descriptors = list(
+            store.search_data(
+                collections="zanzibar-collection",
+                bbox=[39.28, -5.74, 39.31, -5.72],
+                time_range=["2019-04-23", "2019-04-24"],
+            )
+        )
+
+        expected_descriptor = dict(
+            data_id="zanzibar/znz001.json",
+            data_type="mldataset",
+            num_levels=8,
+            bbox=[
+                39.28919876472999,
+                -5.743028283012867,
+                39.31302874892266,
+                -5.722212794937691,
+            ],
+            time_range=("2019-04-23T00:00:00Z", None),
+        )
+
+        self.assertEqual(1, len(descriptors))
+        self.assertIsInstance(descriptors[0], MultiLevelDatasetDescriptor)
+        self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
     @pytest.mark.vcr()
     def test_search_data_searchable_catalog(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         descriptors = list(
             store.search_data(
+                data_type="dataset",
                 collections=["sentinel-2-l2a"],
                 bbox=[9, 47, 10, 48],
                 time_range=["2020-03-01", "2020-03-05"],
@@ -541,7 +569,8 @@ class StacDataStoreTest(unittest.TestCase):
                     ".12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02"
                     "..2000.03.20.json"
                 ),
-                data_type="dataset",
+                data_type="mldataset",
+                num_levels=9,
                 bbox=[
                     -23.550818268711048,
                     24.399543432891665,
@@ -556,7 +585,8 @@ class StacDataStoreTest(unittest.TestCase):
                     ".03.21..2000.06.24/lcv_blue_landsat.glad.ard_2000.03.21"
                     "..2000.06.24.json"
                 ),
-                data_type="dataset",
+                data_type="mldataset",
+                num_levels=9,
                 bbox=[
                     -23.550818268711048,
                     24.399543432891665,

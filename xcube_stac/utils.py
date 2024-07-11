@@ -393,6 +393,19 @@ def _is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
 
 
+def _is_valid_dataset_data_type(data_type: DataTypeLike) -> bool:
+    """Auxiliary function to check if data type is a dataset
+    data type.
+
+    Args:
+        data_type: Data type that is to be checked.
+
+    Returns:
+        True if *data_type* is a dataset data type, otherwise False
+    """
+    return DATASET_TYPE.is_super_type_of(data_type)
+
+
 def _assert_valid_opener_id(opener_id: str):
     """Auxiliary function to assert if data opener identified by
     *opener_id* is supported by the store.
