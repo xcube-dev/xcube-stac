@@ -9,13 +9,25 @@ jobs:
   unittest:
     runs-on: ubuntu-latest
     steps:
+      - name: checkout xcube
+        uses: actions/checkout@v4
+        with:
+          repository: xcube-dev/xcube
+
       - name: checkout xcube-stac
         uses: actions/checkout@v4
 
       - name: Set up MicroMamba
         uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: environment.yml
+          environment-file: environment_workflow.yml
+
+      - name: Install xcube
+        shell: bash -l {0}
+        run: |
+          cd /home/runner/work/xcube/xcube
+          ls
+          pip install .
 
       - name: Run unit tests
         shell: bash -l {0}
