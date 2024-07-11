@@ -17,6 +17,8 @@ jobs:
 
       - name: checkout xcube-stac
         uses: actions/checkout@v4
+        with:
+          path: xcube-stac
 
       - name: Set up MicroMamba
         uses: mamba-org/setup-micromamba@v1
@@ -26,13 +28,13 @@ jobs:
       - name: Install xcube
         shell: bash -l {0}
         run: |
-          cd /home/runner/work/xcube-stac/xcube
+          cd /home/runner/work/xcube-stac/xcube-stac/xcube
           ls
           pip install .
 
       - name: Run unit tests
         shell: bash -l {0}
         run: |
-          cd /home/runner/work/xcube-stac/xcube-stac
+          cd /home/runner/work/xcube-stac/xcube-stac/xcube-stac
           ls
           pytest 

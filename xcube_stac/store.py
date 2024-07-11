@@ -466,19 +466,28 @@ class StacDataStore(DataStore):
                 )
             else:
                 protocol, root, fs_path, storage_options = _decode_href(asset.href)
+
             if protocol == "s3":
                 self._storage_options_s3 = _update_dict(
                     self._storage_options_s3, storage_options
                 )
+
+            if opener_id is not None:
+                key = ":".join(opener_id.split(":")[:2])
+                open_params_asset = _OPEN_DATA_PARAMETERS[key]
+            elif data_type is not None:
+                format_id = _get_format_from_asset(asset)
+                open_params_asset = _OPEN_DATA_PARAMETERS[f"{data_type}:{format_id}"]
+            else:
+
             if protocol == "https":
                 opener = self._get_https_accessor(root)
-                format_id = _get_format_from_asset(asset)
                 ds_asset = opener.open_data(
                     fs_path,
                     format_id,
                     opener_id=opener_id,
                     data_type=data_type,
-                    **open_params,
+                    **open_params_asset,
                 )
             elif protocol == "s3":
                 opener = self._get_s3_accessor(
@@ -488,7 +497,7 @@ class StacDataStore(DataStore):
                     fs_path,
                     opener_id=opener_id,
                     data_type=data_type,
-                    **open_params,
+                    **open_params_asset,
                 )
             else:
                 url = _get_url_from_item(item)
