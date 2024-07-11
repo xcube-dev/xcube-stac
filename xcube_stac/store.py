@@ -23,6 +23,7 @@ import json
 import warnings
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 
+import numpy as np
 import pystac
 import pystac_client
 import requests
@@ -52,15 +53,16 @@ from .href_parse import _decode_href
 from .accessor import HttpsDataAccessor, S3DataAccessor
 from .utils import (
     _assert_valid_data_type,
+    _assert_valid_opener_id,
     _get_attrs_from_item,
-    _list_assets_from_item,
+    _get_formats_from_assets,
     _get_format_from_asset,
     _get_formats_from_item,
     _get_url_from_item,
     _is_valid_data_type,
     _is_valid_dataset_data_type,
     _is_valid_ml_data_type,
-    _assert_valid_opener_id,
+    _list_assets_from_item,
     _search_nonsearchable_catalog,
     _update_dict,
     _xarray_rename_vars,
@@ -150,8 +152,9 @@ class StacDataStore(DataStore):
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         _assert_valid_data_type(data_type)
+        ml_data_type = _is_valid_ml_data_type(data_type)
         for item in self._catalog.get_items(recursive=True):
-            if _is_valid_ml_data_type(data_type):
+            if ml_data_type:
                 formats = _get_formats_from_item(item)
                 if not (len(formats) == 1 and formats[0] == "geotiff"):
                     continue
@@ -181,17 +184,46 @@ class StacDataStore(DataStore):
         self, data_id: str = None, data_type: DataTypeLike = None
     ) -> Tuple[str, ...]:
         _assert_valid_data_type(data_type)
+
         if data_id is not None:
             if not self.has_data(data_id, data_type=data_type):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
-        if data_type is None:
+            item = self._access_item(data_id)
+            assets = _list_assets_from_item(item)
+            formats = _get_formats_from_assets(assets)
+            if self._is_xcube_server_item(data_id):
+                protocols = np.array(["s3"])
+            else:
+                protocols = []
+                for asset in assets:
+                    protocol, _, _, _ = _decode_href(asset.href)
+                    protocols.append(protocol)
+                protocols = np.unique(protocols)
+
+        if data_type is None and data_id is None:
             return DATA_OPENER_IDS
-        else:
+        elif data_type is None and data_id is not None:
+            return tuple(
+                opener_id
+                for opener_id in DATA_OPENER_IDS
+                if opener_id.split(":")[1] in formats
+                and opener_id.split(":")[2] in protocols
+            )
+        elif data_type is not None and data_id is None:
             data_type = DataType.normalize(data_type)
             return tuple(
                 opener_id
                 for opener_id in DATA_OPENER_IDS
                 if opener_id.split(":")[0] == data_type.alias
+            )
+        elif data_type is not None and data_id is not None:
+            data_type = DataType.normalize(data_type)
+            return tuple(
+                opener_id
+                for opener_id in DATA_OPENER_IDS
+                if opener_id.split(":")[0] == data_type.alias
+                and opener_id.split(":")[1] in formats
+                and opener_id.split(":")[2] in protocols
             )
 
     def get_open_data_params_schema(
@@ -271,7 +303,7 @@ class StacDataStore(DataStore):
             mlds = self.open_data(
                 data_id,
                 data_type="mldataset",
-                asset_names=[assets[0].extra_fields["id"]],
+                asset_names=[assets[-1].extra_fields["id"]],
             )
             return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
         else:

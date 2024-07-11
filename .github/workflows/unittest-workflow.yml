@@ -25,7 +25,7 @@ jobs:
         with:
           environment-file: xcube-stac/environment_workflow.yml
 
-      - name: Install xcube
+      - name: Install xcube and start xcube server
         shell: bash -l {0}
         run: |
           cd /home/runner/work/xcube-stac/xcube-stac/xcube

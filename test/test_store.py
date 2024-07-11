@@ -163,7 +163,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertFalse(store.has_data(data_id, data_type=str))
         self.assertTrue(store.has_data(data_id, data_type="mldataset"))
 
-    @pytest.mark.vcr()
+    # @pytest.mark.vcr()
     def test_get_data_opener_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         opener_ids = (
@@ -180,14 +180,30 @@ class StacDataStoreTest(unittest.TestCase):
             "dataset:levels:s3",
             "mldataset:levels:s3",
         )
-        self.assertEqual(opener_ids, store.get_data_opener_ids())
+        self.assertCountEqual(opener_ids, store.get_data_opener_ids())
         opener_ids = (
             "mldataset:geotiff:https",
             "mldataset:levels:https",
             "mldataset:geotiff:s3",
             "mldataset:levels:s3",
         )
-        self.assertEqual(opener_ids, store.get_data_opener_ids(data_type="mldataset"))
+        self.assertCountEqual(
+            opener_ids, store.get_data_opener_ids(data_type="mldataset")
+        )
+        opener_ids = (
+            "mldataset:geotiff:s3",
+            "dataset:geotiff:s3",
+        )
+        self.assertCountEqual(
+            opener_ids, store.get_data_opener_ids(data_id=self.data_id_nonsearchable)
+        )
+        opener_ids = ("dataset:geotiff:s3",)
+        self.assertEqual(
+            opener_ids,
+            store.get_data_opener_ids(
+                data_id=self.data_id_nonsearchable, data_type="dataset"
+            ),
+        )
 
     @pytest.mark.vcr()
     def test_get_data_opener_ids_optional_args(self):
@@ -595,6 +611,23 @@ class StacDataStoreTest(unittest.TestCase):
                 -14.169830229695073,
             ],
             time_range=("2023-10-31T00:00:00.000+00:00", None),
+        )
+        self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
+        self.assertDictEqual(expected_descriptor, descriptor.to_dict())
+
+    # run server demo in xcube/examples/serve/demo by running
+    # "xcube serve --verbose -c examples/serve/demo/config.yml" in the terminal
+    @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
+    def test_describe_data_xcube_server(self):
+        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        data_id = "collections/datacubes/items/local"
+        descriptor = store.describe_data(data_id, data_type="mldataset")
+        expected_descriptor = dict(
+            data_id=data_id,
+            data_type="mldataset",
+            num_levels=3,
+            bbox=[0, 50, 5, 52.5],
+            time_range=("2017-01-16T10:09:21Z", "2017-01-30T10:46:33Z"),
         )
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
