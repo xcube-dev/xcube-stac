@@ -41,6 +41,15 @@ MAP_MIME_TYP_FORMAT = {
     "image/tiff": "geotiff",
 }
 
+MAP_FILE_EXTENSION_FORMAT = {
+    ".nc": "netcdf",
+    ".zarr": "zarr",
+    ".tif": "geotiff",
+    ".tiff": "geotiff",
+    ".geotiff": "geotiff",
+    ".levels": "levels",
+}
+
 DATA_OPENER_IDS = (
     "dataset:netcdf:https",
     "dataset:zarr:https",

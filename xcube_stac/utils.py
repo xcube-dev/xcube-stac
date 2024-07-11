@@ -23,6 +23,7 @@ import copy
 import datetime
 import itertools
 from typing import Any, Container, Dict, Iterator, Union
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -36,7 +37,7 @@ from xcube.core.store import (
     DataTypeLike,
 )
 
-from .constants import DATA_OPENER_IDS, MAP_MIME_TYP_FORMAT
+from .constants import DATA_OPENER_IDS, MAP_FILE_EXTENSION_FORMAT, MAP_MIME_TYP_FORMAT
 
 
 def _get_assets_from_item(
@@ -246,7 +247,7 @@ def _do_bboxes_intersect(item: pystac.Item, **open_params) -> bool:
     return box(*item.bbox).intersects(box(*open_params["bbox"]))
 
 
-def _update_dict(dic: dict, dic_update: dict, inplace: bool = True):
+def _update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     """It updates a dictionary recursively.
 
     Args:
@@ -314,7 +315,7 @@ def _get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
     return np.unique(np.array([_get_format_from_asset(asset) for asset in assets]))
 
 
-def _get_format_from_asset(asset: pystac.Asset):
+def _get_format_from_asset(asset: pystac.Asset) -> str:
     """It transforms the MIME-types of one assets to the format IDs used in xcube.
 
     Args:

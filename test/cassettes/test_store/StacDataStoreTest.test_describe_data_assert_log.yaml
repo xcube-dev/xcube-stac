@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 10 Jul 2024 15:25:42 GMT
+      - Thu, 11 Jul 2024 08:52:17 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -72,7 +72,7 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909cef5f02:-454c
+      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3d5a
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -139,84 +139,13 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 10 Jul 2024 15:25:42 GMT
+      - Thu, 11 Jul 2024 08:52:17 GMT
       Referrer-Policy:
       - same-origin
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909d294462:-733b
-      X-Content-Type-Options:
-      - nosniff
-      X-Control-flow-delay-ms:
-      - '1'
-      X-Frame-Options:
-      - SAMEORIGIN
-    status:
-      code: 200
-      message: ''
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson
-  response:
-    body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json"],"id":"S5P_DLR_NRTI_01_040201_L3_CF_20240619","collection":"S5P_TROPOMI_L3_P1D_CF","geometry":{"type":"Polygon","coordinates":[[[-180,-90],[180,-90],[180,90],[-180,90],[-180,-90]]]},"bbox":[-180.0,-90.0,180.0,90.0],"properties":{"created":"2024-06-19T04:01:09.684+00:00","updated":"2024-06-20T06:01:02.560+00:00","datetime":"2024-06-19T00:00:00Z","platform":"Sentinel
-        5 Precursor","constellation":"Sentinel-5P","instruments":"TROPOMI","license":"CC-BY
-        4.0","proj:epsg":4326,"processing:facility":"Remote Sensing Technology Institute
-        (IMF)","processing:level":"L3","processing:software":{"UMAS":"4.2.1","UMAS":"4.2.1"},"proj:bbox":[-180.0,-90.0,180.0,90.0],"proj:shape":[1800,3600],"s5p:collection_identifier":"01","s5p:datasource":"Sentinel-5P,
-        TROPOMI, space-borne remote sensing","s5p:head_facility":"German Aerospace
-        Center (DLR)","s5p:l2_algorithm_version":"UPAS-CLOUD-ROCINN-4.1.0","s5p:processing_mode":"NRTI","s5p:product_name":"cf","s5p:spatial_resolution":"5.5
-        x 3.5 km2"},"assets":{"data":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.nc","type":"application/netcdf","title":"Metadata","description":"Original
-        S5P \"CF\" NetCDF File. Can also be loaded as data file and contains important
-        metadata information.","roles":["metadata","data"]},"overview":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_overview.tif","type":"image/tiff;
-        application=geotiff; profile=cloud-optimized","title":"Overview","description":"Full-resolution
-        overview as Cloud-Optimized GeoTiff of the \"radiometric_cloud_fraction\"
-        variable.","roles":["overview"]},"cf":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_cf.tif","type":"image/tiff;
-        application=geotiff; profile=cloud-optimized","title":"CF","description":"TROPOMI/S5P
-        L3 data of radiometric cloud fraction with a global coverage and a 5.5 x 3.5
-        km2 spatial resolution.","raster:bands":[{"data_type":"float32","scale":1.0,"offset":0.0,"sampling":"area","nodata":9.969209968386869E36,"unit":"1","statistics":{"mean":0.42738193794594204,"minimum":-0.06974887102842331,"maximum":1.0863522291183472,"stddev":0.3422094075839206,"valid_percent":84.17911529541016},"histogram":{"count":11,"min":-0.06974887102842331,"max":1.0863522291183472,"buckets":[68801,70446,49926,42691,36739,32766,31390,30181,35760,42641]}}],"roles":["data"]},"thumbnail":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_thumbnail.png","type":"image/png","title":"Thumbnail","description":"Thumbnail
-        of the \"radiometric_cloud_fraction\" variable.","roles":["thumbnail"]},"quicklook":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.png","type":"image/png","title":"Quicklook","description":"High-resolution
-        quicklook of the \"radiometric_cloud_fraction\" variable.","roles":["quicklook"]}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
-        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
-        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=application%2Fjson","type":"application/json"},{"title":"Collection
-        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
-        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
-        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
-        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
-    headers:
-      API-Version:
-      - 1.0.0
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
-      Access-Control-Allow-Methods:
-      - GET, POST, OPTIONS
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '6179'
-      Content-Type:
-      - application/geo+json
-      Date:
-      - Wed, 10 Jul 2024 15:25:43 GMT
-      Referrer-Policy:
-      - same-origin
-      Server:
-      - nginx
-      Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909cef5f02:-454a
+      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3d5b
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -281,13 +210,84 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 10 Jul 2024 15:25:43 GMT
+      - Thu, 11 Jul 2024 08:52:18 GMT
       Referrer-Policy:
       - same-origin
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909cef5f02:-453d
+      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3d6f
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json"],"id":"S5P_DLR_NRTI_01_040201_L3_CF_20240619","collection":"S5P_TROPOMI_L3_P1D_CF","geometry":{"type":"Polygon","coordinates":[[[-180,-90],[180,-90],[180,90],[-180,90],[-180,-90]]]},"bbox":[-180.0,-90.0,180.0,90.0],"properties":{"created":"2024-06-19T04:01:09.684+00:00","updated":"2024-06-20T06:01:02.560+00:00","datetime":"2024-06-19T00:00:00Z","platform":"Sentinel
+        5 Precursor","constellation":"Sentinel-5P","instruments":"TROPOMI","license":"CC-BY
+        4.0","proj:epsg":4326,"processing:facility":"Remote Sensing Technology Institute
+        (IMF)","processing:level":"L3","processing:software":{"UMAS":"4.2.1","UMAS":"4.2.1"},"proj:bbox":[-180.0,-90.0,180.0,90.0],"proj:shape":[1800,3600],"s5p:collection_identifier":"01","s5p:datasource":"Sentinel-5P,
+        TROPOMI, space-borne remote sensing","s5p:head_facility":"German Aerospace
+        Center (DLR)","s5p:l2_algorithm_version":"UPAS-CLOUD-ROCINN-4.1.0","s5p:processing_mode":"NRTI","s5p:product_name":"cf","s5p:spatial_resolution":"5.5
+        x 3.5 km2"},"assets":{"data":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.nc","type":"application/netcdf","title":"Metadata","description":"Original
+        S5P \"CF\" NetCDF File. Can also be loaded as data file and contains important
+        metadata information.","roles":["metadata","data"]},"overview":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_overview.tif","type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","title":"Overview","description":"Full-resolution
+        overview as Cloud-Optimized GeoTiff of the \"radiometric_cloud_fraction\"
+        variable.","roles":["overview"]},"cf":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_cf.tif","type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","title":"CF","description":"TROPOMI/S5P
+        L3 data of radiometric cloud fraction with a global coverage and a 5.5 x 3.5
+        km2 spatial resolution.","raster:bands":[{"data_type":"float32","scale":1.0,"offset":0.0,"sampling":"area","nodata":9.969209968386869E36,"unit":"1","statistics":{"mean":0.42738193794594204,"minimum":-0.06974887102842331,"maximum":1.0863522291183472,"stddev":0.3422094075839206,"valid_percent":84.17911529541016},"histogram":{"count":11,"min":-0.06974887102842331,"max":1.0863522291183472,"buckets":[68801,70446,49926,42691,36739,32766,31390,30181,35760,42641]}}],"roles":["data"]},"thumbnail":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_thumbnail.png","type":"image/png","title":"Thumbnail","description":"Thumbnail
+        of the \"radiometric_cloud_fraction\" variable.","roles":["thumbnail"]},"quicklook":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.png","type":"image/png","title":"Quicklook","description":"High-resolution
+        quicklook of the \"radiometric_cloud_fraction\" variable.","roles":["quicklook"]}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
+        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
+        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=application%2Fjson","type":"application/json"},{"title":"Collection
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
+        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
+        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '6179'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Thu, 11 Jul 2024 08:52:18 GMT
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3d7f
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:

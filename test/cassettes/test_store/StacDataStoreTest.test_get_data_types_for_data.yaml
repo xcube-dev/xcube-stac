@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 10 Jul 2024 15:25:50 GMT
+      - Thu, 11 Jul 2024 08:52:26 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Wed, 10 Jul 2024 15:30:50 GMT
+      - Thu, 11 Jul 2024 08:57:26 GMT
       Source-Age:
-      - '131'
+      - '15'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 4071e536886bd882fa456b290b31923bc5cb05b0
+      - 0fffccd492ee226edaa79581a3c0d3dfec581567
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - A197:3970F0:858223:8C42E2:668E9499
+      - EB7A:35FBCE:CE464A:D82B72:668F9D3B
       X-Served-By:
-      - cache-fra-eddf8230063-FRA
+      - cache-cph2320028-CPH
       X-Timer:
-      - S1720625151.636886,VS0,VE1
+      - S1720687947.707365,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 10 Jul 2024 15:25:50 GMT
+      - Thu, 11 Jul 2024 08:52:26 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Wed, 10 Jul 2024 15:30:50 GMT
+      - Thu, 11 Jul 2024 08:57:26 GMT
       Source-Age:
-      - '131'
+      - '15'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -129,19 +129,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '1'
+      - '3'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - c0618a5065a9072039b80051fdab3413093c32ac
+      - 198e26605fec7d22e7bde4b412ad4e717344319b
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - A197:3970F0:858249:8C42F8:668E949A
+      - 422A:3AB699:3161EEF:33D2DA3:668F9D3B
       X-Served-By:
-      - cache-fra-eddf8230150-FRA
+      - cache-cph2320027-CPH
       X-Timer:
-      - S1720625151.687467,VS0,VE1
+      - S1720687947.758414,VS0,VE0
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -217,13 +217,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 10 Jul 2024 15:25:50 GMT
+      - Thu, 11 Jul 2024 08:52:26 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Wed, 10 Jul 2024 15:30:50 GMT
+      - Thu, 11 Jul 2024 08:57:26 GMT
       Source-Age:
-      - '118'
+      - '0'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -231,21 +231,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - f134ae87b17deb10972a2da50e436598e766bb35
+      - fe5a833302a951e033978f57a0d9b423f2627176
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 5777:34BD36:1945F20:1A73ABA:668E94A7
+      - 6BA5:37FEB6:31EC739:347AE55:668F9D4A
       X-Served-By:
-      - cache-fra-eddf8230083-FRA
+      - cache-cph2320021-CPH
       X-Timer:
-      - S1720625151.738612,VS0,VE1
+      - S1720687947.807551,VS0,VE120
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -305,7 +305,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 10 Jul 2024 15:25:50 GMT
+      - Thu, 11 Jul 2024 08:52:27 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -324,7 +324,7 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909d294462:-7328
+      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:45d
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -391,13 +391,13 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 10 Jul 2024 15:25:51 GMT
+      - Thu, 11 Jul 2024 08:52:27 GMT
       Referrer-Policy:
       - same-origin
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_4ab6db45:1909cea7f91:-41dc
+      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3da2
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -462,13 +462,13 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 10 Jul 2024 15:25:51 GMT
+      - Thu, 11 Jul 2024 08:52:30 GMT
       Referrer-Policy:
       - same-origin
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909cef5f02:-4529
+      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:45f
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:

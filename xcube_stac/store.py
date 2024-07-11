@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 import json
+import warnings
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 
 import pystac
@@ -69,22 +70,22 @@ _CATALOG_JSON = "catalog.json"
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
-    "dataset:netcdf": _HTTPS_STORE.get_open_data_params_schema(
+    "open_params_dataset_netcdf": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:netcdf:https"
     ),
-    "dataset:zarr": _HTTPS_STORE.get_open_data_params_schema(
+    "open_params_dataset_zarr": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:zarr:https"
     ),
-    "dataset:geotiff": _HTTPS_STORE.get_open_data_params_schema(
+    "open_params_dataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:geotiff:https"
     ),
-    "mldataset:geotiff": _HTTPS_STORE.get_open_data_params_schema(
+    "open_params_mldataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="mldataset:geotiff:https"
     ),
-    "dataset:levels": _HTTPS_STORE.get_open_data_params_schema(
+    "open_params_dataset_levels": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:levels:https"
     ),
-    "mldataset:levels": _HTTPS_STORE.get_open_data_params_schema(
+    "open_params_mldataset_levels": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="mldataset:levels:https"
     ),
 }
@@ -198,14 +199,15 @@ class StacDataStore(DataStore):
         _assert_valid_opener_id(opener_id)
         properties = {}
         if opener_id is not None:
-            key = ":".join(opener_id.split(":")[:2])
+            key = "_".join(opener_id.split(":")[:2])
+            key = f"open_params_{key}"
             properties[key] = _OPEN_DATA_PARAMETERS[key]
         if data_id is not None:
             item = self._access_item(data_id)
             formats = _get_formats_from_item(item)
             for form in formats:
                 for key in _OPEN_DATA_PARAMETERS.keys():
-                    if form == key.split(":")[1]:
+                    if form == key.split("_")[-1]:
                         properties[key] = _OPEN_DATA_PARAMETERS[key]
         if not properties:
             properties = _OPEN_DATA_PARAMETERS
@@ -472,13 +474,18 @@ class StacDataStore(DataStore):
                     self._storage_options_s3, storage_options
                 )
 
+            format_id = _get_format_from_asset(asset)
             if opener_id is not None:
-                key = ":".join(opener_id.split(":")[:2])
-                open_params_asset = _OPEN_DATA_PARAMETERS[key]
+                key = "_".join(opener_id.split(":")[:2])
+                open_params_asset = open_params.get(f"open_params_{key}", {})
             elif data_type is not None:
-                format_id = _get_format_from_asset(asset)
-                open_params_asset = _OPEN_DATA_PARAMETERS[f"{data_type}:{format_id}"]
+                open_params_asset = open_params.get(
+                    f"open_params_{data_type}_{format_id}", {}
+                )
             else:
+                open_params_asset = open_params.get(
+                    f"open_params_dataset_{format_id}", {}
+                )
 
             if protocol == "https":
                 opener = self._get_https_accessor(root)

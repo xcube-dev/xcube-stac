@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 10 Jul 2024 15:25:55 GMT
+      - Thu, 11 Jul 2024 08:52:34 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -72,7 +72,7 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909cef5f02:-4518
+      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:473
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -139,13 +139,13 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 10 Jul 2024 15:25:55 GMT
+      - Thu, 11 Jul 2024 08:52:35 GMT
       Referrer-Policy:
       - same-origin
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_4ab6db45:1909cea7f91:-4190
+      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3dbc
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:

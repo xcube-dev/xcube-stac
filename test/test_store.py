@@ -19,6 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import datetime
 import itertools
 import unittest
 import urllib.request
@@ -75,7 +76,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_EW_GRDM_1SDH_20240710T123038_20240710T123059_054698_06A8D2"
+            "S1A_EW_GRDM_1SDV_20240711T073732_20240711T073811_054710_06A929"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -211,33 +212,41 @@ class StacDataStoreTest(unittest.TestCase):
         # no optional arguments
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("dataset:netcdf", schema.properties)
-        self.assertIn("dataset:zarr", schema.properties)
-        self.assertIn("dataset:geotiff", schema.properties)
-        self.assertIn("mldataset:geotiff", schema.properties)
-        self.assertIn("dataset:levels", schema.properties)
-        self.assertIn("mldataset:levels", schema.properties)
+        self.assertIn("open_params_dataset_netcdf", schema.properties)
+        self.assertIn("open_params_dataset_zarr", schema.properties)
+        self.assertIn("open_params_dataset_geotiff", schema.properties)
+        self.assertIn("open_params_mldataset_geotiff", schema.properties)
+        self.assertIn("open_params_dataset_levels", schema.properties)
+        self.assertIn("open_params_mldataset_levels", schema.properties)
 
         # test opener_id argument
         schema = store.get_open_data_params_schema(opener_id="dataset:zarr:https")
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("dataset:zarr", schema.properties)
-        self.assertIn("log_access", schema.properties["dataset:zarr"].properties)
-        self.assertIn("cache_size", schema.properties["dataset:zarr"].properties)
-        self.assertIn("group", schema.properties["dataset:zarr"].properties)
-        self.assertIn("chunks", schema.properties["dataset:zarr"].properties)
-        self.assertIn("mask_and_scale", schema.properties["dataset:zarr"].properties)
-        self.assertIn("decode_times", schema.properties["dataset:zarr"].properties)
-        self.assertIn("decode_coords", schema.properties["dataset:zarr"].properties)
-        self.assertIn("drop_variables", schema.properties["dataset:zarr"].properties)
-        self.assertIn("consolidated", schema.properties["dataset:zarr"].properties)
+        self.assertIn("open_params_dataset_zarr", schema.properties)
+        self.assertNotIn("open_params_dataset_netcdf", schema.properties)
+        self.assertCountEqual(
+            [
+                "log_access",
+                "cache_size",
+                "group",
+                "chunks",
+                "mask_and_scale",
+                "decode_cf",
+                "decode_times",
+                "decode_coords",
+                "drop_variables",
+                "consolidated",
+            ],
+            schema.properties["open_params_dataset_zarr"].properties.keys(),
+        )
 
         # test data_id argument
         schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("dataset:geotiff", schema.properties)
-        self.assertIn("mldataset:geotiff", schema.properties)
+        self.assertIn("open_params_dataset_geotiff", schema.properties)
+        self.assertIn("open_params_mldataset_geotiff", schema.properties)
+        self.assertNotIn("open_params_dataset_zarr", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -350,6 +359,38 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(
             [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
         )
+        # open data in zarr format with open_params
+        open_params_dataset_zarr = dict(chunks={"time": 5, "lat": 128, "lon": 128})
+        ds = store.open_data(
+            "collections/datacubes/items/local_ts",
+            open_params_dataset_zarr=open_params_dataset_zarr,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            [
+                "analytic_c2rcc_flags",
+                "analytic_conc_chl",
+                "analytic_conc_tsm",
+                "analytic_kd489",
+                "analytic_lat_bnds",
+                "analytic_lon_bnds",
+                "analytic_quality_flags",
+                "analytic_time_bnds",
+            ],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual(
+            [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
+        )
+        self.assertCountEqual(
+            [128, 128, 5],
+            [
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+                ds.chunksizes["time"][0],
+            ],
+        )
+
         # open data in levels format
         ds = store.open_data("collections/datacubes/items/local")
         self.assertIsInstance(ds, xr.Dataset)
