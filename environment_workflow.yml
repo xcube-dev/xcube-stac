@@ -44,6 +44,8 @@ dependencies:
   - xarray >=2022.6
   - zarr >=2.11
 # Required xcube-stac
+  - odc-geo
+  - odc-stac
   - pystac
   - pystac-client
   # for testing
