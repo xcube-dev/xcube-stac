@@ -19,7 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
 import itertools
 import unittest
 import urllib.request
@@ -133,7 +132,7 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = store.get_data_ids(data_type="mldataset")
         data_ids = list(itertools.islice(data_ids, 1))
         self.assertEqual(1, len(data_ids))
-        item = store._access_item(data_ids[0])
+        item = store._impl.access_item(data_ids[0])
         formats = _get_formats_from_item(item)
         self.assertEqual(["geotiff"], formats)
 
@@ -665,19 +664,19 @@ class StacDataStoreTest(unittest.TestCase):
     def test_access_item_failed(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         with self.assertRaises(requests.exceptions.HTTPError) as cm:
-            store._access_item(self.data_id_nonsearchable.replace("z", "s"))
+            store._impl.access_item(self.data_id_nonsearchable.replace("z", "s"))
         self.assertIn("404 Client Error: Not Found for url", f"{cm.exception}")
 
     @pytest.mark.vcr()
     def test_get_s3_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        opener = store._get_s3_accessor(root="datasets", storage_options={})
+        opener = store._impl._get_s3_accessor(root="datasets", storage_options={})
         self.assertIsInstance(opener, S3DataAccessor)
         self.assertEqual("datasets", opener.root)
 
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._get_s3_accessor(root="datasets2", storage_options={})
+            opener2 = store._impl._get_s3_accessor(root="datasets2", storage_options={})
         self.assertIsInstance(opener2, S3DataAccessor)
         self.assertEqual("datasets2", opener2.root)
         self.assertEqual(1, len(cm.output))
@@ -691,12 +690,14 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_https_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        opener = store._get_https_accessor(root="earth-search.aws.element84.com")
+        opener = store._impl._get_https_accessor(root="earth-search.aws.element84.com")
         self.assertIsInstance(opener, HttpsDataAccessor)
         self.assertEqual("earth-search.aws.element84.com", opener.root)
 
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._get_https_accessor(root="planetarycomputer.microsoft.com")
+            opener2 = store._impl._get_https_accessor(
+                root="planetarycomputer.microsoft.com"
+            )
         self.assertIsInstance(opener2, HttpsDataAccessor)
         self.assertEqual("planetarycomputer.microsoft.com", opener2.root)
         self.assertEqual(1, len(cm.output))

@@ -20,9 +20,12 @@
 # SOFTWARE.
 
 import logging
+from typing import Union
 
 from xcube.util.jsonschema import (
     JsonArraySchema,
+    JsonComplexSchema,
+    JsonBooleanSchema,
     JsonDateSchema,
     JsonNumberSchema,
     JsonStringSchema,
@@ -31,6 +34,7 @@ from xcube.util.jsonschema import (
 
 DATA_STORE_ID = "stac"
 LOG = logging.getLogger("xcube.stac")
+FloatInt = Union[float, int]
 
 MAP_MIME_TYP_FORMAT = {
     "application/netcdf": "netcdf",
@@ -64,7 +68,27 @@ DATA_OPENER_IDS = (
     "mldataset:levels:s3",
 )
 
-STAC_SEARCH_PARAMETERS = dict(
+MLDATASET_FORMATS = ["levels", "geotiff"]
+
+STAC_STORE_PARAMETERS = dict(
+    url=JsonStringSchema(title="URL to STAC catalog"),
+    stack_mode=JsonComplexSchema(
+        one_of=[
+            JsonStringSchema(
+                title="Backend for stacking STAC items",
+                description="So far, only 'odc-stac' is supported as a backend.",
+                const="odc-stac",
+            ),
+            JsonBooleanSchema(
+                title="Decide if stacking of STAC items is applied",
+                description="If True, 'odc-stac' is used as a default backend.",
+                default=False,
+            ),
+        ],
+    ),
+)
+
+STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
     time_range=JsonArraySchema(
         items=[
             JsonDateSchema(nullable=True),
@@ -86,6 +110,10 @@ STAC_SEARCH_PARAMETERS = dict(
         ),
         title="Bounding box [x1,y1,x2,y2] in geographical coordinates",
     ),
+)
+
+STAC_SEARCH_PARAMETERS = dict(
+    **STAC_SEARCH_PARAMETERS_STACK_MODE,
     collections=JsonArraySchema(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,
@@ -93,6 +121,7 @@ STAC_SEARCH_PARAMETERS = dict(
         description="Collection IDs to be included in the search request.",
     ),
 )
+
 
 STAC_OPEN_PARAMETERS = dict(
     asset_names=JsonArraySchema(

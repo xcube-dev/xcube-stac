@@ -29,7 +29,7 @@ from xcube_stac.utils import (
     _convert_datetime2str,
     _convert_str2datetime,
     _do_bboxes_intersect,
-    _is_datetime_in_range,
+    _is_item_in_time_range,
     _update_dict,
 )
 
@@ -90,13 +90,13 @@ class UtilsTest(unittest.TestCase):
         ]
 
         for time_start, time_end, fun in item1_test_paramss:
-            fun(_is_datetime_in_range(item1, time_range=[time_start, time_end]))
+            fun(_is_item_in_time_range(item1, time_range=[time_start, time_end]))
 
         for time_start, time_end, fun in item2_test_paramss:
-            fun(_is_datetime_in_range(item2, time_range=[time_start, time_end]))
+            fun(_is_item_in_time_range(item2, time_range=[time_start, time_end]))
 
         with self.assertRaises(DataStoreError) as cm:
-            _is_datetime_in_range(
+            _is_item_in_time_range(
                 item3, time_range=[item1_test_paramss[0][0], item1_test_paramss[0][1]]
             )
         self.assertEqual(
@@ -123,7 +123,7 @@ class UtilsTest(unittest.TestCase):
         ]
 
         for west, south, east, north, fun in item_test_paramss:
-            fun(_do_bboxes_intersect(item, bbox=[west, south, east, north]))
+            fun(_do_bboxes_intersect(item.bbox, bbox=[west, south, east, north]))
 
     def test_update_nested_dict(self):
         dic = dict(a=1, b=dict(c=3))

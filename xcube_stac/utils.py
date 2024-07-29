@@ -23,7 +23,6 @@ import copy
 import datetime
 import itertools
 from typing import Any, Container, Dict, Iterator, Union
-import warnings
 
 import numpy as np
 import pandas as pd
@@ -37,7 +36,7 @@ from xcube.core.store import (
     DataTypeLike,
 )
 
-from .constants import DATA_OPENER_IDS, MAP_FILE_EXTENSION_FORMAT, MAP_MIME_TYP_FORMAT
+from .constants import DATA_OPENER_IDS, FloatInt, MAP_MIME_TYP_FORMAT
 
 
 def _get_assets_from_item(
@@ -126,23 +125,51 @@ def _search_nonsearchable_catalog(
             for item in pystac_object.get_items():
                 # test if item's bbox intersects with the desired bbox
                 if "bbox" in search_params:
-                    if not _do_bboxes_intersect(item, **search_params):
+                    if not _do_bboxes_intersect(item.bbox, **search_params):
                         continue
                 # test if item fit to desired time range
                 if "time_range" in search_params:
-                    if not _is_datetime_in_range(item, **search_params):
+                    if not _is_item_in_time_range(item, **search_params):
                         continue
                 # iterate through assets of item
                 yield item
 
 
-def _get_attrs_from_item(
-    item: pystac.Item, include_attrs: Container[str]
+def _search_collections(
+    catalog: pystac.Catalog,
+    **search_params,
+) -> Iterator[pystac.Item]:
+    """Get the collections of a catalog for given search parameters
+
+    Args:
+        catalog: pystac catalog object
+
+    Yields:
+        An iterator over the items matching the **open_params.
+    """
+
+    for collection in catalog.get_collections():
+        # test if collection's bbox intersects with the desired bbox
+        if "bbox" in search_params:
+            if not _do_bboxes_intersect(
+                collection.extent.spatial.bboxes, **search_params
+            ):
+                continue
+        # test if collection fit to desired time range
+        if "time_range" in search_params:
+            if not _is_collection_in_time_range(collection, **search_params):
+                continue
+        # iterate through assets of item
+        yield collection
+
+
+def _get_attrs_from_pystac_object(
+    pystac_obj: Union[pystac.Item, pystac.Collection], include_attrs: Container[str]
 ) -> Dict[str, Any]:
     """Extracts the desired attributes from an item object.
 
     Args:
-        item: Item object
+        pystac_obj: Item or collection object
         include_attrs: A sequence of names of attributes to be returned
             for each dataset identifier. If given, the store will attempt
             to provide the set of requested dataset attributes in addition
@@ -154,18 +181,22 @@ def _get_attrs_from_item(
         of data resources provided by this data store
     """
     attrs = {}
-    if "id" in include_attrs and hasattr(item, "id"):
-        attrs["id"] = item.id
-    if "bbox" in include_attrs and hasattr(item, "bbox"):
-        attrs["bbox"] = item.bbox
-    if "geometry" in include_attrs and hasattr(item, "geometry"):
-        attrs["geometry"] = item.geometry
-    if "properties" in include_attrs and hasattr(item, "properties"):
-        attrs["properties"] = item.properties
-    if "links" in include_attrs and hasattr(item, "links"):
-        attrs["links"] = item.links
-    if "assets" in include_attrs and hasattr(item, "assets"):
-        attrs["assets"] = item.assets
+    supported_keys = [
+        "id",
+        "title",
+        "description",
+        "keywords",
+        "extent",
+        "summaries",
+        "bbox",
+        "geometry",
+        "properties",
+        "links",
+        "assets",
+    ]
+    for key in supported_keys:
+        if key in include_attrs and hasattr(pystac_obj, key):
+            attrs[key] = getattr(pystac_obj, key)
     return attrs
 
 
@@ -197,7 +228,7 @@ def _convert_datetime2str(dt: Union[datetime.datetime, datetime.date]) -> str:
     return dt.isoformat()
 
 
-def _is_datetime_in_range(item: pystac.Item, **open_params) -> bool:
+def _is_item_in_time_range(item: pystac.Item, **open_params) -> bool:
     """Determine whether the datetime or datetime range of an item
     intersects to the 'time_range' given by *open_params*.
 
@@ -232,19 +263,44 @@ def _is_datetime_in_range(item: pystac.Item, **open_params) -> bool:
         )
 
 
-def _do_bboxes_intersect(item: pystac.Item, **open_params) -> bool:
+def _is_collection_in_time_range(collection: pystac.Collection, **open_params) -> bool:
+    """Determine whether collection temporal extent
+    intersects to the 'time_range' given by *open_params*.
+
+    Args:
+        collection: pystac collection object
+        open_params: Optional opening parameters which need
+            to include 'time_range'
+
+    Returns:
+        True, if the temporal extent of a collection is within or overlapping
+        the 'time_range'; otherwise False.
+    """
+    dt_start = _convert_str2datetime(open_params["time_range"][0])
+    dt_end = _convert_str2datetime(open_params["time_range"][1])
+    temp_extent = collection.extent.temporal.intervals
+    if temp_extent[1] is None:
+        return dt_start <= temp_extent[0] <= dt_end
+    else:
+        return dt_end >= temp_extent[0] and dt_start <= temp_extent[1]
+
+
+def _do_bboxes_intersect(
+    bbox_test: [FloatInt, FloatInt, FloatInt, FloatInt], **open_params
+) -> bool:
     """Determine whether two bounding boxes intersect.
 
     Args:
-        item: item/feature
+        bbox_test: bounding box to be tested against the bounding box given
+            in *open_params*.
         open_params: Optional opening parameters which need
-            to include 'bbox'
+            to include 'bbox'.
 
     Returns:
         True if the bounding box given by the item intersects with
         the bounding box given by *open_params*, otherwise False.
     """
-    return box(*item.bbox).intersects(box(*open_params["bbox"]))
+    return box(*bbox_test).intersects(box(*open_params["bbox"]))
 
 
 def _update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
@@ -253,7 +309,7 @@ def _update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     Args:
         dic: dictionary to be updated
         dic_update: update dictionary
-        inplace: if True *dic* will be overwritten; if False copy if *dic* is
+        inplace: if True *dic* will be overwritten; if False copy of *dic* is
             performed before it is updated.
 
     Returns:
@@ -269,16 +325,18 @@ def _update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     return dic
 
 
-def _get_url_from_item(item: pystac.Item) -> str:
+def _get_url_from_pystac_object(
+    pystac_obj: Union[pystac.Item, pystac.collection]
+) -> str:
     """Extracts the URL an item object.
 
     Args:
-        item: Item object
+        pystac_obj: Item or collection object
 
     Returns:
         the URL of an item.
     """
-    links = [link for link in item.links if link.rel == "self"]
+    links = [link for link in pystac_obj.links if link.rel == "self"]
     assert len(links) == 1
     return links[0].href
 
@@ -316,7 +374,7 @@ def _get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
 
 
 def _get_format_from_asset(asset: pystac.Asset) -> str:
-    """It transforms the MIME-types of one assets to the format IDs used in xcube.
+    """It transforms the MIME-types of one asset to the format IDs used in xcube.
 
     Args:
         asset: one asset object
@@ -325,6 +383,106 @@ def _get_format_from_asset(asset: pystac.Asset) -> str:
 
     """
     return MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
+
+
+def _are_all_assets_geotiffs(item: pystac.Item) -> bool:
+    """Auxiliary function to check if all assets are tifs, tiffs, or geotiffs.
+
+    Args:
+        item: item object
+
+    Returns: True, if all assets within the item are tifs, tiffs, or geotiffs.
+
+    """
+    formats = _get_formats_from_item(item)
+    return len(formats) == 1 and formats[0] == "geotiff"
+
+
+def _is_xcube_server_item(item: pystac.Item) -> bool:
+    """Auxiliary function to check if the item is published by xcube server.
+
+    Args:
+        item: item object
+
+    Returns: True, if item is published by xcube server.
+
+    """
+    assets = _list_assets_from_item(item)
+    return _is_xcube_server_asset(assets)
+
+
+def _is_xcube_server_asset(asset: Union[pystac.Asset, list[pystac.Asset]]) -> bool:
+    """Auxiliary function to check if the asset(s) is/are published by xcube server.
+
+    Args:
+        asset: a list or single pystac.Asset object
+
+    Returns: True, if the asset(s) is/are published by xcube server.
+
+    """
+    if isinstance(asset, list):
+        asset = asset[0]
+    return "xcube:data_store_id" in asset.extra_fields
+
+
+def _select_xcube_server_asset(
+    assets: list[pystac.Asset],
+    asset_names: list[str] = None,
+    data_type: DataTypeLike = None,
+) -> list[pystac.Asset]:
+    """Selects the asset from item published by xcube server according to
+    the data type. If no data type is given, the asset linking to 'dataset'
+    will be returned.
+
+    Args:
+        assets: list of asset object
+        asset_names: asset names given in *open_params* in :meth:`open_data`
+        data_type: required data type of the return value in :meth:`open_data`
+
+    Returns:
+        assets: selected asset
+
+    Raises:
+        DataStoreError: Error, if "analytic" and "analytic_multires" is selected
+            in *asset_names*
+    """
+    if asset_names is None:
+        if _is_valid_ml_data_type(data_type):
+            assets = [assets[1]]
+        else:
+            assets = [assets[0]]
+    elif "analytic_multires" in asset_names and "analytic" in asset_names:
+        raise DataStoreError(
+            "Xcube server publishes data resources as 'dataset' and "
+            "'mldataset' under the asset names 'analytic' and "
+            "'analytic_multires'. Please select only one asset in "
+            "<asset_names> when opening the data."
+        )
+    return assets
+
+
+def _extract_params_xcube_server_asset(
+    asset: pystac.Asset,
+) -> tuple[str, str, str, dict]:
+    """Extracts the data store parameters and the data ID from an asset
+    published by xcube server.
+
+    Args:
+        asset: asset object
+
+    Returns:
+        protocol: protocol needed for the data store ID
+        root: bucket for S3 or root url for https
+        fs_path: path to file which is equivalent to data ID needed
+            to open the data
+        storage_options: additional storage options
+    """
+    protocol = asset.extra_fields["xcube:data_store_id"]
+    data_store_params = asset.extra_fields["xcube:data_store_params"]
+    root = data_store_params["root"]
+    storage_options = data_store_params["storage_options"]
+    fs_path = asset.extra_fields["xcube:open_data_params"]["data_id"]
+    return protocol, root, fs_path, storage_options
 
 
 def _xarray_rename_vars(
@@ -422,3 +580,19 @@ def _assert_valid_opener_id(opener_id: str):
             f"Data opener identifier must be one of "
             f"{DATA_OPENER_IDS}, but got {opener_id!r}."
         )
+
+
+def _get_data_id_from_pystac_object(
+    pystac_obj: Union[pystac.Item, pystac.Collection], catalog_url: str
+) -> str:
+    """Extracts the data ID from an item object.
+
+    Args:
+        pystac_obj: Item or collection object.
+        catalog_url: internally modified catalog URL.
+
+    Returns:
+        data ID consisting the URL section of an item
+        following the catalog URL.
+    """
+    return _get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
