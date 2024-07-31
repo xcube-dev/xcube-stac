@@ -108,7 +108,7 @@ STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
             JsonNumberSchema(),
             JsonNumberSchema(),
         ),
-        title="Bounding box [x1,y1,x2,y2] in geographical coordinates",
+        title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
     ),
 )
 
@@ -130,4 +130,28 @@ STAC_OPEN_PARAMETERS = dict(
         title="Names of assets",
         description="Names of assets which will be included in the data cube.",
     )
+)
+
+STAC_OPEN_PARAMETERS_STACK_MODE = dict(
+    time_range=JsonArraySchema(
+        items=[
+            JsonDateSchema(nullable=True),
+            JsonDateSchema(nullable=True),
+        ],
+        title="Time Range",
+        description=(
+            "Time range given as pair of start and stop dates. "
+            "Dates must be given using format 'YYYY-MM-DD'. "
+            "Start and stop are inclusive."
+        ),
+    ),
+    bbox=JsonArraySchema(
+        items=(
+            JsonNumberSchema(),
+            JsonNumberSchema(),
+            JsonNumberSchema(),
+            JsonNumberSchema(),
+        ),
+        title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
+    ),
 )

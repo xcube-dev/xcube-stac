@@ -70,28 +70,6 @@ from .utils import (
 
 _CATALOG_JSON = "catalog.json"
 
-_HTTPS_STORE = new_data_store("https")
-_OPEN_DATA_PARAMETERS = {
-    "open_params_dataset_netcdf": _HTTPS_STORE.get_open_data_params_schema(
-        opener_id="dataset:netcdf:https"
-    ),
-    "open_params_dataset_zarr": _HTTPS_STORE.get_open_data_params_schema(
-        opener_id="dataset:zarr:https"
-    ),
-    "open_params_dataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
-        opener_id="dataset:geotiff:https"
-    ),
-    "open_params_mldataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
-        opener_id="mldataset:geotiff:https"
-    ),
-    "open_params_dataset_levels": _HTTPS_STORE.get_open_data_params_schema(
-        opener_id="dataset:levels:https"
-    ),
-    "open_params_mldataset_levels": _HTTPS_STORE.get_open_data_params_schema(
-        opener_id="mldataset:levels:https"
-    ),
-}
-
 
 class StacDataStore(DataStore):
     """STAC implementation of the data store.
@@ -134,11 +112,6 @@ class StacDataStore(DataStore):
             self._impl = StackImplementation(
                 self._catalog, self._url_mod, self._searchable, self._storage_options_s3
             )
-        else:
-            raise DataStoreError(
-                "The keyword argument <stack_mode> needs to be either True, "
-                "False or 'odc-stac'."
-            )
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
@@ -167,7 +140,8 @@ class StacDataStore(DataStore):
     def get_data_ids(
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
-        is_mldataset = _assert_valid_data_type(data_type)
+        _assert_valid_data_type(data_type)
+        is_mldataset = _is_valid_ml_data_type(data_type)
         data_ids_obj = self._impl.get_data_ids(is_mldataset)
         for data_id, pystac_obj in data_ids_obj:
             if include_attrs is None:
@@ -202,10 +176,11 @@ class StacDataStore(DataStore):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
             item = self._impl.access_item(data_id)
             assets = _list_assets_from_item(item)
-            formats = _get_formats_from_assets(assets)
             if _is_xcube_server_item(item):
                 protocols = np.array(["s3"])
+                formats = ["zarr", "levels"]
             else:
+                formats = _get_formats_from_assets(assets)
                 protocols = []
                 for asset in assets:
                     protocol, _, _, _ = _decode_href(asset.href)
@@ -242,24 +217,8 @@ class StacDataStore(DataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         _assert_valid_opener_id(opener_id)
-        properties = {}
-        if opener_id is not None:
-            key = "_".join(opener_id.split(":")[:2])
-            key = f"open_params_{key}"
-            properties[key] = _OPEN_DATA_PARAMETERS[key]
-        if data_id is not None:
-            item = self._impl.access_item(data_id)
-            formats = _get_formats_from_item(item)
-            for form in formats:
-                for key in _OPEN_DATA_PARAMETERS.keys():
-                    if form == key.split("_")[-1]:
-                        properties[key] = _OPEN_DATA_PARAMETERS[key]
-        if not properties:
-            properties = _OPEN_DATA_PARAMETERS
-        return JsonObjectSchema(
-            properties=_update_dict(properties, STAC_OPEN_PARAMETERS, inplace=False),
-            required=[],
-            additional_properties=False,
+        return self._impl.get_open_data_params_schema(
+            data_id=data_id, opener_id=opener_id
         )
 
     def open_data(
@@ -269,8 +228,6 @@ class StacDataStore(DataStore):
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
-        # schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
-        # schema.validate_instance(open_params)
         _assert_valid_data_type(data_type)
         _assert_valid_opener_id(opener_id)
         return self._impl.open_data(

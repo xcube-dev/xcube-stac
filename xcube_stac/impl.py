@@ -22,11 +22,10 @@
 import json
 from typing import Any, Iterator, Union
 
+import numpy as np
 import odc.stac
 import odc.geo
-import pyproj
 import pystac
-import rasterio
 import requests
 import xarray as xr
 from xcube.core.mldataset import (
@@ -34,27 +33,29 @@ from xcube.core.mldataset import (
     CombinedMultiLevelDataset,
     LazyMultiLevelDataset,
 )
-from xcube.core.store import (
-    DataStoreError,
-    DataTypeLike,
-)
+from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
 
 from .constants import (
+    FloatInt,
     LOG,
+    MLDATASET_FORMATS,
+    STAC_OPEN_PARAMETERS,
+    STAC_OPEN_PARAMETERS_STACK_MODE,
     STAC_SEARCH_PARAMETERS,
     STAC_SEARCH_PARAMETERS_STACK_MODE,
 )
 from .href_parse import _decode_href
 from .accessor import HttpsDataAccessor, S3DataAccessor
-from .constants import MLDATASET_FORMATS
 from .utils import (
+    _apply_scaling_nodata,
+    _convert_datetime2str,
     _extract_params_xcube_server_asset,
-    _get_assets_from_item,
     _get_data_id_from_pystac_object,
     _get_format_from_asset,
     _get_formats_from_item,
+    _get_resolutions_cog,
     _get_url_from_pystac_object,
     _is_xcube_server_asset,
     _is_valid_ml_data_type,
@@ -65,6 +66,28 @@ from .utils import (
     _update_dict,
     _xarray_rename_vars,
 )
+
+_HTTPS_STORE = new_data_store("https")
+_OPEN_DATA_PARAMETERS = {
+    "open_params_dataset_netcdf": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:netcdf:https"
+    ),
+    "open_params_dataset_zarr": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:zarr:https"
+    ),
+    "open_params_dataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:geotiff:https"
+    ),
+    "open_params_mldataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="mldataset:geotiff:https"
+    ),
+    "open_params_dataset_levels": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:levels:https"
+    ),
+    "open_params_mldataset_levels": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="mldataset:levels:https"
+    ),
+}
 
 
 class SingleImplementation:
@@ -116,6 +139,31 @@ class SingleImplementation:
             data_id = _get_data_id_from_pystac_object(item, catalog_url=self._url_mod)
             yield data_id, item
 
+    def get_open_data_params_schema(
+        self,
+        data_id: str = None,
+        opener_id: str = None,
+    ):
+        properties = {}
+        if opener_id is not None:
+            key = "_".join(opener_id.split(":")[:2])
+            key = f"open_params_{key}"
+            properties[key] = _OPEN_DATA_PARAMETERS[key]
+        if data_id is not None:
+            item = self.access_item(data_id)
+            formats = _get_formats_from_item(item)
+            for form in formats:
+                for key in _OPEN_DATA_PARAMETERS.keys():
+                    if form == key.split("_")[-1]:
+                        properties[key] = _OPEN_DATA_PARAMETERS[key]
+        if not properties:
+            properties = _OPEN_DATA_PARAMETERS
+        return JsonObjectSchema(
+            properties=_update_dict(properties, STAC_OPEN_PARAMETERS, inplace=False),
+            required=[],
+            additional_properties=False,
+        )
+
     def open_data(
         self,
         data_id: str,
@@ -123,10 +171,14 @@ class SingleImplementation:
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
+        schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
+        schema.validate_instance(open_params)
         item = self.access_item(data_id)
-        return self.build_dataset(
+        ds = self.build_dataset(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
+        ds = _apply_scaling_nodata(ds, item)
+        return ds
 
     def get_extent(self, data_id: str) -> dict:
         item = self.access_item(data_id)
@@ -356,6 +408,9 @@ class StackImplementation:
         Raises:
             DataStoreError: Error, if the item json cannot be accessed.
         """
+        prefix = "collections/"
+        if prefix in data_id:
+            data_id = data_id.replace(prefix, "")
         return self._catalog.get_child(data_id)
 
     def access_item(self, data_id: str) -> pystac.Item:
@@ -387,29 +442,42 @@ class StackImplementation:
             )
             yield data_id, collection
 
+    def get_open_data_params_schema(
+        self,
+        data_id: str = None,
+        opener_id: str = None,
+    ):
+        return JsonObjectSchema(
+            properties=dict(**STAC_OPEN_PARAMETERS_STACK_MODE),
+            required=[],
+            additional_properties=False,
+        )
+
     def open_data(
         self,
         data_id: str,
         opener_id: str = None,
         data_type: DataTypeLike = None,
+        bbox: [FloatInt, FloatInt, FloatInt, FloatInt] = None,
+        time_range: [str, str] = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
-        time_range = open_params.pop("time_range", None)
         if time_range is not None:
             "/".join(time_range)
-        bbox = open_params.pop("bbox", None)
         items = list(
             self._catalog.search(
                 collections=[data_id], bbox=bbox, datetime=time_range
             ).items()
         )
+        get_mldd = False
         if data_type is None and opener_id is None:
             formats = _get_formats_from_item(
                 items[0], asset_names=open_params.get("bands")
             )
-            get_mldd = False
             if len(formats) == 1 and formats[0] in MLDATASET_FORMATS:
                 get_mldd = True
+        if opener_id is None:
+            opener_id = ""
         if (
             get_mldd
             or _is_valid_ml_data_type(data_type)
@@ -417,18 +485,34 @@ class StackImplementation:
         ):
             ds = StackModeMultiLevelDataset(data_id, items, **open_params)
         else:
-            ds = odc.stac.load(items, **open_params)
+            resolutions = _get_resolutions_cog(
+                items[0],
+                asset_names=open_params.get("asset_names", None),
+                crs=open_params.get("crs", None),
+            )
+            ds = odc.stac.load(
+                items,
+                resolution=resolutions[0],
+                **open_params,
+            )
+            ds = _apply_scaling_nodata(ds, items)
         return ds
 
     def get_extent(self, data_id: str) -> dict:
         collection = self.access_collection(data_id)
+        temp_extent = collection.extent.temporal.intervals[0]
+        temp_extent_str = [None, None]
+        if temp_extent[0] is not None:
+            temp_extent_str[0] = _convert_datetime2str(temp_extent[0])
+        if temp_extent[1] is not None:
+            temp_extent_str[1] = _convert_datetime2str(temp_extent[1])
         return dict(
-            bbox=list(collection.extent.spatial.bboxes),
-            time_range=collection.extent.temporal.intervals,
+            bbox=collection.extent.spatial.bboxes[0],
+            time_range=temp_extent_str,
         )
 
     def search_data(self, **search_params) -> Iterator[pystac.Item]:
-        return _search_collections(**search_params)
+        return _search_collections(self._catalog, **search_params)
 
     @classmethod
     def get_search_params_schema(cls) -> JsonObjectSchema:
@@ -459,30 +543,20 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
         self._open_params = open_params
         self._items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
-        # get number of overview levels and corresponding resolutions
-        asset_names = open_params.pop("asset_names", None)
-        asset = next(_get_assets_from_item(items[0], asset_names=asset_names))
-        with rasterio.open(asset.href) as rio_dataset_reader:
-            self._overviews = [1] + rio_dataset_reader.overviews(1)
-            self._resolution = rio_dataset_reader.res
-            self._crs = rio_dataset_reader.crs
-        self._num_levels = len(self._overviews)
+        self._resolutions = _get_resolutions_cog(
+            self._items[0],
+            asset_names=self._open_params.get("asset_names", None),
+            crs=self._open_params.get("crs", None),
+        )
 
     def _get_num_levels_lazily(self):
-        return self._num_levels
+        return len(self._resolutions)
 
     def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
-        if "crs" in self._open_params:
-            transformer = pyproj.Transformer.from_crs(
-                self._crs, self._open_params["crs"], always_xy=False
-            )
-            pmin = transformer.transform(0, 0)
-            pmax = transformer.transform(self._resolution[0], self._resolution[1])
-            res_transformed = [pmax[0] - pmin[0], pmax[1] - pmin[1]]
-        else:
-            res_transformed = self._resolution
-        self._open_params["resolution"] = odc.geo.resxy_(
-            res_transformed[0] * self._overviews[index],
-            res_transformed[1] * self._overviews[index],
+        ds = odc.stac.load(
+            self._items,
+            resolution=self._resolutions[index],
+            **self._open_params,
         )
-        return odc.stac.load(self._items, **self._open_params)
+        ds = _apply_scaling_nodata(ds, self._items)
+        return ds

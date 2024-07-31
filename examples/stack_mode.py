@@ -1,6 +1,7 @@
 from xcube.core.store import new_data_store
 import matplotlib.pyplot as plt
 
+
 store = new_data_store(
     "stac", url="https://earth-search.aws.element84.com/v1", stack_mode=True
 )

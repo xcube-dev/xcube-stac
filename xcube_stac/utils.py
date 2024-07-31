@@ -25,8 +25,11 @@ import itertools
 from typing import Any, Container, Dict, Iterator, Union
 
 import numpy as np
+import odc.geo
 import pandas as pd
+import pyproj
 import pystac
+import rasterio
 from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import (
@@ -152,7 +155,7 @@ def _search_collections(
         # test if collection's bbox intersects with the desired bbox
         if "bbox" in search_params:
             if not _do_bboxes_intersect(
-                collection.extent.spatial.bboxes, **search_params
+                collection.extent.spatial.bboxes[0], **search_params
             ):
                 continue
         # test if collection fit to desired time range
@@ -278,9 +281,11 @@ def _is_collection_in_time_range(collection: pystac.Collection, **open_params) -
     """
     dt_start = _convert_str2datetime(open_params["time_range"][0])
     dt_end = _convert_str2datetime(open_params["time_range"][1])
-    temp_extent = collection.extent.temporal.intervals
+    temp_extent = collection.extent.temporal.intervals[0]
     if temp_extent[1] is None:
-        return dt_start <= temp_extent[0] <= dt_end
+        return temp_extent[0] <= dt_end
+    elif temp_extent[0] is None:
+        return dt_start <= temp_extent[1]
     else:
         return dt_end >= temp_extent[0] and dt_start <= temp_extent[1]
 
@@ -596,3 +601,79 @@ def _get_data_id_from_pystac_object(
         following the catalog URL.
     """
     return _get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
+
+
+def _get_resolutions_cog(
+    item: pystac.Item,
+    asset_names: Container[str] = None,
+    crs: str = None,
+) -> list[odc.geo.Resolution]:
+    """This function calculates the resolutuon for each overview level of
+    a cloud-optimized GeoTIFF (COG).
+
+    Args:
+        item: item/feature object.
+        asset_names: asset names to b included in the dataset.
+        crs: crs of the dataset output.
+
+    Returns:
+        list of odc-geo resolution objects for each overview layer.
+    """
+    asset = next(_get_assets_from_item(item, asset_names=asset_names))
+    with rasterio.open(asset.href) as rio_dataset_reader:
+        overviews = [1] + rio_dataset_reader.overviews(1)
+        data_resolution = rio_dataset_reader.res
+        data_crs = rio_dataset_reader.crs
+    if crs:
+        transformer = pyproj.Transformer.from_crs(data_crs, crs)
+        pmin = transformer.transform(0, 0)
+        pmax = transformer.transform(data_resolution[0], data_resolution[1])
+        res_transformed = [pmax[0] - pmin[0], pmax[1] - pmin[1]]
+    else:
+        res_transformed = data_resolution
+
+    return [
+        odc.geo.resxy_(
+            res_transformed[0] * overview,
+            res_transformed[1] * overview,
+        )
+        for overview in overviews
+    ]
+
+
+def _apply_scaling_nodata(
+    ds: xr.Dataset, items: Union[pystac.Item, list[pystac.Item]]
+) -> xr.Dataset:
+    """This function applies scaling of the data and fills no-data pixel with np.nan.
+
+    Args:
+        ds: dataset
+        items: item object or list of item objects (depending on stack-mode equal to
+            False and True, respectively.)
+
+    Returns:
+        Dataset where scaling and filling nodata values are applied.
+    """
+    if isinstance(items, pystac.Item):
+        items = [items]
+    if items[0].ext.has("raster"):
+        for data_varname in ds.data_vars.keys():
+            scale = np.ones(len(items))
+            offset = np.zeros(len(items))
+            nodata_val = np.zeros(len(items))
+            for i, item in enumerate(items):
+                raster_bands = item.assets[data_varname].extra_fields.get(
+                    "raster:bands"
+                )
+                nodata_val[i] = raster_bands[0].get("nodata", 0)
+                if "scale" in raster_bands[0]:
+                    scale[i] = raster_bands[0]["scale"]
+                if "offset" in raster_bands[0]:
+                    offset[i] = raster_bands[0]["offset"]
+            nodata_val = np.unique(nodata_val)
+            assert len(nodata_val) == 1
+            nodata_val = nodata_val[0]
+            ds[data_varname] = ds[data_varname].where(ds[data_varname] != nodata_val)
+            ds[data_varname] *= scale[:, np.newaxis, np.newaxis]
+            ds[data_varname] += offset[:, np.newaxis, np.newaxis]
+    return ds

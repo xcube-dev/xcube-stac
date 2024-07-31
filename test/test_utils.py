@@ -29,6 +29,7 @@ from xcube_stac.utils import (
     _convert_datetime2str,
     _convert_str2datetime,
     _do_bboxes_intersect,
+    _is_collection_in_time_range,
     _is_item_in_time_range,
     _update_dict,
 )
@@ -47,7 +48,7 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(dt, _convert_str2datetime("2024-01-01T12:00:00.000000Z"))
         self.assertEqual(dt, _convert_str2datetime("2024-01-01T12:00:00"))
 
-    def test_is_datetime_in_range(self):
+    def test_is_item_in_time_range(self):
         item1 = pystac.Item(
             "test_item",
             geometry=None,
@@ -104,6 +105,109 @@ class UtilsTest(unittest.TestCase):
             "'end_datetime' or 'datetime'.",
             f"{cm.exception}",
         )
+
+    def test_is_collection_in_time_range(self):
+        collection1 = pystac.Collection(
+            "test_collection",
+            description="Test description",
+            extent=pystac.Extent(
+                pystac.SpatialExtent(bboxes=[[-180, -90, 180, 90]]),
+                pystac.TemporalExtent(
+                    intervals=[
+                        [
+                            datetime.datetime(
+                                2020, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc
+                            ),
+                            datetime.datetime(
+                                2020, 2, 1, 12, 0, 0, tzinfo=datetime.timezone.utc
+                            ),
+                        ]
+                    ]
+                ),
+            ),
+        )
+        collection2 = pystac.Collection(
+            "test_collection",
+            description="Test description",
+            extent=pystac.Extent(
+                pystac.SpatialExtent(bboxes=[[-180, -90, 180, 90]]),
+                pystac.TemporalExtent(
+                    intervals=[
+                        [
+                            datetime.datetime(
+                                2020, 1, 1, 12, 0, 0, tzinfo=datetime.timezone.utc
+                            ),
+                            None,
+                        ]
+                    ]
+                ),
+            ),
+        )
+        collection3 = pystac.Collection(
+            "test_collection",
+            description="Test description",
+            extent=pystac.Extent(
+                pystac.SpatialExtent(bboxes=[[-180, -90, 180, 90]]),
+                pystac.TemporalExtent(
+                    intervals=[
+                        [
+                            None,
+                            datetime.datetime(
+                                2020, 2, 1, 12, 0, 0, tzinfo=datetime.timezone.utc
+                            ),
+                        ]
+                    ]
+                ),
+            ),
+        )
+
+        collection1_test_paramss = [
+            ("2019-12-15", "2019-12-20", self.assertFalse),
+            ("2019-12-25", "2020-02-15", self.assertTrue),
+            ("2019-12-25", "2020-01-15", self.assertTrue),
+            ("2020-01-12", "2020-01-15", self.assertTrue),
+            ("2020-01-25", "2020-02-15", self.assertTrue),
+            ("2020-02-25", "2020-03-27", self.assertFalse),
+        ]
+
+        collection2_test_paramss = [
+            ("2019-12-15", "2019-12-20", self.assertFalse),
+            ("2019-12-25", "2020-02-15", self.assertTrue),
+            ("2019-12-25", "2020-01-15", self.assertTrue),
+            ("2020-01-12", "2020-01-15", self.assertTrue),
+            ("2020-01-25", "2020-02-15", self.assertTrue),
+            ("2020-02-25", "2020-03-27", self.assertTrue),
+        ]
+
+        collection3_test_paramss = [
+            ("2019-12-15", "2019-12-20", self.assertTrue),
+            ("2019-12-25", "2020-02-15", self.assertTrue),
+            ("2019-12-25", "2020-01-15", self.assertTrue),
+            ("2020-01-12", "2020-01-15", self.assertTrue),
+            ("2020-01-25", "2020-02-15", self.assertTrue),
+            ("2020-02-25", "2020-03-27", self.assertFalse),
+        ]
+
+        for time_start, time_end, fun in collection1_test_paramss:
+            fun(
+                _is_collection_in_time_range(
+                    collection1, time_range=[time_start, time_end]
+                )
+            )
+
+        for time_start, time_end, fun in collection2_test_paramss:
+            fun(
+                _is_collection_in_time_range(
+                    collection2, time_range=[time_start, time_end]
+                )
+            )
+
+        for time_start, time_end, fun in collection3_test_paramss:
+            fun(
+                _is_collection_in_time_range(
+                    collection3, time_range=[time_start, time_end]
+                )
+            )
 
     def test_do_bboxes_intersect(self):
         item = pystac.Item(

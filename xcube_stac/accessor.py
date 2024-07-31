@@ -20,13 +20,13 @@
 # SOFTWARE.
 
 from typing import Union
-import warnings
 
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike, new_data_store
 
 from .utils import _is_valid_ml_data_type
+from .constants import LOG
 
 
 class HttpsDataAccessor:
@@ -52,7 +52,7 @@ class HttpsDataAccessor:
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         if format_id == "netcdf":
             if _is_valid_ml_data_type(data_type):
-                warnings.warn(
+                LOG.warn(
                     f"No data opener found for format {format_id!r} and data type "
                     f"{data_type!r}. Data type is changed to the default data type "
                     "'dataset'."

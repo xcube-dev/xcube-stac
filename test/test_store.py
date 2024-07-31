@@ -87,6 +87,19 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     @pytest.mark.vcr()
+    def test_worng_stack_mode_error(self):
+        # Error is raise by xcube data store framework when validating the
+        # data store parameters.
+        with self.assertRaises(DataStoreError) as cm:
+            new_data_store(
+                DATA_STORE_ID, url=self.url_searchable, stack_mode="stackstac"
+            )
+        self.assertEqual(
+            "Invalid parameterization detected: 'odc-stac' was expected",
+            f"{cm.exception}",
+        )
+
+    @pytest.mark.vcr()
     def test_get_data_store_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         schema = store.get_data_store_params_schema()
@@ -113,6 +126,14 @@ class StacDataStoreTest(unittest.TestCase):
             store.get_data_types_for_data(self.data_id_netcdf),
         )
 
+    @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
+    def test_get_data_types_for_data_xcube_server(self):
+        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        self.assertEqual(
+            ("mldataset", "dataset"),
+            store.get_data_types_for_data("collections/datacubes/items/local_ts"),
+        )
+
     @pytest.mark.vcr()
     def test_get_data_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
@@ -135,6 +156,22 @@ class StacDataStoreTest(unittest.TestCase):
         item = store._impl.access_item(data_ids[0])
         formats = _get_formats_from_item(item)
         self.assertEqual(["geotiff"], formats)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_stack_mode(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+        data_ids = store.get_data_ids(data_type="mldataset")
+        expected_data_ids = [
+            "collections/sentinel-2-pre-c1-l2a",
+            "collections/cop-dem-glo-30",
+            "collections/naip",
+            "collections/cop-dem-glo-90",
+            "collections/landsat-c2-l2",
+            "collections/sentinel-2-l2a",
+            "collections/sentinel-2-c1-l2a",
+            "collections/sentinel-1-grd",
+        ]
+        self.assertCountEqual(expected_data_ids, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
@@ -220,6 +257,14 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
+    @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
+    def test_get_data_opener_ids_xcube_server(self):
+        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        self.assertCountEqual(
+            ("dataset:zarr:s3", "dataset:levels:s3", "mldataset:levels:s3"),
+            store.get_data_opener_ids("collections/datacubes/items/local_ts"),
+        )
+
     @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
@@ -262,6 +307,15 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("open_params_dataset_geotiff", schema.properties)
         self.assertIn("open_params_mldataset_geotiff", schema.properties)
         self.assertNotIn("open_params_dataset_zarr", schema.properties)
+
+    @pytest.mark.vcr()
+    def test_get_open_data_params_schema_stack_mode(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+        schema = store.get_open_data_params_schema()
+        # no optional arguments
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("time_range", schema.properties)
+        self.assertIn("bbox", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -316,6 +370,30 @@ class StacDataStoreTest(unittest.TestCase):
 
         # open data without open_params
         ds = store.open_data(self.data_id_netcdf, asset_names=["data"])
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            [
+                "data_radiometric_cloud_fraction",
+                "data_radiometric_cloud_fraction_precision",
+                "data_number_of_observations",
+                "data_quality_flag",
+            ],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual([1800, 3600], [ds.sizes["lat"], ds.sizes["lon"]])
+
+        # open data with unsupported data type
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            ds = store.open_data(
+                self.data_id_netcdf, data_type="mldataset", asset_names=["data"]
+            )
+        self.assertEqual(1, len(cm.output))
+        msg = (
+            f"WARNING:xcube.stac:No data opener found for format 'netcdf' and "
+            "data type 'mldataset'. Data type is changed to the default "
+            "data type 'dataset'."
+        )
+        self.assertEqual(msg, str(cm.output[-1]))
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
@@ -406,27 +484,6 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
-        # open data in levels format
-        ds = store.open_data("collections/datacubes/items/local")
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            [
-                "analytic_c2rcc_flags",
-                "analytic_chl_category",
-                "analytic_chl_tsm_sum",
-                "analytic_conc_chl",
-                "analytic_conc_tsm",
-                "analytic_kd489",
-                "analytic_lat_bnds",
-                "analytic_lon_bnds",
-                "analytic_quality_flags",
-                "analytic_time_bnds",
-            ],
-            list(ds.data_vars),
-        )
-        self.assertCountEqual(
-            [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
-        )
         # open data store in tif format
         mlds = store.open_data(
             "collections/datacubes/items/cog_local", data_type="mldataset"
@@ -445,6 +502,105 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual([343, 343], [ds.sizes["y"], ds.sizes["x"]])
+
+        # raise error when selecting "analytic" (asset linking to the dataset) and
+        # "analytic_multires" (asset linking to the mldataset)
+        with self.assertRaises(DataStoreError) as cm:
+            store.open_data(
+                "collections/datacubes/items/cog_local",
+                asset_names=["analytic", "analytic_multires"],
+            )
+        self.assertEqual(
+            "Xcube server publishes data resources as 'dataset' and "
+            "'mldataset' under the asset names 'analytic' and "
+            "'analytic_multires'. Please select only one asset in "
+            "<asset_names> when opening the data.",
+            f"{cm.exception}",
+        )
+
+    @pytest.mark.vcr()
+    def test_open_data_stack_mode(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+
+        # open data as dataset
+        ds = store.open_data(
+            data_id="sentinel-2-l2a",
+            data_type="dataset",
+            bbox=[9, 47, 10, 48],
+            time_range=["2020-07-01", "2020-07-05"],
+            bands=["red", "green", "blue"],
+            groupby="id",
+            chunks={"time": 1, "x": 2048, "y": 2048},
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
+        self.assertCountEqual(
+            [16, 3496, 3497],
+            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
+        )
+        self.assertCountEqual(
+            [1, 2048, 2048],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["y"][0],
+                ds.chunksizes["x"][0],
+            ],
+        )
+
+        # open data as mldataset
+        mlds = store.open_data(
+            data_id="sentinel-2-l2a",
+            # data_type="mldataset",
+            bbox=[9, 47, 10, 48],
+            time_range=["2020-07-01", "2020-07-05"],
+            bands=["red", "green", "blue"],
+            groupby="id",
+            chunks={"time": 1, "x": 2048, "y": 2048},
+        )
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        self.assertEqual(4, mlds.num_levels)
+        ds = mlds.base_dataset
+        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
+        self.assertCountEqual(
+            [16, 3496, 3497],
+            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
+        )
+        self.assertCountEqual(
+            [1, 2048, 2048],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["y"][0],
+                ds.chunksizes["x"][0],
+            ],
+        )
+
+        # open data as mldataset with reprojection
+        mlds = store.open_data(
+            data_id="sentinel-2-l2a",
+            # data_type="mldataset",
+            bbox=[9, 47, 10, 48],
+            time_range=["2020-07-01", "2020-07-05"],
+            bands=["red", "green", "blue"],
+            groupby="id",
+            crs="EPSG:4326",
+            chunks={"time": 1, "x": 2048, "y": 2048},
+        )
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        self.assertEqual(4, mlds.num_levels)
+        ds = mlds.get_dataset(3)
+        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
+        self.assertCountEqual(
+            [16, 442, 660],
+            [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
+        )
+        self.assertCountEqual(
+            [1, 442, 660],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["latitude"][0],
+                ds.chunksizes["longitude"][0],
+            ],
+        )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
@@ -592,6 +748,25 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(expected_descriptors, [d.to_dict() for d in descriptors])
 
     @pytest.mark.vcr()
+    def test_search_data_stack_mode(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+        descriptors = list(
+            store.search_data(
+                data_type="dataset",
+                bbox=[9, 47, 10, 48],
+                time_range=["2010-03-01", "2010-03-05"],
+            )
+        )
+
+        expected_descriptor = dict(
+            data_id="collections/landsat-c2-l2",
+            data_type="dataset",
+            bbox=[-180, -90, 180, 90],
+            time_range=("1982-08-22T00:00:00+00:00", None),
+        )
+        self.assertEqual(expected_descriptor, descriptors[0].to_dict())
+
+    @pytest.mark.vcr()
     def test_describe_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
         data_id = (
@@ -659,6 +834,15 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
         self.assertIn("collections", schema.properties)
+
+    @pytest.mark.vcr()
+    def test_get_search_params_schema_stack_mde(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+        schema = store.get_search_params_schema()
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("time_range", schema.properties)
+        self.assertIn("bbox", schema.properties)
+        self.assertNotIn("collections", schema.properties)
 
     @pytest.mark.vcr()
     def test_access_item_failed(self):

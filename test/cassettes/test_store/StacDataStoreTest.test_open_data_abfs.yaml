@@ -16,10 +16,10 @@ interactions:
     body:
       string: '{"type":"Catalog","id":"microsoft-pc","title":"Microsoft Planetary
         Computer STAC API","description":"Searchable spatiotemporal metadata describing
-        Earth science datasets hosted by the Microsoft Planetary Computer","stac_version":"1.0.0","conformsTo":["http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0-rc.2/item-search#query","https://api.stacspec.org/v1.0.0-rc.2/item-search#sort","https://api.stacspec.org/v1.0.0-rc.3/item-search#fields","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/ogcapi-features"],"links":[{"rel":"self","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"data","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/WFS3
+        Earth science datasets hosted by the Microsoft Planetary Computer","stac_version":"1.0.0","conformsTo":["https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","https://api.stacspec.org/v1.0.0/ogcapi-features","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","https://api.stacspec.org/v1.0.0/item-search#sort","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/item-search#query","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/core"],"links":[{"rel":"self","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"data","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
         conformance classes implemented by this server","href":"https://planetarycomputer.microsoft.com/api/stac/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
         search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"POST"},{"rel":"child","type":"application/json","title":"Daymet
+        search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables","href":"https://planetarycomputer.microsoft.com/api/stac/v1/queryables","method":"GET"},{"rel":"child","type":"application/json","title":"Daymet
         Annual Puerto Rico","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-annual-pr"},{"rel":"child","type":"application/json","title":"Daymet
         Daily Hawaii","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-daily-hi"},{"rel":"child","type":"application/json","title":"USGS
         3DEP Seamless DEMs","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-seamless"},{"rel":"child","type":"application/json","title":"USGS
@@ -159,11 +159,11 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '3321'
+      - '3371'
       Content-Type:
       - application/json
       Date:
-      - Thu, 11 Jul 2024 08:52:34 GMT
+      - Tue, 30 Jul 2024 13:06:17 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       X-Cache:
@@ -173,7 +173,7 @@ interactions:
       vary:
       - Accept-Encoding
       x-azure-ref:
-      - 20240711T085234Z-15575b8bc55d49r8k1hazff81w000000056g00000000frmf
+      - 20240730T130617Z-17d8f75f7d7l9nqjystm4mk38400000008x000000000cmf8
     status:
       code: 200
       message: OK
@@ -244,7 +244,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 11 Jul 2024 08:52:34 GMT
+      - Tue, 30 Jul 2024 13:06:18 GMT
       Strict-Transport-Security:
       - max-age=31536000; includeSubDomains
       X-Cache:
@@ -254,7 +254,88 @@ interactions:
       vary:
       - Accept-Encoding
       x-azure-ref:
-      - 20240711T085234Z-15575b8bc55rmf6hrwc6nsy0nw000000027000000000evn9
+      - 20240730T130617Z-17d8f75f7d7kw28gugqy4m9n1s0000000a7g000000004t3s
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://planetarycomputer.microsoft.com/api/stac/v1/collections/era5-pds/items/era5-pds-2020-12-an
+  response:
+    body:
+      string: '{"id":"era5-pds-2020-12-an","bbox":[-180,-90,180,90],"type":"Feature","links":[{"rel":"collection","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/era5-pds"},{"rel":"parent","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/era5-pds"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"self","type":"application/geo+json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/era5-pds/items/era5-pds-2020-12-an"}],"assets":{"surface_air_pressure":{"href":"abfs://era5/ERA5/2020/12/surface_air_pressure.zarr","type":"application/vnd+zarr","roles":["data"],"title":"Surface
+        pressure","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"sea_surface_temperature":{"href":"abfs://era5/ERA5/2020/12/sea_surface_temperature.zarr","type":"application/vnd+zarr","roles":["data"],"title":"Sea
+        surface temperature","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"eastward_wind_at_10_metres":{"href":"abfs://era5/ERA5/2020/12/eastward_wind_at_10_metres.zarr","type":"application/vnd+zarr","roles":["data"],"title":"10
+        metre U wind component","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"air_temperature_at_2_metres":{"href":"abfs://era5/ERA5/2020/12/air_temperature_at_2_metres.zarr","type":"application/vnd+zarr","roles":["data"],"title":"2
+        metre temperature","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"eastward_wind_at_100_metres":{"href":"abfs://era5/ERA5/2020/12/eastward_wind_at_100_metres.zarr","type":"application/vnd+zarr","roles":["data"],"title":"100
+        metre U wind component","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"northward_wind_at_10_metres":{"href":"abfs://era5/ERA5/2020/12/northward_wind_at_10_metres.zarr","type":"application/vnd+zarr","roles":["data"],"title":"10
+        metre V wind component","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"northward_wind_at_100_metres":{"href":"abfs://era5/ERA5/2020/12/northward_wind_at_100_metres.zarr","type":"application/vnd+zarr","roles":["data"],"title":"100
+        metre V wind component","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"air_pressure_at_mean_sea_level":{"href":"abfs://era5/ERA5/2020/12/air_pressure_at_mean_sea_level.zarr","type":"application/vnd+zarr","roles":["data"],"title":"Mean
+        sea level pressure","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}},"dew_point_temperature_at_2_metres":{"href":"abfs://era5/ERA5/2020/12/dew_point_temperature_at_2_metres.zarr","type":"application/vnd+zarr","roles":["data"],"title":"2
+        metre dewpoint temperature","xarray:open_kwargs":{"chunks":{},"engine":"zarr","consolidated":true,"storage_options":{"account_name":"cpdataeuwest"}}}},"geometry":{"type":"Polygon","coordinates":[[[180,-90],[180,90],[-180,90],[-180,-90],[180,-90]]]},"collection":"era5-pds","properties":{"datetime":null,"era5:kind":"an","end_datetime":"2020-12-31T23:00:00Z","cube:variables":{"surface_air_pressure":{"type":"data","unit":"Pa","attrs":{"units":"Pa","nameCDM":"Surface_pressure_surface","long_name":"Surface
+        pressure","nameECMWF":"Surface pressure","product_type":"analysis","standard_name":"surface_air_pressure","shortNameECMWF":"sp"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"Surface
+        pressure"},"sea_surface_temperature":{"type":"data","unit":"K","attrs":{"units":"K","nameCDM":"Sea_surface_temperature_surface","long_name":"Sea
+        surface temperature","nameECMWF":"Sea surface temperature","product_type":"analysis","standard_name":"sea_surface_temperature","shortNameECMWF":"sst"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"Sea
+        surface temperature"},"eastward_wind_at_10_metres":{"type":"data","unit":"m
+        s**-1","attrs":{"units":"m s**-1","nameCDM":"10_metre_U_wind_component_surface","long_name":"10
+        metre U wind component","nameECMWF":"10 metre U wind component","product_type":"analysis","standard_name":"eastward_wind","shortNameECMWF":"10u"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"10
+        metre U wind component"},"air_temperature_at_2_metres":{"type":"data","unit":"K","attrs":{"units":"K","nameCDM":"2_metre_temperature_surface","long_name":"2
+        metre temperature","nameECMWF":"2 metre temperature","product_type":"analysis","standard_name":"air_temperature","shortNameECMWF":"2t"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"2
+        metre temperature"},"eastward_wind_at_100_metres":{"type":"data","unit":"m
+        s**-1","attrs":{"units":"m s**-1","nameCDM":"100_metre_U_wind_component_surface","long_name":"100
+        metre U wind component","nameECMWF":"100 metre U wind component","product_type":"analysis","standard_name":"eastward_wind","shortNameECMWF":"100u"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"100
+        metre U wind component"},"northward_wind_at_10_metres":{"type":"data","unit":"m
+        s**-1","attrs":{"units":"m s**-1","nameCDM":"10_metre_V_wind_component_surface","long_name":"10
+        metre V wind component","nameECMWF":"10 metre V wind component","product_type":"analysis","standard_name":"northward_wind","shortNameECMWF":"10v"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"10
+        metre V wind component"},"northward_wind_at_100_metres":{"type":"data","unit":"m
+        s**-1","attrs":{"units":"m s**-1","nameCDM":"100_metre_V_wind_component_surface","long_name":"100
+        metre V wind component","nameECMWF":"100 metre V wind component","product_type":"analysis","standard_name":"northward_wind","shortNameECMWF":"100v"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"100
+        metre V wind component"},"air_pressure_at_mean_sea_level":{"type":"data","unit":"Pa","attrs":{"units":"Pa","nameCDM":"Mean_sea_level_pressure_surface","long_name":"Mean
+        sea level pressure","nameECMWF":"Mean sea level pressure","product_type":"analysis","standard_name":"air_pressure_at_mean_sea_level","shortNameECMWF":"msl"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"Mean
+        sea level pressure"},"dew_point_temperature_at_2_metres":{"type":"data","unit":"K","attrs":{"units":"K","nameCDM":"2_metre_dewpoint_temperature_surface","long_name":"2
+        metre dewpoint temperature","nameECMWF":"2 metre dewpoint temperature","product_type":"analysis","standard_name":"dew_point_temperature","shortNameECMWF":"2d"},"shape":[744,721,1440],"dimensions":["time","lat","lon"],"description":"2
+        metre dewpoint temperature"}},"start_datetime":"2020-12-01T00:00:00Z","cube:dimensions":{"lat":{"axis":"y","step":-0.25,"type":"spatial","extent":[-90.0,90.0],"description":"latitude","reference_system":"epsg:4326"},"lon":{"axis":"x","step":0.25,"type":"spatial","extent":[0.0,359.75],"description":"longitude","reference_system":"epsg:4326"},"time":{"step":"P0DT1H0M0S","type":"temporal","extent":["2020-12-01T00:00:00Z","2020-12-31T23:00:00Z"]}}},"stac_extensions":["https://stac-extensions.github.io/datacube/v2.0.0/schema.json"],"stac_version":"1.0.0"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - X-PC-Request-Entity,DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+      Access-Control-Allow-Methods:
+      - PUT, GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1260'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Tue, 30 Jul 2024 13:06:18 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Cache:
+      - CONFIG_NOCACHE
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
+      x-azure-ref:
+      - 20240730T130618Z-r1c5885d44fgnsp4a2ntqnng94000000095000000000g78u
     status:
       code: 200
       message: OK

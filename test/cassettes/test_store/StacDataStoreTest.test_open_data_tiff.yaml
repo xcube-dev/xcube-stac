@@ -416,17 +416,17 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 11 Jul 2024 08:52:38 GMT
+      - Tue, 30 Jul 2024 13:06:32 GMT
       ETag:
       - '"326fbfb3eeb064cf4c2092261381fb89"'
       Last-Modified:
       - Fri, 15 Jul 2022 14:06:49 GMT
       Server:
-      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head12)
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head06)
       x-amz-id-2:
-      - GHklbCuQkESabVGIvBoFIIKFc41i25S9IIH0xCn3pgo2kE407gkhjZlpX3I3EPYx5R5KquKAMqsp
+      - In7JOzY3aN3glxHfupMmg2m402sUOekbXm8dfIuBXvRSs1PdXbTDdrD7e6Tp6R//dzpqIvi+p8An
       x-amz-request-id:
-      - CCCFCE643100EF96:A
+      - 011AA525E85C8B45:A
     status:
       code: 200
       message: OK
@@ -847,17 +847,17 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 11 Jul 2024 08:52:38 GMT
+      - Tue, 30 Jul 2024 13:06:33 GMT
       ETag:
       - '"326fbfb3eeb064cf4c2092261381fb89"'
       Last-Modified:
       - Fri, 15 Jul 2022 14:06:49 GMT
       Server:
-      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head10)
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head05)
       x-amz-id-2:
-      - G8yBh2gxD5yCzY41rx+NBplYTkMBcky4omo5UFe7JmEeHwvWqJ4nlcTog6J/HjnBW1Pt7PKb/0q9
+      - 5PsH2XGaDBrGuD99DYKrRN/wYhy5S6JJPwL7xz71JJN2Bhy1krryfQ7CKoSJY8BNJSV7E259DY2p
       x-amz-request-id:
-      - C63FF2186EA20F5F:A
+      - 3CF49CE4409FE394:B
     status:
       code: 200
       message: OK
@@ -923,7 +923,387 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 11 Jul 2024 08:52:38 GMT
+      - Tue, 30 Jul 2024 13:06:33 GMT
+      ETag:
+      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
+      Last-Modified:
+      - Thu, 19 May 2022 19:07:42 GMT
+      Server:
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head11)
+      x-amz-id-2:
+      - hKBTNm6n/GgZqa/vI4RuvEhy/N6fiHILw8rO4TFICche6Aiwd8JGecs14ddh9XObdqIYVVGxFLRb
+      x-amz-request-id:
+      - 94CBB07C80B78641:A
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+  response:
+    body:
+      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
+        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
+        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
+        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
+        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
+        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
+        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
+        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
+        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
+        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
+        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
+        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
+        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
+        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
+        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
+        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
+        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
+        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '3945'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Jul 2024 13:06:33 GMT
+      ETag:
+      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
+      Last-Modified:
+      - Thu, 19 May 2022 19:07:42 GMT
+      Server:
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head18)
+      x-amz-id-2:
+      - LwJsSVJTxG/eQST/DPpH/lLlckGRTAFfCqGxVCPfE/21ZIcW/98Wb+3J6SuHKLh/2aakZ5IWW4fX
+      x-amz-request-id:
+      - A8166F8848FF4856:B
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+  response:
+    body:
+      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
+        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
+        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
+        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
+        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
+        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
+        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
+        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
+        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
+        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
+        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
+        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
+        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
+        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
+        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
+        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
+        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
+        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '3945'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Jul 2024 13:06:35 GMT
+      ETag:
+      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
+      Last-Modified:
+      - Thu, 19 May 2022 19:07:42 GMT
+      Server:
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head10)
+      x-amz-id-2:
+      - d/BUZjaGhQJx5fceqdtl/aUVT7CNPOp6N7MOtrjK/iwaeswX67DxjpYC1Kdjta4GEwVnr//HAoqW
+      x-amz-request-id:
+      - A31B06E7D7078AD4:B
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+  response:
+    body:
+      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
+        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
+        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
+        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
+        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
+        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
+        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
+        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
+        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
+        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
+        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
+        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
+        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
+        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
+        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
+        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
+        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
+        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '3945'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Jul 2024 13:06:35 GMT
+      ETag:
+      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
+      Last-Modified:
+      - Thu, 19 May 2022 19:07:42 GMT
+      Server:
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head12)
+      x-amz-id-2:
+      - sqaPs9oRmJYDf0gyOQSvgXjxLgtqWcd2zvcWDGy0JO8rqUWU0gKJvxANRlMU08USxaBo4XiCd7JV
+      x-amz-request-id:
+      - 27F59BB70DDFE73A:A
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+  response:
+    body:
+      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
+        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
+        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
+        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
+        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
+        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
+        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
+        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
+        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
+        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
+        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
+        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
+        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
+        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
+        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
+        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
+        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
+        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '3945'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Jul 2024 13:06:36 GMT
+      ETag:
+      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
+      Last-Modified:
+      - Thu, 19 May 2022 19:07:42 GMT
+      Server:
+      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head03)
+      x-amz-id-2:
+      - sPvANuB9jcP09NnGLGEWhz8vbh+a9zdPEHXde1rhdvzYDLxIPvyl3qvpS0ZC2lgBOUMcBJ4r0T9d
+      x-amz-request-id:
+      - 3EBFF6E6EFD8B020:B
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+  response:
+    body:
+      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
+        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
+        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
+        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
+        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
+        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
+        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
+        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
+        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
+        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
+        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
+        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
+        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
+        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
+        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
+        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
+        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
+        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
+        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
+        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
+        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
+        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
+        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
+        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Content-Length:
+      - '3945'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 30 Jul 2024 13:06:36 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
@@ -931,163 +1311,9 @@ interactions:
       Server:
       - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head01)
       x-amz-id-2:
-      - I2DQ0bpiwo5kBUcYfVhkJNX89RoV7dhTnx49vNx0wV37kUl1/Rnqd9ldpFj6Ke+6IegMjCTSBCAT
+      - ESJmZedAbqzJ20GbjwcZawn6UMKPPAkiNM9GU03YnVsY5QpNq0+zkPQDEcCSY56mwxonCcHt+tDG
       x-amz-request-id:
-      - 3AD87D3BA5F44D08:B
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
-  response:
-    body:
-      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
-        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
-        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
-        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
-        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
-        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
-        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
-        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
-        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
-        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
-        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
-        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
-        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
-        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
-        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
-        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '3945'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 11 Jul 2024 08:52:42 GMT
-      ETag:
-      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
-      Last-Modified:
-      - Thu, 19 May 2022 19:07:42 GMT
-      Server:
-      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (head16)
-      x-amz-id-2:
-      - /zI85EL5DGBlTWkD2cSBVFz6NJ45eyXZXacOXA3cYhFH0+KoavQUUVpgCKsT+1fMbVPuOcOrY1he
-      x-amz-request-id:
-      - DB919E8925677AB2:B
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
-  response:
-    body:
-      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
-        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
-        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
-        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
-        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
-        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
-        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
-        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
-        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
-        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
-        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
-        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
-        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
-        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
-        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
-        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '3945'
-      Content-Type:
-      - application/json
-      Date:
-      - Thu, 11 Jul 2024 08:52:42 GMT
-      ETag:
-      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
-      Last-Modified:
-      - Thu, 19 May 2022 19:07:42 GMT
-      Server:
-      - WasabiS3/7.20.2951-2024-06-14-7fcea49969 (F8-R407-U17)
-      x-amz-id-2:
-      - LYy9OhL5a7zISchv+nsXsxTM7o7wlD5CLf9ggbsdYbJckoE34Fa/r8xuFAUphtfJO/ohEPkvsO2/
-      x-amz-request-id:
-      - 58913E4B81F17F53:B
-      x-wasabi-cm-reference-id:
-      - 1720687962621 130.117.252.103 ConID:771966395/EngineConID:7374597/Core:37
+      - 1FDFED9CB571B4B1:B
     status:
       code: 200
       message: OK
