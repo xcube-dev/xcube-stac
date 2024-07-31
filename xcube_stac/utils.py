@@ -656,6 +656,7 @@ def _apply_scaling_nodata(
     """
     if isinstance(items, pystac.Item):
         items = [items]
+
     if items[0].ext.has("raster"):
         for data_varname in ds.data_vars.keys():
             scale = np.ones(len(items))
@@ -665,15 +666,36 @@ def _apply_scaling_nodata(
                 raster_bands = item.assets[data_varname].extra_fields.get(
                     "raster:bands"
                 )
+                if not raster_bands:
+                    break
                 nodata_val[i] = raster_bands[0].get("nodata", 0)
                 if "scale" in raster_bands[0]:
                     scale[i] = raster_bands[0]["scale"]
                 if "offset" in raster_bands[0]:
                     offset[i] = raster_bands[0]["offset"]
+
             nodata_val = np.unique(nodata_val)
-            assert len(nodata_val) == 1
+            msg = (
+                "Items contain different values in the "
+                "asset's field 'raster:bands:nodata'"
+            )
+            assert len(nodata_val) == 1, msg
             nodata_val = nodata_val[0]
             ds[data_varname] = ds[data_varname].where(ds[data_varname] != nodata_val)
-            ds[data_varname] *= scale[:, np.newaxis, np.newaxis]
-            ds[data_varname] += offset[:, np.newaxis, np.newaxis]
+
+            scale = np.unique(scale)
+            msg = (
+                "Items contain different values in the "
+                "asset's field 'raster:bands:scale'"
+            )
+            assert len(scale) == 1, msg
+            ds[data_varname] *= scale[0]
+
+            offset = np.unique(offset)
+            msg = (
+                "Items contain different values in the "
+                "asset's field 'raster:bands:offset'"
+            )
+            assert len(offset) == 1, msg
+            ds[data_varname] += offset[0]
     return ds

@@ -162,14 +162,14 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
         data_ids = store.get_data_ids(data_type="mldataset")
         expected_data_ids = [
-            "collections/sentinel-2-pre-c1-l2a",
-            "collections/cop-dem-glo-30",
-            "collections/naip",
-            "collections/cop-dem-glo-90",
-            "collections/landsat-c2-l2",
-            "collections/sentinel-2-l2a",
-            "collections/sentinel-2-c1-l2a",
-            "collections/sentinel-1-grd",
+            "sentinel-2-pre-c1-l2a",
+            "cop-dem-glo-30",
+            "naip",
+            "cop-dem-glo-90",
+            "landsat-c2-l2",
+            "sentinel-2-l2a",
+            "sentinel-2-c1-l2a",
+            "sentinel-1-grd",
         ]
         self.assertCountEqual(expected_data_ids, data_ids)
 
@@ -316,6 +316,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
+        self.assertIn("query", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -528,6 +529,7 @@ class StacDataStoreTest(unittest.TestCase):
             data_type="dataset",
             bbox=[9, 47, 10, 48],
             time_range=["2020-07-01", "2020-07-05"],
+            query={"s2:processing_baseline": {"eq": "02.14"}},
             bands=["red", "green", "blue"],
             groupby="id",
             chunks={"time": 1, "x": 2048, "y": 2048},
@@ -535,7 +537,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [16, 3496, 3497],
+            [8, 3496, 3497],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
@@ -553,6 +555,7 @@ class StacDataStoreTest(unittest.TestCase):
             # data_type="mldataset",
             bbox=[9, 47, 10, 48],
             time_range=["2020-07-01", "2020-07-05"],
+            query={"s2:processing_baseline": {"eq": "02.14"}},
             bands=["red", "green", "blue"],
             groupby="id",
             chunks={"time": 1, "x": 2048, "y": 2048},
@@ -562,7 +565,7 @@ class StacDataStoreTest(unittest.TestCase):
         ds = mlds.base_dataset
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [16, 3496, 3497],
+            [8, 3496, 3497],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
@@ -580,7 +583,7 @@ class StacDataStoreTest(unittest.TestCase):
             # data_type="mldataset",
             bbox=[9, 47, 10, 48],
             time_range=["2020-07-01", "2020-07-05"],
-            bands=["red", "green", "blue"],
+            query={"s2:processing_baseline": {"eq": "02.14"}},
             groupby="id",
             crs="EPSG:4326",
             chunks={"time": 1, "x": 2048, "y": 2048},
@@ -588,9 +591,9 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(mlds, MultiLevelDataset)
         self.assertEqual(4, mlds.num_levels)
         ds = mlds.get_dataset(3)
-        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
+        self.assertEqual(32, len(ds.data_vars))
         self.assertCountEqual(
-            [16, 442, 660],
+            [8, 442, 660],
             [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
         )
         self.assertCountEqual(
@@ -833,6 +836,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
+        self.assertIn("query", schema.properties)
         self.assertIn("collections", schema.properties)
 
     @pytest.mark.vcr()
@@ -842,6 +846,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
+        self.assertNotIn("query", schema.properties)
         self.assertNotIn("collections", schema.properties)
 
     @pytest.mark.vcr()

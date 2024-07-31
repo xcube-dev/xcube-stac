@@ -28,6 +28,7 @@ from xcube.util.jsonschema import (
     JsonBooleanSchema,
     JsonDateSchema,
     JsonNumberSchema,
+    JsonObjectSchema,
     JsonStringSchema,
 )
 
@@ -88,6 +89,17 @@ STAC_STORE_PARAMETERS = dict(
     ),
 )
 
+_STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
+    additional_properties=True,
+    title="Additional query options used during item search of STAC API.",
+    description=(
+        "If STAC Catalog is conform with query extension, "
+        "additional filtering based on the properties of Item objects "
+        "is supported. For more information see "
+        "https://github.com/stac-api-extensions/query"
+    ),
+)
+
 STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
     time_range=JsonArraySchema(
         items=[
@@ -120,8 +132,8 @@ STAC_SEARCH_PARAMETERS = dict(
         title="Collection IDs",
         description="Collection IDs to be included in the search request.",
     ),
+    query=_STAC_SEARCH_ADDITIONAL_QUERY,
 )
-
 
 STAC_OPEN_PARAMETERS = dict(
     asset_names=JsonArraySchema(
@@ -154,4 +166,5 @@ STAC_OPEN_PARAMETERS_STACK_MODE = dict(
         ),
         title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
     ),
+    query=_STAC_SEARCH_ADDITIONAL_QUERY,
 )

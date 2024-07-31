@@ -10,13 +10,13 @@ DataStores:
       url: https://earth-search.aws.element84.com/v1
       stack_mode: True
     Datasets:
-      - Identifier: Sentinel-2 L2a
+      - Identifier: Hamburg Sentinel-2 L2a
         Path: sentinel-2-l2a
         StoreOpenParams:
-          bbox: [9, 47, 10, 48]
-          time_range: ["2020-07-01", "2020-07-31"]
+          bbox: [9.1, 53.1, 10.7, 54]
+          time_range: ["2020-07-01", "2020-08-01"]
           bands: ["red", "green", "blue"]
-          groupby: "time"
+          query: {"s2:processing_baseline": {"eq": "02.14"}}
           chunks: {"time": 1, "x": 2048, "y": 2048}
         Style: S2L2A
 
@@ -25,23 +25,23 @@ Styles:
     ColorMappings:
       red:
         ColorBar: "viridis"
-        ValueRange: [0., 3000.]
+        ValueRange: [0., 0.3]
       green:
         ColorBar: "viridis"
-        ValueRange: [0., 3000.]
+        ValueRange: [0., 0.3]
       blue:
         ColorBar: "viridis"
-        ValueRange: [0., 3000.]
+        ValueRange: [0., 0.3]
       rgb:
         Red:
           Variable: red
-          ValueRange: [0., 3000.]
+          ValueRange: [0., 0.3]
         Green:
           Variable: green
-          ValueRange: [0., 3000.]
+          ValueRange: [0., 0.3]
         Blue:
           Variable: blue
-          ValueRange: [0., 3000.]
+          ValueRange: [0., 0.3]
 
 ServiceProvider:
   ProviderName: "Brockmann Consult GmbH"

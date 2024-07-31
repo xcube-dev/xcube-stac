@@ -24,7 +24,6 @@ from typing import Any, Container, Dict, Iterator, Tuple, Union
 import numpy as np
 import pystac
 import pystac_client
-import rasterio
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
@@ -37,7 +36,6 @@ from xcube.core.store import (
     DataStoreError,
     DataType,
     DataTypeLike,
-    new_data_store,
 )
 from xcube.core.store.fs.impl.fs import S3FsAccessor
 from xcube.util.jsonschema import JsonObjectSchema
@@ -45,7 +43,6 @@ from xcube.util.jsonschema import JsonObjectSchema
 from .constants import (
     DATA_OPENER_IDS,
     LOG,
-    STAC_OPEN_PARAMETERS,
     STAC_STORE_PARAMETERS,
 )
 from .href_parse import _decode_href
@@ -54,17 +51,14 @@ from .utils import (
     _are_all_assets_geotiffs,
     _assert_valid_data_type,
     _assert_valid_opener_id,
-    _get_assets_from_item,
     _get_attrs_from_pystac_object,
     _get_data_id_from_pystac_object,
     _get_formats_from_assets,
-    _get_formats_from_item,
     _is_valid_data_type,
     _is_valid_dataset_data_type,
     _is_valid_ml_data_type,
     _is_xcube_server_item,
     _list_assets_from_item,
-    _update_dict,
 )
 
 

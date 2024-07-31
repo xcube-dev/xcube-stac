@@ -65,3 +65,14 @@ already, `--record-mode once` can be used.
 [pytest-recording](https://pypi.org/project/pytest-recording/) supports all records modes
 given by [VCR.py](https://vcrpy.readthedocs.io/en/latest/usage.html#record-modes).
 After recording the cassettes, testing can be then performed as usual.
+
+## Usage
+
+the folder `examples/notebooks` provides example notebooks which gives an overview
+of how to use the `stac` data store.  
+
+
+### Query extension
+https://github.com/stac-api-extensions/query
+
+https://github.com/radiantearth/stac-api-spec/tree/release/v1.0.0/item-search#overview

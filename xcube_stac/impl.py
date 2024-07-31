@@ -20,23 +20,18 @@
 # SOFTWARE.
 
 import json
-from typing import Any, Iterator, Union
+from typing import Iterator, Union
 
-import numpy as np
 import odc.stac
 import odc.geo
 import pystac
 import requests
 import xarray as xr
-from xcube.core.mldataset import (
-    MultiLevelDataset,
-    CombinedMultiLevelDataset,
-    LazyMultiLevelDataset,
-)
+from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
-
+from .accessor import HttpsDataAccessor, S3DataAccessor
 from .constants import (
     FloatInt,
     LOG,
@@ -47,7 +42,7 @@ from .constants import (
     STAC_SEARCH_PARAMETERS_STACK_MODE,
 )
 from .href_parse import _decode_href
-from .accessor import HttpsDataAccessor, S3DataAccessor
+from .mldataset import SingleItemMultiLevelDataset, StackModeMultiLevelDataset
 from .utils import (
     _apply_scaling_nodata,
     _convert_datetime2str,
@@ -177,7 +172,6 @@ class SingleImplementation:
         ds = self.build_dataset(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
-        ds = _apply_scaling_nodata(ds, item)
         return ds
 
     def get_extent(self, data_id: str) -> dict:
@@ -211,7 +205,7 @@ class SingleImplementation:
         return JsonObjectSchema(
             properties=dict(**STAC_SEARCH_PARAMETERS),
             required=[],
-            additional_properties=False,
+            additional_properties=True,
         )
 
     def build_dataset(
@@ -321,11 +315,12 @@ class SingleImplementation:
             ds = list_ds_asset[0]
         else:
             if all(isinstance(ds, MultiLevelDataset) for ds in list_ds_asset):
-                ds = CombinedMultiLevelDataset(list_ds_asset)
+                ds = SingleItemMultiLevelDataset(list_ds_asset, item)
             else:
                 ds = list_ds_asset[0].copy()
                 for ds_asset in list_ds_asset[1:]:
                     ds.update(ds_asset)
+                ds = _apply_scaling_nodata(ds, item)
         return ds
 
     ##########################################################################
@@ -437,10 +432,7 @@ class StackImplementation:
                 formats = _get_formats_from_item(item)
                 if not (len(formats) == 1 and formats[0] in MLDATASET_FORMATS):
                     continue
-            data_id = _get_data_id_from_pystac_object(
-                collection, catalog_url=self._url_mod
-            )
-            yield data_id, collection
+            yield collection.id, collection
 
     def get_open_data_params_schema(
         self,
@@ -450,7 +442,7 @@ class StackImplementation:
         return JsonObjectSchema(
             properties=dict(**STAC_OPEN_PARAMETERS_STACK_MODE),
             required=[],
-            additional_properties=False,
+            additional_properties=True,
         )
 
     def open_data(
@@ -462,13 +454,22 @@ class StackImplementation:
         time_range: [str, str] = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
-        if time_range is not None:
-            "/".join(time_range)
+        schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
+        schema.validate_instance(open_params)
         items = list(
             self._catalog.search(
-                collections=[data_id], bbox=bbox, datetime=time_range
+                collections=[data_id],
+                bbox=bbox,
+                datetime=time_range,
+                query=open_params.get("query"),
             ).items()
         )
+        if len(items) == 0:
+            LOG.warn(
+                f"No items found in collection {data_id!r} for the "
+                f"parameters bbox {bbox!r}, time_range {time_range!r} and "
+                f"query {open_params.get("query", "None")!r}"
+            )
         get_mldd = False
         if data_type is None and opener_id is None:
             formats = _get_formats_from_item(
@@ -521,42 +522,3 @@ class StackImplementation:
             required=[],
             additional_properties=False,
         )
-
-
-class StackModeMultiLevelDataset(LazyMultiLevelDataset):
-    """A multi-level dataset for stack-mode.
-
-    Args:
-        data_id: data identifier
-        items: list of items to be stacked
-        open_params: opening parameters of odc.stack.load
-    """
-
-    def __init__(
-        self,
-        data_id: str,
-        items: list[pystac.Item],
-        **open_params: dict[str, Any],
-    ):
-        super().__init__(ds_id=data_id)
-        self._data_id = data_id
-        self._open_params = open_params
-        self._items = sorted(items, key=lambda item: item.properties.get("datetime"))
-
-        self._resolutions = _get_resolutions_cog(
-            self._items[0],
-            asset_names=self._open_params.get("asset_names", None),
-            crs=self._open_params.get("crs", None),
-        )
-
-    def _get_num_levels_lazily(self):
-        return len(self._resolutions)
-
-    def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
-        ds = odc.stac.load(
-            self._items,
-            resolution=self._resolutions[index],
-            **self._open_params,
-        )
-        ds = _apply_scaling_nodata(ds, self._items)
-        return ds
