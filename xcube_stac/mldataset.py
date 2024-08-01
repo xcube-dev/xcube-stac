@@ -98,14 +98,19 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
             crs=self._open_params.get("crs", None),
         )
 
+        # open data for each resolution/overview level, so that odc.stac.load is
+        # not called in the method _get_datset_lazily()
+        self._datasets = []
+        for resolution in self._resolutions:
+            ds = odc.stac.load(
+                self._items,
+                resolution=resolution,
+                **self._open_params,
+            )
+            self._datasets.append(_apply_scaling_nodata(ds, self._items))
+
     def _get_num_levels_lazily(self):
         return len(self._resolutions)
 
     def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
-        ds = odc.stac.load(
-            self._items,
-            resolution=self._resolutions[index],
-            **self._open_params,
-        )
-        ds = _apply_scaling_nodata(ds, self._items)
-        return ds
+        return self._datasets[index]

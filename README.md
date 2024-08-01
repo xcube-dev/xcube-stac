@@ -17,6 +17,7 @@ named `stac` to xcube. The data store is used to access data from the
    2. [General functionality of xcube-stac](#func_xcube_stac)
 3. [Introduction to xcube-stac](#intro_xcube_stac)
    1. [Overview of Jupyter notebooks](#overview_notebooks)
+   2. [Getting started](#getting_started)
 4. [Testing](#testing)
    1. [Some notes on the strategy of unit-testing](#unittest_strategy)
 
@@ -60,10 +61,20 @@ which can be slow for large STAC catalogs.
 The xcube-stac plugin reads the data sources from the STAC catalog and opens the data
 in an analysis ready form following the [xcube dataset convetion](https://xcube.readthedocs.io/en/latest/cubespec.html).
 By default, a data ID represents one item, which is opened as a dataset, with each
-asset becoming a data variable within the dataset. Additionally, a stack mode is
+asset becoming a data variable within the dataset. 
+
+Additionally, a stack mode is
 available, enabling the stacking of items using [odc-stac](https://odc-stac.readthedocs.io/en/latest/).
 This allows for mosaicking multiple tiles and concatenating the datacube along the
 temporal axis.
+
+Also, [stackstac](https://stackstac.readthedocs.io/en/latest/) has been
+considered during the evaluation of python libraries supporting stacking of STAC items.
+However, the [benchmarking report](https://benchmark-odc-stac-vs-stackstac.netlify.app/)
+comparing stackstac and odc-stac shows that ocd-stac outperforms stackstac. Furthermore,
+stackstac shows an [issue](https://github.com/gjoseph92/stackstac/issues/196) in making
+use of the overview levels of COGs files. Still, stackstac shows high popularity in the
+community and might be supported in the future. 
 
 ## Introduction to xcube-stac <a name="intro_xcube_stac"></a> 
 
@@ -87,7 +98,7 @@ The following Jupyter notebooks provide some examples:
   This notebook shows an example how to open data sources published by xcube server
   via the STAC API.
 
-### Getting started
+### Getting started <a name="getting_started"></a> 
 
 The xcube [data store framework](https://xcube.readthedocs.io/en/latest/dataaccess.html#data-store-framework)
 allows to easily access data in an analysis ready format, following the few lines of
@@ -102,7 +113,8 @@ store = new_data_store(
 )
 ds = store.open_data(
     "collections/sentinel-2-l2a/items/S2B_32TNT_20200705_0_L2A",
-    data_type="dataset")
+    data_type="dataset"
+)
 ```
 The data ID `"collections/sentinel-2-l2a/items/S2B_32TNT_20200705_0_L2A"` points to the
 [STAC item's JSON](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md)
