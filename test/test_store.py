@@ -257,6 +257,14 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
+    @pytest.mark.vcr()
+    def test_get_data_opener_ids_stack_mode(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+        self.assertCountEqual(
+            ("dataset:geotiff:s3", "mldataset:geotiff:s3"),
+            store.get_data_opener_ids(data_id="sentinel-2-l2a"),
+        )
+
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_get_data_opener_ids_xcube_server(self):
         store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
@@ -537,7 +545,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [8, 3496, 3497],
+            [8, 20976, 20982],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
@@ -552,7 +560,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as mldataset
         mlds = store.open_data(
             data_id="sentinel-2-l2a",
-            # data_type="mldataset",
+            data_type="mldataset",
             bbox=[9, 47, 10, 48],
             time_range=["2020-07-01", "2020-07-05"],
             query={"s2:processing_baseline": {"eq": "02.14"}},
@@ -561,11 +569,11 @@ class StacDataStoreTest(unittest.TestCase):
             chunks={"time": 1, "x": 2048, "y": 2048},
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(4, mlds.num_levels)
+        self.assertEqual(5, mlds.num_levels)
         ds = mlds.base_dataset
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [8, 3496, 3497],
+            [8, 20976, 20982],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
@@ -580,7 +588,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as mldataset with reprojection
         mlds = store.open_data(
             data_id="sentinel-2-l2a",
-            # data_type="mldataset",
+            data_type="mldataset",
             bbox=[9, 47, 10, 48],
             time_range=["2020-07-01", "2020-07-05"],
             query={"s2:processing_baseline": {"eq": "02.14"}},
@@ -589,15 +597,15 @@ class StacDataStoreTest(unittest.TestCase):
             chunks={"time": 1, "x": 2048, "y": 2048},
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(4, mlds.num_levels)
+        self.assertEqual(5, mlds.num_levels)
         ds = mlds.get_dataset(3)
-        self.assertEqual(32, len(ds.data_vars))
+        self.assertEqual(16, len(ds.data_vars))
         self.assertCountEqual(
-            [8, 442, 660],
+            [8, 2647, 3956],
             [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
         )
         self.assertCountEqual(
-            [1, 442, 660],
+            [1, 2048, 2048],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["latitude"][0],
@@ -704,6 +712,7 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
         descriptors = list(
             store.search_data(
+                data_type="mldataset",
                 collections=["lcv_blue_landsat.glad.ard"],
                 bbox=[-10, 40, 40, 70],
                 time_range=["2000-01-01", "2000-04-01"],
@@ -807,26 +816,6 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=("2017-01-16T10:09:21Z", "2017-01-30T10:46:33Z"),
         )
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
-        self.assertDictEqual(expected_descriptor, descriptor.to_dict())
-
-    @pytest.mark.vcr()
-    def test_describe_data_assert_log(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
-        with self.assertLogs("xcube.stac", level="INFO") as cm:
-            descriptor = store.describe_data(self.data_id_netcdf, data_type="mldataset")
-        self.assertIsInstance(descriptor, DatasetDescriptor)
-        self.assertEqual(1, len(cm.output))
-        msg = (
-            f"INFO:xcube.stac:The data ID {self.data_id_netcdf!r} contains not only "
-            f"assets in geotiff format. Therefore, data_type is set to 'dataset'"
-        )
-        self.assertEqual(msg, str(cm.output[-1]))
-        expected_descriptor = dict(
-            data_id=self.data_id_netcdf,
-            data_type="dataset",
-            bbox=[-180.0, -90.0, 180.0, 90.0],
-            time_range=("2024-06-19T00:00:00Z", None),
-        )
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
 
     @pytest.mark.vcr()

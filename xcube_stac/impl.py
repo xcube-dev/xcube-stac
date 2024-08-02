@@ -50,7 +50,6 @@ from .utils import (
     _get_data_id_from_pystac_object,
     _get_format_from_asset,
     _get_formats_from_item,
-    _get_resolutions_cog,
     _get_url_from_pystac_object,
     _is_xcube_server_asset,
     _is_valid_ml_data_type,
@@ -456,6 +455,7 @@ class StackImplementation:
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
+
         items = list(
             self._catalog.search(
                 collections=[data_id],
@@ -470,30 +470,17 @@ class StackImplementation:
                 f"parameters bbox {bbox!r}, time_range {time_range!r} and "
                 f"query {open_params.get("query", "None")!r}"
             )
-        get_mldd = False
-        if data_type is None and opener_id is None:
-            formats = _get_formats_from_item(
-                items[0], asset_names=open_params.get("bands")
-            )
-            if len(formats) == 1 and formats[0] in MLDATASET_FORMATS:
-                get_mldd = True
+
         if opener_id is None:
             opener_id = ""
-        if (
-            get_mldd
-            or _is_valid_ml_data_type(data_type)
-            or opener_id.split(":")[0] == "mldataset"
-        ):
+        if "bands" not in open_params:
+            assets = _list_assets_from_item(items[0])
+            open_params["bands"] = [asset.extra_fields["id"] for asset in assets]
+        if _is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             ds = StackModeMultiLevelDataset(data_id, items, **open_params)
         else:
-            resolutions = _get_resolutions_cog(
-                items[0],
-                asset_names=open_params.get("asset_names", None),
-                crs=open_params.get("crs", None),
-            )
             ds = odc.stac.load(
                 items,
-                resolution=resolutions[0],
                 **open_params,
             )
             ds = _apply_scaling_nodata(ds, items)

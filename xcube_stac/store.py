@@ -42,7 +42,6 @@ from xcube.util.jsonschema import JsonObjectSchema
 
 from .constants import (
     DATA_OPENER_IDS,
-    LOG,
     STAC_STORE_PARAMETERS,
 )
 from .href_parse import _decode_href
@@ -55,7 +54,6 @@ from .utils import (
     _get_data_id_from_pystac_object,
     _get_formats_from_assets,
     _is_valid_data_type,
-    _is_valid_dataset_data_type,
     _is_valid_ml_data_type,
     _is_xcube_server_item,
     _list_assets_from_item,
@@ -146,18 +144,13 @@ class StacDataStore(DataStore):
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         if _is_valid_data_type(data_type):
-            in_store = True
             try:
-                _ = self._impl.access_item(data_id)
+                item = self._impl.access_item(data_id)
             except requests.exceptions.HTTPError:
-                in_store = False
-            if not in_store:
                 return False
-            else:
-                if _is_valid_ml_data_type(data_type):
-                    item = self._impl.access_item(data_id)
-                    return _are_all_assets_geotiffs(item)
-                return True
+            if _is_valid_ml_data_type(data_type):
+                return _are_all_assets_geotiffs(item) or _is_xcube_server_item(item)
+            return True
         return False
 
     def get_data_opener_ids(
@@ -237,23 +230,7 @@ class StacDataStore(DataStore):
         _assert_valid_data_type(data_type)
         metadata = self._impl.get_extent(data_id)
 
-        # decision between MultiLevelDatasetDescriptor and DatasetDescriptor
-        item = self._impl.access_item(data_id)
-        get_mldd = False
-        if _is_xcube_server_item(item) and _is_valid_ml_data_type(data_type):
-            get_mldd = True
-        elif _are_all_assets_geotiffs(item) and not _is_valid_dataset_data_type(
-            data_type
-        ):
-            get_mldd = True
-        else:
-            if _is_valid_ml_data_type(data_type):
-                LOG.info(
-                    f"The data ID {data_id!r} contains not only assets in geotiff "
-                    f"format. Therefore, data_type is set to {DATASET_TYPE.alias!r}"
-                )
-
-        if get_mldd:
+        if _is_valid_ml_data_type(data_type):
             mlds = self.open_data(data_id, data_type="mldataset")
             return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
         else:

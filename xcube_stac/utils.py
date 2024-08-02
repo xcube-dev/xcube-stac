@@ -556,19 +556,6 @@ def _is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
 
 
-def _is_valid_dataset_data_type(data_type: DataTypeLike) -> bool:
-    """Auxiliary function to check if data type is a dataset
-    data type.
-
-    Args:
-        data_type: Data type that is to be checked.
-
-    Returns:
-        True if *data_type* is a dataset data type, otherwise False
-    """
-    return DATASET_TYPE.is_super_type_of(data_type)
-
-
 def _assert_valid_opener_id(opener_id: str):
     """Auxiliary function to assert if data opener identified by
     *opener_id* is supported by the store.
@@ -608,7 +595,7 @@ def _get_resolutions_cog(
     asset_names: Container[str] = None,
     crs: str = None,
 ) -> list[odc.geo.Resolution]:
-    """This function calculates the resolutuon for each overview level of
+    """This function calculates the resolution for each overview level of
     a cloud-optimized GeoTIFF (COG).
 
     Args:
@@ -619,8 +606,15 @@ def _get_resolutions_cog(
     Returns:
         list of odc-geo resolution objects for each overview layer.
     """
-    asset = next(_get_assets_from_item(item, asset_names=asset_names))
-    with rasterio.open(asset.href) as rio_dataset_reader:
+    assets = _list_assets_from_item(item, asset_names=asset_names)
+    resolutions = np.full(len(assets), np.inf)
+    for i, asset in enumerate(assets):
+        raster_bands = asset.extra_fields.get("raster:bands")
+        if not raster_bands:
+            break
+        resolutions[i] = asset.extra_fields["raster:bands"][0]["spatial_resolution"]
+    idx_min = np.argmin(resolutions)
+    with rasterio.open(assets[idx_min].href) as rio_dataset_reader:
         overviews = [1] + rio_dataset_reader.overviews(1)
         data_resolution = rio_dataset_reader.res
         data_crs = rio_dataset_reader.crs
