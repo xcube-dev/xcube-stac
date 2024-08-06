@@ -36,7 +36,7 @@ from xcube.core.store import (
 from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_stac.constants import DATA_STORE_ID
-from xcube_stac.utils import _get_formats_from_item
+from xcube_stac._utils import get_formats_from_item
 from xcube_stac.accessor import HttpsDataAccessor, S3DataAccessor
 
 SKIP_HELP = (
@@ -154,7 +154,7 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = list(itertools.islice(data_ids, 1))
         self.assertEqual(1, len(data_ids))
         item = store._impl.access_item(data_ids[0])
-        formats = _get_formats_from_item(item)
+        formats = get_formats_from_item(item)
         self.assertEqual(["geotiff"], formats)
 
     @pytest.mark.vcr()
@@ -331,7 +331,7 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
 
         # open data without open_params
-        ds = store.open_data(self.data_id_time_range, opener_id="dataset:geotiff:https")
+        ds = store.open_data(self.data_id_time_range)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             ["blue_p50", "blue_p25", "blue_p75", "qa_f"], list(ds.data_vars)
@@ -352,7 +352,9 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data with open_params
-        mlds = store.open_data(self.data_id_time_range, asset_names=["blue_p25"])
+        mlds = store.open_data(
+            self.data_id_time_range, asset_names=["blue_p25"], data_type="mldataset"
+        )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
         self.assertCountEqual(["blue_p25"], list(ds.data_vars))
@@ -363,7 +365,9 @@ class StacDataStoreTest(unittest.TestCase):
 
         # open data where multiple assets are stored in one mldataset
         mlds = store.open_data(
-            self.data_id_time_range, asset_names=["blue_p25", "blue_p75"]
+            self.data_id_time_range,
+            asset_names=["blue_p25", "blue_p75"],
+            data_type="mldataset",
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
@@ -499,7 +503,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         ds = mlds.base_dataset
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(3, mlds.num_levels)
+        self.assertEqual(1, mlds.num_levels)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [

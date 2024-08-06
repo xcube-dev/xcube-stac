@@ -27,7 +27,7 @@ import pystac
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
 
-from .utils import _apply_scaling_nodata, _get_resolutions_cog
+from ._utils import apply_scaling_nodata, get_resolutions_cog
 
 
 class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
@@ -62,7 +62,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         combined_dataset = datasets[0].copy()
         for dataset in datasets[1:]:
             combined_dataset.update(dataset)
-        combined_dataset = _apply_scaling_nodata(combined_dataset, self._item)
+        combined_dataset = apply_scaling_nodata(combined_dataset, self._item)
         return combined_dataset
 
 
@@ -86,7 +86,7 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
         self._open_params = open_params
         self._items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
-        self._resolutions = _get_resolutions_cog(
+        self._resolutions = get_resolutions_cog(
             self._items[0],
             asset_names=self._open_params.get("bands", None),
             crs=self._open_params.get("crs", None),
@@ -101,10 +101,10 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
                 resolution=resolution,
                 **self._open_params,
             )
-            self._datasets.append(_apply_scaling_nodata(ds, self._items))
+            self._datasets.append(apply_scaling_nodata(ds, self._items))
 
     def _get_num_levels_lazily(self) -> int:
-        return len(self._datasets)
+        return len(self._resolutions)
 
     def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
         return self._datasets[index]

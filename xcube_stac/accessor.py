@@ -23,9 +23,10 @@ from typing import Union
 
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import DataTypeLike, new_data_store
+from xcube.core.store import DataTypeLike
+from xcube.core.store import new_data_store
 
-from .utils import _is_valid_ml_data_type
+from ._utils import is_valid_ml_data_type
 from .constants import LOG
 
 
@@ -51,7 +52,7 @@ class HttpsDataAccessor:
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         if format_id == "netcdf":
-            if _is_valid_ml_data_type(data_type):
+            if is_valid_ml_data_type(data_type):
                 LOG.warn(
                     f"No data opener found for format {format_id!r} and data type "
                     f"{data_type!r}. Data type is changed to the default data type "
@@ -67,7 +68,7 @@ class HttpsDataAccessor:
 
 class S3DataAccessor:
     """Implementation of the data accessor supporting
-    the zarr, geotiff and netcdf format via the https protocol.
+    the zarr, geotiff and netcdf format via the AWS S3 protocol.
     """
 
     def __init__(

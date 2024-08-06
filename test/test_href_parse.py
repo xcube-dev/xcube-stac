@@ -23,10 +23,10 @@ import unittest
 
 from xcube.core.store import DataStoreError
 
-from xcube_stac.href_parse import (
-    _assert_aws_s3_bucket,
-    _assert_aws_s3_region_name,
-    _decode_href,
+from xcube_stac._href_parse import (
+    assert_aws_s3_bucket,
+    assert_aws_s3_region_name,
+    decode_href,
 )
 
 
@@ -94,13 +94,13 @@ class HrefParseTest(unittest.TestCase):
         ]
 
         for expected, href in zip(expected_returns, hrefs):
-            self.assertEqual(expected, _decode_href(href), msg=href)
+            self.assertEqual(expected, decode_href(href), msg=href)
 
     def test_is_aws_s3_bucket(self):
         with self.assertRaises(DataStoreError) as cm:
             bucket = "test_123-s3alias"
             href = "https://s3-us-east-1.amazonaws.com/bucket-name/filename"
-            _assert_aws_s3_bucket(bucket, href)
+            assert_aws_s3_bucket(bucket, href)
         self.assertEqual(
             (
                 f"Bucket name {bucket!r} extracted from the href {href!r} "
@@ -111,7 +111,7 @@ class HrefParseTest(unittest.TestCase):
         with self.assertRaises(DataStoreError) as cm:
             bucket = "m" * 64
             href = "https://s3-us-east-1.amazonaws.com/bucket-name/filename"
-            _assert_aws_s3_bucket(bucket, href)
+            assert_aws_s3_bucket(bucket, href)
         self.assertEqual(
             (
                 f"Bucket name {bucket!r} extracted from the href {href!r} "
@@ -124,7 +124,7 @@ class HrefParseTest(unittest.TestCase):
         with self.assertRaises(DataStoreError) as cm:
             region_name = "us-east-5"
             href = "https://s3-us-east-5.amazonaws.com/bucket-name/filename"
-            _assert_aws_s3_region_name(region_name, href)
+            assert_aws_s3_region_name(region_name, href)
         self.assertEqual(
             (
                 f"Region name {region_name!r} extracted from the href {href!r} "

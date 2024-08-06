@@ -69,7 +69,7 @@ AWS_REGION_NAMES = [
 ]
 
 
-def _decode_href(href: str) -> Tuple[str, str, str, dict]:
+def decode_href(href: str) -> Tuple[str, str, str, dict]:
     """Decodes a href into protocol, root, remaining file path,
     and region name if given.
 
@@ -93,7 +93,7 @@ def _decode_href(href: str) -> Tuple[str, str, str, dict]:
         DataStoreError: Error, AWS S3 root cannot be decoded since
             it does not follow the uri pattern mentioned in Note.
     """
-    protocol, root, fs_path, storage_options = _decode_aws_s3_href(href)
+    protocol, root, fs_path, storage_options = decode_aws_s3_href(href)
     if root is None:
         protocol, remain = href.split("://")
         root = remain.split("/")[0]
@@ -103,7 +103,7 @@ def _decode_href(href: str) -> Tuple[str, str, str, dict]:
     return protocol, root, fs_path, storage_options
 
 
-def _decode_aws_s3_href(href: str):
+def decode_aws_s3_href(href: str):
     """Decodes an AWS S3 href into protocol, root, remaining file path,
     and storage options needed for the S3 data store. If href does not fit to
     the AWS S3 pattern, root, fs_path and region_name will be None.
@@ -162,9 +162,9 @@ def _decode_aws_s3_href(href: str):
         fs_path = "/".join(tmp[1:])
 
     if root is not None:
-        _assert_aws_s3_bucket(root, href)
+        assert_aws_s3_bucket(root, href)
     if region_name is not None:
-        _assert_aws_s3_region_name(region_name, href)
+        assert_aws_s3_region_name(region_name, href)
 
     if region_name is None:
         storage_options = {}
@@ -174,7 +174,7 @@ def _decode_aws_s3_href(href: str):
     return protocol, root, fs_path, storage_options
 
 
-def _assert_aws_s3_bucket(bucket: str, href: str):
+def assert_aws_s3_bucket(bucket: str, href: str):
     """Test if bucket name follows the prescribed AWS S3 naming rules.
 
     Note:
@@ -196,7 +196,7 @@ def _assert_aws_s3_bucket(bucket: str, href: str):
         )
 
 
-def _assert_aws_s3_region_name(region_name: str, href: str):
+def assert_aws_s3_region_name(region_name: str, href: str):
     """Test if region name is a valid AWS S3 region name.
 
     Note:

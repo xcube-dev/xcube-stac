@@ -25,13 +25,13 @@ import unittest
 import pystac
 from xcube.core.store import DataStoreError
 
-from xcube_stac.utils import (
-    _convert_datetime2str,
-    _convert_str2datetime,
-    _do_bboxes_intersect,
-    _is_collection_in_time_range,
-    _is_item_in_time_range,
-    _update_dict,
+from xcube_stac._utils import (
+    convert_datetime2str,
+    convert_str2datetime,
+    do_bboxes_intersect,
+    is_collection_in_time_range,
+    is_item_in_time_range,
+    update_dict,
 )
 
 
@@ -39,14 +39,14 @@ class UtilsTest(unittest.TestCase):
 
     def test_convert_datetime2str(self):
         dt = datetime.datetime(2024, 1, 1, 12, 00, 00)
-        self.assertEqual("2024-01-01T12:00:00", _convert_datetime2str(dt))
+        self.assertEqual("2024-01-01T12:00:00", convert_datetime2str(dt))
         dt = datetime.date(2024, 1, 1)
-        self.assertEqual("2024-01-01", _convert_datetime2str(dt))
+        self.assertEqual("2024-01-01", convert_datetime2str(dt))
 
     def test_convert_str2datetime(self):
         dt = datetime.datetime(2024, 1, 1, 12, 00, 00, tzinfo=datetime.timezone.utc)
-        self.assertEqual(dt, _convert_str2datetime("2024-01-01T12:00:00.000000Z"))
-        self.assertEqual(dt, _convert_str2datetime("2024-01-01T12:00:00"))
+        self.assertEqual(dt, convert_str2datetime("2024-01-01T12:00:00.000000Z"))
+        self.assertEqual(dt, convert_str2datetime("2024-01-01T12:00:00"))
 
     def test_is_item_in_time_range(self):
         item1 = pystac.Item(
@@ -91,13 +91,13 @@ class UtilsTest(unittest.TestCase):
         ]
 
         for time_start, time_end, fun in item1_test_paramss:
-            fun(_is_item_in_time_range(item1, time_range=[time_start, time_end]))
+            fun(is_item_in_time_range(item1, time_range=[time_start, time_end]))
 
         for time_start, time_end, fun in item2_test_paramss:
-            fun(_is_item_in_time_range(item2, time_range=[time_start, time_end]))
+            fun(is_item_in_time_range(item2, time_range=[time_start, time_end]))
 
         with self.assertRaises(DataStoreError) as cm:
-            _is_item_in_time_range(
+            is_item_in_time_range(
                 item3, time_range=[item1_test_paramss[0][0], item1_test_paramss[0][1]]
             )
         self.assertEqual(
@@ -190,21 +190,21 @@ class UtilsTest(unittest.TestCase):
 
         for time_start, time_end, fun in collection1_test_paramss:
             fun(
-                _is_collection_in_time_range(
+                is_collection_in_time_range(
                     collection1, time_range=[time_start, time_end]
                 )
             )
 
         for time_start, time_end, fun in collection2_test_paramss:
             fun(
-                _is_collection_in_time_range(
+                is_collection_in_time_range(
                     collection2, time_range=[time_start, time_end]
                 )
             )
 
         for time_start, time_end, fun in collection3_test_paramss:
             fun(
-                _is_collection_in_time_range(
+                is_collection_in_time_range(
                     collection3, time_range=[time_start, time_end]
                 )
             )
@@ -227,10 +227,10 @@ class UtilsTest(unittest.TestCase):
         ]
 
         for west, south, east, north, fun in item_test_paramss:
-            fun(_do_bboxes_intersect(item.bbox, bbox=[west, south, east, north]))
+            fun(do_bboxes_intersect(item.bbox, bbox=[west, south, east, north]))
 
     def test_update_nested_dict(self):
         dic = dict(a=1, b=dict(c=3))
         dic_update = dict(d=1, b=dict(c=5, e=8))
         dic_expected = dict(a=1, d=1, b=dict(c=5, e=8))
-        self.assertDictEqual(dic_expected, _update_dict(dic, dic_update))
+        self.assertDictEqual(dic_expected, update_dict(dic, dic_update))

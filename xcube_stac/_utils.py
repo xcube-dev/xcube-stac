@@ -42,7 +42,7 @@ from xcube.core.store import (
 from .constants import DATA_OPENER_IDS, FloatInt, MAP_MIME_TYP_FORMAT
 
 
-def _get_assets_from_item(
+def get_assets_from_item(
     item: pystac.Item,
     asset_names: Container[str] = None,
 ) -> Iterator[pystac.Asset]:
@@ -68,7 +68,7 @@ def _get_assets_from_item(
             yield v
 
 
-def _list_assets_from_item(
+def list_assets_from_item(
     item: pystac.Item,
     asset_names: Container[str] = None,
 ) -> list[pystac.Asset]:
@@ -83,10 +83,10 @@ def _list_assets_from_item(
     Yields:
         An iterator over the assets
     """
-    return list(_get_assets_from_item(item, asset_names=asset_names))
+    return list(get_assets_from_item(item, asset_names=asset_names))
 
 
-def _search_nonsearchable_catalog(
+def search_nonsearchable_catalog(
     pystac_object: Union[pystac.Catalog, pystac.Collection],
     recursive: bool = True,
     **search_params,
@@ -113,14 +113,12 @@ def _search_nonsearchable_catalog(
         if recursive:
             if any(True for _ in pystac_object.get_children()):
                 iterators = (
-                    _search_nonsearchable_catalog(
-                        child, recursive=True, **search_params
-                    )
+                    search_nonsearchable_catalog(child, recursive=True, **search_params)
                     for child in pystac_object.get_children()
                 )
                 yield from itertools.chain(*iterators)
             else:
-                iterator = _search_nonsearchable_catalog(
+                iterator = search_nonsearchable_catalog(
                     pystac_object, recursive=False, **search_params
                 )
                 yield from iterator
@@ -128,17 +126,17 @@ def _search_nonsearchable_catalog(
             for item in pystac_object.get_items():
                 # test if item's bbox intersects with the desired bbox
                 if "bbox" in search_params:
-                    if not _do_bboxes_intersect(item.bbox, **search_params):
+                    if not do_bboxes_intersect(item.bbox, **search_params):
                         continue
                 # test if item fit to desired time range
                 if "time_range" in search_params:
-                    if not _is_item_in_time_range(item, **search_params):
+                    if not is_item_in_time_range(item, **search_params):
                         continue
                 # iterate through assets of item
                 yield item
 
 
-def _search_collections(
+def search_collections(
     catalog: pystac.Catalog,
     **search_params,
 ) -> Iterator[pystac.Item]:
@@ -154,19 +152,19 @@ def _search_collections(
     for collection in catalog.get_collections():
         # test if collection's bbox intersects with the desired bbox
         if "bbox" in search_params:
-            if not _do_bboxes_intersect(
+            if not do_bboxes_intersect(
                 collection.extent.spatial.bboxes[0], **search_params
             ):
                 continue
         # test if collection fit to desired time range
         if "time_range" in search_params:
-            if not _is_collection_in_time_range(collection, **search_params):
+            if not is_collection_in_time_range(collection, **search_params):
                 continue
         # iterate through assets of item
         yield collection
 
 
-def _get_attrs_from_pystac_object(
+def get_attrs_from_pystac_object(
     pystac_obj: Union[pystac.Item, pystac.Collection], include_attrs: Container[str]
 ) -> Dict[str, Any]:
     """Extracts the desired attributes from an item object.
@@ -203,7 +201,7 @@ def _get_attrs_from_pystac_object(
     return attrs
 
 
-def _convert_str2datetime(datetime_str: str) -> datetime.datetime:
+def convert_str2datetime(datetime_str: str) -> datetime.datetime:
     """Converting datetime string to a datetime object, which can handle
     the ISO 8601 suffix 'Z'.
 
@@ -219,7 +217,7 @@ def _convert_str2datetime(datetime_str: str) -> datetime.datetime:
     return dt
 
 
-def _convert_datetime2str(dt: Union[datetime.datetime, datetime.date]) -> str:
+def convert_datetime2str(dt: Union[datetime.datetime, datetime.date]) -> str:
     """Converting datetime to ISO 8601 string.
 
     Args:
@@ -231,7 +229,7 @@ def _convert_datetime2str(dt: Union[datetime.datetime, datetime.date]) -> str:
     return dt.isoformat()
 
 
-def _is_item_in_time_range(item: pystac.Item, **open_params) -> bool:
+def is_item_in_time_range(item: pystac.Item, **open_params) -> bool:
     """Determine whether the datetime or datetime range of an item
     intersects to the 'time_range' given by *open_params*.
 
@@ -250,14 +248,14 @@ def _is_item_in_time_range(item: pystac.Item, **open_params) -> bool:
         DataStoreError: Error, if either 'start_datetime' and 'end_datetime'
         nor 'datetime' is determined in the STAC item.
     """
-    dt_start = _convert_str2datetime(open_params["time_range"][0])
-    dt_end = _convert_str2datetime(open_params["time_range"][1])
+    dt_start = convert_str2datetime(open_params["time_range"][0])
+    dt_end = convert_str2datetime(open_params["time_range"][1])
     if "start_datetime" in item.properties and "end_datetime" in item.properties:
-        dt_start_data = _convert_str2datetime(item.properties["start_datetime"])
-        dt_end_data = _convert_str2datetime(item.properties["end_datetime"])
+        dt_start_data = convert_str2datetime(item.properties["start_datetime"])
+        dt_end_data = convert_str2datetime(item.properties["end_datetime"])
         return dt_end >= dt_start_data and dt_start <= dt_end_data
     elif "datetime" in item.properties:
-        dt_data = _convert_str2datetime(item.properties["datetime"])
+        dt_data = convert_str2datetime(item.properties["datetime"])
         return dt_start <= dt_data <= dt_end
     else:
         raise DataStoreError(
@@ -266,7 +264,7 @@ def _is_item_in_time_range(item: pystac.Item, **open_params) -> bool:
         )
 
 
-def _is_collection_in_time_range(collection: pystac.Collection, **open_params) -> bool:
+def is_collection_in_time_range(collection: pystac.Collection, **open_params) -> bool:
     """Determine whether collection temporal extent
     intersects to the 'time_range' given by *open_params*.
 
@@ -279,8 +277,8 @@ def _is_collection_in_time_range(collection: pystac.Collection, **open_params) -
         True, if the temporal extent of a collection is within or overlapping
         the 'time_range'; otherwise False.
     """
-    dt_start = _convert_str2datetime(open_params["time_range"][0])
-    dt_end = _convert_str2datetime(open_params["time_range"][1])
+    dt_start = convert_str2datetime(open_params["time_range"][0])
+    dt_end = convert_str2datetime(open_params["time_range"][1])
     temp_extent = collection.extent.temporal.intervals[0]
     if temp_extent[1] is None:
         return temp_extent[0] <= dt_end
@@ -290,7 +288,7 @@ def _is_collection_in_time_range(collection: pystac.Collection, **open_params) -
         return dt_end >= temp_extent[0] and dt_start <= temp_extent[1]
 
 
-def _do_bboxes_intersect(
+def do_bboxes_intersect(
     bbox_test: [FloatInt, FloatInt, FloatInt, FloatInt], **open_params
 ) -> bool:
     """Determine whether two bounding boxes intersect.
@@ -308,7 +306,7 @@ def _do_bboxes_intersect(
     return box(*bbox_test).intersects(box(*open_params["bbox"]))
 
 
-def _update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
+def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     """It updates a dictionary recursively.
 
     Args:
@@ -324,13 +322,13 @@ def _update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
         dic = copy.deepcopy(dic)
     for key, val in dic_update.items():
         if isinstance(val, dict):
-            dic[key] = _update_dict(dic.get(key, {}), val)
+            dic[key] = update_dict(dic.get(key, {}), val)
         else:
             dic[key] = val
     return dic
 
 
-def _get_url_from_pystac_object(
+def get_url_from_pystac_object(
     pystac_obj: Union[pystac.Item, pystac.collection]
 ) -> str:
     """Extracts the URL an item object.
@@ -346,7 +344,7 @@ def _get_url_from_pystac_object(
     return links[0].href
 
 
-def _get_formats_from_item(
+def get_formats_from_item(
     item: pystac.Item, asset_names: Container[str] = None
 ) -> np.array:
     """It transforms the MIME-types of selected assets stored within an item to the
@@ -361,11 +359,11 @@ def _get_formats_from_item(
     Returns:
         array containing all formats
     """
-    assets = _list_assets_from_item(item, asset_names=asset_names)
-    return _get_formats_from_assets(assets)
+    assets = list_assets_from_item(item, asset_names=asset_names)
+    return get_formats_from_assets(assets)
 
 
-def _get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
+def get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
     """It transforms the MIME-types of multiple assets to the
     format IDs used in xcube.
 
@@ -375,10 +373,10 @@ def _get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
     Returns:
         array containing all format IDs
     """
-    return np.unique(np.array([_get_format_from_asset(asset) for asset in assets]))
+    return np.unique(np.array([get_format_from_asset(asset) for asset in assets]))
 
 
-def _get_format_from_asset(asset: pystac.Asset) -> str:
+def get_format_from_asset(asset: pystac.Asset) -> str:
     """It transforms the MIME-types of one asset to the format IDs used in xcube.
 
     Args:
@@ -390,7 +388,7 @@ def _get_format_from_asset(asset: pystac.Asset) -> str:
     return MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
 
 
-def _are_all_assets_geotiffs(item: pystac.Item) -> bool:
+def are_all_assets_geotiffs(item: pystac.Item) -> bool:
     """Auxiliary function to check if all assets are tifs, tiffs, or geotiffs.
 
     Args:
@@ -399,11 +397,11 @@ def _are_all_assets_geotiffs(item: pystac.Item) -> bool:
     Returns: True, if all assets within the item are tifs, tiffs, or geotiffs.
 
     """
-    formats = _get_formats_from_item(item)
+    formats = get_formats_from_item(item)
     return len(formats) == 1 and formats[0] == "geotiff"
 
 
-def _is_xcube_server_item(item: pystac.Item) -> bool:
+def is_xcube_server_item(item: pystac.Item) -> bool:
     """Auxiliary function to check if the item is published by xcube server.
 
     Args:
@@ -412,11 +410,11 @@ def _is_xcube_server_item(item: pystac.Item) -> bool:
     Returns: True, if item is published by xcube server.
 
     """
-    assets = _list_assets_from_item(item)
-    return _is_xcube_server_asset(assets)
+    assets = list_assets_from_item(item)
+    return is_xcube_server_asset(assets)
 
 
-def _is_xcube_server_asset(asset: Union[pystac.Asset, list[pystac.Asset]]) -> bool:
+def is_xcube_server_asset(asset: Union[pystac.Asset, list[pystac.Asset]]) -> bool:
     """Auxiliary function to check if the asset(s) is/are published by xcube server.
 
     Args:
@@ -430,7 +428,7 @@ def _is_xcube_server_asset(asset: Union[pystac.Asset, list[pystac.Asset]]) -> bo
     return "xcube:data_store_id" in asset.extra_fields
 
 
-def _select_xcube_server_asset(
+def select_xcube_server_asset(
     assets: list[pystac.Asset],
     asset_names: list[str] = None,
     data_type: DataTypeLike = None,
@@ -452,7 +450,7 @@ def _select_xcube_server_asset(
             in *asset_names*
     """
     if asset_names is None:
-        if _is_valid_ml_data_type(data_type):
+        if is_valid_ml_data_type(data_type):
             assets = [assets[1]]
         else:
             assets = [assets[0]]
@@ -466,7 +464,7 @@ def _select_xcube_server_asset(
     return assets
 
 
-def _extract_params_xcube_server_asset(
+def extract_params_xcube_server_asset(
     asset: pystac.Asset,
 ) -> tuple[str, str, str, dict]:
     """Extracts the data store parameters and the data ID from an asset
@@ -490,7 +488,7 @@ def _extract_params_xcube_server_asset(
     return protocol, root, fs_path, storage_options
 
 
-def _xarray_rename_vars(
+def xarray_rename_vars(
     ds: Union[xr.Dataset, xr.DataArray], name_dict: dict
 ) -> Union[xr.Dataset, xr.DataArray]:
     """Auxiliary functions which turns the method xarray.Dataset.rename_vars and
@@ -508,7 +506,7 @@ def _xarray_rename_vars(
     return ds.rename_vars(name_dict)
 
 
-def _is_valid_data_type(data_type: DataTypeLike) -> bool:
+def is_valid_data_type(data_type: DataTypeLike) -> bool:
     """Auxiliary function to check if data type is supported
     by the store.
 
@@ -525,7 +523,7 @@ def _is_valid_data_type(data_type: DataTypeLike) -> bool:
     )
 
 
-def _assert_valid_data_type(data_type: DataTypeLike):
+def assert_valid_data_type(data_type: DataTypeLike):
     """Auxiliary function to assert if data type is supported
     by the store.
 
@@ -536,14 +534,14 @@ def _assert_valid_data_type(data_type: DataTypeLike):
         DataStoreError: Error, if *data_type* is not
             supported by the store.
     """
-    if not _is_valid_data_type(data_type):
+    if not is_valid_data_type(data_type):
         raise DataStoreError(
             f"Data type must be {DATASET_TYPE.alias!r} or "
             f"{MULTI_LEVEL_DATASET_TYPE.alias!r}, but got {data_type!r}."
         )
 
 
-def _is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
+def is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     """Auxiliary function to check if data type is a multi-level
     dataset type.
 
@@ -556,7 +554,7 @@ def _is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
 
 
-def _assert_valid_opener_id(opener_id: str):
+def assert_valid_opener_id(opener_id: str):
     """Auxiliary function to assert if data opener identified by
     *opener_id* is supported by the store.
 
@@ -574,7 +572,7 @@ def _assert_valid_opener_id(opener_id: str):
         )
 
 
-def _get_data_id_from_pystac_object(
+def get_data_id_from_pystac_object(
     pystac_obj: Union[pystac.Item, pystac.Collection], catalog_url: str
 ) -> str:
     """Extracts the data ID from an item object.
@@ -587,10 +585,10 @@ def _get_data_id_from_pystac_object(
         data ID consisting the URL section of an item
         following the catalog URL.
     """
-    return _get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
+    return get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
 
 
-def _get_resolutions_cog(
+def get_resolutions_cog(
     item: pystac.Item,
     asset_names: Container[str] = None,
     crs: str = None,
@@ -606,7 +604,7 @@ def _get_resolutions_cog(
     Returns:
         list of odc-geo resolution objects for each overview layer.
     """
-    assets = _list_assets_from_item(item, asset_names=asset_names)
+    assets = list_assets_from_item(item, asset_names=asset_names)
     resolutions = np.full(len(assets), np.inf)
     for i, asset in enumerate(assets):
         raster_bands = asset.extra_fields.get("raster:bands")
@@ -635,7 +633,7 @@ def _get_resolutions_cog(
     ]
 
 
-def _apply_scaling_nodata(
+def apply_scaling_nodata(
     ds: xr.Dataset, items: Union[pystac.Item, list[pystac.Item]]
 ) -> xr.Dataset:
     """This function applies scaling of the data and fills no-data pixel with np.nan.

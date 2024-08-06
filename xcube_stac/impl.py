@@ -41,24 +41,24 @@ from .constants import (
     STAC_SEARCH_PARAMETERS,
     STAC_SEARCH_PARAMETERS_STACK_MODE,
 )
-from .href_parse import _decode_href
+from ._href_parse import decode_href
 from .mldataset import SingleItemMultiLevelDataset, StackModeMultiLevelDataset
-from .utils import (
-    _apply_scaling_nodata,
-    _convert_datetime2str,
-    _extract_params_xcube_server_asset,
-    _get_data_id_from_pystac_object,
-    _get_format_from_asset,
-    _get_formats_from_item,
-    _get_url_from_pystac_object,
-    _is_xcube_server_asset,
-    _is_valid_ml_data_type,
-    _list_assets_from_item,
-    _search_collections,
-    _search_nonsearchable_catalog,
-    _select_xcube_server_asset,
-    _update_dict,
-    _xarray_rename_vars,
+from ._utils import (
+    apply_scaling_nodata,
+    convert_datetime2str,
+    extract_params_xcube_server_asset,
+    get_data_id_from_pystac_object,
+    get_format_from_asset,
+    get_formats_from_item,
+    get_url_from_pystac_object,
+    is_xcube_server_asset,
+    is_valid_ml_data_type,
+    list_assets_from_item,
+    search_collections,
+    search_nonsearchable_catalog,
+    select_xcube_server_asset,
+    update_dict,
+    xarray_rename_vars,
 )
 
 _HTTPS_STORE = new_data_store("https")
@@ -84,7 +84,7 @@ _OPEN_DATA_PARAMETERS = {
 }
 
 
-class SingleImplementation:
+class SingleStoreMode:
     """Implementations to access single STAC items"""
 
     def __init__(
@@ -127,10 +127,10 @@ class SingleImplementation:
     def get_data_ids(self, is_mldataset: bool) -> Iterator[tuple[str, pystac.Item]]:
         for item in self._catalog.get_items(recursive=True):
             if is_mldataset:
-                formats = _get_formats_from_item(item)
+                formats = get_formats_from_item(item)
                 if not (len(formats) == 1 and formats[0] in MLDATASET_FORMATS):
                     continue
-            data_id = _get_data_id_from_pystac_object(item, catalog_url=self._url_mod)
+            data_id = get_data_id_from_pystac_object(item, catalog_url=self._url_mod)
             yield data_id, item
 
     def get_open_data_params_schema(
@@ -145,7 +145,7 @@ class SingleImplementation:
             properties[key] = _OPEN_DATA_PARAMETERS[key]
         if data_id is not None:
             item = self.access_item(data_id)
-            formats = _get_formats_from_item(item)
+            formats = get_formats_from_item(item)
             for form in formats:
                 for key in _OPEN_DATA_PARAMETERS.keys():
                     if form == key.split("_")[-1]:
@@ -153,7 +153,7 @@ class SingleImplementation:
         if not properties:
             properties = _OPEN_DATA_PARAMETERS
         return JsonObjectSchema(
-            properties=_update_dict(properties, STAC_OPEN_PARAMETERS, inplace=False),
+            properties=update_dict(properties, STAC_OPEN_PARAMETERS, inplace=False),
             required=[],
             additional_properties=False,
         )
@@ -196,7 +196,7 @@ class SingleImplementation:
                 search_params["datetime"] = "/".join(time_range)
             items = self._catalog.search(**search_params).items()
         else:
-            items = _search_nonsearchable_catalog(self._catalog, **search_params)
+            items = search_nonsearchable_catalog(self._catalog, **search_params)
         return items
 
     @classmethod
@@ -231,27 +231,27 @@ class SingleImplementation:
             by *data_id* and *open_params*.
         """
         asset_names = open_params.pop("asset_names", None)
-        assets = _list_assets_from_item(item, asset_names=asset_names)
-        if _is_xcube_server_asset(assets):
-            assets = _select_xcube_server_asset(
+        assets = list_assets_from_item(item, asset_names=asset_names)
+        if is_xcube_server_asset(assets):
+            assets = select_xcube_server_asset(
                 assets, asset_names=asset_names, data_type=data_type
             )
 
         list_ds_asset = []
         for asset in assets:
-            if _is_xcube_server_asset(asset):
+            if is_xcube_server_asset(asset):
                 protocol, root, fs_path, storage_options = (
-                    _extract_params_xcube_server_asset(asset)
+                    extract_params_xcube_server_asset(asset)
                 )
             else:
-                protocol, root, fs_path, storage_options = _decode_href(asset.href)
+                protocol, root, fs_path, storage_options = decode_href(asset.href)
 
             if protocol == "s3":
-                self._storage_options_s3 = _update_dict(
+                self._storage_options_s3 = update_dict(
                     self._storage_options_s3, storage_options
                 )
 
-            format_id = _get_format_from_asset(asset)
+            format_id = get_format_from_asset(asset)
             if opener_id is not None:
                 key = "_".join(opener_id.split(":")[:2])
                 open_params_asset = open_params.get(f"open_params_{key}", {})
@@ -284,11 +284,11 @@ class SingleImplementation:
                     **open_params_asset,
                 )
             else:
-                url = _get_url_from_pystac_object(item)
+                url = get_url_from_pystac_object(item)
                 raise DataStoreError(
-                    f"Only 's3' and 'https' protocols are supported, not {protocol!r}. "
-                    f"The asset {asset.extra_fields['id']!r} has a href {asset.href!r}."
-                    f" The item's url is given by {url!r}."
+                    f"Only 's3' and 'https' protocols are supported, not {protocol!r}."
+                    f" The asset {asset.extra_fields['id']!r} has a href"
+                    f" {asset.href!r}. The item's url is given by {url!r}."
                 )
 
             if isinstance(ds_asset, MultiLevelDataset):
@@ -303,9 +303,7 @@ class SingleImplementation:
                     for var_name in var_names
                 }
             if isinstance(ds_asset, MultiLevelDataset):
-                ds_asset = ds_asset.apply(
-                    _xarray_rename_vars, dict(name_dict=name_dict)
-                )
+                ds_asset = ds_asset.apply(xarray_rename_vars, dict(name_dict=name_dict))
             else:
                 ds_asset = ds_asset.rename_vars(name_dict=name_dict)
             list_ds_asset.append(ds_asset)
@@ -319,7 +317,7 @@ class SingleImplementation:
                 ds = list_ds_asset[0].copy()
                 for ds_asset in list_ds_asset[1:]:
                     ds.update(ds_asset)
-                ds = _apply_scaling_nodata(ds, item)
+                ds = apply_scaling_nodata(ds, item)
         return ds
 
     ##########################################################################
@@ -339,16 +337,13 @@ class SingleImplementation:
         """
         if self._s3_accessor is None:
             self._s3_accessor = S3DataAccessor(root, storage_options=storage_options)
-        else:
-            if not self._s3_accessor.root == root:
-                LOG.debug(
-                    f"The bucket {self._s3_accessor.root!r} of the "
-                    f"S3 object storage changed to {root!r}. "
-                    "A new s3 data opener will be initialized."
-                )
-                self._s3_accessor = S3DataAccessor(
-                    root, storage_options=storage_options
-                )
+        elif not self._s3_accessor.root == root:
+            LOG.debug(
+                f"The bucket {self._s3_accessor.root!r} of the "
+                f"S3 object storage changed to {root!r}. "
+                "A new s3 data opener will be initialized."
+            )
+            self._s3_accessor = S3DataAccessor(root, storage_options=storage_options)
         return self._s3_accessor
 
     def _get_https_accessor(self, root: str) -> HttpsDataAccessor:
@@ -364,18 +359,17 @@ class SingleImplementation:
         """
         if self._https_accessor is None:
             self._https_accessor = HttpsDataAccessor(root)
-        else:
-            if not self._https_accessor.root == root:
-                LOG.debug(
-                    f"The root {self._https_accessor.root!r} of the "
-                    f"https data opener changed to {root!r}. "
-                    "A new https data opener will be initialized."
-                )
-                self._https_accessor = HttpsDataAccessor(root)
+        elif not self._https_accessor.root == root:
+            LOG.debug(
+                f"The root {self._https_accessor.root!r} of the "
+                f"https data opener changed to {root!r}. "
+                "A new https data opener will be initialized."
+            )
+            self._https_accessor = HttpsDataAccessor(root)
         return self._https_accessor
 
 
-class StackImplementation:
+class StackStoreMode:
     """Implementations to access stacked STAC items within one collection"""
 
     def __init__(
@@ -428,7 +422,7 @@ class StackImplementation:
         for collection in self._catalog.get_collections():
             if is_mldataset:
                 item = next(collection.get_items())
-                formats = _get_formats_from_item(item)
+                formats = get_formats_from_item(item)
                 if not (len(formats) == 1 and formats[0] in MLDATASET_FORMATS):
                     continue
             yield collection.id, collection
@@ -474,16 +468,16 @@ class StackImplementation:
         if opener_id is None:
             opener_id = ""
         if "bands" not in open_params:
-            assets = _list_assets_from_item(items[0])
+            assets = list_assets_from_item(items[0])
             open_params["bands"] = [asset.extra_fields["id"] for asset in assets]
-        if _is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
+        if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             ds = StackModeMultiLevelDataset(data_id, items, **open_params)
         else:
             ds = odc.stac.load(
                 items,
                 **open_params,
             )
-            ds = _apply_scaling_nodata(ds, items)
+            ds = apply_scaling_nodata(ds, items)
         return ds
 
     def get_extent(self, data_id: str) -> dict:
@@ -491,16 +485,16 @@ class StackImplementation:
         temp_extent = collection.extent.temporal.intervals[0]
         temp_extent_str = [None, None]
         if temp_extent[0] is not None:
-            temp_extent_str[0] = _convert_datetime2str(temp_extent[0])
+            temp_extent_str[0] = convert_datetime2str(temp_extent[0])
         if temp_extent[1] is not None:
-            temp_extent_str[1] = _convert_datetime2str(temp_extent[1])
+            temp_extent_str[1] = convert_datetime2str(temp_extent[1])
         return dict(
             bbox=collection.extent.spatial.bboxes[0],
             time_range=temp_extent_str,
         )
 
     def search_data(self, **search_params) -> Iterator[pystac.Item]:
-        return _search_collections(self._catalog, **search_params)
+        return search_collections(self._catalog, **search_params)
 
     @classmethod
     def get_search_params_schema(cls) -> JsonObjectSchema:
