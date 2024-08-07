@@ -40,15 +40,7 @@ class XcubePluginTest(unittest.TestCase):
                         "name": "stac",
                         "point": "xcube.core.store",
                     }
-                },
-                "xcube.core.store.opener": {
-                    "dataset:zarr:stac": {
-                        "component": "<not loaded yet>",
-                        "description": "xarray.Dataset from STAC API",
-                        "name": "dataset:zarr:stac",
-                        "point": "xcube.core.store.opener",
-                    }
-                },
+                }
             },
             registry.to_dict(),
         )

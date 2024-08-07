@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 28 May 2024 11:32:39 GMT
+      - Thu, 11 Jul 2024 13:58:45 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 28 May 2024 11:37:39 GMT
+      - Thu, 11 Jul 2024 14:03:45 GMT
       Source-Age:
-      - '3'
+      - '48'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - ee49500b8971a649b84d0a48359c4b340cc25c32
+      - 4f168c25a8fe1a6388fb303c6b7e7d5d9d978597
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 137F:5A468:1FD306F:21AC5E4:6655BE05
+      - EB7A:35FBCE:CE464A:D82B72:668F9D3B
       X-Served-By:
-      - cache-fra-eddf8230057-FRA
+      - cache-cph2320037-CPH
       X-Timer:
-      - S1716895960.904060,VS0,VE1
+      - S1720706326.934297,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 28 May 2024 11:32:39 GMT
+      - Thu, 11 Jul 2024 13:58:45 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 28 May 2024 11:37:39 GMT
+      - Thu, 11 Jul 2024 14:03:45 GMT
       Source-Age:
-      - '3'
+      - '48'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +133,639 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 735c1e9c4b867b1ba05733f2c0ce553828ab81a8
+      - a3fffb918c47ae11013bdf72e34fcaa5c2251d5c
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 137E:23E66:201F9D1:21FA832:6655BE07
+      - 422A:3AB699:3161EEF:33D2DA3:668F9D3B
       X-Served-By:
-      - cache-fra-eddf8230088-FRA
+      - cache-cph2320023-CPH
       X-Timer:
-      - S1716895960.963438,VS0,VE1
+      - S1720706326.959417,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 11 Jul 2024 13:58:45 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Thu, 11 Jul 2024 14:03:45 GMT
+      Source-Age:
+      - '48'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 1939b059a03d5199f1a0d4c00c2c06778e4af8e2
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 088B:34F6FA:3793A67:3A6D3F9:668FD7E6
+      X-Served-By:
+      - cache-cph2320039-CPH
+      X-Timer:
+      - S1720706326.987451,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 11 Jul 2024 13:58:46 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Thu, 11 Jul 2024 14:03:46 GMT
+      Source-Age:
+      - '48'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 482e1b8dbd60036bb377483ead453079594c3973
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 088B:34F6FA:3793A67:3A6D3F9:668FD7E6
+      X-Served-By:
+      - cache-cph2320041-CPH
+      X-Timer:
+      - S1720706326.015304,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 11 Jul 2024 13:58:46 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Thu, 11 Jul 2024 14:03:46 GMT
+      Source-Age:
+      - '48'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - f51efe22fb4d80019465d5bb56acf8e29f604415
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 088B:34F6FA:3793A67:3A6D3F9:668FD7E6
+      X-Served-By:
+      - cache-cph2320053-CPH
+      X-Timer:
+      - S1720706326.055134,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 11 Jul 2024 13:58:46 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Thu, 11 Jul 2024 14:03:46 GMT
+      Source-Age:
+      - '48'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - b1f527a6860383275607fa4ce3ab1c55707f00f1
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 088B:34F6FA:3793A67:3A6D3F9:668FD7E6
+      X-Served-By:
+      - cache-cph2320057-CPH
+      X-Timer:
+      - S1720706326.084087,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 11 Jul 2024 13:58:46 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Thu, 11 Jul 2024 14:03:46 GMT
+      Source-Age:
+      - '48'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 57b6ad8f980ff87b12561bd1608ef40e066dc779
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 088B:34F6FA:3793A67:3A6D3F9:668FD7E6
+      X-Served-By:
+      - cache-cph2320056-CPH
+      X-Timer:
+      - S1720706326.115952,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
+  response:
+    body:
+      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
+        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
+        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
+        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
+        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
+        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
+        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
+        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
+        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
+        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
+        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
+        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
+        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
+        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
+        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
+        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
+        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
+        \"building footprints manually  labeled and classified according to building
+        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
+        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
+        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
+        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
+        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
+        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
+        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
+        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
+        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
+        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
+        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
+        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
+        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
+        \     \"title\": \"The source imagery these building labels were derived from\",\n
+        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Cache-Control:
+      - max-age=300
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Length:
+      - '914'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 11 Jul 2024 13:58:46 GMT
+      ETag:
+      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
+      Expires:
+      - Thu, 11 Jul 2024 14:03:46 GMT
+      Source-Age:
+      - '48'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding,Origin
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - a47ff45ea8c77ef54e5dc908f5024132d841d28c
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - 088B:34F6FA:3793A67:3A6D3F9:668FD7E6
+      X-Served-By:
+      - cache-cph2320049-CPH
+      X-Timer:
+      - S1720706326.150283,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

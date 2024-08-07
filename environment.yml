@@ -5,6 +5,8 @@ channels:
 dependencies:
   # Required
   - python>=3.10
+  - odc-geo
+  - odc-stac
   - pandas
   - pystac
   - pystac-client
