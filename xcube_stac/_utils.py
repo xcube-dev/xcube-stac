@@ -22,6 +22,7 @@
 import copy
 import datetime
 import itertools
+import os
 from typing import Any, Container, Dict, Iterator, Union
 
 import numpy as np
@@ -39,7 +40,13 @@ from xcube.core.store import (
     DataTypeLike,
 )
 
-from .constants import DATA_OPENER_IDS, FloatInt, MAP_MIME_TYP_FORMAT
+from .constants import (
+    CATALOG_JSON,
+    DATA_OPENER_IDS,
+    FloatInt,
+    MAP_FILE_EXTENSION_FORMAT,
+    MAP_MIME_TYP_FORMAT,
+)
 
 
 def get_assets_from_item(
@@ -344,148 +351,9 @@ def get_url_from_pystac_object(
     return links[0].href
 
 
-def get_formats_from_item(
-    item: pystac.Item, asset_names: Container[str] = None
-) -> np.array:
-    """It transforms the MIME-types of selected assets stored within an item to the
-    format IDs used in xcube.
-
-    Args:
-        item: item/feature
-        asset_names: Names of assets which will be included
-            in the data cube. If None, all assets will be
-            included which can be opened by the data store.
-
-    Returns:
-        array containing all formats
-    """
-    assets = list_assets_from_item(item, asset_names=asset_names)
-    return get_formats_from_assets(assets)
-
-
-def get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
-    """It transforms the MIME-types of multiple assets to the
-    format IDs used in xcube.
-
-    Args:
-        assets: list of assets
-
-    Returns:
-        array containing all format IDs
-    """
-    return np.unique(np.array([get_format_from_asset(asset) for asset in assets]))
-
-
-def get_format_from_asset(asset: pystac.Asset) -> str:
-    """It transforms the MIME-types of one asset to the format IDs used in xcube.
-
-    Args:
-        asset: one asset object
-
-    Returns: format ID
-
-    """
-    return MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
-
-
-def are_all_assets_geotiffs(item: pystac.Item) -> bool:
-    """Auxiliary function to check if all assets are tifs, tiffs, or geotiffs.
-
-    Args:
-        item: item object
-
-    Returns: True, if all assets within the item are tifs, tiffs, or geotiffs.
-
-    """
-    formats = get_formats_from_item(item)
-    return len(formats) == 1 and formats[0] == "geotiff"
-
-
-def is_xcube_server_item(item: pystac.Item) -> bool:
-    """Auxiliary function to check if the item is published by xcube server.
-
-    Args:
-        item: item object
-
-    Returns: True, if item is published by xcube server.
-
-    """
-    assets = list_assets_from_item(item)
-    return is_xcube_server_asset(assets)
-
-
-def is_xcube_server_asset(asset: Union[pystac.Asset, list[pystac.Asset]]) -> bool:
-    """Auxiliary function to check if the asset(s) is/are published by xcube server.
-
-    Args:
-        asset: a list or single pystac.Asset object
-
-    Returns: True, if the asset(s) is/are published by xcube server.
-
-    """
-    if isinstance(asset, list):
-        asset = asset[0]
-    return "xcube:data_store_id" in asset.extra_fields
-
-
-def select_xcube_server_asset(
-    assets: list[pystac.Asset],
-    asset_names: list[str] = None,
-    data_type: DataTypeLike = None,
-) -> list[pystac.Asset]:
-    """Selects the asset from item published by xcube server according to
-    the data type. If no data type is given, the asset linking to 'dataset'
-    will be returned.
-
-    Args:
-        assets: list of asset object
-        asset_names: asset names given in *open_params* in :meth:`open_data`
-        data_type: required data type of the return value in :meth:`open_data`
-
-    Returns:
-        assets: selected asset
-
-    Raises:
-        DataStoreError: Error, if "analytic" and "analytic_multires" is selected
-            in *asset_names*
-    """
-    if asset_names is None:
-        if is_valid_ml_data_type(data_type):
-            assets = [assets[1]]
-        else:
-            assets = [assets[0]]
-    elif "analytic_multires" in asset_names and "analytic" in asset_names:
-        raise DataStoreError(
-            "Xcube server publishes data resources as 'dataset' and "
-            "'mldataset' under the asset names 'analytic' and "
-            "'analytic_multires'. Please select only one asset in "
-            "<asset_names> when opening the data."
-        )
-    return assets
-
-
-def extract_params_xcube_server_asset(
-    asset: pystac.Asset,
-) -> tuple[str, str, str, dict]:
-    """Extracts the data store parameters and the data ID from an asset
-    published by xcube server.
-
-    Args:
-        asset: asset object
-
-    Returns:
-        protocol: protocol needed for the data store ID
-        root: bucket for S3 or root url for https
-        fs_path: path to file which is equivalent to data ID needed
-            to open the data
-        storage_options: additional storage options
-    """
-    protocol = asset.extra_fields["xcube:data_store_id"]
-    data_store_params = asset.extra_fields["xcube:data_store_params"]
-    root = data_store_params["root"]
-    storage_options = data_store_params["storage_options"]
-    fs_path = asset.extra_fields["xcube:open_data_params"]["data_id"]
-    return protocol, root, fs_path, storage_options
+def get_format_from_path(path: str) -> str:
+    _, file_extension = os.path.splitext(path)
+    return MAP_FILE_EXTENSION_FORMAT[file_extension]
 
 
 def xarray_rename_vars(
@@ -586,6 +454,15 @@ def get_data_id_from_pystac_object(
         following the catalog URL.
     """
     return get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
+
+
+def modify_catalog_url(url: str) -> str:
+    url_mod = url
+    if url_mod[-len(CATALOG_JSON) :] == "catalog.json":
+        url_mod = url_mod[:-12]
+    if url_mod[-1] != "/":
+        url_mod += "/"
+    return url_mod
 
 
 def get_resolutions_cog(

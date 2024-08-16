@@ -21,7 +21,6 @@
 
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 
-import numpy as np
 import pystac
 import pystac_client
 import requests
@@ -37,31 +36,27 @@ from xcube.core.store import (
     DataType,
     DataTypeLike,
 )
-from xcube.core.store.fs.impl.fs import S3FsAccessor
 from xcube.util.jsonschema import JsonObjectSchema
 
 from .constants import (
+    CDSE_STAC_URL,
+    CDSE_S3_ENDPOINT,
     DATA_OPENER_IDS,
     STAC_STORE_PARAMETERS,
 )
-from ._href_parse import decode_href
-from .impl import SingleStoreMode
-from .impl import StackStoreMode
+from .store_mode import SingleStoreMode
+from .store_mode import StackStoreMode
+from .stac_objects import GeneralStacItem, CdseStacItem
 from ._utils import (
-    are_all_assets_geotiffs,
     assert_valid_data_type,
     assert_valid_opener_id,
     get_attrs_from_pystac_object,
     get_data_id_from_pystac_object,
-    get_formats_from_assets,
     is_valid_data_type,
     is_valid_ml_data_type,
-    is_xcube_server_item,
-    list_assets_from_item,
+    modify_catalog_url,
+    update_dict,
 )
-
-
-_CATALOG_JSON = "catalog.json"
 
 
 class StacDataStore(DataStore):
@@ -69,6 +64,8 @@ class StacDataStore(DataStore):
 
     Args:
         url: URL to STAC catalog
+        stack_mode: if True, items will be stacked along the time axis;
+            defaults to False.
         storage_options_s3: storage option for 's3' data store
     """
 
@@ -76,12 +73,9 @@ class StacDataStore(DataStore):
         self, url: str, stack_mode: Union[bool, str] = False, **storage_options_s3
     ):
         self._url = url
-        url_mod = url
-        if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
-            url_mod = url_mod[:-12]
-        if url_mod[-1] != "/":
-            url_mod += "/"
-        self._url_mod = url_mod
+        self._url_mod = modify_catalog_url(url)
+        self._stack_mode = stack_mode
+        self._storage_options_s3 = storage_options_s3
 
         # if STAC catalog is not searchable, pystac_client
         # falls back to pystac; to prevent warnings from pystac_client
@@ -94,16 +88,24 @@ class StacDataStore(DataStore):
             self._searchable = False
         self._catalog = catalog
 
-        self._storage_options_s3 = storage_options_s3
+        if not hasattr(self, "_stacitem"):
+            self._stacitem = GeneralStacItem
 
-        self._stack_mode = stack_mode
         if stack_mode is False:
             self._impl = SingleStoreMode(
-                self._catalog, self._url_mod, self._searchable, self._storage_options_s3
+                self._catalog,
+                self._url_mod,
+                self._searchable,
+                self._storage_options_s3,
+                self._stacitem,
             )
         elif stack_mode is True or stack_mode == "odc-stac":
             self._impl = StackStoreMode(
-                self._catalog, self._url_mod, self._searchable, self._storage_options_s3
+                self._catalog,
+                self._url_mod,
+                self._searchable,
+                self._storage_options_s3,
+                self._stacitem,
             )
         else:
             raise DataStoreError(
@@ -114,12 +116,11 @@ class StacDataStore(DataStore):
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         stac_params = STAC_STORE_PARAMETERS
-        stac_params["storage_options_s3"] = S3FsAccessor.get_storage_options_schema()
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac'.",
             properties=stac_params,
             required=["url"],
-            additional_properties=False,
+            additional_properties=True,
         )
 
     @classmethod
@@ -128,9 +129,8 @@ class StacDataStore(DataStore):
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         item = self._impl.access_item(data_id)
-        if are_all_assets_geotiffs(item):
-            return MULTI_LEVEL_DATASET_TYPE.alias, DATASET_TYPE.alias
-        elif is_xcube_server_item(item):
+        xitem = self._stacitem.from_pystac_item(item, self._storage_options_s3)
+        if xitem.is_mldataset_available():
             return MULTI_LEVEL_DATASET_TYPE.alias, DATASET_TYPE.alias
         else:
             return (DATASET_TYPE.alias,)
@@ -155,7 +155,8 @@ class StacDataStore(DataStore):
             except requests.exceptions.HTTPError:
                 return False
             if is_valid_ml_data_type(data_type):
-                return are_all_assets_geotiffs(item) or is_xcube_server_item(item)
+                xitem = self._stacitem.from_pystac_item(item, self._storage_options_s3)
+                return xitem.is_mldataset_available()
             return True
         return False
 
@@ -168,17 +169,12 @@ class StacDataStore(DataStore):
             if not self.has_data(data_id, data_type=data_type):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
             item = self._impl.access_item(data_id)
-            assets = list_assets_from_item(item)
-            if is_xcube_server_item(item):
-                protocols = np.array(["s3"])
-                formats = ["zarr", "levels"]
-            else:
-                formats = get_formats_from_assets(assets)
-                protocols = []
-                for asset in assets:
-                    protocol, _, _, _ = decode_href(asset.href)
-                    protocols.append(protocol)
-                protocols = np.unique(protocols)
+            xitem = self._stacitem.from_pystac_item(item, self._storage_options_s3)
+            protocols = xitem.protocols
+            format_ids = xitem.format_ids
+        else:
+            protocols = self._stacitem.supported_protocols()
+            format_ids = self._stacitem.supported_format_ids()
 
         if data_type is None and data_id is None:
             return DATA_OPENER_IDS
@@ -186,7 +182,7 @@ class StacDataStore(DataStore):
             return tuple(
                 opener_id
                 for opener_id in DATA_OPENER_IDS
-                if opener_id.split(":")[1] in formats
+                if opener_id.split(":")[1] in format_ids
                 and opener_id.split(":")[2] in protocols
             )
         elif data_type is not None and data_id is None:
@@ -202,7 +198,7 @@ class StacDataStore(DataStore):
                 opener_id
                 for opener_id in DATA_OPENER_IDS
                 if opener_id.split(":")[0] == data_type.alias
-                and opener_id.split(":")[1] in formats
+                and opener_id.split(":")[1] in format_ids
                 and opener_id.split(":")[2] in protocols
             )
 
@@ -258,3 +254,70 @@ class StacDataStore(DataStore):
         self, data_type: DataTypeLike = None
     ) -> JsonObjectSchema:
         return self._impl.get_search_params_schema()
+
+
+class StacCdseDataStore(StacDataStore):
+    """STAC implementation of the data store for CDSE STAC API.
+
+    Args:
+        stack_mode: if True, items will be stacked along the time axis;
+            defaults to False.
+        storage_options_s3: storage option of the S3 data store; the key and secret
+            are required for data access. see Note.
+
+    Note:
+        Credentials for the authentication can be obtained following the
+        documentation https://documentation.dataspace.copernicus.eu/APIs/S3.html.
+    """
+
+    def __init__(
+        self,
+        stack_mode: Union[bool, str] = False,
+        **storage_options_s3,
+    ):
+        storage_options_s3 = update_dict(
+            storage_options_s3,
+            dict(
+                anon=False,
+                client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
+            ),
+        )
+        self._stacitem = CdseStacItem
+        super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
+
+    @classmethod
+    def get_data_store_params_schema(cls) -> JsonObjectSchema:
+        stac_params = STAC_STORE_PARAMETERS.pop("url")
+        return JsonObjectSchema(
+            description="Describes the parameters of the xcube data store 'stac-csde'.",
+            properties=stac_params,
+            required=["key", "secret"],
+            additional_properties=True,
+        )
+
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        assert_valid_opener_id(opener_id)
+        schema = self._impl.get_open_data_params_schema(
+            data_id=data_id, opener_id=opener_id
+        )
+        return schema.properties.pop("asset_names")
+
+
+class StacXcubeDataStore(StacDataStore):
+    """STAC implementation of the data store for xcube STAC API.
+
+    Args:
+        stack_mode: if True, items will be stacked along the time axis;
+            defaults to False.
+        storage_options_s3: storage option of the S3 data store;
+    """
+
+    def __init__(
+        self,
+        stack_mode: Union[bool, str] = False,
+        **storage_options_s3,
+    ):
+        self._stacitem = CdseStacItem
+        super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)

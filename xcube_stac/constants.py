@@ -22,6 +22,7 @@
 import logging
 from typing import Union
 
+from xcube.core.store.fs.impl.fs import S3FsAccessor
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonComplexSchema,
@@ -32,10 +33,22 @@ from xcube.util.jsonschema import (
     JsonStringSchema,
 )
 
+from ._utils import update_dict
 
-DATA_STORE_ID = "stac"
 LOG = logging.getLogger("xcube.stac")
 FloatInt = Union[float, int]
+
+CATALOG_JSON = "catalog.json"
+COLLECTION_PREFIX = "collections/"
+
+DATA_STORE_ID = "stac"
+DATA_STORE_ID_CDSE = "stac-cdse"
+DATA_STORE_ID_XCUBE = "stac-xcube"
+
+CDSE_STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
+CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
+
+CDSE_MAP_INSTRUEMNT_FORMAT = {"Sentinel-2": ".jp2", "SMOS": ".nc"}
 
 MAP_MIME_TYP_FORMAT = {
     "application/netcdf": "netcdf",
@@ -44,6 +57,8 @@ MAP_MIME_TYP_FORMAT = {
     "application/zarr": "zarr",
     "image/tiff": "geotiff",
 }
+
+MAP_CDSE_COLLECTION_FORMAT = {"SMOS": "netcdf"}
 
 MAP_FILE_EXTENSION_FORMAT = {
     ".nc": "netcdf",
@@ -57,12 +72,14 @@ MAP_FILE_EXTENSION_FORMAT = {
 DATA_OPENER_IDS = (
     "dataset:netcdf:https",
     "dataset:zarr:https",
+    "dataset:jp2:https",
     "dataset:geotiff:https",
     "mldataset:geotiff:https",
     "dataset:levels:https",
     "mldataset:levels:https",
     "dataset:netcdf:s3",
     "dataset:zarr:s3",
+    "dataset:jp2:s3",
     "dataset:geotiff:s3",
     "mldataset:geotiff:s3",
     "dataset:levels:s3",
@@ -71,23 +88,28 @@ DATA_OPENER_IDS = (
 
 MLDATASET_FORMATS = ["levels", "geotiff"]
 
-STAC_STORE_PARAMETERS = dict(
-    url=JsonStringSchema(title="URL to STAC catalog"),
-    stack_mode=JsonComplexSchema(
-        one_of=[
-            JsonStringSchema(
-                title="Backend for stacking STAC items",
-                description="So far, only 'odc-stac' is supported as a backend.",
-                const="odc-stac",
-            ),
-            JsonBooleanSchema(
-                title="Decide if stacking of STAC items is applied",
-                description="If True, 'odc-stac' is used as a default backend.",
-                default=False,
-            ),
-        ],
-    ),
+_STAC_MODE_SCHEMA = JsonComplexSchema(
+    one_of=[
+        JsonStringSchema(
+            title="Backend for stacking STAC items",
+            description="So far, only 'odc-stac' is supported as a backend.",
+            const="odc-stac",
+        ),
+        JsonBooleanSchema(
+            title="Decide if stacking of STAC items is applied",
+            description="If True, 'odc-stac' is used as a default backend.",
+            default=False,
+        ),
+    ],
 )
+
+STAC_STORE_PARAMETERS = update_dict(
+    dict(
+        url=JsonStringSchema(title="URL to STAC catalog"), stack_mode=_STAC_MODE_SCHEMA
+    ),
+    S3FsAccessor.get_storage_options_schema().properties,
+)
+
 
 _STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,

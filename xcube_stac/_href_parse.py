@@ -20,7 +20,6 @@
 # SOFTWARE.
 
 import re
-from typing import Tuple
 
 from xcube.core.store import DataStoreError
 
@@ -69,7 +68,7 @@ AWS_REGION_NAMES = [
 ]
 
 
-def decode_href(href: str) -> Tuple[str, str, str, dict]:
+def decode_href(href: str) -> tuple[str, str, str, dict]:
     """Decodes a href into protocol, root, remaining file path,
     and region name if given.
 
