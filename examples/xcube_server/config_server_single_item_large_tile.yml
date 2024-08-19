@@ -1,0 +1,46 @@
+DatasetAttribution:
+  - "© by Brockmann Consult GmbH 2024"
+
+DataStores:
+  - Identifier: stac
+    StoreId: stac
+    StoreParams:
+      url: https://s3.eu-central-1.wasabisys.com/stac/odse/catalog.json
+    Datasets:
+      - Identifier: EU cube
+        Path: lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
+        Style: EUCUBE
+
+Styles:
+  - Identifier: EUCUBE
+    ColorMappings:
+      blue_p50:
+        ColorBar: "viridis"
+        ValueRange: [0., 30.]
+      blue_p25:
+        ColorBar: "viridis"
+        ValueRange: [0., 30.]
+      blue_p75:
+        ColorBar: "viridis"
+        ValueRange: [0., 30.]
+      qa_f:
+        ColorBar: "inferno"
+        ValueRange: [0., 50.]
+
+ServiceProvider:
+  ProviderName: "Brockmann Consult GmbH"
+  ProviderSite: "https://www.brockmann-consult.de"
+  ServiceContact:
+    IndividualName: "Norman Fomferra"
+    PositionName: "Senior Software Engineer"
+    ContactInfo:
+      Phone:
+        Voice: "+49 4152 889 303"
+        Facsimile: "+49 4152 889 330"
+      Address:
+        DeliveryPoint: "HZG / GITZ"
+        City: "Geesthacht"
+        AdministrativeArea: "Herzogtum Lauenburg"
+        PostalCode: "21502"
+        Country: "Germany"
+        ElectronicMailAddress: "norman.fomferra@brockmann-consult.de"

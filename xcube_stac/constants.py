@@ -19,25 +19,88 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import logging
+from typing import Union
 
 from xcube.util.jsonschema import (
     JsonArraySchema,
+    JsonComplexSchema,
+    JsonBooleanSchema,
     JsonDateSchema,
     JsonNumberSchema,
-    JsonStringSchema
+    JsonObjectSchema,
+    JsonStringSchema,
 )
 
 
 DATA_STORE_ID = "stac"
-DATASET_OPENER_ID = f"dataset:zarr:{DATA_STORE_ID}"
+LOG = logging.getLogger("xcube.stac")
+FloatInt = Union[float, int]
 
-MIME_TYPES = [
-    "application/zarr",
-    "image/tiff",
-    "application/octet-stream"
-]
+MAP_MIME_TYP_FORMAT = {
+    "application/netcdf": "netcdf",
+    "application/x-netcdf": "netcdf",
+    "application/vnd+zarr": "zarr",
+    "application/zarr": "zarr",
+    "image/tiff": "geotiff",
+}
 
-STAC_SEARCH_PARAMETERS = dict(
+MAP_FILE_EXTENSION_FORMAT = {
+    ".nc": "netcdf",
+    ".zarr": "zarr",
+    ".tif": "geotiff",
+    ".tiff": "geotiff",
+    ".geotiff": "geotiff",
+    ".levels": "levels",
+}
+
+DATA_OPENER_IDS = (
+    "dataset:netcdf:https",
+    "dataset:zarr:https",
+    "dataset:geotiff:https",
+    "mldataset:geotiff:https",
+    "dataset:levels:https",
+    "mldataset:levels:https",
+    "dataset:netcdf:s3",
+    "dataset:zarr:s3",
+    "dataset:geotiff:s3",
+    "mldataset:geotiff:s3",
+    "dataset:levels:s3",
+    "mldataset:levels:s3",
+)
+
+MLDATASET_FORMATS = ["levels", "geotiff"]
+
+STAC_STORE_PARAMETERS = dict(
+    url=JsonStringSchema(title="URL to STAC catalog"),
+    stack_mode=JsonComplexSchema(
+        one_of=[
+            JsonStringSchema(
+                title="Backend for stacking STAC items",
+                description="So far, only 'odc-stac' is supported as a backend.",
+                const="odc-stac",
+            ),
+            JsonBooleanSchema(
+                title="Decide if stacking of STAC items is applied",
+                description="If True, 'odc-stac' is used as a default backend.",
+                default=False,
+            ),
+        ],
+    ),
+)
+
+_STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
+    additional_properties=True,
+    title="Additional query options used during item search of STAC API.",
+    description=(
+        "If STAC Catalog is conform with query extension, "
+        "additional filtering based on the properties of Item objects "
+        "is supported. For more information see "
+        "https://github.com/stac-api-extensions/query"
+    ),
+)
+
+STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
     time_range=JsonArraySchema(
         items=[
             JsonDateSchema(nullable=True),
@@ -48,7 +111,7 @@ STAC_SEARCH_PARAMETERS = dict(
             "Time range given as pair of start and stop dates. "
             "Dates must be given using format 'YYYY-MM-DD'. "
             "Start and stop are inclusive."
-        )
+        ),
     ),
     bbox=JsonArraySchema(
         items=(
@@ -57,16 +120,19 @@ STAC_SEARCH_PARAMETERS = dict(
             JsonNumberSchema(),
             JsonNumberSchema(),
         ),
-        title="Bounding box [x1,y1,x2,y2] in geographical coordinates",
+        title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
     ),
+)
+
+STAC_SEARCH_PARAMETERS = dict(
+    **STAC_SEARCH_PARAMETERS_STACK_MODE,
     collections=JsonArraySchema(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,
         title="Collection IDs",
-        description=(
-            "Collection IDs to be included in the search request."
-        )
-    )
+        description="Collection IDs to be included in the search request.",
+    ),
+    query=_STAC_SEARCH_ADDITIONAL_QUERY,
 )
 
 STAC_OPEN_PARAMETERS = dict(
@@ -74,8 +140,31 @@ STAC_OPEN_PARAMETERS = dict(
         items=(JsonStringSchema(min_length=0)),
         unique_items=True,
         title="Names of assets",
-        description=(
-            "Names of assets which will be included in the data cube."
-        )
+        description="Names of assets which will be included in the data cube.",
     )
+)
+
+STAC_OPEN_PARAMETERS_STACK_MODE = dict(
+    time_range=JsonArraySchema(
+        items=[
+            JsonDateSchema(nullable=True),
+            JsonDateSchema(nullable=True),
+        ],
+        title="Time Range",
+        description=(
+            "Time range given as pair of start and stop dates. "
+            "Dates must be given using format 'YYYY-MM-DD'. "
+            "Start and stop are inclusive."
+        ),
+    ),
+    bbox=JsonArraySchema(
+        items=(
+            JsonNumberSchema(),
+            JsonNumberSchema(),
+            JsonNumberSchema(),
+            JsonNumberSchema(),
+        ),
+        title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
+    ),
+    query=_STAC_SEARCH_ADDITIONAL_QUERY,
 )

@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.31.0
+      - python-requests/2.32.3
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 28 May 2024 11:32:42 GMT
+      - Thu, 11 Jul 2024 08:52:43 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 28 May 2024 11:37:42 GMT
+      - Thu, 11 Jul 2024 08:57:43 GMT
       Source-Age:
-      - '6'
+      - '31'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -57,19 +57,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '2'
+      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 9c43273f2a87c5c9e1380dfbeb05105baca541ba
+      - 48fc7b4fa13d2ca56683bba4c30b06f051fac3f9
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 137F:5A468:1FD306F:21AC5E4:6655BE05
+      - EB7A:35FBCE:CE464A:D82B72:668F9D3B
       X-Served-By:
-      - cache-fra-eddf8230039-FRA
+      - cache-cph2320042-CPH
       X-Timer:
-      - S1716895963.746316,VS0,VE0
+      - S1720687963.377680,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 28 May 2024 11:32:42 GMT
+      - Thu, 11 Jul 2024 08:52:43 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 28 May 2024 11:37:42 GMT
+      - Thu, 11 Jul 2024 08:57:43 GMT
       Source-Age:
-      - '6'
+      - '31'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 1a69a5ff25faf22ffa893ab8fef39dc9f7bf574a
+      - ac06f0c78241ffe21073784ce99a7c10a233cd31
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 137E:23E66:201F9D1:21FA832:6655BE07
+      - 422A:3AB699:3161EEF:33D2DA3:668F9D3B
       X-Served-By:
-      - cache-fra-eddf8230141-FRA
+      - cache-cph2320059-CPH
       X-Timer:
-      - S1716895963.805289,VS0,VE1
+      - S1720687963.407586,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

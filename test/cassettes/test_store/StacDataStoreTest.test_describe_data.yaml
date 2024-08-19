@@ -1,0 +1,347 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1
+  response:
+    body:
+      string: '{"title":"EOC EO Products Service","description":"*BETA* Provides interoperable
+        access to metadata from EO collections and products of DLR''s Earth Observation
+        Center (EOC). *BETA*","links":[{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fjson","rel":"self","type":"application/json","title":"This
+        document"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fx-yaml","rel":"alternate","type":"application/x-yaml","title":"This
+        document as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml","rel":"alternate","type":"text/html","title":"This
+        document as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fvnd.oai.openapi%2Bjson%3Bversion%3D3.0","rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"API
+        definition for this endpoint as application/vnd.oai.openapi+json;version=3.0"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fx-yaml","rel":"service-desc","type":"application/x-yaml","title":"API
+        definition for this endpoint as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=text%2Fhtml","rel":"service-doc","type":"text/html","title":"API
+        definition for this endpoint as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson","rel":"conformance","type":"application/json","title":"Conformance
+        declaration as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fx-yaml","rel":"conformance","type":"application/x-yaml","title":"Conformance
+        declaration as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml","rel":"conformance","type":"text/html","title":"Conformance
+        declaration as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","rel":"data","type":"application/json","title":"Collections
+        Metadata as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","rel":"data","type":"text/html","title":"Collections
+        Metadata as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Collect","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L4_P1D_NO2surf","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_DEM_90","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L3A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_FNF_50","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_RH95_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_AGBD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_COMP_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L0_QL","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L1B","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_NONRES_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L3A_WASP","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SUPERSITES","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2015","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_NONRES_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_Evolution","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2019","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_COMP_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Scene","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_COVER_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_VOLUME_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_HEIGHT_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        as application/geo+json","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
+        as text/html","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application%2Fjson","rel":"root","type":"application/json","title":"Root
+        Catalog as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        as application/geo+json","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
+        as text/html","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"text/html","title":"Queryables
+        as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"application/schema+json","title":"Sortables
+        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"text/html","title":"Sortables
+        as text/html"}],"id":"GeoserverSTACLandingPage","conformsTo":["http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#filter","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/item-search#fields","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/filter","http://geoserver.org/spec/ecql/1.0/req/gs-ecql","http://geoserver.org/spec/ecql/1.0/req/ecql-text","http://www.opengis.net/spec/cql2/1.0/req/basic-cql2","http://www.opengis.net/spec/cql2/1.0/req/advanced-comparison-operators","http://www.opengis.net/spec/cql2/1.0/req/arithmetic","http://www.opengis.net/spec/cql2/1.0/req/property-property","http://www.opengis.net/spec/cql2/1.0/req/basic-spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/functions","http://www.opengis.net/spec/cql2/1.0/req/cql2-text"],"type":"Catalog","stac_version":"1.0.0"}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 11 Jul 2024 08:52:12 GMT
+      Link:
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
+        rel="self"; type="application/json"; title="This document"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fx-yaml>;
+        rel="alternate"; type="application/x-yaml"; title="This document as application/x-yaml"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml>; rel="alternate";
+        type="text/html"; title="This document as text/html"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fjson>; rel="self";
+        type="application/json"; title="This document"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fx-yaml>; rel="alternate";
+        type="application/x-yaml"; title="This document as application/x-yaml"
+      - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml>; rel="alternate";
+        type="text/html"; title="This document as text/html"
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:40e
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json"],"id":"S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53","collection":"D4H","geometry":{"type":"Polygon","coordinates":[[[36.211544,-15.169252],[36.859985,-14.70841],[37.831688,-14.180731],[37.863497,-14.16983],[37.553288,-15.48028],[36.211544,-15.169252]]]},"bbox":[36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073],"properties":{"created":"2023-10-31T23:41:33.743+00:00","updated":"2023-10-31T23:41:33.743+00:00","datetime":"2023-10-31T00:00:00.000+00:00","platform":"SENTINEL-1A","constellation":"SENTINEL-1","proj:epsg":4326,"sat:relative_orbit":"51003","sat:orbit_state":"DESCENDING","processing:software":{"proc_hr_semseg":"1.6.3"},"cnt_flood":54323,"cnt_refwater":42063,"cnt_valid":98016249,"cnt_water":96386,"providers":[{"name":"DLR
+        DFD-GZS","roles":["producer","processor"],"url":"https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5290/9370_read-18028/"}],"srcurl":"https://apihub.copernicus.eu/apihub/odata/v1/Products(''fd09ec8e-3ad2-450f-8c1a-428034b11b94'')/$value","srcuuid":"fd09ec8e-3ad2-450f-8c1a-428034b11b94"},"assets":{"REFER":{"description":"Identifies
+        permanent water pixels. The reference water mask is derived by time-series
+        analysis of archive imagery across a reference time-period.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_REFER.tif","roles":["water-reference"],"title":"Reference
+        water mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"VALID":{"description":"Distinguish
+        valid from invalid pixels. Invalid pixels are the result of no-data values
+        in the satellite image and/or atmospheric obstructions such as clouds or cloud-shadows.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_VALID.tif","roles":["data-mask"],"title":"Valid
+        pixel mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"WATER":{"description":"Identifies
+        all water pixels in the satellite image. Water segmentation is done with a
+        pre-trained convolutional neural network.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_WATER.tif","roles":["water-mask"],"title":"Water
+        mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"thumbnail":{"title":"Thumbnail","type":"image/png","roles":["thumbnail"],"href":"https://geoservice.dlr.de/eoc/oseo/quicklook?parentIdentifier=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53"}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
+        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
+        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=application%2Fjson","type":"application/json"},{"title":"Collection
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
+        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
+        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/D4H/queryables?f=json","type":"application/schema+json"}],"ogc":[{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/ows?service=wms&version=1.3.0&request=GetCapabilities"},{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"image/jpeg","href":"https://geoservice.dlr.de/eoc/demo/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fjpeg&STYLES&LAYERS=demo%3AD4H_WATER_MASK_S1&SRS=EPSG%3A4326&WIDTH=800&HEIGHT=600&BBOX=36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073&TIME=2023-10-31T03:07:57Z"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&request=GetCapabilities&version=2.0.1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=D4H_WATER_MASK_S1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"image/tiff;application=geotiff","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=D4H_WATER_MASK_S1&subset=Long(36.211544470664904,37.86349678056911)&subset=Lat(-15.48028,-14.169830229695073)&format=image/tiff;application=geotiff&CQL_FILTER=eoIdentifier=''S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53''&scalesize=i(1024),j(1024)"}]}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7320'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Thu, 11 Jul 2024 08:52:13 GMT
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:410
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json"],"id":"S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53","collection":"D4H","geometry":{"type":"Polygon","coordinates":[[[36.211544,-15.169252],[36.859985,-14.70841],[37.831688,-14.180731],[37.863497,-14.16983],[37.553288,-15.48028],[36.211544,-15.169252]]]},"bbox":[36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073],"properties":{"created":"2023-10-31T23:41:33.743+00:00","updated":"2023-10-31T23:41:33.743+00:00","datetime":"2023-10-31T00:00:00.000+00:00","platform":"SENTINEL-1A","constellation":"SENTINEL-1","proj:epsg":4326,"sat:relative_orbit":"51003","sat:orbit_state":"DESCENDING","processing:software":{"proc_hr_semseg":"1.6.3"},"cnt_flood":54323,"cnt_refwater":42063,"cnt_valid":98016249,"cnt_water":96386,"providers":[{"name":"DLR
+        DFD-GZS","roles":["producer","processor"],"url":"https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5290/9370_read-18028/"}],"srcurl":"https://apihub.copernicus.eu/apihub/odata/v1/Products(''fd09ec8e-3ad2-450f-8c1a-428034b11b94'')/$value","srcuuid":"fd09ec8e-3ad2-450f-8c1a-428034b11b94"},"assets":{"REFER":{"description":"Identifies
+        permanent water pixels. The reference water mask is derived by time-series
+        analysis of archive imagery across a reference time-period.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_REFER.tif","roles":["water-reference"],"title":"Reference
+        water mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"VALID":{"description":"Distinguish
+        valid from invalid pixels. Invalid pixels are the result of no-data values
+        in the satellite image and/or atmospheric obstructions such as clouds or cloud-shadows.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_VALID.tif","roles":["data-mask"],"title":"Valid
+        pixel mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"WATER":{"description":"Identifies
+        all water pixels in the satellite image. Water segmentation is done with a
+        pre-trained convolutional neural network.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_WATER.tif","roles":["water-mask"],"title":"Water
+        mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"thumbnail":{"title":"Thumbnail","type":"image/png","roles":["thumbnail"],"href":"https://geoservice.dlr.de/eoc/oseo/quicklook?parentIdentifier=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53"}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
+        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
+        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=application%2Fjson","type":"application/json"},{"title":"Collection
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
+        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
+        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/D4H/queryables?f=json","type":"application/schema+json"}],"ogc":[{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/ows?service=wms&version=1.3.0&request=GetCapabilities"},{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"image/jpeg","href":"https://geoservice.dlr.de/eoc/demo/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fjpeg&STYLES&LAYERS=demo%3AD4H_WATER_MASK_S1&SRS=EPSG%3A4326&WIDTH=800&HEIGHT=600&BBOX=36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073&TIME=2023-10-31T03:07:57Z"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&request=GetCapabilities&version=2.0.1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=D4H_WATER_MASK_S1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"image/tiff;application=geotiff","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=D4H_WATER_MASK_S1&subset=Long(36.211544470664904,37.86349678056911)&subset=Lat(-15.48028,-14.169830229695073)&format=image/tiff;application=geotiff&CQL_FILTER=eoIdentifier=''S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53''&scalesize=i(1024),j(1024)"}]}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7320'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Thu, 11 Jul 2024 08:52:13 GMT
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_4ab6db45:1909f9d9216:3958
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json"],"id":"S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53","collection":"D4H","geometry":{"type":"Polygon","coordinates":[[[36.211544,-15.169252],[36.859985,-14.70841],[37.831688,-14.180731],[37.863497,-14.16983],[37.553288,-15.48028],[36.211544,-15.169252]]]},"bbox":[36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073],"properties":{"created":"2023-10-31T23:41:33.743+00:00","updated":"2023-10-31T23:41:33.743+00:00","datetime":"2023-10-31T00:00:00.000+00:00","platform":"SENTINEL-1A","constellation":"SENTINEL-1","proj:epsg":4326,"sat:relative_orbit":"51003","sat:orbit_state":"DESCENDING","processing:software":{"proc_hr_semseg":"1.6.3"},"cnt_flood":54323,"cnt_refwater":42063,"cnt_valid":98016249,"cnt_water":96386,"providers":[{"name":"DLR
+        DFD-GZS","roles":["producer","processor"],"url":"https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5290/9370_read-18028/"}],"srcurl":"https://apihub.copernicus.eu/apihub/odata/v1/Products(''fd09ec8e-3ad2-450f-8c1a-428034b11b94'')/$value","srcuuid":"fd09ec8e-3ad2-450f-8c1a-428034b11b94"},"assets":{"REFER":{"description":"Identifies
+        permanent water pixels. The reference water mask is derived by time-series
+        analysis of archive imagery across a reference time-period.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_REFER.tif","roles":["water-reference"],"title":"Reference
+        water mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"VALID":{"description":"Distinguish
+        valid from invalid pixels. Invalid pixels are the result of no-data values
+        in the satellite image and/or atmospheric obstructions such as clouds or cloud-shadows.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_VALID.tif","roles":["data-mask"],"title":"Valid
+        pixel mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"WATER":{"description":"Identifies
+        all water pixels in the satellite image. Water segmentation is done with a
+        pre-trained convolutional neural network.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_WATER.tif","roles":["water-mask"],"title":"Water
+        mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"thumbnail":{"title":"Thumbnail","type":"image/png","roles":["thumbnail"],"href":"https://geoservice.dlr.de/eoc/oseo/quicklook?parentIdentifier=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53"}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
+        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
+        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=application%2Fjson","type":"application/json"},{"title":"Collection
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
+        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
+        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/D4H/queryables?f=json","type":"application/schema+json"}],"ogc":[{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/ows?service=wms&version=1.3.0&request=GetCapabilities"},{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"image/jpeg","href":"https://geoservice.dlr.de/eoc/demo/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fjpeg&STYLES&LAYERS=demo%3AD4H_WATER_MASK_S1&SRS=EPSG%3A4326&WIDTH=800&HEIGHT=600&BBOX=36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073&TIME=2023-10-31T03:07:57Z"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&request=GetCapabilities&version=2.0.1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=D4H_WATER_MASK_S1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"image/tiff;application=geotiff","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=D4H_WATER_MASK_S1&subset=Long(36.211544470664904,37.86349678056911)&subset=Lat(-15.48028,-14.169830229695073)&format=image/tiff;application=geotiff&CQL_FILTER=eoIdentifier=''S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53''&scalesize=i(1024),j(1024)"}]}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7320'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Thu, 11 Jul 2024 08:52:14 GMT
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_4ab6db45:1909f9d9216:397d
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json"],"id":"S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53","collection":"D4H","geometry":{"type":"Polygon","coordinates":[[[36.211544,-15.169252],[36.859985,-14.70841],[37.831688,-14.180731],[37.863497,-14.16983],[37.553288,-15.48028],[36.211544,-15.169252]]]},"bbox":[36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073],"properties":{"created":"2023-10-31T23:41:33.743+00:00","updated":"2023-10-31T23:41:33.743+00:00","datetime":"2023-10-31T00:00:00.000+00:00","platform":"SENTINEL-1A","constellation":"SENTINEL-1","proj:epsg":4326,"sat:relative_orbit":"51003","sat:orbit_state":"DESCENDING","processing:software":{"proc_hr_semseg":"1.6.3"},"cnt_flood":54323,"cnt_refwater":42063,"cnt_valid":98016249,"cnt_water":96386,"providers":[{"name":"DLR
+        DFD-GZS","roles":["producer","processor"],"url":"https://www.dlr.de/eoc/en/desktopdefault.aspx/tabid-5290/9370_read-18028/"}],"srcurl":"https://apihub.copernicus.eu/apihub/odata/v1/Products(''fd09ec8e-3ad2-450f-8c1a-428034b11b94'')/$value","srcuuid":"fd09ec8e-3ad2-450f-8c1a-428034b11b94"},"assets":{"REFER":{"description":"Identifies
+        permanent water pixels. The reference water mask is derived by time-series
+        analysis of archive imagery across a reference time-period.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_REFER.tif","roles":["water-reference"],"title":"Reference
+        water mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"VALID":{"description":"Distinguish
+        valid from invalid pixels. Invalid pixels are the result of no-data values
+        in the satellite image and/or atmospheric obstructions such as clouds or cloud-shadows.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_VALID.tif","roles":["data-mask"],"title":"Valid
+        pixel mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"WATER":{"description":"Identifies
+        all water pixels in the satellite image. Water segmentation is done with a
+        pre-trained convolutional neural network.","href":"https://download.geoservice.dlr.de/D4H/files/2023/10/31/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53_WATER.tif","roles":["water-mask"],"title":"Water
+        mask","type":"image/tiff; application=geotiff; profile=cloud-optimized"},"thumbnail":{"title":"Thumbnail","type":"image/png","roles":["thumbnail"],"href":"https://geoservice.dlr.de/eoc/oseo/quicklook?parentIdentifier=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53"}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
+        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items/S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
+        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=application%2Fjson","type":"application/json"},{"title":"Collection
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
+        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
+        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
+        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=D4H&identifier=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=D4H&uid=S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/D4H/queryables?f=json","type":"application/schema+json"}],"ogc":[{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/ows?service=wms&version=1.3.0&request=GetCapabilities"},{"offering":"http://www.opengis.net/spec/owc/1.0/req/atom/wms","method":"GET","type":"image/jpeg","href":"https://geoservice.dlr.de/eoc/demo/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&FORMAT=image%2Fjpeg&STYLES&LAYERS=demo%3AD4H_WATER_MASK_S1&SRS=EPSG%3A4326&WIDTH=800&HEIGHT=600&BBOX=36.211544470664904,-15.48028,37.86349678056911,-14.169830229695073&TIME=2023-10-31T03:07:57Z"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&request=GetCapabilities&version=2.0.1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"application/xml","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=DescribeCoverage&coverageId=D4H_WATER_MASK_S1"},{"offering":"http://www.opengis.net/spec/owc-geojson/1.0/req/wcs","method":"GET","type":"image/tiff;application=geotiff","href":"https://geoservice.dlr.de/eoc/demo/wcs?service=WCS&version=2.0.1&request=GetCoverage&coverageId=D4H_WATER_MASK_S1&subset=Long(36.211544470664904,37.86349678056911)&subset=Lat(-15.48028,-14.169830229695073)&format=image/tiff;application=geotiff&CQL_FILTER=eoIdentifier=''S1A_IW_GRDH_1SDV_20231031T030757_20231031T030822_051003_062646_8C53''&scalesize=i(1024),j(1024)"}]}'
+    headers:
+      API-Version:
+      - 1.0.0
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '7320'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Thu, 11 Jul 2024 08:52:15 GMT
+      Referrer-Policy:
+      - same-origin
+      Server:
+      - nginx
+      Set-Cookie:
+      - GS_FLOW_CONTROL=GS_CFLOW_4ab6db45:1909f9d9216:39a3
+      X-Content-Type-Options:
+      - nosniff
+      X-Control-flow-delay-ms:
+      - '0'
+      X-Frame-Options:
+      - SAMEORIGIN
+    status:
+      code: 200
+      message: ''
+version: 1
