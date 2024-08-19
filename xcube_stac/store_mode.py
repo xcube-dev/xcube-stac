@@ -259,7 +259,7 @@ class SingleStoreMode:
                 )
             elif asset.protocol == "s3":
                 opener = self._get_s3_accessor(
-                    asset.root, storage_options=self._storage_options_s3
+                    asset.root, storage_options=asset.storage_options
                 )
                 ds_asset = opener.open_data(
                     asset.fs_path,

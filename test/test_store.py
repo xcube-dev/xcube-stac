@@ -36,8 +36,9 @@ from xcube.core.store import (
 from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_stac.constants import DATA_STORE_ID
-from xcube_stac._utils import get_formats_from_item
-from xcube_stac.accessor import HttpsDataAccessor, S3DataAccessor
+from xcube_stac.constants import DATA_STORE_ID_XCUBE
+from xcube_stac.accessor import HttpsDataAccessor
+from xcube_stac.accessor import S3DataAccessor
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -87,15 +88,15 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     @pytest.mark.vcr()
-    def test_worng_stack_mode_error(self):
-        # Error is raise by xcube data store framework when validating the
+    def test_wrong_stack_mode_error(self):
+        # Error is raised by xcube data store framework when validating the
         # data store parameters.
         with self.assertRaises(DataStoreError) as cm:
             new_data_store(
                 DATA_STORE_ID, url=self.url_searchable, stack_mode="stackstac"
             )
         self.assertEqual(
-            "Invalid parameterization detected: 'odc-stac' was expected",
+            "Invalid parameterization detected: a boolean or 'odc-stac' was expected",
             f"{cm.exception}",
         )
 
@@ -128,7 +129,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_get_data_types_for_data_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
         self.assertEqual(
             ("mldataset", "dataset"),
             store.get_data_types_for_data("collections/datacubes/items/local_ts"),
@@ -154,8 +155,8 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = list(itertools.islice(data_ids, 1))
         self.assertEqual(1, len(data_ids))
         item = store._impl.access_item(data_ids[0])
-        formats = get_formats_from_item(item)
-        self.assertEqual(["geotiff"], formats)
+        xitem = store._stacitem.from_pystac_item(item, {})
+        self.assertEqual(["geotiff"], xitem._format_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_stack_mode(self):
@@ -205,11 +206,13 @@ class StacDataStoreTest(unittest.TestCase):
         opener_ids = (
             "dataset:netcdf:https",
             "dataset:zarr:https",
+            "dataset:jp2:https",
             "dataset:geotiff:https",
             "mldataset:geotiff:https",
             "dataset:levels:https",
             "mldataset:levels:https",
             "dataset:netcdf:s3",
+            "dataset:jp2:s3",
             "dataset:zarr:s3",
             "dataset:geotiff:s3",
             "mldataset:geotiff:s3",
@@ -267,7 +270,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_get_data_opener_ids_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
         self.assertCountEqual(
             ("dataset:zarr:s3", "dataset:levels:s3", "mldataset:levels:s3"),
             store.get_data_opener_ids("collections/datacubes/items/local_ts"),
@@ -444,7 +447,7 @@ class StacDataStoreTest(unittest.TestCase):
     # "xcube serve --verbose -c examples/serve/demo/config.yml" in the terminal
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_open_data_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
 
         # open data in zarr format
         ds = store.open_data("collections/datacubes/items/local_ts")
@@ -809,7 +812,7 @@ class StacDataStoreTest(unittest.TestCase):
     # "xcube serve --verbose -c examples/serve/demo/config.yml" in the terminal
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_describe_data_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
         data_id = "collections/datacubes/items/local"
         descriptor = store.describe_data(data_id, data_type="mldataset")
         expected_descriptor = dict(

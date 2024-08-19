@@ -39,7 +39,19 @@ class XcubePluginTest(unittest.TestCase):
                         "description": "STAC DataStore",
                         "name": "stac",
                         "point": "xcube.core.store",
-                    }
+                    },
+                    "stac-cdse": {
+                        "component": "<not loaded yet>",
+                        "description": "STAC-CDSE DataStore",
+                        "name": "stac-cdse",
+                        "point": "xcube.core.store",
+                    },
+                    "stac-xcube": {
+                        "component": "<not loaded yet>",
+                        "description": "STAC-XCUBE DataStore",
+                        "name": "stac-xcube",
+                        "point": "xcube.core.store",
+                    },
                 }
             },
             registry.to_dict(),

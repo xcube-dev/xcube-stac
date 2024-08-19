@@ -33,12 +33,9 @@ from xcube.util.jsonschema import (
     JsonStringSchema,
 )
 
-from ._utils import update_dict
-
 LOG = logging.getLogger("xcube.stac")
 FloatInt = Union[float, int]
 
-CATALOG_JSON = "catalog.json"
 COLLECTION_PREFIX = "collections/"
 
 DATA_STORE_ID = "stac"
@@ -103,12 +100,9 @@ _STAC_MODE_SCHEMA = JsonComplexSchema(
     ],
 )
 
-STAC_STORE_PARAMETERS = update_dict(
-    dict(
-        url=JsonStringSchema(title="URL to STAC catalog"), stack_mode=_STAC_MODE_SCHEMA
-    ),
-    S3FsAccessor.get_storage_options_schema().properties,
-)
+STAC_STORE_PARAMETERS = dict(
+    url=JsonStringSchema(title="URL to STAC catalog"), stack_mode=_STAC_MODE_SCHEMA
+).update(S3FsAccessor.get_storage_options_schema().properties)
 
 
 _STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
