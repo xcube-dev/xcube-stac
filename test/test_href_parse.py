@@ -96,7 +96,7 @@ class HrefParseTest(unittest.TestCase):
         for expected, href in zip(expected_returns, hrefs):
             self.assertEqual(expected, decode_href(href), msg=href)
 
-    def test_is_aws_s3_bucket(self):
+    def test_assert_aws_s3_bucket(self):
         with self.assertRaises(DataStoreError) as cm:
             bucket = "test_123-s3alias"
             href = "https://s3-us-east-1.amazonaws.com/bucket-name/filename"
@@ -120,7 +120,7 @@ class HrefParseTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    def test_is_aws_s3_region_name(self):
+    def test_assert_aws_s3_region_name(self):
         with self.assertRaises(DataStoreError) as cm:
             region_name = "us-east-5"
             href = "https://s3-us-east-5.amazonaws.com/bucket-name/filename"

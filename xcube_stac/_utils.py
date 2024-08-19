@@ -41,12 +41,14 @@ from xcube.core.store import (
 )
 
 from .constants import (
-    CATALOG_JSON,
     DATA_OPENER_IDS,
     FloatInt,
     MAP_FILE_EXTENSION_FORMAT,
     MAP_MIME_TYP_FORMAT,
 )
+
+
+_CATALOG_JSON = "catalog.json"
 
 
 def get_assets_from_item(
@@ -458,7 +460,7 @@ def get_data_id_from_pystac_object(
 
 def modify_catalog_url(url: str) -> str:
     url_mod = url
-    if url_mod[-len(CATALOG_JSON) :] == "catalog.json":
+    if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
         url_mod = url_mod[:-12]
     if url_mod[-1] != "/":
         url_mod += "/"

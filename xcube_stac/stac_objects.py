@@ -153,7 +153,9 @@ class XcubeStacAsset(StacAsset):
         protocol = asset.extra_fields["xcube:data_store_id"]
         data_store_params = asset.extra_fields["xcube:data_store_params"]
         root = data_store_params["root"]
-        storage_options = data_store_params["storage_options"]
+        storage_options = update_dict(
+            storage_options, data_store_params["storage_options"]
+        )
         fs_path = asset.extra_fields["xcube:open_data_params"]["data_id"]
         format_id = get_format_from_path(fs_path)
         return cls(
@@ -217,7 +219,7 @@ class StacItem:
         """Return supported format IDs."""
 
     def is_mldataset_available(self):
-        return len(self._format_ids) == 0 and self._format_ids[0] in MLDATASET_FORMATS
+        return len(self._format_ids) == 1 and self._format_ids[0] in MLDATASET_FORMATS
 
 
 class GeneralStacItem(StacItem):

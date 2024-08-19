@@ -46,7 +46,9 @@ from .constants import (
 )
 from .store_mode import SingleStoreMode
 from .store_mode import StackStoreMode
-from .stac_objects import GeneralStacItem, CdseStacItem
+from .stac_objects import GeneralStacItem
+from .stac_objects import CdseStacItem
+from .stac_objects import XcubeStacItem
 from ._utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -110,7 +112,7 @@ class StacDataStore(DataStore):
         else:
             raise DataStoreError(
                 "Invalid parameterization detected: a boolean or"
-                " 'odc-stac', was expected"
+                " 'odc-stac' was expected"
             )
 
     @classmethod
@@ -316,8 +318,9 @@ class StacXcubeDataStore(StacDataStore):
 
     def __init__(
         self,
+        url: str,
         stack_mode: Union[bool, str] = False,
         **storage_options_s3,
     ):
-        self._stacitem = CdseStacItem
-        super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
+        self._stacitem = XcubeStacItem
+        super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
