@@ -45,8 +45,6 @@ DATA_STORE_ID_XCUBE = "stac-xcube"
 CDSE_STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
 
-CDSE_MAP_INSTRUEMNT_FORMAT = {"Sentinel-2": ".jp2", "SMOS": ".nc"}
-
 MAP_MIME_TYP_FORMAT = {
     "application/netcdf": "netcdf",
     "application/x-netcdf": "netcdf",
@@ -55,7 +53,7 @@ MAP_MIME_TYP_FORMAT = {
     "image/tiff": "geotiff",
 }
 
-MAP_CDSE_COLLECTION_FORMAT = {"SMOS": "netcdf"}
+MAP_CDSE_COLLECTION_FORMAT = {"SMOS": "netcdf", "Sentinel-2": "jp2"}
 
 MAP_FILE_EXTENSION_FORMAT = {
     ".nc": "netcdf",
@@ -102,7 +100,8 @@ _STAC_MODE_SCHEMA = JsonComplexSchema(
 
 STAC_STORE_PARAMETERS = dict(
     url=JsonStringSchema(title="URL to STAC catalog"), stack_mode=_STAC_MODE_SCHEMA
-).update(S3FsAccessor.get_storage_options_schema().properties)
+)
+STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)
 
 
 _STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
@@ -151,6 +150,19 @@ STAC_SEARCH_PARAMETERS = dict(
     query=_STAC_SEARCH_ADDITIONAL_QUERY,
 )
 
+STAC_SEARCH_PARAMETERS_CDSE = dict(
+    **STAC_SEARCH_PARAMETERS,
+    processing_level=JsonStringSchema(
+        title="Processing level of Sentinel-2 data", enum=["L1C", "L2A"], default="L2A"
+    ),
+    processing_baseline=JsonNumberSchema(
+        title="Processing baseline of Sentinel-2 data",
+        enum=[2.09, 2.14, 5.00],
+        default=5.00,
+    ),
+)
+
+
 STAC_OPEN_PARAMETERS = dict(
     asset_names=JsonArraySchema(
         items=(JsonStringSchema(min_length=0)),
@@ -183,4 +195,85 @@ STAC_OPEN_PARAMETERS_STACK_MODE = dict(
         title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
     ),
     query=_STAC_SEARCH_ADDITIONAL_QUERY,
+)
+
+CDSE_SENITNEL_2_BANDS = {
+    "L1C": [
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B8A",
+        "B09",
+        "B10",
+        "B11",
+        "B12",
+    ],
+    "L2A": [
+        "AOT",
+        "B01",
+        "B02",
+        "B03",
+        "B04",
+        "B05",
+        "B06",
+        "B07",
+        "B08",
+        "B8A",
+        "B09",
+        "B11",
+        "B12",
+        "SCL",
+        "WVP",
+    ],
+}
+
+CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS = dict(
+    L1C=dict(
+        B01=[60],
+        B02=[10],
+        B03=[10],
+        B04=[10],
+        B05=[20],
+        B06=[20],
+        B07=[20],
+        B08=[10],
+        B8A=[20],
+        B09=[60],
+        B10=[60],
+        B11=[20],
+        B12=[20],
+    ),
+    L2A=dict(
+        AOT=[10, 20, 60],
+        B01=[60],
+        B02=[10, 20, 60],
+        B03=[10, 20, 60],
+        B04=[10, 20, 60],
+        B05=[20, 60],
+        B06=[20, 60],
+        B07=[20, 60],
+        B08=[10],
+        B8A=[20, 60],
+        B09=[60],
+        B11=[20, 60],
+        B12=[20, 60],
+        SCL=[20, 60],
+        WVP=[10, 20, 60],
+    ),
+)
+
+STAC_OPEN_PARAMETERS_CDSE = dict(
+    bands=JsonArraySchema(
+        items=(JsonStringSchema(min_length=0)),
+        unique_items=True,
+        title="Names of spectral bands",
+        description="Names of spectral bands which will be included in the data cube.",
+        default=CDSE_SENITNEL_2_BANDS["L2A"],
+    ),
+    resolution=JsonNumberSchema(title="Spatial resolution in meter", default=20),
 )

@@ -39,6 +39,7 @@ from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from xcube_stac.accessor import HttpsDataAccessor
 from xcube_stac.accessor import S3DataAccessor
+from xcube_stac.stac_objects import StacAsset
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -96,7 +97,7 @@ class StacDataStoreTest(unittest.TestCase):
                 DATA_STORE_ID, url=self.url_searchable, stack_mode="stackstac"
             )
         self.assertEqual(
-            "Invalid parameterization detected: a boolean or 'odc-stac' was expected",
+            "Invalid parameterization detected: 'odc-stac' was expected",
             f"{cm.exception}",
         )
 
@@ -106,7 +107,9 @@ class StacDataStoreTest(unittest.TestCase):
         schema = store.get_data_store_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("url", schema.properties)
-        self.assertIn("storage_options_s3", schema.properties)
+        self.assertIn("anon", schema.properties)
+        self.assertIn("key", schema.properties)
+        self.assertIn("secret", schema.properties)
         self.assertIn("url", schema.required)
 
     @pytest.mark.vcr()
@@ -627,10 +630,11 @@ class StacDataStoreTest(unittest.TestCase):
             store.open_data(self.data_id_nonsearchable, opener_id="wrong_opener_id")
         self.assertEqual(
             "Data opener identifier must be one of ('dataset:netcdf:https', "
-            "'dataset:zarr:https', 'dataset:geotiff:https', 'mldataset:geotiff:https', "
-            "'dataset:levels:https', 'mldataset:levels:https', "
-            "'dataset:netcdf:s3', 'dataset:zarr:s3', 'dataset:geotiff:s3', "
-            "'mldataset:geotiff:s3', 'dataset:levels:s3', 'mldataset:levels:s3'), "
+            "'dataset:zarr:https', 'dataset:jp2:https', 'dataset:geotiff:https', "
+            "'mldataset:geotiff:https', 'dataset:levels:https', "
+            "'mldataset:levels:https', 'dataset:netcdf:s3', 'dataset:zarr:s3', "
+            "'dataset:jp2:s3', 'dataset:geotiff:s3', 'mldataset:geotiff:s3', "
+            "'dataset:levels:s3', 'mldataset:levels:s3'), "
             "but got 'wrong_opener_id'.",
             f"{cm.exception}",
         )
@@ -856,12 +860,30 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_s3_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        opener = store._impl._get_s3_accessor(root="datasets", storage_options={})
+        asset = StacAsset(
+            "test_name",
+            "test_href",
+            "test_protocol",
+            "datasets",
+            "test_fs_path",
+            {"test_storage_options": False},
+            "test_format_id",
+        )
+        opener = store._impl._get_s3_accessor(asset)
         self.assertIsInstance(opener, S3DataAccessor)
         self.assertEqual("datasets", opener.root)
 
+        asset = StacAsset(
+            "test_name",
+            "test_href",
+            "test_protocol",
+            "datasets2",
+            "test_fs_path",
+            {"test_storage_options": False},
+            "test_format_id",
+        )
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._impl._get_s3_accessor(root="datasets2", storage_options={})
+            opener2 = store._impl._get_s3_accessor(asset)
         self.assertIsInstance(opener2, S3DataAccessor)
         self.assertEqual("datasets2", opener2.root)
         self.assertEqual(1, len(cm.output))
@@ -875,14 +897,30 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_https_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        opener = store._impl._get_https_accessor(root="earth-search.aws.element84.com")
+        asset = StacAsset(
+            "test_name",
+            "test_href",
+            "test_protocol",
+            "earth-search.aws.element84.com",
+            "test_fs_path",
+            {"test_storage_options": False},
+            "test_format_id",
+        )
+        opener = store._impl._get_https_accessor(asset)
         self.assertIsInstance(opener, HttpsDataAccessor)
         self.assertEqual("earth-search.aws.element84.com", opener.root)
 
+        asset2 = StacAsset(
+            "test_name",
+            "test_href",
+            "test_protocol",
+            "planetarycomputer.microsoft.com",
+            "test_fs_path",
+            {"test_storage_options": False},
+            "test_format_id",
+        )
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._impl._get_https_accessor(
-                root="planetarycomputer.microsoft.com"
-            )
+            opener2 = store._impl._get_https_accessor(asset2)
         self.assertIsInstance(opener2, HttpsDataAccessor)
         self.assertEqual("planetarycomputer.microsoft.com", opener2.root)
         self.assertEqual(1, len(cm.output))
