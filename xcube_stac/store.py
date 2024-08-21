@@ -178,31 +178,9 @@ class StacDataStore(DataStore):
             protocols = self._stacitem.supported_protocols()
             format_ids = self._stacitem.supported_format_ids()
 
-        if data_type is None and data_id is None:
-            return DATA_OPENER_IDS
-        elif data_type is None and data_id is not None:
-            return tuple(
-                opener_id
-                for opener_id in DATA_OPENER_IDS
-                if opener_id.split(":")[1] in format_ids
-                and opener_id.split(":")[2] in protocols
-            )
-        elif data_type is not None and data_id is None:
-            data_type = DataType.normalize(data_type)
-            return tuple(
-                opener_id
-                for opener_id in DATA_OPENER_IDS
-                if opener_id.split(":")[0] == data_type.alias
-            )
-        elif data_type is not None and data_id is not None:
-            data_type = DataType.normalize(data_type)
-            return tuple(
-                opener_id
-                for opener_id in DATA_OPENER_IDS
-                if opener_id.split(":")[0] == data_type.alias
-                and opener_id.split(":")[1] in format_ids
-                and opener_id.split(":")[2] in protocols
-            )
+        return self._select_opener_id(
+            protocols, format_ids, data_id=data_id, data_type=data_type
+        )
 
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
@@ -257,6 +235,39 @@ class StacDataStore(DataStore):
     ) -> JsonObjectSchema:
         return self._impl.get_search_params_schema()
 
+    def _select_opener_id(
+        self,
+        protocols: list[str],
+        format_ids: list[str],
+        data_id: str = None,
+        data_type: DataTypeLike = None,
+    ):
+        if data_type is None and data_id is None:
+            return DATA_OPENER_IDS
+        elif data_type is None and data_id is not None:
+            return tuple(
+                opener_id
+                for opener_id in DATA_OPENER_IDS
+                if opener_id.split(":")[1] in format_ids
+                and opener_id.split(":")[2] in protocols
+            )
+        elif data_type is not None and data_id is None:
+            data_type = DataType.normalize(data_type)
+            return tuple(
+                opener_id
+                for opener_id in DATA_OPENER_IDS
+                if opener_id.split(":")[0] == data_type.alias
+            )
+        elif data_type is not None and data_id is not None:
+            data_type = DataType.normalize(data_type)
+            return tuple(
+                opener_id
+                for opener_id in DATA_OPENER_IDS
+                if opener_id.split(":")[0] == data_type.alias
+                and opener_id.split(":")[1] in format_ids
+                and opener_id.split(":")[2] in protocols
+            )
+
 
 class StacCdseDataStore(StacDataStore):
     """STAC implementation of the data store for CDSE STAC API.
@@ -289,7 +300,8 @@ class StacCdseDataStore(StacDataStore):
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        stac_params = STAC_STORE_PARAMETERS.pop("url")
+        stac_params = STAC_STORE_PARAMETERS.copy()
+        del stac_params["url"]
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,
@@ -301,10 +313,32 @@ class StacCdseDataStore(StacDataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         assert_valid_opener_id(opener_id)
-        schema = self._impl.get_open_data_params_schema(
+        return self._impl.get_open_data_params_schema(
             data_id=data_id, opener_id=opener_id
         )
-        return schema.properties.pop("asset_names")
+
+    def search_data(
+        self, data_type: DataTypeLike = None, **search_params
+    ) -> Iterator[Union[DatasetDescriptor, MultiLevelDatasetDescriptor]]:
+        assert_valid_data_type(data_type)
+        proc_level = search_params.pop("processing_level", "L2A")
+        proc_baseline = search_params.pop("processing_baseline", 5.00)
+        pystac_objs = self._impl.search_data(**search_params)
+
+        for pystac_obj in pystac_objs:
+            if not self._stack_mode:
+                href = pystac_obj.assets["PRODUCT"].extra_fields["alternate"]["s3"][
+                    "href"
+                ][1:]
+                if not href.startswith(f"eodata/Sentinel-2/MSI/{proc_level}"):
+                    continue
+                if not f"N0{int(proc_baseline*100)}" in href:
+                    continue
+
+            data_id = get_data_id_from_pystac_object(
+                pystac_obj, catalog_url=self._url_mod
+            )
+            yield self.describe_data(data_id, data_type=data_type)
 
 
 class StacXcubeDataStore(StacDataStore):
@@ -324,3 +358,16 @@ class StacXcubeDataStore(StacDataStore):
     ):
         self._stacitem = XcubeStacItem
         super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
+
+    def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
+        return MULTI_LEVEL_DATASET_TYPE.alias, DATASET_TYPE.alias
+
+    def get_data_opener_ids(
+        self, data_id: str = None, data_type: DataTypeLike = None
+    ) -> Tuple[str, ...]:
+        assert_valid_data_type(data_type)
+        protocols = self._stacitem.supported_protocols()
+        format_ids = self._stacitem.supported_format_ids()
+        return self._select_opener_id(
+            protocols, format_ids, data_id=data_id, data_type=data_type
+        )

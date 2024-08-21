@@ -2,6 +2,7 @@ from abc import abstractmethod
 import os
 from typing import Iterable
 
+import s3fs
 import numpy as np
 import pystac
 from xcube.core.store import (
@@ -11,11 +12,12 @@ from xcube.core.store import (
     MULTI_LEVEL_DATASET_TYPE,
 )
 
-from .constants import CDSE_MAP_INSTRUEMNT_FORMAT
+from .constants import MAP_CDSE_COLLECTION_FORMAT
+from .constants import CDSE_SENITNEL_2_BANDS
+from .constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
 from .constants import MAP_FILE_EXTENSION_FORMAT
 from .constants import MAP_MIME_TYP_FORMAT
 from .constants import MLDATASET_FORMATS
-from .constants import LOG
 from ._href_parse import decode_href
 from ._utils import get_format_from_path
 from ._utils import list_assets_from_item
@@ -34,6 +36,7 @@ class StacAsset:
         fs_path: str,
         storage_options: dict,
         format_id: str,
+        **kwargs,
     ):
         self._name = name
         self._href = href
@@ -46,6 +49,8 @@ class StacAsset:
             self._data_types = (MULTI_LEVEL_DATASET_TYPE.alias, DATASET_TYPE.alias)
         else:
             self._data_types = DATASET_TYPE.alias
+        for k, v in kwargs.items():
+            setattr(self, k, v)
 
     @property
     def name(self) -> str:
@@ -82,7 +87,7 @@ class StacAsset:
     @classmethod
     @abstractmethod
     def from_pystac_asset(
-        cls, asset: pystac.Asset, storage_options: dict
+        cls, asset: pystac.Asset, storage_options: dict, **kwargs
     ) -> "StacAsset":
         """Build xcube-stac specific asset from pystac asset object."""
 
@@ -91,7 +96,7 @@ class GeneralStacAsset(StacAsset):
 
     @classmethod
     def from_pystac_asset(
-        cls, asset: pystac.Asset, storage_options: dict
+        cls, asset: pystac.Asset, storage_options: dict, **kwargs
     ) -> "GeneralStacAsset":
         protocol, root, fs_path, storage_options2 = decode_href(asset.href)
         storage_options = update_dict(storage_options, storage_options2)
@@ -124,23 +129,47 @@ class CdseStacAsset(StacAsset):
 
     @classmethod
     def from_pystac_asset(
-        cls, asset: pystac.Asset, storage_options: dict
+        cls, asset: pystac.Asset, storage_options: dict, **kwargs
     ) -> "CdseStacAsset":
-        href = asset.extra_fields["alternate"]["s3"]["href"][1:]
+        href_base = asset.extra_fields["alternate"]["s3"]["href"][1:]
+        fs = s3fs.S3FileSystem(
+            anon=False,
+            key=storage_options["key"],
+            secret=storage_options["secret"],
+            endpoint_url=storage_options["client_kwargs"]["endpoint_url"],
+        )
+        res_want = kwargs.get("resolution", 20)
+        if href_base.startswith("eodata/Sentinel-2/MSI/L1C"):
+            processing_level = "L1C"
+        elif href_base.startswith("eodata/Sentinel-2/MSI/L2A"):
+            processing_level = "L2A"
+        else:
+            raise DataStoreError(
+                f"Processing level could not be determined for {href_base!r}"
+            )
+        res_avail = CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS[processing_level][
+            kwargs["band"]
+        ]
+        res_select = res_avail[np.argmin(abs(np.array(res_avail) - res_want))]
+
+        hrefs = fs.glob(f"{href_base}/**/*_{kwargs["band"]}_{res_select}m.jp2")
+        assert len(hrefs) == 1, "No unique jp2 file found"
+        href = hrefs[0]
         href_components = href.split("/")
         root = href_components[0]
         instrument = href_components[1]
-        fs_path = "/".join(href_components[2:])
+        fs_path = "/".join(href_components[1:])
         protocol = "s3"
-        format_id = CDSE_MAP_INSTRUEMNT_FORMAT[instrument]
+        format_id = MAP_CDSE_COLLECTION_FORMAT[instrument]
         return cls(
-            asset.extra_fields["id"],
+            kwargs["band"],
             asset.href,
             protocol,
             root,
             fs_path,
             storage_options,
             format_id,
+            resolution=res_want,
         )
 
 
@@ -148,7 +177,7 @@ class XcubeStacAsset(StacAsset):
 
     @classmethod
     def from_pystac_asset(
-        cls, asset: pystac.Asset, storage_options: dict
+        cls, asset: pystac.Asset, storage_options: dict, **kwargs
     ) -> "XcubeStacAsset":
         protocol = asset.extra_fields["xcube:data_store_id"]
         data_store_params = asset.extra_fields["xcube:data_store_params"]
@@ -198,8 +227,8 @@ class StacItem:
         cls,
         item: pystac.Item,
         storage_options: dict,
-        asset_names: list[str] = None,
         data_type: DataTypeLike = None,
+        **open_params,
     ) -> "StacItem":
         """Get internal stac item object form pystac item object"""
 
@@ -229,10 +258,10 @@ class GeneralStacItem(StacItem):
         cls,
         item: pystac.Item,
         storage_options: dict,
-        asset_names: list[str] = None,
         data_type: DataTypeLike = None,
+        **open_params,
     ) -> "StacItem":
-        assets = list_assets_from_item(item, asset_names)
+        assets = list_assets_from_item(item, asset_names=open_params.get("asset_names"))
         return cls(
             [
                 cls.xasset().from_pystac_asset(asset, storage_options)
@@ -260,10 +289,11 @@ class XcubeStacItem(StacItem):
         cls,
         item: pystac.Item,
         storage_options: dict,
-        asset_names: list[str] = None,
         data_type: DataTypeLike = None,
+        **open_params,
     ) -> "StacItem":
-        assets = list_assets_from_item(item, asset_names)
+        asset_names = open_params.get("asset_names")
+        assets = list_assets_from_item(item, asset_names=asset_names)
         if asset_names is None:
             if is_valid_ml_data_type(data_type):
                 assets = [assets[1]]
@@ -304,27 +334,20 @@ class CdseStacItem(StacItem):
         cls,
         item: pystac.Item,
         storage_options: dict,
-        asset_names: list[str] = None,
         data_type: DataTypeLike = None,
+        **open_params,
     ) -> "StacItem":
-        if (
-            asset_names is not None
-            and len(asset_names) != 1
-            and asset_names[0] == "PRODUCT"
-        ):
-            asset_names = ["PRODUCT"]
-            LOG.warn(
-                "In the CDSE Stac Catalog, the asset_names field is consistently "
-                "set to ['PRODUCT'] and will be overwritten."
+        asset = item.assets["PRODUCT"]
+        processing_level = open_params.get("processing_level", "L2A")
+        bands = open_params.get("bands", CDSE_SENITNEL_2_BANDS[processing_level])
+        band_assets = []
+        for band in bands:
+            band_assets.append(
+                cls.xasset().from_pystac_asset(
+                    asset, storage_options, band=band, **open_params
+                )
             )
-        assets = list_assets_from_item(item, asset_names)
-        return cls(
-            [
-                cls.xasset().from_pystac_asset(asset, storage_options)
-                for asset in assets
-            ],
-            item,
-        )
+        return cls(band_assets, item)
 
     @staticmethod
     def xasset():

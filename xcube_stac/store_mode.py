@@ -31,19 +31,30 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
-from .accessor import HttpsDataAccessor, S3DataAccessor
+from .accessor import (
+    HttpsDataAccessor,
+    S3DataAccessor,
+    S3Sentinel2DataAccessor,
+)
 from .constants import (
     FloatInt,
     LOG,
     STAC_OPEN_PARAMETERS,
+    STAC_OPEN_PARAMETERS_CDSE,
     STAC_OPEN_PARAMETERS_STACK_MODE,
     STAC_SEARCH_PARAMETERS,
+    STAC_SEARCH_PARAMETERS_CDSE,
     STAC_SEARCH_PARAMETERS_STACK_MODE,
 )
 from .constants import COLLECTION_PREFIX
 from .mldataset import SingleItemMultiLevelDataset
 from .mldataset import StackModeMultiLevelDataset
-from .stac_objects import StacItem
+from .stac_objects import (
+    StacItem,
+    CdseStacItem,
+    StacAsset,
+    CdseStacAsset,
+)
 from ._utils import (
     apply_scaling_nodata,
     convert_datetime2str,
@@ -69,6 +80,12 @@ _OPEN_DATA_PARAMETERS = {
         opener_id="dataset:geotiff:https"
     ),
     "open_params_mldataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="mldataset:geotiff:https"
+    ),
+    "open_params_dataset_jp2": _HTTPS_STORE.get_open_data_params_schema(
+        opener_id="dataset:geotiff:https"
+    ),
+    "open_params_mldataset_jp2": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="mldataset:geotiff:https"
     ),
     "open_params_dataset_levels": _HTTPS_STORE.get_open_data_params_schema(
@@ -150,8 +167,13 @@ class SingleStoreMode:
                         properties[key] = _OPEN_DATA_PARAMETERS[key]
         if not properties:
             properties = _OPEN_DATA_PARAMETERS
+
+        if self._stacitem == CdseStacItem:
+            open_params = STAC_OPEN_PARAMETERS_CDSE
+        else:
+            open_params = STAC_OPEN_PARAMETERS
         return JsonObjectSchema(
-            properties=update_dict(properties, STAC_OPEN_PARAMETERS, inplace=False),
+            properties=update_dict(open_params, properties, inplace=False),
             required=[],
             additional_properties=False,
         )
@@ -167,10 +189,7 @@ class SingleStoreMode:
         schema.validate_instance(open_params)
         item = self.access_item(data_id)
         xitem = self._stacitem.from_pystac_item(
-            item,
-            self._storage_options_s3,
-            asset_names=open_params.get("asset_names"),
-            data_type=data_type,
+            item, self._storage_options_s3, data_type=data_type, **open_params
         )
         ds = self.build_dataset(
             xitem, opener_id=opener_id, data_type=data_type, **open_params
@@ -203,12 +222,15 @@ class SingleStoreMode:
             items = search_nonsearchable_catalog(self._catalog, **search_params)
         return items
 
-    @classmethod
-    def get_search_params_schema(cls) -> JsonObjectSchema:
+    def get_search_params_schema(self) -> JsonObjectSchema:
+        if self._stacitem == CdseStacItem:
+            search_params = STAC_SEARCH_PARAMETERS
+        else:
+            search_params = STAC_SEARCH_PARAMETERS_CDSE
         return JsonObjectSchema(
-            properties=dict(**STAC_SEARCH_PARAMETERS),
+            properties=dict(**search_params),
             required=[],
-            additional_properties=True,
+            additional_properties=False,
         )
 
     def build_dataset(
@@ -249,20 +271,17 @@ class SingleStoreMode:
                 )
 
             if asset.protocol == "https":
-                opener = self._get_https_accessor(asset.root)
+                opener = self._get_https_accessor(asset)
                 ds_asset = opener.open_data(
-                    asset.fs_path,
-                    asset.format_id,
+                    asset,
                     opener_id=opener_id,
                     data_type=data_type,
                     **open_params_asset,
                 )
             elif asset.protocol == "s3":
-                opener = self._get_s3_accessor(
-                    asset.root, storage_options=asset.storage_options
-                )
+                opener = self._get_s3_accessor(asset)
                 ds_asset = opener.open_data(
-                    asset.fs_path,
+                    asset,
                     opener_id=opener_id,
                     data_type=data_type,
                     **open_params_asset,
@@ -306,49 +325,58 @@ class SingleStoreMode:
     ##########################################################################
     # Implementation helpers
 
-    def _get_s3_accessor(self, root: str, storage_options: dict) -> S3DataAccessor:
+    def _get_s3_accessor(self, asset: StacAsset) -> S3DataAccessor:
         """This function returns the S3 data accessor associated with the
         bucket *root*. It creates the S3 data accessor only if it is not
         created yet or if *root* changes.
 
         Args:
-            root: bucket of AWS S3 object storage
-            storage_options: storage option of the S3 data store
+            asset: xcube-stac specific asset containing information to access data
 
         Returns:
             S3 data opener
         """
+
+        def _get_specific_s3_accessor():
+            if isinstance(asset, CdseStacAsset):
+                return S3Sentinel2DataAccessor(
+                    asset.root, storage_options=asset.storage_options
+                )
+            else:
+                return S3DataAccessor(asset.root, storage_options=asset.storage_options)
+
         if self._s3_accessor is None:
-            self._s3_accessor = S3DataAccessor(root, storage_options=storage_options)
-        elif not self._s3_accessor.root == root:
+            self._s3_accessor = _get_specific_s3_accessor()
+        elif not self._s3_accessor.root == asset.root:
             LOG.debug(
                 f"The bucket {self._s3_accessor.root!r} of the "
-                f"S3 object storage changed to {root!r}. "
+                f"S3 object storage changed to {asset.root!r}. "
                 "A new s3 data opener will be initialized."
             )
-            self._s3_accessor = S3DataAccessor(root, storage_options=storage_options)
+            self._s3_accessor = _get_specific_s3_accessor()
+
         return self._s3_accessor
 
-    def _get_https_accessor(self, root: str) -> HttpsDataAccessor:
+    def _get_https_accessor(self, asset: StacAsset) -> HttpsDataAccessor:
         """This function returns the HTTPS data opener associated with the
         *root* url and the *opener_id*. It creates the HTTPS data opener
         only if it is not created yet or if *root* or *opener_id* changes.
 
         Args:
-            root: root of URL
+            asset: xcube-stac specific asset containing information to access data
 
         Returns:
             HTTPS data opener
         """
         if self._https_accessor is None:
-            self._https_accessor = HttpsDataAccessor(root)
-        elif not self._https_accessor.root == root:
+            self._https_accessor = HttpsDataAccessor(asset.root)
+        elif not self._https_accessor.root == asset.root:
             LOG.debug(
                 f"The root {self._https_accessor.root!r} of the "
-                f"https data opener changed to {root!r}. "
+                f"https data opener changed to {asset.root!r}. "
                 "A new https data opener will be initialized."
             )
-            self._https_accessor = HttpsDataAccessor(root)
+            self._https_accessor = HttpsDataAccessor(asset.root)
         return self._https_accessor
 
 
@@ -417,8 +445,12 @@ class StackStoreMode:
         data_id: str = None,
         opener_id: str = None,
     ):
+        if self._stacitem == CdseStacItem:
+            open_params = STAC_OPEN_PARAMETERS_CDSE
+        else:
+            open_params = STAC_OPEN_PARAMETERS_STACK_MODE
         return JsonObjectSchema(
-            properties=dict(**STAC_OPEN_PARAMETERS_STACK_MODE),
+            properties=open_params,
             required=[],
             additional_properties=True,
         )
@@ -481,10 +513,13 @@ class StackStoreMode:
     def search_data(self, **search_params) -> Iterator[pystac.Item]:
         return search_collections(self._catalog, **search_params)
 
-    @classmethod
-    def get_search_params_schema(cls) -> JsonObjectSchema:
+    def get_search_params_schema(self) -> JsonObjectSchema:
+        if self._stacitem == CdseStacItem:
+            search_params = STAC_SEARCH_PARAMETERS_CDSE
+        else:
+            search_params = STAC_SEARCH_PARAMETERS_STACK_MODE
         return JsonObjectSchema(
-            properties=dict(**STAC_SEARCH_PARAMETERS_STACK_MODE),
+            properties=dict(**search_params),
             required=[],
             additional_properties=False,
         )
