@@ -31,6 +31,7 @@ import pandas as pd
 import pyproj
 import pystac
 import rasterio
+import s3fs
 from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import (
@@ -51,9 +52,21 @@ from .constants import (
 _CATALOG_JSON = "catalog.json"
 
 
+def get_format_id(asset: pystac.Asset) -> str:
+    if hasattr(asset, "media_type"):
+        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+    else:
+        _, file_extension = os.path.splitext(asset.href)
+        format_id = MAP_FILE_EXTENSION_FORMAT.get(file_extension)
+    if format_id is None:
+        raise DataStoreError(f"No format_id found for asset {asset.extra_fields['id']}")
+    return format_id
+
+
 def get_assets_from_item(
     item: pystac.Item,
     asset_names: Container[str] = None,
+    supported_format_ids: Container[str] = None,
 ) -> Iterator[pystac.Asset]:
     """Get all assets for a given item, which has a MIME data type
 
@@ -62,6 +75,10 @@ def get_assets_from_item(
         asset_names: Names of assets which will be included
             in the data cube. If None, all assets will be
             included which can be opened by the data store.
+        supported_format_ids: supported format ids. If None,
+            all format IDs will be selected, which are supported
+            by the store.
+
 
     Yields:
         An iterator over the assets
@@ -70,9 +87,15 @@ def get_assets_from_item(
         # test if asset is in 'asset_names' and the media type is
         # one of the predefined MIME types; note that if asset_names
         # is ot given all assets are returned matching the MINE types;
-        if (asset_names is None or k in asset_names) and v.media_type.split("; ")[
-            0
-        ] in MAP_MIME_TYP_FORMAT:
+        media_type = v.media_type.split("; ")[0]
+        if (
+            (asset_names is None or k in asset_names)
+            and media_type in MAP_MIME_TYP_FORMAT
+            and (
+                supported_format_ids is None
+                or MAP_MIME_TYP_FORMAT[media_type] in supported_format_ids
+            )
+        ):
             v.extra_fields["id"] = k
             yield v
 
@@ -80,6 +103,7 @@ def get_assets_from_item(
 def list_assets_from_item(
     item: pystac.Item,
     asset_names: Container[str] = None,
+    supported_format_ids: Container[str] = None,
 ) -> list[pystac.Asset]:
     """Get all assets for a given item, which has a MIME data type
 
@@ -88,11 +112,18 @@ def list_assets_from_item(
         asset_names: Names of assets which will be included
             in the data cube. If None, all assets will be
             included which can be opened by the data store.
+        supported_format_ids: supported format ids. If None,
+            all format IDs will be selected, which are supported
+            by the store.
 
-    Yields:
-        An iterator over the assets
+    Returns:
+        A list containing the assets
     """
-    return list(get_assets_from_item(item, asset_names=asset_names))
+    return list(
+        get_assets_from_item(
+            item, asset_names=asset_names, supported_format_ids=supported_format_ids
+        )
+    )
 
 
 def search_nonsearchable_catalog(
@@ -469,6 +500,7 @@ def modify_catalog_url(url: str) -> str:
 
 def get_resolutions_cog(
     item: pystac.Item,
+    fs: s3fs.S3FileSystem = None,
     asset_names: Container[str] = None,
     crs: str = None,
 ) -> list[odc.geo.Resolution]:
@@ -491,10 +523,23 @@ def get_resolutions_cog(
             break
         resolutions[i] = asset.extra_fields["raster:bands"][0]["spatial_resolution"]
     idx_min = np.argmin(resolutions)
-    with rasterio.open(assets[idx_min].href) as rio_dataset_reader:
-        overviews = [1] + rio_dataset_reader.overviews(1)
-        data_resolution = rio_dataset_reader.res
-        data_crs = rio_dataset_reader.crs
+
+    def get_s3fs_env(href):
+        with fs.open(href) as src:
+            return rasterio.open(src)
+
+    def get_nos3fs_env(href):
+        return rasterio.open(href)
+
+    if fs is None:
+        get_env = get_nos3fs_env
+    else:
+        get_env = get_s3fs_env
+
+    with get_env(assets[idx_min].href) as src:
+        overviews = [1] + src.overviews(1)
+        data_resolution = src.res
+        data_crs = src.crs
     if crs:
         transformer = pyproj.Transformer.from_crs(data_crs, crs)
         pmin = transformer.transform(0, 0)

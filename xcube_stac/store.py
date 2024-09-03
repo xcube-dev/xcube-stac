@@ -21,6 +21,7 @@
 
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 
+import odc.stac
 import pystac
 import pystac_client
 import requests
@@ -46,9 +47,9 @@ from .constants import (
 )
 from .store_mode import SingleStoreMode
 from .store_mode import StackStoreMode
-from .stac_objects import GeneralStacItem
-from .stac_objects import CdseStacItem
-from .stac_objects import XcubeStacItem
+from .util import Util
+from .util import XcubeUtil
+from .util import CdseUtil
 from ._utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -90,8 +91,8 @@ class StacDataStore(DataStore):
             self._searchable = False
         self._catalog = catalog
 
-        if not hasattr(self, "_stacitem"):
-            self._stacitem = GeneralStacItem
+        if not hasattr(self, "_util"):
+            self._util = Util()
 
         if stack_mode is False:
             self._impl = SingleStoreMode(
@@ -99,7 +100,7 @@ class StacDataStore(DataStore):
                 self._url_mod,
                 self._searchable,
                 self._storage_options_s3,
-                self._stacitem,
+                self._util,
             )
         elif stack_mode is True or stack_mode == "odc-stac":
             self._impl = StackStoreMode(
@@ -107,7 +108,7 @@ class StacDataStore(DataStore):
                 self._url_mod,
                 self._searchable,
                 self._storage_options_s3,
-                self._stacitem,
+                self._util,
             )
         else:
             raise DataStoreError(
@@ -131,9 +132,8 @@ class StacDataStore(DataStore):
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         item = self._impl.access_item(data_id)
-        xitem = self._stacitem.from_pystac_item(item, self._storage_options_s3)
-        if xitem.is_mldataset_available():
-            return MULTI_LEVEL_DATASET_TYPE.alias, DATASET_TYPE.alias
+        if self._util.is_mldataset_available(item):
+            return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
         else:
             return (DATASET_TYPE.alias,)
 
@@ -141,8 +141,7 @@ class StacDataStore(DataStore):
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
     ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
         assert_valid_data_type(data_type)
-        is_mldataset = is_valid_ml_data_type(data_type)
-        data_ids_obj = self._impl.get_data_ids(is_mldataset)
+        data_ids_obj = self._impl.get_data_ids(data_type=data_type)
         for data_id, pystac_obj in data_ids_obj:
             if include_attrs is None:
                 yield data_id
@@ -157,8 +156,7 @@ class StacDataStore(DataStore):
             except requests.exceptions.HTTPError:
                 return False
             if is_valid_ml_data_type(data_type):
-                xitem = self._stacitem.from_pystac_item(item, self._storage_options_s3)
-                return xitem.is_mldataset_available()
+                return self._util.is_mldataset_available(item)
             return True
         return False
 
@@ -171,16 +169,13 @@ class StacDataStore(DataStore):
             if not self.has_data(data_id, data_type=data_type):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
             item = self._impl.access_item(data_id)
-            xitem = self._stacitem.from_pystac_item(item, self._storage_options_s3)
-            protocols = xitem.protocols
-            format_ids = xitem.format_ids
+            protocols = self._util.get_protocols(item)
+            format_ids = self._util.get_format_ids(item)
         else:
-            protocols = self._stacitem.supported_protocols()
-            format_ids = self._stacitem.supported_format_ids()
+            protocols = self._util.supported_protocols
+            format_ids = self._util.supported_format_ids
 
-        return self._select_opener_id(
-            protocols, format_ids, data_id=data_id, data_type=data_type
-        )
+        return self._select_opener_id(protocols, format_ids, data_type=data_type)
 
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
@@ -239,26 +234,16 @@ class StacDataStore(DataStore):
         self,
         protocols: list[str],
         format_ids: list[str],
-        data_id: str = None,
         data_type: DataTypeLike = None,
     ):
-        if data_type is None and data_id is None:
-            return DATA_OPENER_IDS
-        elif data_type is None and data_id is not None:
+        if data_type is None:
             return tuple(
                 opener_id
                 for opener_id in DATA_OPENER_IDS
                 if opener_id.split(":")[1] in format_ids
                 and opener_id.split(":")[2] in protocols
             )
-        elif data_type is not None and data_id is None:
-            data_type = DataType.normalize(data_type)
-            return tuple(
-                opener_id
-                for opener_id in DATA_OPENER_IDS
-                if opener_id.split(":")[0] == data_type.alias
-            )
-        elif data_type is not None and data_id is not None:
+        else:
             data_type = DataType.normalize(data_type)
             return tuple(
                 opener_id
@@ -288,6 +273,17 @@ class StacCdseDataStore(StacDataStore):
         stack_mode: Union[bool, str] = False,
         **storage_options_s3,
     ):
+        if stack_mode:
+            odc.stac.configure_rio(
+                cloud_defaults=True,
+                aws=dict(
+                    aws_unsigned=False,
+                    aws_access_key_id=storage_options_s3["key"],
+                    aws_secret_access_key=storage_options_s3["secret"],
+                ),
+                AWS_S3_ENDPOINT=CDSE_S3_ENDPOINT.split("//")[1],
+                AWS_VIRTUAL_HOSTING=False,
+            )
         storage_options_s3 = update_dict(
             storage_options_s3,
             dict(
@@ -295,7 +291,7 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._stacitem = CdseStacItem
+        self._util = CdseUtil(storage_options_s3)
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod
@@ -321,20 +317,9 @@ class StacCdseDataStore(StacDataStore):
         self, data_type: DataTypeLike = None, **search_params
     ) -> Iterator[Union[DatasetDescriptor, MultiLevelDatasetDescriptor]]:
         assert_valid_data_type(data_type)
-        proc_level = search_params.pop("processing_level", "L2A")
-        proc_baseline = search_params.pop("processing_baseline", 5.00)
         pystac_objs = self._impl.search_data(**search_params)
 
         for pystac_obj in pystac_objs:
-            if not self._stack_mode:
-                href = pystac_obj.assets["PRODUCT"].extra_fields["alternate"]["s3"][
-                    "href"
-                ][1:]
-                if not href.startswith(f"eodata/Sentinel-2/MSI/{proc_level}"):
-                    continue
-                if not f"N0{int(proc_baseline*100)}" in href:
-                    continue
-
             data_id = get_data_id_from_pystac_object(
                 pystac_obj, catalog_url=self._url_mod
             )
@@ -356,18 +341,16 @@ class StacXcubeDataStore(StacDataStore):
         stack_mode: Union[bool, str] = False,
         **storage_options_s3,
     ):
-        self._stacitem = XcubeStacItem
+        self._util = XcubeUtil()
         super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
-        return MULTI_LEVEL_DATASET_TYPE.alias, DATASET_TYPE.alias
+        return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
 
     def get_data_opener_ids(
         self, data_id: str = None, data_type: DataTypeLike = None
     ) -> Tuple[str, ...]:
         assert_valid_data_type(data_type)
-        protocols = self._stacitem.supported_protocols()
-        format_ids = self._stacitem.supported_format_ids()
-        return self._select_opener_id(
-            protocols, format_ids, data_id=data_id, data_type=data_type
-        )
+        protocols = self._util.supported_protocols
+        format_ids = self._util.supported_format_ids
+        return self._select_opener_id(protocols, format_ids, data_type=data_type)

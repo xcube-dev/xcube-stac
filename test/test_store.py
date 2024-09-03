@@ -37,9 +37,10 @@ from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
+from xcube_stac.constants import DATA_STORE_ID_CDSE
+from xcube_stac.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
 from xcube_stac.accessor import HttpsDataAccessor
 from xcube_stac.accessor import S3DataAccessor
-from xcube_stac.stac_objects import StacAsset
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -47,6 +48,10 @@ SKIP_HELP = (
 )
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
+CDSE_CREDENTIALS = {
+    "key": "O0M0CUQIDQO9TDZ4D8NR",
+    "secret": "qPUyXs9G6j8on6MY5KPhQNHuA5uZTqxEscrbBCGx",
+}
 
 
 def is_server_running() -> bool:
@@ -77,7 +82,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_EW_GRDM_1SDV_20240711T073732_20240711T073811_054710_06A929"
+            "S1A_IW_GRDH_1SDV_20240903T064655_20240903T064720_055497_06C567"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -86,6 +91,10 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_netcdf = (
             "collections/S5P_TROPOMI_L3_P1D_CF/items/"
             "S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson"
+        )
+        self.data_id_cdse_sen2 = (
+            "collections/SENTINEL-2/items/"
+            "S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"
         )
 
     @pytest.mark.vcr()
@@ -116,12 +125,19 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_data_types(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         self.assertEqual(("dataset", "mldataset"), store.get_data_types())
+        # CDSE STAC API Sentinel-2
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+        self.assertEqual(("dataset", "mldataset"), store.get_data_types())
 
     @pytest.mark.vcr()
     def test_get_data_types_for_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         self.assertEqual(
-            ("mldataset", "dataset"),
+            ("dataset", "mldataset"),
             store.get_data_types_for_data(self.data_id_nonsearchable),
         )
         store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
@@ -129,12 +145,22 @@ class StacDataStoreTest(unittest.TestCase):
             ("dataset",),
             store.get_data_types_for_data(self.data_id_netcdf),
         )
+        # CDSE STAC API Sentinel-2
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+        self.assertEqual(
+            ("dataset", "mldataset"),
+            store.get_data_types_for_data(self.data_id_cdse_sen2),
+        )
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_get_data_types_for_data_xcube_server(self):
         store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
         self.assertEqual(
-            ("mldataset", "dataset"),
+            ("dataset", "mldataset"),
             store.get_data_types_for_data("collections/datacubes/items/local_ts"),
         )
 
@@ -158,8 +184,8 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = list(itertools.islice(data_ids, 1))
         self.assertEqual(1, len(data_ids))
         item = store._impl.access_item(data_ids[0])
-        xitem = store._stacitem.from_pystac_item(item, {})
-        self.assertEqual(["geotiff"], xitem._format_ids)
+        format_ids = store._util.get_format_ids(item)
+        self.assertEqual(["geotiff"], format_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_stack_mode(self):
@@ -171,10 +197,12 @@ class StacDataStoreTest(unittest.TestCase):
             "naip",
             "cop-dem-glo-90",
             "landsat-c2-l2",
+            "sentinel-2-l1c",
             "sentinel-2-l2a",
             "sentinel-2-c1-l2a",
             "sentinel-1-grd",
         ]
+
         self.assertCountEqual(expected_data_ids, data_ids)
 
     @pytest.mark.vcr()
@@ -209,25 +237,17 @@ class StacDataStoreTest(unittest.TestCase):
         opener_ids = (
             "dataset:netcdf:https",
             "dataset:zarr:https",
-            "dataset:jp2:https",
             "dataset:geotiff:https",
             "mldataset:geotiff:https",
-            "dataset:levels:https",
-            "mldataset:levels:https",
             "dataset:netcdf:s3",
-            "dataset:jp2:s3",
             "dataset:zarr:s3",
             "dataset:geotiff:s3",
             "mldataset:geotiff:s3",
-            "dataset:levels:s3",
-            "mldataset:levels:s3",
         )
         self.assertCountEqual(opener_ids, store.get_data_opener_ids())
         opener_ids = (
             "mldataset:geotiff:https",
-            "mldataset:levels:https",
             "mldataset:geotiff:s3",
-            "mldataset:levels:s3",
         )
         self.assertCountEqual(
             opener_ids, store.get_data_opener_ids(data_type="mldataset")
@@ -240,10 +260,39 @@ class StacDataStoreTest(unittest.TestCase):
             opener_ids, store.get_data_opener_ids(data_id=self.data_id_nonsearchable)
         )
         opener_ids = ("dataset:geotiff:s3",)
-        self.assertEqual(
+        self.assertCountEqual(
             opener_ids,
             store.get_data_opener_ids(
                 data_id=self.data_id_nonsearchable, data_type="dataset"
+            ),
+        )
+        # CDSE STAC API Sentinel-2
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+        opener_ids = (
+            "dataset:netcdf:s3",
+            "dataset:zarr:s3",
+            "dataset:geotiff:s3",
+            "mldataset:geotiff:s3",
+            "dataset:jp2:s3",
+            "mldataset:jp2:s3",
+        )
+        self.assertCountEqual(opener_ids, store.get_data_opener_ids())
+        opener_ids = (
+            "dataset:jp2:s3",
+            "mldataset:jp2:s3",
+        )
+        self.assertCountEqual(
+            opener_ids, store.get_data_opener_ids(data_id=self.data_id_cdse_sen2)
+        )
+        opener_ids = ("dataset:jp2:s3",)
+        self.assertCountEqual(
+            opener_ids,
+            store.get_data_opener_ids(
+                data_id=self.data_id_cdse_sen2, data_type="dataset"
             ),
         )
 
@@ -269,6 +318,17 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(
             ("dataset:geotiff:s3", "mldataset:geotiff:s3"),
             store.get_data_opener_ids(data_id="sentinel-2-l2a"),
+        )
+        # CDSE STAC API Sentinel-2
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+            stack_mode=True,
+        )
+        self.assertCountEqual(
+            ("dataset:jp2:s3", "mldataset:jp2:s3"),
+            store.get_data_opener_ids(data_id="SENTINEL-2"),
         )
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
@@ -322,6 +382,18 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("open_params_mldataset_geotiff", schema.properties)
         self.assertNotIn("open_params_dataset_zarr", schema.properties)
 
+        # CDSE STAC API Sentinel-2
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+            stack_mode=True,
+        )
+        schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("bands", schema.properties)
+        self.assertIn("resolution", schema.properties)
+
     @pytest.mark.vcr()
     def test_get_open_data_params_schema_stack_mode(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
@@ -331,6 +403,22 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
         self.assertIn("query", schema.properties)
+
+        # CDSE STAC API Sentinel-2
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+            stack_mode=True,
+        )
+        schema = store.get_open_data_params_schema()
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("bands", schema.properties)
+        self.assertIn("resolution", schema.properties)
+        self.assertIn("time_range", schema.properties)
+        self.assertIn("bbox", schema.properties)
+        self.assertIn("processing_level", schema.properties)
+        self.assertIn("processing_baseline", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -555,7 +643,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [8, 20976, 20982],
+            [8, 11163, 7603],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
@@ -583,7 +671,7 @@ class StacDataStoreTest(unittest.TestCase):
         ds = mlds.base_dataset
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [8, 20976, 20982],
+            [8, 11163, 7603],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
@@ -611,17 +699,116 @@ class StacDataStoreTest(unittest.TestCase):
         ds = mlds.get_dataset(3)
         self.assertEqual(16, len(ds.data_vars))
         self.assertCountEqual(
-            [8, 2647, 3956],
+            [8, 1396, 1387],
             [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
         )
         self.assertCountEqual(
-            [1, 2048, 2048],
+            [1, 1396, 1387],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["latitude"][0],
                 ds.chunksizes["longitude"][0],
             ],
         )
+
+    # @pytest.mark.vcr()
+    # def test_open_data_cdse_seninel_2(self):
+    #     store = new_data_store(
+    #         DATA_STORE_ID_CDSE,
+    #         key=CDSE_CREDENTIALS["key"],
+    #         secret=CDSE_CREDENTIALS["secret"],
+    #     )
+    #
+    #     # open data as dataset
+    #     ds = store.open_data(self.data_id_cdse_sen2)
+    #     self.assertIsInstance(ds, xr.Dataset)
+    #     self.assertCountEqual(
+    #         CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS["L2A"].keys(), list(ds.data_vars)
+    #     )
+    #     self.assertCountEqual([10977, 10977], [ds.sizes["y"], ds.sizes["x"]])
+    #     self.assertCountEqual(
+    #         [1024, 1024], [ds.AOT.chunksizes["x"][0], ds.AOT.chunksizes["y"][0]]
+    #     )
+    #
+    #     # open data as multi-level dataset
+    #     mlds = store.open_data(
+    #         self.data_id_cdse_sen2,
+    #         bands=["B04", "B03", "B02"],
+    #         data_type="mldataset",
+    #     )
+    #     self.assertIsInstance(mlds, MultiLevelDataset)
+    #     ds = mlds.get_dataset(2)
+    #     self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
+    #     self.assertCountEqual([2742, 2742], [ds.sizes["y"], ds.sizes["x"]])
+    #     self.assertCountEqual(
+    #         [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+    #     )
+
+    # # @pytest.mark.vcr()
+    # def test_open_data_cdse_seninel_2_stack_mode(self):
+    #     store = new_data_store(
+    #         DATA_STORE_ID_CDSE,
+    #         key=CDSE_CREDENTIALS["key"],
+    #         secret=CDSE_CREDENTIALS["secret"],
+    #         stack_mode=True,
+    #     )
+    #
+    #     # open data as dataset
+    #     ds = store.open_data(
+    #         data_id="SENTINEL-2",
+    #         bbox=[37.76, 12.49, 37.77, 12.50],
+    #         time_range=["2020-09-01", "2020-10-01"],
+    #         processing_level="L2A",
+    #         processing_baseline="5.00",
+    #         bands=["B03", "B04"],
+    #         crs="EPSG:4326",
+    #         resolution=0.00018,
+    #         chunks={},
+    #         groupby="solar_day",
+    #     )
+    #     self.assertIsInstance(ds, xr.Dataset)
+    #     self.assertCountEqual(["B03", "B04"], list(ds.data_vars))
+    #     self.assertCountEqual(
+    #         [6, 57, 57],
+    #         [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
+    #     )
+    #     self.assertCountEqual(
+    #         [1, 57, 57],
+    #         [
+    #             ds.chunksizes["time"][0],
+    #             ds.chunksizes["latitude"][0],
+    #             ds.chunksizes["longitude"][0],
+    #         ],
+    #     )
+    #
+    #     # open data with open_params
+    #     mlds = store.open_data(
+    #         data_id="SENTINEL-2",
+    #         data_type="mldataset",
+    #         bbox=[37.76, 12.49, 37.77, 12.50],
+    #         time_range=["2020-09-01", "2020-10-01"],
+    #         processing_level="L2A",
+    #         processing_baseline="5.00",
+    #         bands=["B03", "B04"],
+    #         crs="EPSG:4326",
+    #         chunks={},
+    #         groupby="solar_day",
+    #     )
+    #     self.assertIsInstance(mlds, MultiLevelDataset)
+    #     ds = mlds.get_dataset(2)
+    #     self.assertCountEqual(["B04", "B03"], list(ds.data_vars))
+    #     self.assertCountEqual(
+    #         [6, 15, 15],
+    #         [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
+    #     )
+    #     self.assertCountEqual(
+    #         [1, 15, 15],
+    #         [
+    #             ds.chunksizes["time"][0],
+    #             ds.chunksizes["latitude"][0],
+    #             ds.chunksizes["longitude"][0],
+    #         ],
+    #     )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
@@ -630,12 +817,12 @@ class StacDataStoreTest(unittest.TestCase):
             store.open_data(self.data_id_nonsearchable, opener_id="wrong_opener_id")
         self.assertEqual(
             "Data opener identifier must be one of ('dataset:netcdf:https', "
-            "'dataset:zarr:https', 'dataset:jp2:https', 'dataset:geotiff:https', "
-            "'mldataset:geotiff:https', 'dataset:levels:https', "
-            "'mldataset:levels:https', 'dataset:netcdf:s3', 'dataset:zarr:s3', "
-            "'dataset:jp2:s3', 'dataset:geotiff:s3', 'mldataset:geotiff:s3', "
-            "'dataset:levels:s3', 'mldataset:levels:s3'), "
-            "but got 'wrong_opener_id'.",
+            "'dataset:zarr:https', 'dataset:jp2:https', 'mldataset:jp2:https', "
+            "'dataset:geotiff:https', 'mldataset:geotiff:https', "
+            "'dataset:levels:https', 'mldataset:levels:https', 'dataset:netcdf:s3', "
+            "'dataset:zarr:s3', 'dataset:jp2:s3', 'mldataset:jp2:s3', "
+            "'dataset:geotiff:s3', 'mldataset:geotiff:s3', 'dataset:levels:s3', "
+            "'mldataset:levels:s3'), but got 'wrong_opener_id'.",
             f"{cm.exception}",
         )
 
@@ -645,7 +832,7 @@ class StacDataStoreTest(unittest.TestCase):
         descriptors = list(
             store.search_data(
                 data_type="dataset",
-                collections="zanzibar-collection",
+                collections=["zanzibar-collection"],
                 bbox=[39.28, -5.74, 39.31, -5.72],
                 time_range=["2019-04-23", "2019-04-24"],
             )
@@ -717,6 +904,53 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIsInstance(d, DatasetDescriptor)
         self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
+
+    @pytest.mark.vcr()
+    def test_search_data_cdse_sentinel_2(self):
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+        descriptors = list(
+            store.search_data(
+                collections=["SENTINEL-2"],
+                bbox=[9.0, 47.0, 9.1, 47.1],
+                time_range=["2020-07-01", "2020-07-05"],
+                processing_level="L2A",
+                processing_baseline="2.14",
+            )
+        )
+
+        prefix = "collections/SENTINEL-2/items/"
+        data_ids_expected = [
+            "S2B_MSIL2A_20200705T101559_N0214_R065_T32TMT_20200705T135630.SAFE",
+            "S2A_MSIL2A_20200703T103031_N0214_R108_T32TNT_20200703T142409.SAFE",
+            "S2B_MSIL2A_20200705T101559_N0214_R065_T32TNT_20200705T135630.SAFE",
+            "S2A_MSIL2A_20200703T103031_N0214_R108_T32TMT_20200703T142409.SAFE",
+        ]
+        data_ids_expected = [prefix + data_id for data_id in data_ids_expected]
+
+        expected_descriptor = dict(
+            data_id=data_ids_expected[0],
+            data_type="dataset",
+            bbox=[
+                7.760788440704346,
+                46.858551025390625,
+                9.130471229553223,
+                47.85363006591797,
+            ],
+            time_range=("2020-07-05T10:15:59.024000Z", "2020-07-05T10:15:59.024000Z"),
+        )
+
+        self.assertEqual(4, len(descriptors))
+        for d in descriptors:
+            self.assertIsInstance(d, DatasetDescriptor)
+        self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
+        selected_discriptor = [
+            d for d in descriptors if d.data_id == data_ids_expected[0]
+        ][0]
+        self.assertEqual(expected_descriptor, selected_discriptor.to_dict())
 
     @pytest.mark.vcr()
     def test_search_data_multi_level(self):
@@ -840,7 +1074,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("collections", schema.properties)
 
     @pytest.mark.vcr()
-    def test_get_search_params_schema_stack_mde(self):
+    def test_get_search_params_schema_stack_mode(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
         schema = store.get_search_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
@@ -848,6 +1082,21 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("bbox", schema.properties)
         self.assertNotIn("query", schema.properties)
         self.assertNotIn("collections", schema.properties)
+
+    @pytest.mark.vcr()
+    def test_get_search_params_schema_cdse_sentinel_2(self):
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+        schema = store.get_search_params_schema()
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("time_range", schema.properties)
+        self.assertIn("bbox", schema.properties)
+        self.assertIn("processing_level", schema.properties)
+        self.assertIn("processing_baseline", schema.properties)
+        self.assertIn("collections", schema.properties)
 
     @pytest.mark.vcr()
     def test_access_item_failed(self):
@@ -860,30 +1109,20 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_s3_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        asset = StacAsset(
-            "test_name",
-            "test_href",
-            "test_protocol",
-            "datasets",
-            "test_fs_path",
-            {"test_storage_options": False},
-            "test_format_id",
+        access_params = dict(
+            root="datasets",
+            storage_options={"test_storage_options": False},
         )
-        opener = store._impl._get_s3_accessor(asset)
+        opener = store._impl._get_s3_accessor(access_params)
         self.assertIsInstance(opener, S3DataAccessor)
         self.assertEqual("datasets", opener.root)
 
-        asset = StacAsset(
-            "test_name",
-            "test_href",
-            "test_protocol",
-            "datasets2",
-            "test_fs_path",
-            {"test_storage_options": False},
-            "test_format_id",
+        access_params = dict(
+            root="datasets2",
+            storage_options={"test_storage_options": False},
         )
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._impl._get_s3_accessor(asset)
+            opener2 = store._impl._get_s3_accessor(access_params)
         self.assertIsInstance(opener2, S3DataAccessor)
         self.assertEqual("datasets2", opener2.root)
         self.assertEqual(1, len(cm.output))
@@ -897,30 +1136,18 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_https_accessor(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
 
-        asset = StacAsset(
-            "test_name",
-            "test_href",
-            "test_protocol",
-            "earth-search.aws.element84.com",
-            "test_fs_path",
-            {"test_storage_options": False},
-            "test_format_id",
+        access_params = dict(
+            root="earth-search.aws.element84.com",
         )
-        opener = store._impl._get_https_accessor(asset)
+        opener = store._impl._get_https_accessor(access_params)
         self.assertIsInstance(opener, HttpsDataAccessor)
         self.assertEqual("earth-search.aws.element84.com", opener.root)
 
-        asset2 = StacAsset(
-            "test_name",
-            "test_href",
-            "test_protocol",
-            "planetarycomputer.microsoft.com",
-            "test_fs_path",
-            {"test_storage_options": False},
-            "test_format_id",
+        access_params = dict(
+            root="planetarycomputer.microsoft.com",
         )
         with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            opener2 = store._impl._get_https_accessor(asset2)
+            opener2 = store._impl._get_https_accessor(access_params)
         self.assertIsInstance(opener2, HttpsDataAccessor)
         self.assertEqual("planetarycomputer.microsoft.com", opener2.root)
         self.assertEqual(1, len(cm.output))

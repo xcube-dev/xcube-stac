@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 30 Jul 2024 13:06:18 GMT
+      - Tue, 03 Sep 2024 09:40:24 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -70,7 +70,7 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_5dc6f65a:191028ad1cd:4ea1
+      - GS_FLOW_CONTROL=GS_CFLOW_-61f250b:191b6ee5927:-3189
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -88,7 +88,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -120,7 +120,7 @@ interactions:
         as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
         GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
         Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/null/wms","rel":"wms","wms:layers":["S5P_TROPOMI_L3_P1D_CF"],"wms:dimensions":{"TIME":"2024-06-19T00:00:00Z/2024-06-19T00:00:00Z"},"wms:params":{"CQL_FILTER":"eoIdentifier=''S5P_DLR_NRTI_01_040201_L3_CF_20240619''"}},{"href":"https://geoservice.dlr.de/eoc/null/gwc/service/wmts","rel":"wmts","wmts:layers":["S5P_TROPOMI_L3_P1D_CF"]}]}'
     headers:
       API-Version:
       - 1.0.0
@@ -133,15 +133,15 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '6179'
+      - '6549'
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 30 Jul 2024 13:06:19 GMT
+      - Tue, 03 Sep 2024 09:40:24 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_-53cf86df:19103a8af96:-2a56
+      - GS_FLOW_CONTROL=GS_CFLOW_-61f250b:191b6ee5927:-3187
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -157,7 +157,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -189,7 +189,7 @@ interactions:
         as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
         GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
         Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/null/wms","rel":"wms","wms:layers":["S5P_TROPOMI_L3_P1D_CF"],"wms:dimensions":{"TIME":"2024-06-19T00:00:00Z/2024-06-19T00:00:00Z"},"wms:params":{"CQL_FILTER":"eoIdentifier=''S5P_DLR_NRTI_01_040201_L3_CF_20240619''"}},{"href":"https://geoservice.dlr.de/eoc/null/gwc/service/wmts","rel":"wmts","wmts:layers":["S5P_TROPOMI_L3_P1D_CF"]}]}'
     headers:
       API-Version:
       - 1.0.0
@@ -202,15 +202,15 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '6179'
+      - '6549'
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 30 Jul 2024 13:06:20 GMT
+      - Tue, 03 Sep 2024 09:40:24 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_-53cf86df:19103a8af96:-2a48
+      - GS_FLOW_CONTROL=GS_CFLOW_-61f250b:191b6ee5927:-3186
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -226,7 +226,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -258,7 +258,7 @@ interactions:
         as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
         GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
         Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/null/wms","rel":"wms","wms:layers":["S5P_TROPOMI_L3_P1D_CF"],"wms:dimensions":{"TIME":"2024-06-19T00:00:00Z/2024-06-19T00:00:00Z"},"wms:params":{"CQL_FILTER":"eoIdentifier=''S5P_DLR_NRTI_01_040201_L3_CF_20240619''"}},{"href":"https://geoservice.dlr.de/eoc/null/gwc/service/wmts","rel":"wmts","wmts:layers":["S5P_TROPOMI_L3_P1D_CF"]}]}'
     headers:
       API-Version:
       - 1.0.0
@@ -271,19 +271,19 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '6179'
+      - '6549'
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 30 Jul 2024 13:06:22 GMT
+      - Tue, 03 Sep 2024 09:40:26 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_2496de9a:191036af9b9:-42a2
+      - GS_FLOW_CONTROL=GS_CFLOW_-61f250b:191b6ee5927:-3182
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
-      - '0'
+      - '1'
       X-Frame-Options:
       - SAMEORIGIN
     status:
@@ -295,7 +295,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -327,7 +327,7 @@ interactions:
         as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
         GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
         Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/null/wms","rel":"wms","wms:layers":["S5P_TROPOMI_L3_P1D_CF"],"wms:dimensions":{"TIME":"2024-06-19T00:00:00Z/2024-06-19T00:00:00Z"},"wms:params":{"CQL_FILTER":"eoIdentifier=''S5P_DLR_NRTI_01_040201_L3_CF_20240619''"}},{"href":"https://geoservice.dlr.de/eoc/null/gwc/service/wmts","rel":"wmts","wmts:layers":["S5P_TROPOMI_L3_P1D_CF"]}]}'
     headers:
       API-Version:
       - 1.0.0
@@ -340,15 +340,15 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '6179'
+      - '6549'
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 30 Jul 2024 13:06:23 GMT
+      - Tue, 03 Sep 2024 09:40:27 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_-53cf86df:19103a8af96:-2a36
+      - GS_FLOW_CONTROL=GS_CFLOW_-32a0acc7:191b6ef45fd:3194
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
