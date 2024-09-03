@@ -51,9 +51,10 @@ MAP_MIME_TYP_FORMAT = {
     "application/vnd+zarr": "zarr",
     "application/zarr": "zarr",
     "image/tiff": "geotiff",
+    "image/jp2": "jp2",
 }
 
-MAP_CDSE_COLLECTION_FORMAT = {"SMOS": "netcdf", "Sentinel-2": "jp2"}
+MAP_CDSE_COLLECTION_FORMAT = {"Sentinel-2": "jp2"}
 
 MAP_FILE_EXTENSION_FORMAT = {
     ".nc": "netcdf",
@@ -68,6 +69,7 @@ DATA_OPENER_IDS = (
     "dataset:netcdf:https",
     "dataset:zarr:https",
     "dataset:jp2:https",
+    "mldataset:jp2:https",
     "dataset:geotiff:https",
     "mldataset:geotiff:https",
     "dataset:levels:https",
@@ -75,13 +77,14 @@ DATA_OPENER_IDS = (
     "dataset:netcdf:s3",
     "dataset:zarr:s3",
     "dataset:jp2:s3",
+    "mldataset:jp2:s3",
     "dataset:geotiff:s3",
     "mldataset:geotiff:s3",
     "dataset:levels:s3",
     "mldataset:levels:s3",
 )
 
-MLDATASET_FORMATS = ["levels", "geotiff"]
+MLDATASET_FORMATS = ["levels", "geotiff", "jp2"]
 
 _STAC_MODE_SCHEMA = JsonComplexSchema(
     one_of=[
@@ -104,7 +107,7 @@ STAC_STORE_PARAMETERS = dict(
 STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)
 
 
-_STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
+_SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,
     title="Additional query options used during item search of STAC API.",
     description=(
@@ -114,52 +117,62 @@ _STAC_SEARCH_ADDITIONAL_QUERY = JsonObjectSchema(
         "https://github.com/stac-api-extensions/query"
     ),
 )
+_SCHEMA_PROCESSING_BASELINE = JsonStringSchema(
+    title="Processing baseline of Sentinel-2 data",
+    enum=["2.09", "2.14", "5.00"],
+    default="5.00",
+)
+
+_SCHEMA_PROCESSING_LEVEL = JsonStringSchema(
+    title="Processing level of Sentinel-2 data", enum=["L1C", "L2A"], default="L2A"
+)
+
+_SCHEMA_BBOX = JsonArraySchema(
+    items=(
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+    ),
+    title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
+)
+
+_SCHEMA_TIME_RANGE = JsonArraySchema(
+    items=[
+        JsonDateSchema(nullable=True),
+        JsonDateSchema(nullable=True),
+    ],
+    title="Time Range",
+    description=(
+        "Time range given as pair of start and stop dates. "
+        "Dates must be given using format 'YYYY-MM-DD'. "
+        "Start and stop are inclusive."
+    ),
+)
+
+_SCHEMA_COLLECTIONS = JsonArraySchema(
+    items=(JsonStringSchema(min_length=0)),
+    unique_items=True,
+    title="Collection IDs",
+    description="Collection IDs to be included in the search request.",
+)
 
 STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
-    time_range=JsonArraySchema(
-        items=[
-            JsonDateSchema(nullable=True),
-            JsonDateSchema(nullable=True),
-        ],
-        title="Time Range",
-        description=(
-            "Time range given as pair of start and stop dates. "
-            "Dates must be given using format 'YYYY-MM-DD'. "
-            "Start and stop are inclusive."
-        ),
-    ),
-    bbox=JsonArraySchema(
-        items=(
-            JsonNumberSchema(),
-            JsonNumberSchema(),
-            JsonNumberSchema(),
-            JsonNumberSchema(),
-        ),
-        title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
-    ),
+    time_range=_SCHEMA_TIME_RANGE,
+    bbox=_SCHEMA_BBOX,
 )
 
 STAC_SEARCH_PARAMETERS = dict(
     **STAC_SEARCH_PARAMETERS_STACK_MODE,
-    collections=JsonArraySchema(
-        items=(JsonStringSchema(min_length=0)),
-        unique_items=True,
-        title="Collection IDs",
-        description="Collection IDs to be included in the search request.",
-    ),
-    query=_STAC_SEARCH_ADDITIONAL_QUERY,
+    collections=_SCHEMA_COLLECTIONS,
+    query=_SCHEMA_ADDITIONAL_QUERY,
 )
 
 STAC_SEARCH_PARAMETERS_CDSE = dict(
-    **STAC_SEARCH_PARAMETERS,
-    processing_level=JsonStringSchema(
-        title="Processing level of Sentinel-2 data", enum=["L1C", "L2A"], default="L2A"
-    ),
-    processing_baseline=JsonNumberSchema(
-        title="Processing baseline of Sentinel-2 data",
-        enum=[2.09, 2.14, 5.00],
-        default=5.00,
-    ),
+    **STAC_SEARCH_PARAMETERS_STACK_MODE,
+    collections=_SCHEMA_COLLECTIONS,
+    processing_level=_SCHEMA_PROCESSING_LEVEL,
+    processing_baseline=_SCHEMA_PROCESSING_BASELINE,
 )
 
 
@@ -173,28 +186,9 @@ STAC_OPEN_PARAMETERS = dict(
 )
 
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
-    time_range=JsonArraySchema(
-        items=[
-            JsonDateSchema(nullable=True),
-            JsonDateSchema(nullable=True),
-        ],
-        title="Time Range",
-        description=(
-            "Time range given as pair of start and stop dates. "
-            "Dates must be given using format 'YYYY-MM-DD'. "
-            "Start and stop are inclusive."
-        ),
-    ),
-    bbox=JsonArraySchema(
-        items=(
-            JsonNumberSchema(),
-            JsonNumberSchema(),
-            JsonNumberSchema(),
-            JsonNumberSchema(),
-        ),
-        title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
-    ),
-    query=_STAC_SEARCH_ADDITIONAL_QUERY,
+    time_range=_SCHEMA_TIME_RANGE,
+    bbox=_SCHEMA_BBOX,
+    query=_SCHEMA_ADDITIONAL_QUERY,
 )
 
 CDSE_SENITNEL_2_BANDS = {
@@ -276,4 +270,12 @@ STAC_OPEN_PARAMETERS_CDSE = dict(
         default=CDSE_SENITNEL_2_BANDS["L2A"],
     ),
     resolution=JsonNumberSchema(title="Spatial resolution in meter", default=20),
+)
+
+STAC_OPEN_PARAMETERS_CDSE_STACK_MODE = dict(
+    **STAC_OPEN_PARAMETERS_CDSE,
+    time_range=_SCHEMA_TIME_RANGE,
+    bbox=_SCHEMA_BBOX,
+    processing_level=_SCHEMA_PROCESSING_LEVEL,
+    processing_baseline=_SCHEMA_PROCESSING_BASELINE,
 )

@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -24,15 +24,15 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Wed, 31 Jul 2024 06:40:49 GMT
+      - Tue, 03 Sep 2024 09:39:32 GMT
       Via:
-      - 1.1 df242d25ee40c422308e69e57aadf5e6.cloudfront.net (CloudFront)
+      - 1.1 04545073f97f94a6b7b4580892eff70c.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - Dx6OJ87AThXpeyitttw5pOUAi8Nwp27wGupdp55p2mRkohETf94lTg==
+      - YLdBBlbQtXkBxo3Hhw5OTBfUWgWQRYiNXC57L7HyjkRtH6TRO9pAFQ==
       X-Amz-Cf-Pop:
-      - TXL50-P5
+      - HAM50-C1
       X-Amzn-Trace-Id:
-      - Root=1-66a9dc71-0cb551c67eab02f050bbdf88;Parent=1374db281cc51d10;Sampled=0;lineage=9e2884e9:0
+      - Root=1-66d6d954-5a4c22a154eabcc04e6838b8;Parent=62461d02e0c14483;Sampled=0;lineage=9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -40,13 +40,60 @@ interactions:
       etag:
       - W/"d29-QPs+H0wJLUX32EZKNgzG3k6wfQ8"
       x-amz-apigw-id:
-      - bw9huGp9vHcEXqg=
+      - dhblOHKYvHcEokg=
       x-amzn-Remapped-content-length:
       - '3369'
       x-amzn-RequestId:
-      - d7a1c8f4-a493-48a8-bfd6-0a559d46daad
+      - 50e6757e-7707-479e-a8f4-5f03790d56ad
       x-powered-by:
       - Express
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://catalogue.dataspace.copernicus.eu/stac
+  response:
+    body:
+      string: '{"stac_version":"1.0.0","type":"Catalog","id":"Catalogue","description":"Catalogue
+        of data available in the platform","conformsTo":["https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"],"links":[{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"root","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"self","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/api","rel":"service-desc","type":"application/vnd.oai.openapi"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/conformance","rel":"conformance","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/collections","rel":"data","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
+        search","rel":"search","type":"application/json","method":"GET"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
+        search","rel":"search","type":"application/json","method":"POST"}]}'
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
+      Access-Control-Allow-Methods:
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '1279'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Sep 2024 09:39:32 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      request-id:
+      - 84b60787-b984-4d41-a0ec-ab3d01ca3ca1
+      x-envoy-upstream-service-time:
+      - '4'
     status:
       code: 200
       message: OK

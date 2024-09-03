@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Thu, 11 Jul 2024 08:52:26 GMT
+      - Tue, 03 Sep 2024 08:50:43 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Thu, 11 Jul 2024 08:57:26 GMT
+      - Tue, 03 Sep 2024 08:55:43 GMT
       Source-Age:
-      - '15'
+      - '25'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 0fffccd492ee226edaa79581a3c0d3dfec581567
+      - 9d2eb0c0e2f96f6b608428103b8a758730694981
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - EB7A:35FBCE:CE464A:D82B72:668F9D3B
+      - 2609:93430:291916E:2AF27D8:66D6CA86
       X-Served-By:
-      - cache-cph2320028-CPH
+      - cache-fra-eddf8230158-FRA
       X-Timer:
-      - S1720687947.707365,VS0,VE1
+      - S1725353443.483246,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Thu, 11 Jul 2024 08:52:26 GMT
+      - Tue, 03 Sep 2024 08:50:43 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Thu, 11 Jul 2024 08:57:26 GMT
+      - Tue, 03 Sep 2024 08:55:43 GMT
       Source-Age:
-      - '15'
+      - '25'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -129,19 +129,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '3'
+      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 198e26605fec7d22e7bde4b412ad4e717344319b
+      - 4c1d89dffe914a23c89372ca091d5e24e6ef84ec
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 422A:3AB699:3161EEF:33D2DA3:668F9D3B
+      - 2609:93430:291918D:2AF27FB:66D6CA86
       X-Served-By:
-      - cache-cph2320027-CPH
+      - cache-fra-eddf8230076-FRA
       X-Timer:
-      - S1720687947.758414,VS0,VE0
+      - S1725353444.584402,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -153,7 +153,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -217,13 +217,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Thu, 11 Jul 2024 08:52:26 GMT
+      - Tue, 03 Sep 2024 08:50:43 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Thu, 11 Jul 2024 08:57:26 GMT
+      - Tue, 03 Sep 2024 08:55:43 GMT
       Source-Age:
-      - '0'
+      - '7'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -231,21 +231,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - MISS
+      - HIT
       X-Cache-Hits:
-      - '0'
+      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - fe5a833302a951e033978f57a0d9b423f2627176
+      - 0faced98983eb3549f19817f8b375b44c89e53c5
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 6BA5:37FEB6:31EC739:347AE55:668F9D4A
+      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
       X-Served-By:
-      - cache-cph2320021-CPH
+      - cache-fra-eddf8230143-FRA
       X-Timer:
-      - S1720687947.807551,VS0,VE120
+      - S1725353444.635731,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -257,7 +257,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -305,7 +305,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Thu, 11 Jul 2024 08:52:27 GMT
+      - Tue, 03 Sep 2024 08:50:43 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -319,12 +319,10 @@ interactions:
         type="application/x-yaml"; title="This document as application/x-yaml"
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml>; rel="alternate";
         type="text/html"; title="This document as text/html"
-      Referrer-Policy:
-      - same-origin
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:45d
+      - GS_FLOW_CONTROL=GS_CFLOW_-32a0acc7:191b6ef45fd:-3228
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -342,7 +340,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -374,7 +372,7 @@ interactions:
         as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
         GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
         Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/null/wms","rel":"wms","wms:layers":["S5P_TROPOMI_L3_P1D_CF"],"wms:dimensions":{"TIME":"2024-06-19T00:00:00Z/2024-06-19T00:00:00Z"},"wms:params":{"CQL_FILTER":"eoIdentifier=''S5P_DLR_NRTI_01_040201_L3_CF_20240619''"}},{"href":"https://geoservice.dlr.de/eoc/null/gwc/service/wmts","rel":"wmts","wmts:layers":["S5P_TROPOMI_L3_P1D_CF"]}]}'
     headers:
       API-Version:
       - 1.0.0
@@ -387,17 +385,15 @@ interactions:
       Connection:
       - keep-alive
       Content-Length:
-      - '6179'
+      - '6549'
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 11 Jul 2024 08:52:27 GMT
-      Referrer-Policy:
-      - same-origin
+      - Tue, 03 Sep 2024 08:50:44 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_408137dc:1909f9e6d22:3da2
+      - GS_FLOW_CONTROL=GS_CFLOW_-32a0acc7:191b6ef45fd:-3227
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -413,69 +409,93 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
       - python-requests/2.32.3
     method: GET
-    uri: https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson
+    uri: https://catalogue.dataspace.copernicus.eu/stac
   response:
     body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/eo/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json","https://stac-extensions.github.io/processing/v1.0.0/schema.json"],"id":"S5P_DLR_NRTI_01_040201_L3_CF_20240619","collection":"S5P_TROPOMI_L3_P1D_CF","geometry":{"type":"Polygon","coordinates":[[[-180,-90],[180,-90],[180,90],[-180,90],[-180,-90]]]},"bbox":[-180.0,-90.0,180.0,90.0],"properties":{"created":"2024-06-19T04:01:09.684+00:00","updated":"2024-06-20T06:01:02.560+00:00","datetime":"2024-06-19T00:00:00Z","platform":"Sentinel
-        5 Precursor","constellation":"Sentinel-5P","instruments":"TROPOMI","license":"CC-BY
-        4.0","proj:epsg":4326,"processing:facility":"Remote Sensing Technology Institute
-        (IMF)","processing:level":"L3","processing:software":{"UMAS":"4.2.1","UMAS":"4.2.1"},"proj:bbox":[-180.0,-90.0,180.0,90.0],"proj:shape":[1800,3600],"s5p:collection_identifier":"01","s5p:datasource":"Sentinel-5P,
-        TROPOMI, space-borne remote sensing","s5p:head_facility":"German Aerospace
-        Center (DLR)","s5p:l2_algorithm_version":"UPAS-CLOUD-ROCINN-4.1.0","s5p:processing_mode":"NRTI","s5p:product_name":"cf","s5p:spatial_resolution":"5.5
-        x 3.5 km2"},"assets":{"data":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.nc","type":"application/netcdf","title":"Metadata","description":"Original
-        S5P \"CF\" NetCDF File. Can also be loaded as data file and contains important
-        metadata information.","roles":["metadata","data"]},"overview":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_overview.tif","type":"image/tiff;
-        application=geotiff; profile=cloud-optimized","title":"Overview","description":"Full-resolution
-        overview as Cloud-Optimized GeoTiff of the \"radiometric_cloud_fraction\"
-        variable.","roles":["overview"]},"cf":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_cf.tif","type":"image/tiff;
-        application=geotiff; profile=cloud-optimized","title":"CF","description":"TROPOMI/S5P
-        L3 data of radiometric cloud fraction with a global coverage and a 5.5 x 3.5
-        km2 spatial resolution.","raster:bands":[{"data_type":"float32","scale":1.0,"offset":0.0,"sampling":"area","nodata":9.969209968386869E36,"unit":"1","statistics":{"mean":0.42738193794594204,"minimum":-0.06974887102842331,"maximum":1.0863522291183472,"stddev":0.3422094075839206,"valid_percent":84.17911529541016},"histogram":{"count":11,"min":-0.06974887102842331,"max":1.0863522291183472,"buckets":[68801,70446,49926,42691,36739,32766,31390,30181,35760,42641]}}],"roles":["data"]},"thumbnail":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619_thumbnail.png","type":"image/png","title":"Thumbnail","description":"Thumbnail
-        of the \"radiometric_cloud_fraction\" variable.","roles":["thumbnail"]},"quicklook":{"href":"https://download.geoservice.dlr.de/S5P_TROPOMI/files/L3/2024/06/19/S5P_DLR_NRTI_01_040201_L3_CF_20240619.png","type":"image/png","title":"Quicklook","description":"High-resolution
-        quicklook of the \"radiometric_cloud_fraction\" variable.","roles":["quicklook"]}},"links":[{"title":"Root","rel":"root","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Parent","rel":"parent","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application/json","type":"application/json"},{"title":"Self","rel":"self","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item","rel":"item","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Item
-        as HTML","rel":"alternate","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items/S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=text%2Fhtml","type":"text/html"},{"title":"Items","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"Items
-        as HTML","rel":"items","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF/items?f=text%2Fhtml","type":"text/html"},{"title":"Collection","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=application%2Fjson","type":"application/json"},{"title":"Collection
-        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF?f=text%2Fhtml","type":"text/html"},{"title":"Collections","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","type":"application/json"},{"title":"Collections
-        as HTML","rel":"collection","href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","type":"text/html"},{"title":"OpenSearch
-        GeoJSON","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgeo%2Bjson","type":"application/geo+json"},{"title":"OpenSearch
-        Atom XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/search?parentIdentifier=S5P_TROPOMI_L3_P1D_CF&identifier=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fatom%2Bxml","type":"application/atom+xml"},{"title":"OpenSearch
-        O&M XML","rel":"item","href":"https://geoservice.dlr.de/eoc/oseo/metadata?parentId=S5P_TROPOMI_L3_P1D_CF&uid=S5P_DLR_NRTI_01_040201_L3_CF_20240619&httpAccept=application%2Fgml%2Bxml","type":"application/gml+xml"},{"title":"Queryables","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","href":"https://geoservice.dlr.de/eoc/ogc/stac/collections/S5P_TROPOMI_L3_P1D_CF/queryables?f=json","type":"application/schema+json"}]}'
+      string: '{"stac_version":"1.0.0","type":"Catalog","id":"Catalogue","description":"Catalogue
+        of data available in the platform","conformsTo":["https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"],"links":[{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"root","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"self","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/api","rel":"service-desc","type":"application/vnd.oai.openapi"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/conformance","rel":"conformance","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/collections","rel":"data","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
+        search","rel":"search","type":"application/json","method":"GET"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
+        search","rel":"search","type":"application/json","method":"POST"}]}'
     headers:
-      API-Version:
-      - 1.0.0
       Access-Control-Allow-Credentials:
       - 'true'
       Access-Control-Allow-Headers:
-      - DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
       Access-Control-Allow-Methods:
-      - GET, POST, OPTIONS
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
       Connection:
       - keep-alive
       Content-Length:
-      - '6179'
+      - '1279'
       Content-Type:
-      - application/geo+json
+      - application/json
       Date:
-      - Thu, 11 Jul 2024 08:52:30 GMT
-      Referrer-Policy:
-      - same-origin
-      Server:
-      - nginx
-      Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_63faf165:1909fd548f3:45f
-      X-Content-Type-Options:
-      - nosniff
-      X-Control-flow-delay-ms:
-      - '0'
-      X-Frame-Options:
-      - SAMEORIGIN
+      - Tue, 03 Sep 2024 08:50:44 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      request-id:
+      - 966f8e1d-ced6-4707-b7ad-daf7569b0633
+      x-envoy-upstream-service-time:
+      - '8'
     status:
       code: 200
-      message: ''
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
+        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
+        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
+        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
+        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
+      Access-Control-Allow-Methods:
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2879'
+      Content-Type:
+      - application/json
+      Date:
+      - Tue, 03 Sep 2024 08:50:44 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      request-id:
+      - faf0d913-c3b8-466a-9ea8-9018f93cb157
+      x-envoy-upstream-service-time:
+      - '63'
+    status:
+      code: 200
+      message: OK
 version: 1

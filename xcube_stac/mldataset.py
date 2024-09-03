@@ -33,8 +33,8 @@ from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
 from xcube.core.resampling import resample_in_space
 from xcube.core.gridmapping import GridMapping
 
+from .constants import LOG
 from ._utils import apply_scaling_nodata, get_resolutions_cog
-from .stac_objects import StacAsset
 
 
 class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
@@ -84,15 +84,15 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
 
     def __init__(
         self,
+        access_params: dict,
         fs: s3fs.S3FileSystem,
-        asset: StacAsset,
         **open_params: dict[str, Any],
     ):
-        file_path = f"{asset.root}/{asset.fs_path}"
+        file_path = f"{access_params["root"]}/{access_params["fs_path"]}"
         self._file_path = file_path
+        self._access_params = access_params
         self._open_params = open_params
         self._fs = fs
-        self._asset = asset
         super().__init__(ds_id=file_path)
 
     def _get_num_levels_lazily(self) -> int:
@@ -102,7 +102,6 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
         return len(overviews) + 1
 
     def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
-        print(self._file_path)
         with self._fs.open(self._file_path) as fileObj:
             da = rioxarray.open_rasterio(
                 fileObj,
@@ -113,33 +112,39 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
             )
         assert da.sizes["band"] == 1, da
         da = da.isel(band=0, drop=True)
-        ds = da.to_dataset(name=self._asset.name)
-        print(ds.x.values[0], ds.x.values[-1], ds.x.values[1] - ds.x.values[0])
+        ds = da.to_dataset(name=self._access_params["name"])
 
         # resampling in space
-        if not hasattr(self, "_target_gm"):
+        resolution = 10 * 2**index
+        if not hasattr(self, f"_target_gm_{index}"):
             x_coords = xr.DataArray(
                 np.arange(
                     ds.x.values[0],
-                    ds.x.values[-1] + self._asset.resolution / 2,
-                    self._asset.resolution,
+                    ds.x.values[-1] + resolution / 2,
+                    resolution,
                 ),
                 dims="x",
             )
             y_coords = xr.DataArray(
                 np.arange(
                     ds.y.values[0],
-                    ds.y.values[-1] - self._asset.resolution / 2,
-                    -self._asset.resolution,
+                    ds.y.values[-1] - resolution / 2,
+                    -resolution,
                 ),
                 dims="y",
             )
             crs = ds.spatial_ref.attrs["spatial_ref"]
             tile_size = self._open_params.get("tile_size", (1024, 1024))
-            self._target_gm = GridMapping.from_coords(
-                x_coords, y_coords, crs=crs, tile_size=tile_size
+            setattr(
+                self,
+                f"_target_gm_{index}",
+                GridMapping.from_coords(
+                    x_coords, y_coords, crs=crs, tile_size=tile_size
+                ),
             )
-        ds = resample_in_space(ds, target_gm=self._target_gm, encode_cf=False)
+        ds = resample_in_space(
+            ds, target_gm=getattr(self, f"_target_gm_{index}"), encode_cf=False
+        )
         return ds
 
 
@@ -156,15 +161,25 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
         self,
         data_id: str,
         items: list[pystac.Item],
+        driver: Any = None,
+        fs: s3fs.S3FileSystem = None,
         **open_params: dict[str, Any],
     ):
         super().__init__(ds_id=data_id)
         self._data_id = data_id
+        self._driver = driver
+        if "resolution" in open_params:
+            del open_params["resolution"]
+            LOG.warn(
+                "The keyword 'resolution' is not considered when "
+                "opening the data as multi-resolution dataset."
+            )
         self._open_params = open_params
         self._items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
         self._resolutions = get_resolutions_cog(
             self._items[0],
+            fs=fs,
             asset_names=self._open_params.get("bands", None),
             crs=self._open_params.get("crs", None),
         )
@@ -177,6 +192,7 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
                 self._items,
                 resolution=resolution,
                 **self._open_params,
+                driver=self._driver,
             )
             self._datasets.append(apply_scaling_nodata(ds, self._items))
 

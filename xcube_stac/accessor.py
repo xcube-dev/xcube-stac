@@ -21,7 +21,6 @@
 
 from typing import Union
 
-import rioxarray
 import s3fs
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
@@ -30,7 +29,6 @@ from xcube.core.store import new_data_store
 
 from ._utils import is_valid_ml_data_type
 from .constants import LOG
-from .stac_objects import StacAsset
 from .mldataset import Jp2MultiLevelDataset
 
 
@@ -49,23 +47,23 @@ class HttpsDataAccessor:
 
     def open_data(
         self,
-        asset: StacAsset,
+        access_params: dict,
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
-        if asset.format_id == "netcdf":
+        if access_params["format_id"] == "netcdf":
             if is_valid_ml_data_type(data_type):
                 LOG.warn(
-                    f"No data opener found for format {asset.format_id!r} and data type "
-                    f"{data_type!r}. Data type is changed to the default data type "
-                    "'dataset'."
+                    f"No data opener found for format {access_params["format_id"]!r} "
+                    f"and data type {data_type!r}. Data type is changed to the default "
+                    f"data type 'dataset'."
                 )
-            fs_path = f"https://{self._root}/{asset.fs_path}#mode=bytes"
+            fs_path = f"https://{self._root}/{access_params["fs_path"]}#mode=bytes"
             return xr.open_dataset(fs_path, chunks={})
         else:
             return self._https_accessor.open_data(
-                data_id=asset.fs_path,
+                data_id=access_params["fs_path"],
                 opener_id=opener_id,
                 data_type=data_type,
                 **open_params,
@@ -77,12 +75,10 @@ class S3DataAccessor:
     the zarr, geotiff and netcdf format via the AWS S3 protocol.
     """
 
-    def __init__(
-        self,
-        root: str,
-        storage_options: dict,
-    ):
+    def __init__(self, root: str, storage_options: dict = None, **kwargs):
         self._root = root
+        if storage_options is None:
+            storage_options = {}
         self._storage_options = storage_options
         if "anon" not in storage_options:
             storage_options["anon"] = True
@@ -99,13 +95,13 @@ class S3DataAccessor:
 
     def open_data(
         self,
-        asset: StacAsset,
+        access_params: dict,
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         return self._s3_accessor.open_data(
-            data_id=asset.fs_path,
+            data_id=access_params["fs_path"],
             opener_id=opener_id,
             data_type=data_type,
             **open_params,
@@ -117,20 +113,9 @@ class S3Sentinel2DataAccessor:
     the jp2 format  of Sentinel-2 data via the AWS S3 protocol.
     """
 
-    def __init__(
-        self,
-        root: str,
-        storage_options: dict,
-    ):
+    def __init__(self, root: str, fs: s3fs.S3FileSystem = None, **kwargs):
         self._root = root
-        self._storage_options = storage_options
-        source_storage_options = dict(
-            endpoint_url=self._storage_options["client_kwargs"]["endpoint_url"],
-            anon=self._storage_options["anon"],
-            key=self._storage_options["key"],
-            secret=self._storage_options["secret"],
-        )
-        self._s3_accessor = s3fs.S3FileSystem(**source_storage_options)
+        self._s3_accessor = fs
 
     @property
     def root(self) -> str:
@@ -138,7 +123,7 @@ class S3Sentinel2DataAccessor:
 
     def open_data(
         self,
-        asset: StacAsset,
+        access_params: dict,
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
@@ -146,8 +131,8 @@ class S3Sentinel2DataAccessor:
         if opener_id is None:
             opener_id = ""
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
-            ds = Jp2MultiLevelDataset(self._s3_accessor, asset, **open_params)
+            ds = Jp2MultiLevelDataset(access_params, self._s3_accessor, **open_params)
         else:
-            ds = Jp2MultiLevelDataset(self._s3_accessor, asset, **open_params)
-            ds = ds.get_dataset(open_params.get("overview_level"))
+            ds = Jp2MultiLevelDataset(access_params, self._s3_accessor, **open_params)
+            ds = ds.get_dataset(0)
         return ds

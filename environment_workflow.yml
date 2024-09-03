@@ -1,7 +1,6 @@
 name: xcube-stac
 channels:
   - conda-forge
-  - defaults
 dependencies:
   # Python
   - python >=3.9
