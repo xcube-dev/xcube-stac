@@ -1,7 +1,7 @@
 # xcube-stac
 
-[![Build Status](https://github.com/xcube-dev/xcube-stac/actions/workflows/unittest-workflow.yml/badge.svg?branch=main)](https://github.com/xcube-dev/xcube-smos/actions)
-[![codecov](https://codecov.io/gh/xcube-dev/xcube-stack/branch/main/graph/badge.svg)](https://app.codecov.io/gh/xcube-dev/xcube-stac)
+[![Build Status](https://github.com/xcube-dev/xcube-stac/actions/workflows/unittest-workflow.yml/badge.svg?branch=main)](https://github.com/xcube-dev/xcube-stac/actions)
+[![codecov](https://codecov.io/gh/xcube-dev/xcube-stac/graph/badge.svg?token=ktcp1maEgz)](https://codecov.io/gh/xcube-dev/xcube-stac)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License](https://img.shields.io/github/license/dcs4cop/xcube-smos)](https://github.com/xcube-dev/xcube-stac/blob/main/LICENSE)
 
