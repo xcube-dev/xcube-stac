@@ -10,7 +10,7 @@ dependencies:
   - pystac
   - pystac-client
   - xarray
-  - xcube
+  - xcube >= 1.7.0
   # for testing
   - black
   - flake8
