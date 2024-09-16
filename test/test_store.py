@@ -503,7 +503,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         ds = mlds.base_dataset
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(1, mlds.num_levels)
+        self.assertEqual(3, mlds.num_levels)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
