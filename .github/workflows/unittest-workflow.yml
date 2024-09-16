@@ -30,7 +30,7 @@ jobs:
         run: |
           cd /home/runner/work/xcube-stac/xcube-stac/xcube
           ls
-          xcube serve -c examples/serve/demo/config.yml
+          xcube serve -c examples/serve/demo/config.yml &
 
       - name: Run unit tests
         shell: bash -l {0}
