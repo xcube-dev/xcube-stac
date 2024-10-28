@@ -328,6 +328,8 @@ def search_data(
     if searchable:
         # rewrite to "datetime"
         search_params["datetime"] = search_params.pop("time_range", None)
+        if "sortby" not in search_params:
+            search_params["sortby"] = "+datetime"
         items = catalog.search(**search_params).items()
     else:
         items = search_nonsearchable_catalog(catalog, **search_params)

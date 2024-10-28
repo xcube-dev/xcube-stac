@@ -712,103 +712,103 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     # @pytest.mark.vcr()
-    # def test_open_data_cdse_seninel_2(self):
-    #     store = new_data_store(
-    #         DATA_STORE_ID_CDSE,
-    #         key=CDSE_CREDENTIALS["key"],
-    #         secret=CDSE_CREDENTIALS["secret"],
-    #     )
-    #
-    #     # open data as dataset
-    #     ds = store.open_data(self.data_id_cdse_sen2)
-    #     self.assertIsInstance(ds, xr.Dataset)
-    #     self.assertCountEqual(
-    #         CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS["L2A"].keys(), list(ds.data_vars)
-    #     )
-    #     self.assertCountEqual([10977, 10977], [ds.sizes["y"], ds.sizes["x"]])
-    #     self.assertCountEqual(
-    #         [1024, 1024], [ds.AOT.chunksizes["x"][0], ds.AOT.chunksizes["y"][0]]
-    #     )
-    #
-    #     # open data as multi-level dataset
-    #     mlds = store.open_data(
-    #         self.data_id_cdse_sen2,
-    #         bands=["B04", "B03", "B02"],
-    #         data_type="mldataset",
-    #     )
-    #     self.assertIsInstance(mlds, MultiLevelDataset)
-    #     ds = mlds.get_dataset(2)
-    #     self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
-    #     self.assertCountEqual([2742, 2742], [ds.sizes["y"], ds.sizes["x"]])
-    #     self.assertCountEqual(
-    #         [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
-    #     )
+    def test_open_data_cdse_seninel_2(self):
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
 
-    # # @pytest.mark.vcr()
-    # def test_open_data_cdse_seninel_2_stack_mode(self):
-    #     store = new_data_store(
-    #         DATA_STORE_ID_CDSE,
-    #         key=CDSE_CREDENTIALS["key"],
-    #         secret=CDSE_CREDENTIALS["secret"],
-    #         stack_mode=True,
-    #     )
-    #
-    #     # open data as dataset
-    #     ds = store.open_data(
-    #         data_id="SENTINEL-2",
-    #         bbox=[37.76, 12.49, 37.77, 12.50],
-    #         time_range=["2020-09-01", "2020-10-01"],
-    #         processing_level="L2A",
-    #         processing_baseline="5.00",
-    #         bands=["B03", "B04"],
-    #         crs="EPSG:4326",
-    #         resolution=0.00018,
-    #         chunks={},
-    #         groupby="solar_day",
-    #     )
-    #     self.assertIsInstance(ds, xr.Dataset)
-    #     self.assertCountEqual(["B03", "B04"], list(ds.data_vars))
-    #     self.assertCountEqual(
-    #         [6, 57, 57],
-    #         [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
-    #     )
-    #     self.assertCountEqual(
-    #         [1, 57, 57],
-    #         [
-    #             ds.chunksizes["time"][0],
-    #             ds.chunksizes["latitude"][0],
-    #             ds.chunksizes["longitude"][0],
-    #         ],
-    #     )
-    #
-    #     # open data with open_params
-    #     mlds = store.open_data(
-    #         data_id="SENTINEL-2",
-    #         data_type="mldataset",
-    #         bbox=[37.76, 12.49, 37.77, 12.50],
-    #         time_range=["2020-09-01", "2020-10-01"],
-    #         processing_level="L2A",
-    #         processing_baseline="5.00",
-    #         bands=["B03", "B04"],
-    #         crs="EPSG:4326",
-    #         chunks={},
-    #         groupby="solar_day",
-    #     )
-    #     self.assertIsInstance(mlds, MultiLevelDataset)
-    #     ds = mlds.get_dataset(2)
-    #     self.assertCountEqual(["B04", "B03"], list(ds.data_vars))
-    #     self.assertCountEqual(
-    #         [6, 15, 15],
-    #         [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
-    #     )
-    #     self.assertCountEqual(
-    #         [1, 15, 15],
-    #         [
-    #             ds.chunksizes["time"][0],
-    #             ds.chunksizes["latitude"][0],
-    #             ds.chunksizes["longitude"][0],
-    #         ],
-    #     )
+        # open data as dataset
+        ds = store.open_data(self.data_id_cdse_sen2)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS["L2A"].keys(), list(ds.data_vars)
+        )
+        self.assertCountEqual([10977, 10977], [ds.sizes["y"], ds.sizes["x"]])
+        self.assertCountEqual(
+            [1024, 1024], [ds.AOT.chunksizes["x"][0], ds.AOT.chunksizes["y"][0]]
+        )
+
+        # open data as multi-level dataset
+        mlds = store.open_data(
+            self.data_id_cdse_sen2,
+            bands=["B04", "B03", "B02"],
+            data_type="mldataset",
+        )
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        ds = mlds.get_dataset(2)
+        self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
+        self.assertCountEqual([2742, 2742], [ds.sizes["y"], ds.sizes["x"]])
+        self.assertCountEqual(
+            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+        )
+
+    # @pytest.mark.vcr()
+    def test_open_data_cdse_seninel_2_stack_mode(self):
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+            stack_mode=True,
+        )
+
+        # open data as dataset
+        ds = store.open_data(
+            data_id="SENTINEL-2",
+            bbox=[8.0, 46.0, 9.0, 47.0],
+            time_range=["2020-07-01", "2020-07-15"],
+            processing_level="L2A",
+            processing_baseline="5.00",
+            bands=["B03", "B04"],
+            crs="EPSG:4326",
+            resolution=0.00018,
+            chunks=dict(time=1, latitude=1024, longitude=1024),
+            groupby="solar_day",
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["B03", "B04"], list(ds.data_vars))
+        self.assertCountEqual(
+            [6, 5557, 5556],
+            [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
+        )
+        self.assertCountEqual(
+            [1, 1024, 1024],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["latitude"][0],
+                ds.chunksizes["longitude"][0],
+            ],
+        )
+
+        # open data as mldataset
+        mlds = store.open_data(
+            data_id="SENTINEL-2",
+            data_type="mldataset",
+            bbox=[8.0, 46.0, 9.0, 47.0],
+            time_range=["2020-07-01", "2020-07-15"],
+            processing_level="L2A",
+            processing_baseline="5.00",
+            bands=["B03", "B04"],
+            crs="EPSG:4326",
+            chunks=dict(time=1, latitude=1024, longitude=1024),
+            groupby="solar_day",
+        )
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        ds = mlds.get_dataset(2)
+        self.assertCountEqual(["B04", "B03"], list(ds.data_vars))
+        self.assertCountEqual(
+            [6, 1396, 1387],
+            [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
+        )
+        self.assertCountEqual(
+            [1, 1024, 1024],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["latitude"][0],
+                ds.chunksizes["longitude"][0],
+            ],
+        )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):

@@ -462,6 +462,7 @@ class StackStoreMode:
                 bbox=bbox,
                 datetime=time_range,
                 query=open_params.get("query"),
+                sortby="+datetime",
             ).items()
         )
         parsed_items = self._util.parse_items_stack(items, **open_params)
