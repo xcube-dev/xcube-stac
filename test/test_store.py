@@ -395,30 +395,6 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual([1800, 3600], [ds.sizes["lat"], ds.sizes["lon"]])
 
-        # open data with unsupported data type
-        with self.assertLogs("xcube.stac", level="WARNING") as cm:
-            ds = store.open_data(
-                self.data_id_netcdf, data_type="mldataset", asset_names=["data"]
-            )
-        self.assertEqual(1, len(cm.output))
-        msg = (
-            f"WARNING:xcube.stac:No data opener found for format 'netcdf' and "
-            "data type 'mldataset'. Data type is changed to the default "
-            "data type 'dataset'."
-        )
-        self.assertEqual(msg, str(cm.output[-1]))
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            [
-                "data_radiometric_cloud_fraction",
-                "data_radiometric_cloud_fraction_precision",
-                "data_number_of_observations",
-                "data_quality_flag",
-            ],
-            list(ds.data_vars),
-        )
-        self.assertCountEqual([1800, 3600], [ds.sizes["lat"], ds.sizes["lon"]])
-
     @pytest.mark.vcr()
     def test_open_data_abfs(self):
         store = new_data_store(

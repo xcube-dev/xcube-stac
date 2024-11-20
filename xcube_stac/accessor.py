@@ -51,19 +51,9 @@ class HttpsDataAccessor:
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
-        if format_id == "netcdf":
-            if is_valid_ml_data_type(data_type):
-                LOG.warn(
-                    f"No data opener found for format {format_id!r} and data type "
-                    f"{data_type!r}. Data type is changed to the default data type "
-                    "'dataset'."
-                )
-            fs_path = f"https://{self._root}/{data_id}#mode=bytes"
-            return xr.open_dataset(fs_path, chunks={})
-        else:
-            return self._https_accessor.open_data(
-                data_id=data_id, opener_id=opener_id, data_type=data_type, **open_params
-            )
+        return self._https_accessor.open_data(
+            data_id=data_id, opener_id=opener_id, data_type=data_type, **open_params
+        )
 
 
 class S3DataAccessor:
