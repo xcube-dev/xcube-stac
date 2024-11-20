@@ -42,6 +42,9 @@ DATA_STORE_ID = "stac"
 DATA_STORE_ID_CDSE = "stac-cdse"
 DATA_STORE_ID_XCUBE = "stac-xcube"
 
+STAC_CRS = "EPSG:4326"
+TILE_SIZE = 1024
+
 CDSE_STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
 
@@ -117,12 +120,6 @@ _SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
         "https://github.com/stac-api-extensions/query"
     ),
 )
-_SCHEMA_PROCESSING_BASELINE = JsonStringSchema(
-    title="Processing baseline of Sentinel-2 data",
-    enum=["2.09", "2.14", "5.00"],
-    default="5.00",
-)
-
 _SCHEMA_PROCESSING_LEVEL = JsonStringSchema(
     title="Processing level of Sentinel-2 data", enum=["L1C", "L2A"], default="L2A"
 )
@@ -172,7 +169,6 @@ STAC_SEARCH_PARAMETERS_CDSE = dict(
     **STAC_SEARCH_PARAMETERS_STACK_MODE,
     collections=_SCHEMA_COLLECTIONS,
     processing_level=_SCHEMA_PROCESSING_LEVEL,
-    processing_baseline=_SCHEMA_PROCESSING_BASELINE,
 )
 
 
@@ -188,6 +184,7 @@ STAC_OPEN_PARAMETERS = dict(
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
     time_range=_SCHEMA_TIME_RANGE,
     bbox=_SCHEMA_BBOX,
+    spatial_res=JsonNumberSchema(exclusive_minimum=0.0),
     query=_SCHEMA_ADDITIONAL_QUERY,
 )
 
@@ -225,6 +222,45 @@ CDSE_SENITNEL_2_BANDS = {
         "WVP",
     ],
 }
+
+
+# offset only applicable for processing baseline above 4.00
+# https://sentiwiki.copernicus.eu/web/s2-processing#S2Processing-L2AProcessingBaselineS2-Processing-L2A-Processing-Baselinetrue
+CDSE_SENITNEL_2_OFFSET_400 = dict(
+    AOT=0,
+    B01=1000,
+    B02=1000,
+    B03=1000,
+    B04=1000,
+    B05=1000,
+    B06=1000,
+    B07=1000,
+    B08=1000,
+    B8A=1000,
+    B09=1000,
+    B10=1000,
+    B11=1000,
+    B12=1000,
+    WVP=0,
+)
+CDSE_SENITNEL_2_SCALE = dict(
+    AOT=1000,
+    B01=10000,
+    B02=10000,
+    B03=10000,
+    B04=10000,
+    B05=10000,
+    B06=10000,
+    B07=10000,
+    B08=10000,
+    B8A=10000,
+    B09=10000,
+    B10=10000,
+    B11=10000,
+    B12=10000,
+    WVP=1000,
+)
+CDSE_SENITNEL_2_NO_DATA = 0
 
 CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS = dict(
     L1C=dict(
@@ -269,7 +305,7 @@ STAC_OPEN_PARAMETERS_CDSE = dict(
         description="Names of spectral bands which will be included in the data cube.",
         default=CDSE_SENITNEL_2_BANDS["L2A"],
     ),
-    resolution=JsonNumberSchema(title="Spatial resolution in meter", default=20),
+    spatial_res=JsonNumberSchema(title="Spatial resolution in meter", default=20),
 )
 
 STAC_OPEN_PARAMETERS_CDSE_STACK_MODE = dict(
@@ -277,5 +313,4 @@ STAC_OPEN_PARAMETERS_CDSE_STACK_MODE = dict(
     time_range=_SCHEMA_TIME_RANGE,
     bbox=_SCHEMA_BBOX,
     processing_level=_SCHEMA_PROCESSING_LEVEL,
-    processing_baseline=_SCHEMA_PROCESSING_BASELINE,
 )

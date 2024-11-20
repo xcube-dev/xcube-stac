@@ -21,20 +21,18 @@
 
 from typing import Any, Optional
 
-import numpy as np
-import odc.stac
-import odc.geo
+import dask.array as da
 import pystac
 import rasterio
+import rasterio.session
 import rioxarray
-import s3fs
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
 from xcube.core.resampling import resample_in_space
 from xcube.core.gridmapping import GridMapping
 
 from .constants import LOG
-from ._utils import apply_scaling_nodata, get_resolutions_cog
+from ._utils import get_resolutions_cog
 
 
 class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
@@ -69,7 +67,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         combined_dataset = datasets[0].copy()
         for dataset in datasets[1:]:
             combined_dataset.update(dataset)
-        combined_dataset = apply_scaling_nodata(combined_dataset, self._item)
+        # combined_dataset = apply_scaling_nodata(combined_dataset, self._item)
         return combined_dataset
 
 
@@ -85,50 +83,47 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
     def __init__(
         self,
         access_params: dict,
-        fs: s3fs.S3FileSystem,
         **open_params: dict[str, Any],
     ):
         file_path = f"{access_params["root"]}/{access_params["fs_path"]}"
         self._file_path = file_path
         self._access_params = access_params
         self._open_params = open_params
-        self._fs = fs
         super().__init__(ds_id=file_path)
 
     def _get_num_levels_lazily(self) -> int:
-        with self._fs.open(self._file_path) as fileObj:
-            with rasterio.open(fileObj) as rio_dataset:
-                overviews = rio_dataset.overviews(1)
+        with rasterio.open(self._file_path) as rio_dataset:
+            overviews = rio_dataset.overviews(1)
         return len(overviews) + 1
 
     def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
-        with self._fs.open(self._file_path) as fileObj:
-            da = rioxarray.open_rasterio(
-                fileObj,
-                overview_level=index,
-                chunks=dict(
-                    zip(("x", "y"), self._open_params.get("tile_size", (1024, 1024)))
-                ),
-            )
-        assert da.sizes["band"] == 1, da
-        da = da.isel(band=0, drop=True)
-        ds = da.to_dataset(name=self._access_params["name"])
+        ds = rioxarray.open_rasterio(
+            self._file_path,
+            overview_level=index,
+            chunks=dict(
+                zip(("x", "y"), self._open_params.get("tile_size", (1024, 1024)))
+            ),
+            band_as_variable=True,
+        )
+        ds = ds.rename(dict(band_1=self._access_params["name"]))
 
         # resampling in space
         resolution = 10 * 2**index
         if not hasattr(self, f"_target_gm_{index}"):
+            x_res = abs(ds.x.values[1] - ds.x.values[0])
             x_coords = xr.DataArray(
-                np.arange(
-                    ds.x.values[0],
-                    ds.x.values[-1] + resolution / 2,
+                da.arange(
+                    ds.x.values[0] - (x_res / 2) + resolution,
+                    ds.x.values[-1] + (x_res / 2) - (resolution / 2),
                     resolution,
                 ),
                 dims="x",
             )
+            y_res = abs(ds.y.values[1] - ds.y.values[0])
             y_coords = xr.DataArray(
-                np.arange(
-                    ds.y.values[0],
-                    ds.y.values[-1] - resolution / 2,
+                da.arange(
+                    ds.y.values[0] + (y_res / 2) - resolution,
+                    ds.y.values[-1] - (y_res / 2) + (resolution / 2),
                     -resolution,
                 ),
                 dims="y",
@@ -161,13 +156,10 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
         self,
         data_id: str,
         items: list[pystac.Item],
-        driver: Any = None,
-        fs: s3fs.S3FileSystem = None,
         **open_params: dict[str, Any],
     ):
         super().__init__(ds_id=data_id)
         self._data_id = data_id
-        self._driver = driver
         if "resolution" in open_params:
             del open_params["resolution"]
             LOG.warn(
@@ -179,7 +171,6 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
 
         self._resolutions = get_resolutions_cog(
             self._items[0],
-            fs=fs,
             asset_names=self._open_params.get("bands", None),
             crs=self._open_params.get("crs", None),
         )
@@ -188,13 +179,9 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
         # not called in the method _get_dataset_lazily()
         self._datasets = []
         for resolution in self._resolutions:
-            ds = odc.stac.load(
-                self._items,
-                resolution=resolution,
-                **self._open_params,
-                driver=self._driver,
-            )
-            self._datasets.append(apply_scaling_nodata(ds, self._items))
+            ds = xr.Dataset()
+            self._datasets.append(ds)
+            # self._datasets.append(apply_scaling_nodata(ds, self._items))
 
     def _get_num_levels_lazily(self) -> int:
         return len(self._resolutions)

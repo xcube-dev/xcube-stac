@@ -4,11 +4,18 @@ channels:
 dependencies:
   # Required
   - python>=3.10
-  - odc-geo
-  - odc-stac
+  - boto3
+  - dask
+  - s3fs
+  - numpy
+  - rasterio
+  - rioxarray
+  - requests
   - pandas
   - pystac
+  - pyproj
   - pystac-client
+  - shapely
   - xarray
   - xcube >= 1.7.0
   # for testing

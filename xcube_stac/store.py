@@ -21,7 +21,6 @@
 
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 
-import odc.stac
 import pystac
 import pystac_client
 import requests
@@ -273,17 +272,6 @@ class StacCdseDataStore(StacDataStore):
         stack_mode: Union[bool, str] = False,
         **storage_options_s3,
     ):
-        if stack_mode:
-            odc.stac.configure_rio(
-                cloud_defaults=True,
-                aws=dict(
-                    aws_unsigned=False,
-                    aws_access_key_id=storage_options_s3["key"],
-                    aws_secret_access_key=storage_options_s3["secret"],
-                ),
-                AWS_S3_ENDPOINT=CDSE_S3_ENDPOINT.split("//")[1],
-                AWS_VIRTUAL_HOSTING=False,
-            )
         storage_options_s3 = update_dict(
             storage_options_s3,
             dict(

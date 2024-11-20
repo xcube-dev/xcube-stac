@@ -131,8 +131,8 @@ class S3Sentinel2DataAccessor:
         if opener_id is None:
             opener_id = ""
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
-            ds = Jp2MultiLevelDataset(access_params, self._s3_accessor, **open_params)
+            ds = Jp2MultiLevelDataset(access_params, **open_params)
         else:
-            ds = Jp2MultiLevelDataset(access_params, self._s3_accessor, **open_params)
+            ds = Jp2MultiLevelDataset(access_params, **open_params)
             ds = ds.get_dataset(0)
         return ds

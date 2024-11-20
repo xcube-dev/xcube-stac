@@ -26,12 +26,10 @@ import os
 from typing import Any, Container, Dict, Iterator, Union
 
 import numpy as np
-import odc.geo
 import pandas as pd
 import pyproj
 import pystac
 import rasterio
-import s3fs
 from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import (
@@ -346,6 +344,17 @@ def do_bboxes_intersect(
     return box(*bbox_test).intersects(box(*open_params["bbox"]))
 
 
+def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
+    for item in items:
+        item.properties["center_point"] = get_center_from_bbox(item.bbox)
+        item.properties["datetime_nominal"] = convert_to_solar_time(
+            item.datetime,
+            (item.properties["center_point"][0] + item.properties["center_point"][1])
+            / 2,
+        )
+    return items
+
+
 def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     """It updates a dictionary recursively.
 
@@ -498,12 +507,41 @@ def modify_catalog_url(url: str) -> str:
     return url_mod
 
 
+def reproject_bbox(bbox, source_crs, target_crs):
+    source_crs = normalize_crs(source_crs)
+    target_crs = normalize_crs(target_crs)
+    if source_crs == target_crs:
+        return bbox
+    t = pyproj.Transformer.from_crs(source_crs, target_crs, always_xy=True)
+    (x1, x2), (y1, y2) = t.transform((bbox[0], bbox[2]), (bbox[1], bbox[3]))
+    return [x1, y1, x2, y2]
+
+
+def convert_to_solar_time(
+    utc: datetime.datetime, longitude: float
+) -> datetime.datetime:
+    # offset_seconds snapped to 1 hour increments
+    # 1/15 == 24/360 (hours per degree of longitude)
+    offset_seconds = int(longitude / 15) * 3600
+    return utc + datetime.timedelta(seconds=offset_seconds)
+
+
+def normalize_crs(crs: Union[str, pyproj.CRS]) -> pyproj.CRS:
+    if isinstance(crs, pyproj.CRS):
+        return crs
+    else:
+        return pyproj.CRS.from_string(crs)
+
+
+def get_center_from_bbox(bbox: list[float]) -> tuple[float, float]:
+    return (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
+
+
 def get_resolutions_cog(
     item: pystac.Item,
-    fs: s3fs.S3FileSystem = None,
     asset_names: Container[str] = None,
     crs: str = None,
-) -> list[odc.geo.Resolution]:
+) -> list:
     """This function calculates the resolution for each overview level of
     a cloud-optimized GeoTIFF (COG).
 
@@ -523,20 +561,7 @@ def get_resolutions_cog(
             break
         resolutions[i] = asset.extra_fields["raster:bands"][0]["spatial_resolution"]
     idx_min = np.argmin(resolutions)
-
-    def get_s3fs_env(href):
-        with fs.open(href) as src:
-            return rasterio.open(src)
-
-    def get_nos3fs_env(href):
-        return rasterio.open(href)
-
-    if fs is None:
-        get_env = get_nos3fs_env
-    else:
-        get_env = get_s3fs_env
-
-    with get_env(assets[idx_min].href) as src:
+    with rasterio.open(assets[idx_min].href) as src:
         overviews = [1] + src.overviews(1)
         data_resolution = src.res
         data_crs = src.crs
@@ -549,69 +574,9 @@ def get_resolutions_cog(
         res_transformed = data_resolution
 
     return [
-        odc.geo.resxy_(
+        (
             res_transformed[0] * overview,
             res_transformed[1] * overview,
         )
         for overview in overviews
     ]
-
-
-def apply_scaling_nodata(
-    ds: xr.Dataset, items: Union[pystac.Item, list[pystac.Item]]
-) -> xr.Dataset:
-    """This function applies scaling of the data and fills no-data pixel with np.nan.
-
-    Args:
-        ds: dataset
-        items: item object or list of item objects (depending on stack-mode equal to
-            False and True, respectively.)
-
-    Returns:
-        Dataset where scaling and filling nodata values are applied.
-    """
-    if isinstance(items, pystac.Item):
-        items = [items]
-
-    if items[0].ext.has("raster"):
-        for data_varname in ds.data_vars.keys():
-            scale = np.ones(len(items))
-            offset = np.zeros(len(items))
-            nodata_val = np.zeros(len(items))
-            for i, item in enumerate(items):
-                raster_bands = item.assets[data_varname].extra_fields.get(
-                    "raster:bands"
-                )
-                if not raster_bands:
-                    break
-                nodata_val[i] = raster_bands[0].get("nodata", 0)
-                if "scale" in raster_bands[0]:
-                    scale[i] = raster_bands[0]["scale"]
-                if "offset" in raster_bands[0]:
-                    offset[i] = raster_bands[0]["offset"]
-
-            nodata_val = np.unique(nodata_val)
-            msg = (
-                "Items contain different values in the "
-                "asset's field 'raster:bands:nodata'"
-            )
-            assert len(nodata_val) == 1, msg
-            nodata_val = nodata_val[0]
-            ds[data_varname] = ds[data_varname].where(ds[data_varname] != nodata_val)
-
-            scale = np.unique(scale)
-            msg = (
-                "Items contain different values in the "
-                "asset's field 'raster:bands:scale'"
-            )
-            assert len(scale) == 1, msg
-            ds[data_varname] *= scale[0]
-
-            offset = np.unique(offset)
-            msg = (
-                "Items contain different values in the "
-                "asset's field 'raster:bands:offset'"
-            )
-            assert len(offset) == 1, msg
-            ds[data_varname] += offset[0]
-    return ds
