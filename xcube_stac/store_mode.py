@@ -36,7 +36,6 @@ from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import resample_in_space
 from xcube.util.jsonschema import JsonObjectSchema
-import xmltodict
 
 from .accessor import (
     HttpsDataAccessor,
@@ -514,7 +513,6 @@ class StackStoreMode:
                 list_ds_items = []
                 for item in items_for_date:
                     list_ds_asset = []
-                    angles = self._get_angles_from_item(item)
                     for band in open_params["bands"]:
                         ds = rioxarray.open_rasterio(
                             item.assets[band].href,
@@ -603,14 +601,6 @@ class StackStoreMode:
             )
             grouped_new[new_key] = value
         return grouped
-
-    def _get_angles_from_item(self, item):
-        bucket_name = "eodata"
-        href = item.assets["granule_metadata"].href.replace("s3://eodata/", "")
-        response = self._util.s3_boto.get_object(Bucket=bucket_name, Key=href)
-        xml_content = response["Body"].read().decode("utf-8")
-        xml_dict = xmltodict.parse(xml_content)
-        return xml_dict
 
 
 def _mosaic_first_non_nan(list_ds):

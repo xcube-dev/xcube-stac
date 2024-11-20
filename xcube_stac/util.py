@@ -1,7 +1,6 @@
 import collections
 from typing import Iterator, Union
 
-import boto3
 import numpy as np
 import pystac
 import pystac_client.client
@@ -293,13 +292,6 @@ class CdseUtil:
             )[1],
             aws_access_key_id=storage_options_s3["key"],
             aws_secret_access_key=storage_options_s3["secret"],
-        )
-        self.s3_boto = boto3.client(
-            "s3",
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"],
-            aws_access_key_id=storage_options_s3["key"],
-            aws_secret_access_key=storage_options_s3["secret"],
-            region_name="default",
         )
         self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
         self.env = self.env.__enter__()

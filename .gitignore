@@ -112,3 +112,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 .vscode/settings.json
+
+# data output
+*.zarr
+*.nc

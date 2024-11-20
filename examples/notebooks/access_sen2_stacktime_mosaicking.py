@@ -1,9 +1,11 @@
 from xcube.core.store import new_data_store
-from xcube_stac._utils import reproject_bbox
-import matplotlib.pyplot as plt
-import os
-from pathlib import Path
-import zarr
+
+# from dask.distributed import Client
+# import psutil
+# import time
+# import os
+# import threading
+# import matplotlib.pyplot as plt
 
 # attrs = {
 #     "site_id": 1280,
@@ -43,6 +45,19 @@ import zarr
 #     "time_range_end": "2024-04-30",
 # }
 
+# client = Client()
+# time.sleep(3)
+
+
+# def print_memory():
+#     while True:
+#         print(psutil.Process(os.getpid()).memory_info().rss / 1024**3)
+#         time.sleep(1)
+#
+#
+# daemon = threading.Thread(target=print_memory, daemon=True, name="Monitor")
+# daemon.start()
+
 
 credentials = {
     "key": "O0M0CUQIDQO9TDZ4D8NR",
@@ -61,7 +76,7 @@ bbox_utm = [659574, 5892990, 659724, 5893140]
 ds = store.open_data(
     data_id="SENTINEL-2",
     bbox=bbox_utm,
-    time_range=["2023-11-01", "2023-11-06"],
+    time_range=["2023-11-01", "2023-12-01"],
     processing_level="L2A",
     spatial_res=10,
     tile_size=(16, 16),
@@ -83,8 +98,6 @@ ds = store.open_data(
     ],
 )
 print(ds)
-ds.B03[0].plot()
-plt.show()
 store_file = new_data_store("file")
 store_file.write_data(ds, "minicube_test2.zarr", replace=True)
 
