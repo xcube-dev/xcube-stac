@@ -22,6 +22,7 @@
 from typing import Union
 
 import s3fs
+import rasterio.session
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
@@ -29,6 +30,7 @@ from xcube.core.store import new_data_store
 
 from ._utils import is_valid_ml_data_type
 from .constants import LOG
+from .constants import CDSE_S3_BUCKET
 from .mldataset import Jp2MultiLevelDataset
 
 
@@ -113,9 +115,28 @@ class S3Sentinel2DataAccessor:
     the jp2 format  of Sentinel-2 data via the AWS S3 protocol.
     """
 
-    def __init__(self, root: str, fs: s3fs.S3FileSystem = None, **kwargs):
-        self._root = root
-        self._s3_accessor = fs
+    def __init__(self, **storage_options_s3):
+        self._root = CDSE_S3_BUCKET
+        self.session = rasterio.session.AWSSession(
+            aws_unsigned=storage_options_s3["anon"],
+            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"].split(
+                "//"
+            )[1],
+            aws_access_key_id=storage_options_s3["key"],
+            aws_secret_access_key=storage_options_s3["secret"],
+        )
+        self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
+        self.env = self.env.__enter__()
+        self.fs = s3fs.S3FileSystem(
+            anon=False,
+            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"],
+            key=storage_options_s3["key"],
+            secret=storage_options_s3["secret"],
+        )
+
+    def __del__(self):
+        LOG.debug("Exit rasterio.env.Env for CDSE data access.")
+        self.env.__exit__()
 
     @property
     def root(self) -> str:

@@ -46,9 +46,9 @@ from .constants import (
 )
 from .store_mode import SingleStoreMode
 from .store_mode import StackStoreMode
-from .util import Util
-from .util import XcubeUtil
-from .util import CdseUtil
+from .helper import Helper
+from .helper import HelperXcube
+from .helper import HelperCdse
 from ._utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -71,9 +71,7 @@ class StacDataStore(DataStore):
         storage_options_s3: storage option for 's3' data store
     """
 
-    def __init__(
-        self, url: str, stack_mode: Union[bool, str] = False, **storage_options_s3
-    ):
+    def __init__(self, url: str, stack_mode: bool = False, **storage_options_s3):
         self._url = url
         self._url_mod = modify_catalog_url(url)
         self._stack_mode = stack_mode
@@ -90,8 +88,8 @@ class StacDataStore(DataStore):
             self._searchable = False
         self._catalog = catalog
 
-        if not hasattr(self, "_util"):
-            self._util = Util()
+        if not hasattr(self, "_helper"):
+            self._helper = Helper()
 
         if stack_mode is False:
             self._impl = SingleStoreMode(
@@ -99,28 +97,22 @@ class StacDataStore(DataStore):
                 self._url_mod,
                 self._searchable,
                 self._storage_options_s3,
-                self._util,
+                self._helper,
             )
-        elif stack_mode is True or stack_mode == "odc-stac":
+        elif stack_mode is True:
             self._impl = StackStoreMode(
                 self._catalog,
                 self._url_mod,
                 self._searchable,
                 self._storage_options_s3,
-                self._util,
-            )
-        else:
-            raise DataStoreError(
-                "Invalid parameterization detected: a boolean or"
-                " 'odc-stac' was expected"
+                self._helper,
             )
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        stac_params = STAC_STORE_PARAMETERS
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac'.",
-            properties=stac_params,
+            properties=STAC_STORE_PARAMETERS,
             required=["url"],
             additional_properties=True,
         )
@@ -131,7 +123,7 @@ class StacDataStore(DataStore):
 
     def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
         item = self._impl.access_item(data_id)
-        if self._util.is_mldataset_available(item):
+        if self._helper.is_mldataset_available(item):
             return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
         else:
             return (DATASET_TYPE.alias,)
@@ -155,7 +147,7 @@ class StacDataStore(DataStore):
             except requests.exceptions.HTTPError:
                 return False
             if is_valid_ml_data_type(data_type):
-                return self._util.is_mldataset_available(item)
+                return self._helper.is_mldataset_available(item)
             return True
         return False
 
@@ -168,11 +160,11 @@ class StacDataStore(DataStore):
             if not self.has_data(data_id, data_type=data_type):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
             item = self._impl.access_item(data_id)
-            protocols = self._util.get_protocols(item)
-            format_ids = self._util.get_format_ids(item)
+            protocols = self._helper.get_protocols(item)
+            format_ids = self._helper.get_format_ids(item)
         else:
-            protocols = self._util.supported_protocols
-            format_ids = self._util.supported_format_ids
+            protocols = self._helper.supported_protocols
+            format_ids = self._helper.supported_format_ids
 
         return self._select_opener_id(protocols, format_ids, data_type=data_type)
 
@@ -253,6 +245,36 @@ class StacDataStore(DataStore):
             )
 
 
+class StacXcubeDataStore(StacDataStore):
+    """STAC implementation of the data store for xcube STAC API.
+
+    Args:
+        stack_mode: if True, items will be stacked along the time axis;
+            defaults to False.
+        storage_options_s3: storage option of the S3 data store;
+    """
+
+    def __init__(
+        self,
+        url: str,
+        stack_mode: Union[bool, str] = False,
+        **storage_options_s3,
+    ):
+        self._helper = HelperXcube()
+        super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
+
+    def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
+        return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
+
+    def get_data_opener_ids(
+        self, data_id: str = None, data_type: DataTypeLike = None
+    ) -> Tuple[str, ...]:
+        assert_valid_data_type(data_type)
+        protocols = self._helper.supported_protocols
+        format_ids = self._helper.supported_format_ids
+        return self._select_opener_id(protocols, format_ids, data_type=data_type)
+
+
 class StacCdseDataStore(StacDataStore):
     """STAC implementation of the data store for CDSE STAC API.
 
@@ -279,7 +301,7 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._util = CdseUtil(storage_options_s3)
+        self._helper = HelperCdse(**storage_options_s3)
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod
@@ -312,33 +334,3 @@ class StacCdseDataStore(StacDataStore):
                 pystac_obj, catalog_url=self._url_mod
             )
             yield self.describe_data(data_id, data_type=data_type)
-
-
-class StacXcubeDataStore(StacDataStore):
-    """STAC implementation of the data store for xcube STAC API.
-
-    Args:
-        stack_mode: if True, items will be stacked along the time axis;
-            defaults to False.
-        storage_options_s3: storage option of the S3 data store;
-    """
-
-    def __init__(
-        self,
-        url: str,
-        stack_mode: Union[bool, str] = False,
-        **storage_options_s3,
-    ):
-        self._util = XcubeUtil()
-        super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
-
-    def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
-        return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
-
-    def get_data_opener_ids(
-        self, data_id: str = None, data_type: DataTypeLike = None
-    ) -> Tuple[str, ...]:
-        assert_valid_data_type(data_type)
-        protocols = self._util.supported_protocols
-        format_ids = self._util.supported_format_ids
-        return self._select_opener_id(protocols, format_ids, data_type=data_type)

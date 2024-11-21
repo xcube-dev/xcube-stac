@@ -29,6 +29,7 @@ import numpy as np
 import pandas as pd
 import pyproj
 import pystac
+import pystac_client
 import rasterio
 from shapely.geometry import box
 import xarray as xr
@@ -122,6 +123,20 @@ def list_assets_from_item(
             item, asset_names=asset_names, supported_format_ids=supported_format_ids
         )
     )
+
+
+def search_items(
+    catalog: Union[pystac.Catalog, pystac_client.client.Client],
+    searchable: bool,
+    **search_params,
+) -> Iterator[pystac.Item]:
+    if searchable:
+        # rewrite to "datetime"
+        search_params["datetime"] = search_params.pop("time_range", None)
+        items = catalog.search(**search_params).items()
+    else:
+        items = search_nonsearchable_catalog(catalog, **search_params)
+    return items
 
 
 def search_nonsearchable_catalog(

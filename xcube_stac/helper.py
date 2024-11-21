@@ -12,52 +12,50 @@ from xcube.util.jsonschema import JsonObjectSchema
 
 from .accessor import S3DataAccessor
 from .accessor import S3Sentinel2DataAccessor
-from .constants import CDSE_SENITNEL_2_BANDS
-from .constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
+
 from .constants import MAP_CDSE_COLLECTION_FORMAT
 from .constants import MLDATASET_FORMATS
 from .constants import STAC_SEARCH_PARAMETERS
-from .constants import STAC_SEARCH_PARAMETERS_CDSE
+from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
 from .constants import STAC_OPEN_PARAMETERS
 from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
-from .constants import STAC_OPEN_PARAMETERS_CDSE
-from .constants import STAC_OPEN_PARAMETERS_CDSE_STACK_MODE
-from .constants import CDSE_SENITNEL_2_SCALE
-from .constants import CDSE_SENITNEL_2_OFFSET_400
-from .constants import CDSE_SENITNEL_2_NO_DATA
+from .constants import SCHEMA_SPATIAL_RES
+from .constants import SCHEMA_PROCESSING_LEVEL
+from .constants import SCHEMA_COLLECTIONS
+from .sen2.constants import CDSE_SENITNEL_2_BANDS
+from .sen2.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
+from .sen2.constants import CDSE_SENITNEL_2_SCALE
+from .sen2.constants import CDSE_SENITNEL_2_OFFSET_400
+from .sen2.constants import CDSE_SENITNEL_2_NO_DATA
 from .constants import LOG
 from ._href_parse import decode_href
-from ._utils import convert_to_solar_time
-from ._utils import get_center_from_bbox
 from ._utils import get_format_id
 from ._utils import get_format_from_path
 from ._utils import is_valid_ml_data_type
 from ._utils import list_assets_from_item
+from ._utils import search_items
 from ._utils import search_nonsearchable_catalog
 
 
-class Util:
+class Helper:
 
     def __init__(self):
         self.supported_protocols = ["s3", "https"]
         self.supported_format_ids = ["netcdf", "zarr", "geotiff"]
-        self.session = None
-        self.fs = None
         self.schema_open_params = STAC_OPEN_PARAMETERS
         self.schema_open_params_stack = STAC_OPEN_PARAMETERS_STACK_MODE
         self.schema_search_params = STAC_SEARCH_PARAMETERS
+        self.schema_search_params_stack = STAC_SEARCH_PARAMETERS_STACK_MODE
         self.s3_accessor = S3DataAccessor
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         return item
 
-    def parse_item_stack(self, item: pystac.Item, **open_params) -> pystac.Item:
-        return self.parse_item(item, **open_params)
-
-    def parse_items_stack(
-        self, items: list[pystac.Item], grouped: dict, **open_params
-    ) -> dict:
-        return items
+    def parse_items_stack(self, items: dict[list[pystac.Item]], **open_params) -> dict:
+        parsed_items = {}
+        for key, items in items.items():
+            parsed_items[key] = [self.parse_item(item, **open_params) for item in items]
+        return dict(parsed_items)
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
         assets = list_assets_from_item(
@@ -110,13 +108,13 @@ class Util:
     def get_open_data_params_schema_stack(self) -> JsonObjectSchema:
         return STAC_OPEN_PARAMETERS_STACK_MODE
 
-    def search_data(
+    def search_items(
         self,
         catalog: Union[pystac.Catalog, pystac_client.client.Client],
         searchable: bool,
         **search_params,
     ) -> Iterator[pystac.Item]:
-        return search_data(catalog, searchable, **search_params)
+        return search_items(catalog, searchable, **search_params)
 
     def apply_offset_scaling(
         self,
@@ -184,26 +182,12 @@ class Util:
         return ds
 
 
-class XcubeUtil:
+class HelperXcube(Helper):
 
     def __init__(self):
+        super().__init__()
         self.supported_protocols = ["s3"]
         self.supported_format_ids = ["zarr", "levels"]
-        self.session = None
-        self.fs = None
-        self.schema_open_params = STAC_OPEN_PARAMETERS
-        self.schema_open_params_stack = STAC_OPEN_PARAMETERS_STACK_MODE
-        self.schema_search_params = STAC_SEARCH_PARAMETERS
-        self.s3_accessor = S3DataAccessor
-
-    def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
-        return item
-
-    def parse_item_stack(self, item: pystac.Item, **open_params) -> pystac.Item:
-        return self.parse_item(item, **open_params)
-
-    def parse_items_stack(self, items: list[pystac.Item], **open_params) -> dict:
-        return items
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
         asset_names = open_params.get("asset_names")
@@ -264,51 +248,25 @@ class XcubeUtil:
             additional_properties=False,
         )
 
-    def search_data(
-        self,
-        catalog: Union[pystac.Catalog, pystac_client.client.Client],
-        searchable: bool,
-        **search_params,
-    ) -> Iterator[pystac.Item]:
-        return search_data(catalog, searchable, **search_params)
 
-    def apply_offset_scaling(
-        self,
-        ds: xr.Dataset,
-        items: dict,
-    ) -> xr.Dataset:
-        return ds
+class HelperCdse(Helper):
 
-
-class CdseUtil:
-
-    def __init__(self, storage_options_s3: dict):
+    def __init__(self, **storage_options_s3):
+        super().__init__()
         self.supported_protocols = ["s3"]
         self.supported_format_ids = ["netcdf", "zarr", "geotiff", "jp2"]
-        self.session = rasterio.session.AWSSession(
-            aws_unsigned=storage_options_s3["anon"],
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"].split(
-                "//"
-            )[1],
-            aws_access_key_id=storage_options_s3["key"],
-            aws_secret_access_key=storage_options_s3["secret"],
+        self.schema_open_params = dict(
+            **STAC_OPEN_PARAMETERS, spatial_res=SCHEMA_SPATIAL_RES
         )
-        self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
-        self.env = self.env.__enter__()
-        self.fs = s3fs.S3FileSystem(
-            anon=False,
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"],
-            key=storage_options_s3["key"],
-            secret=storage_options_s3["secret"],
+        self.schema_open_params_stack = dict(
+            **STAC_OPEN_PARAMETERS_STACK_MODE, processing_level=SCHEMA_PROCESSING_LEVEL
         )
-        self.schema_open_params = STAC_OPEN_PARAMETERS_CDSE
-        self.schema_open_params_stack = STAC_OPEN_PARAMETERS_CDSE_STACK_MODE
-        self.schema_search_params = STAC_SEARCH_PARAMETERS_CDSE
-        self.s3_accessor = S3Sentinel2DataAccessor
-
-    # def __del__(self):
-    #     LOG.debug("Exit rasterio.env.Env for CDSE data access.")
-    #     self.env.__exit__()
+        self.schema_search_params = dict(
+            **STAC_SEARCH_PARAMETERS_STACK_MODE,
+            collections=SCHEMA_COLLECTIONS,
+            processing_level=SCHEMA_PROCESSING_LEVEL,
+        )
+        self.accessor = S3Sentinel2DataAccessor(**storage_options_s3)
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         processing_level = open_params.pop("processing_level", "L2A")
@@ -316,7 +274,7 @@ class CdseUtil:
             "bands", CDSE_SENITNEL_2_BANDS[processing_level]
         )
         href_base = item.assets["PRODUCT"].extra_fields["alternate"]["s3"]["href"][1:]
-        res_want = open_params.get("resolution", 20)
+        res_want = open_params.get("resolution")
         time_end = None
         for band in open_params["bands"]:
             res_avail = CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS[processing_level][band]
@@ -350,15 +308,6 @@ class CdseUtil:
         )
         return item
 
-    def parse_items_stack(
-        self, items: list[pystac.Item], grouped: dict, **open_params
-    ) -> dict:
-        parsed_items = collections.defaultdict(list)
-        for key, indices in grouped.items():
-            for idx in indices:
-                parsed_items[key].append(self.parse_item(items[idx], **open_params))
-        return dict(parsed_items)
-
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
         processing_level = open_params.pop("processing_level", "L2A")
         bands = open_params.get("bands", CDSE_SENITNEL_2_BANDS[processing_level])
@@ -391,7 +340,7 @@ class CdseUtil:
     def is_mldataset_available(self, item: pystac.Item, **open_params) -> bool:
         return True
 
-    def search_data(
+    def search_items(
         self,
         catalog: Union[pystac.Catalog, pystac_client.client.Client],
         searchable: bool,
@@ -400,7 +349,7 @@ class CdseUtil:
         processing_level = search_params.pop("processing_level", "L2A")
         if "sortby" not in search_params:
             search_params["sortby"] = "+datetime"
-        items = search_data(catalog, searchable, **search_params)
+        items = search_items(catalog, searchable, **search_params)
         for item in items:
             if not processing_level[1:] in item.properties["processingLevel"]:
                 continue
@@ -433,17 +382,3 @@ class CdseUtil:
                     ds[key] += CDSE_SENITNEL_2_OFFSET_400[key]
                 ds[key] /= CDSE_SENITNEL_2_SCALE[key]
         return ds
-
-
-def search_data(
-    catalog: Union[pystac.Catalog, pystac_client.client.Client],
-    searchable: bool,
-    **search_params,
-) -> Iterator[pystac.Item]:
-    if searchable:
-        # rewrite to "datetime"
-        search_params["datetime"] = search_params.pop("time_range", None)
-        items = catalog.search(**search_params).items()
-    else:
-        items = search_nonsearchable_catalog(catalog, **search_params)
-    return items

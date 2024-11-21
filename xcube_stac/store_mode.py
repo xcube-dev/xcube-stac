@@ -34,7 +34,7 @@ import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.core.gridmapping import GridMapping
-from xcube.core.resampling import resample_in_space
+
 from xcube.util.jsonschema import JsonObjectSchema
 
 from .accessor import (
@@ -65,6 +65,7 @@ from ._utils import (
     update_dict,
     xarray_rename_vars,
 )
+from .stack import stack_items
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -463,8 +464,9 @@ class StackStoreMode:
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
-        crs = open_params.get("crs", "EPSG:4326")
-        bbox_wgs84 = reproject_bbox(bbox, crs, "EPSG:4326")
+        bbox_wgs84 = reproject_bbox(
+            bbox, open_params.get("crs", "EPSG:4326"), "EPSG:4326"
+        )
 
         items = list(
             self._util.search_data(
@@ -505,34 +507,7 @@ class StackStoreMode:
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds_dates = []
-            np_datetimes = []
-            for datetime, items_for_date in parsed_items.items():
-                print(datetime)
-                np_datetimes.append(np.datetime64(datetime).astype("datetime64[ns]"))
-                list_ds_items = []
-                for item in items_for_date:
-                    list_ds_asset = []
-                    for band in open_params["bands"]:
-                        ds = rioxarray.open_rasterio(
-                            item.assets[band].href,
-                            chunks=dict(x=1024, y=1024),
-                            band_as_variable=True,
-                        )
-                        ds = ds.rename(dict(band_1=band))
-                        ds = ds.where(ds != 0)
-                        ds = _resample_in_space(ds, target_gm)
-                        list_ds_asset.append(ds)
-                    ds = list_ds_asset[0].copy()
-                    for ds_asset in list_ds_asset[1:]:
-                        ds.update(ds_asset)
-                    list_ds_items.append(ds)
-                ds_mosaic = _mosaic_first_non_nan(list_ds_items)
-                ds_dates.append(ds_mosaic)
-            ds = xr.concat(ds_dates, dim="time")
-            ds = ds.assign_coords(coords=dict(time=np_datetimes))
-            ds = ds.drop_vars("crs")
-            ds["crs"] = ds_dates[0].crs
+            ds = stack_items(parsed_items, **open_params)
             ds = self._util.apply_offset_scaling(ds, parsed_items)
         return ds
 
@@ -560,79 +535,3 @@ class StackStoreMode:
             required=[],
             additional_properties=False,
         )
-
-    def _get_gridmapping(
-        self,
-        bbox: list[float],
-        spatial_res: float,
-        crs: Union[str, pyproj.crs.CRS],
-        tile_size: Union[int, tuple[int, int]] = TILE_SIZE,
-    ) -> GridMapping:
-        x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
-        y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
-        return GridMapping.regular(
-            size=(x_size, y_size),
-            xy_min=(bbox[0] - spatial_res / 2, bbox[1] - spatial_res / 2),
-            xy_res=spatial_res,
-            crs=crs,
-            tile_size=tile_size,
-        )
-
-    def _groupby_solar_day(self, items: list[pystac.Item]) -> dict:
-        items = add_nominal_datetime(items)
-        nested_dict = collections.defaultdict(lambda: collections.defaultdict(list))
-        # group by date and processing baseline
-        for idx, item in enumerate(items):
-            date = item.properties["datetime_nominal"].date()
-            proc_version = float(item.properties["processorVersion"])
-            nested_dict[date][proc_version].append(idx)
-        # if two processing baselines are available, take most recent one
-        grouped = {}
-        for date, proc_version_dic in nested_dict.items():
-            proc_version = max(list(proc_version_dic.keys()))
-            grouped[date] = nested_dict[date][proc_version]
-        return grouped
-
-    def _get_mosaic_timestamps(self, grouped: dict, items: list[pystac.Item]):
-        grouped_new = {}
-        for old_key, value in grouped.items():
-            new_key = (
-                items[value[0]].properties["datetime_nominal"].replace(tzinfo=None)
-            )
-            grouped_new[new_key] = value
-        return grouped
-
-
-def _mosaic_first_non_nan(list_ds):
-    dim = "dummy"
-    ds = xr.concat(list_ds, dim=dim)
-    ds = ds.drop_vars("crs")
-    ds_mosaic = xr.Dataset()
-    for key in ds:
-        axis = ds[key].dims.index(dim)
-        da_arr = ds[key].data
-        nan_mask = da.isnan(da_arr)
-        first_non_nan_index = (~nan_mask).argmax(axis=axis)
-        da_arr_select = da.choose(first_non_nan_index, da_arr)
-        ds_mosaic[key] = xr.DataArray(
-            da_arr_select,
-            dims=("y", "x"),
-            coords={"y": ds.y, "x": ds.x},
-        )
-    ds_mosaic["crs"] = list_ds[0].crs
-    return ds_mosaic
-
-
-def _resample_in_space(ds, target_gm):
-    ds = resample_in_space(ds, target_gm=target_gm, encode_cf=True)
-    if "spatial_ref" in ds.coords:
-        ds = ds.drop_vars("spatial_ref")
-    if "x_bnds" in ds.coords:
-        ds = ds.drop_vars("x_bnds")
-    if "y_bnds" in ds.coords:
-        ds = ds.drop_vars("y_bnds")
-    if "transformed_x" in ds.data_vars:
-        ds = ds.drop_vars("transformed_x")
-    if "transformed_y" in ds.data_vars:
-        ds = ds.drop_vars("transformed_y")
-    return ds

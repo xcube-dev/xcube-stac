@@ -25,7 +25,6 @@ from typing import Union
 from xcube.core.store.fs.impl.fs import S3FsAccessor
 from xcube.util.jsonschema import (
     JsonArraySchema,
-    JsonComplexSchema,
     JsonBooleanSchema,
     JsonDateSchema,
     JsonNumberSchema,
@@ -33,21 +32,20 @@ from xcube.util.jsonschema import (
     JsonStringSchema,
 )
 
-LOG = logging.getLogger("xcube.stac")
-FloatInt = Union[float, int]
-
-COLLECTION_PREFIX = "collections/"
-
+# general stac constants
 DATA_STORE_ID = "stac"
+
+# cdse specific constants
 DATA_STORE_ID_CDSE = "stac-cdse"
-DATA_STORE_ID_XCUBE = "stac-xcube"
-
-STAC_CRS = "EPSG:4326"
-TILE_SIZE = 1024
-
 CDSE_STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
+CDSE_S3_BUCKET = "eodata"
+MAP_CDSE_COLLECTION_FORMAT = {"Sentinel-2": "jp2"}
 
+# xcube specific constants
+DATA_STORE_ID_XCUBE = "stac-xcube"
+
+# general constants for data format
 MAP_MIME_TYP_FORMAT = {
     "application/netcdf": "netcdf",
     "application/x-netcdf": "netcdf",
@@ -56,9 +54,6 @@ MAP_MIME_TYP_FORMAT = {
     "image/tiff": "geotiff",
     "image/jp2": "jp2",
 }
-
-MAP_CDSE_COLLECTION_FORMAT = {"Sentinel-2": "jp2"}
-
 MAP_FILE_EXTENSION_FORMAT = {
     ".nc": "netcdf",
     ".zarr": "zarr",
@@ -67,7 +62,6 @@ MAP_FILE_EXTENSION_FORMAT = {
     ".geotiff": "geotiff",
     ".levels": "levels",
 }
-
 DATA_OPENER_IDS = (
     "dataset:netcdf:https",
     "dataset:zarr:https",
@@ -86,31 +80,27 @@ DATA_OPENER_IDS = (
     "dataset:levels:s3",
     "mldataset:levels:s3",
 )
-
 MLDATASET_FORMATS = ["levels", "geotiff", "jp2"]
 
-_STAC_MODE_SCHEMA = JsonComplexSchema(
-    one_of=[
-        JsonStringSchema(
-            title="Backend for stacking STAC items",
-            description="So far, only 'odc-stac' is supported as a backend.",
-            const="odc-stac",
-        ),
-        JsonBooleanSchema(
-            title="Decide if stacking of STAC items is applied",
-            description="If True, 'odc-stac' is used as a default backend.",
-            default=False,
-        ),
-    ],
-)
+# other constants
+COLLECTION_PREFIX = "collections/"
+STAC_CRS = "EPSG:4326"
+TILE_SIZE = 1024
+LOG = logging.getLogger("xcube.stac")
+FloatInt = Union[float, int]
 
+# parameter schemas
 STAC_STORE_PARAMETERS = dict(
-    url=JsonStringSchema(title="URL to STAC catalog"), stack_mode=_STAC_MODE_SCHEMA
+    url=JsonStringSchema(title="URL to STAC catalog"),
+    stack_mode=JsonBooleanSchema(
+        title="Decide if stacking of STAC items is applied",
+        description="If True, 'odc-stac' is used as a default backend.",
+        default=False,
+    ),
 )
 STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)
 
-
-_SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
+SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,
     title="Additional query options used during item search of STAC API.",
     description=(
@@ -120,11 +110,10 @@ _SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
         "https://github.com/stac-api-extensions/query"
     ),
 )
-_SCHEMA_PROCESSING_LEVEL = JsonStringSchema(
+SCHEMA_PROCESSING_LEVEL = JsonStringSchema(
     title="Processing level of Sentinel-2 data", enum=["L1C", "L2A"], default="L2A"
 )
-
-_SCHEMA_BBOX = JsonArraySchema(
+SCHEMA_BBOX = JsonArraySchema(
     items=(
         JsonNumberSchema(),
         JsonNumberSchema(),
@@ -133,8 +122,7 @@ _SCHEMA_BBOX = JsonArraySchema(
     ),
     title="Bounding box [x1,y1,x2,y2] in geographical coordinates.",
 )
-
-_SCHEMA_TIME_RANGE = JsonArraySchema(
+SCHEMA_TIME_RANGE = JsonArraySchema(
     items=[
         JsonDateSchema(nullable=True),
         JsonDateSchema(nullable=True),
@@ -146,171 +134,40 @@ _SCHEMA_TIME_RANGE = JsonArraySchema(
         "Start and stop are inclusive."
     ),
 )
-
-_SCHEMA_COLLECTIONS = JsonArraySchema(
+SCHEMA_COLLECTIONS = JsonArraySchema(
     items=(JsonStringSchema(min_length=0)),
     unique_items=True,
     title="Collection IDs",
     description="Collection IDs to be included in the search request.",
 )
+SCHEMA_ASSET_NAMES = JsonArraySchema(
+    items=(JsonStringSchema(min_length=0)),
+    unique_items=True,
+    title="Names of assets",
+    description="Names of assets (bands) which will be included in the data cube.",
+)
+SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
+SCHEMA_CRS = JsonStringSchema(title="Coordinate reference system", default="EPSG:4326")
 
 STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
-    time_range=_SCHEMA_TIME_RANGE,
-    bbox=_SCHEMA_BBOX,
+    time_range=SCHEMA_TIME_RANGE,
+    bbox=SCHEMA_BBOX,
 )
 
 STAC_SEARCH_PARAMETERS = dict(
     **STAC_SEARCH_PARAMETERS_STACK_MODE,
-    collections=_SCHEMA_COLLECTIONS,
-    query=_SCHEMA_ADDITIONAL_QUERY,
-)
-
-STAC_SEARCH_PARAMETERS_CDSE = dict(
-    **STAC_SEARCH_PARAMETERS_STACK_MODE,
-    collections=_SCHEMA_COLLECTIONS,
-    processing_level=_SCHEMA_PROCESSING_LEVEL,
+    collections=SCHEMA_COLLECTIONS,
+    query=SCHEMA_ADDITIONAL_QUERY,
 )
 
 
-STAC_OPEN_PARAMETERS = dict(
-    asset_names=JsonArraySchema(
-        items=(JsonStringSchema(min_length=0)),
-        unique_items=True,
-        title="Names of assets",
-        description="Names of assets which will be included in the data cube.",
-    )
-)
+STAC_OPEN_PARAMETERS = dict(asset_names=SCHEMA_ASSET_NAMES)
 
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
-    time_range=_SCHEMA_TIME_RANGE,
-    bbox=_SCHEMA_BBOX,
-    spatial_res=JsonNumberSchema(exclusive_minimum=0.0),
-    query=_SCHEMA_ADDITIONAL_QUERY,
-)
-
-CDSE_SENITNEL_2_BANDS = {
-    "L1C": [
-        "B01",
-        "B02",
-        "B03",
-        "B04",
-        "B05",
-        "B06",
-        "B07",
-        "B08",
-        "B8A",
-        "B09",
-        "B10",
-        "B11",
-        "B12",
-    ],
-    "L2A": [
-        "AOT",
-        "B01",
-        "B02",
-        "B03",
-        "B04",
-        "B05",
-        "B06",
-        "B07",
-        "B08",
-        "B8A",
-        "B09",
-        "B11",
-        "B12",
-        "SCL",
-        "WVP",
-    ],
-}
-
-
-# offset only applicable for processing baseline above 4.00
-# https://sentiwiki.copernicus.eu/web/s2-processing#S2Processing-L2AProcessingBaselineS2-Processing-L2A-Processing-Baselinetrue
-CDSE_SENITNEL_2_OFFSET_400 = dict(
-    AOT=0,
-    B01=1000,
-    B02=1000,
-    B03=1000,
-    B04=1000,
-    B05=1000,
-    B06=1000,
-    B07=1000,
-    B08=1000,
-    B8A=1000,
-    B09=1000,
-    B10=1000,
-    B11=1000,
-    B12=1000,
-    WVP=0,
-)
-CDSE_SENITNEL_2_SCALE = dict(
-    AOT=1000,
-    B01=10000,
-    B02=10000,
-    B03=10000,
-    B04=10000,
-    B05=10000,
-    B06=10000,
-    B07=10000,
-    B08=10000,
-    B8A=10000,
-    B09=10000,
-    B10=10000,
-    B11=10000,
-    B12=10000,
-    WVP=1000,
-)
-CDSE_SENITNEL_2_NO_DATA = 0
-
-CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS = dict(
-    L1C=dict(
-        B01=[60],
-        B02=[10],
-        B03=[10],
-        B04=[10],
-        B05=[20],
-        B06=[20],
-        B07=[20],
-        B08=[10],
-        B8A=[20],
-        B09=[60],
-        B10=[60],
-        B11=[20],
-        B12=[20],
-    ),
-    L2A=dict(
-        AOT=[10, 20, 60],
-        B01=[60],
-        B02=[10, 20, 60],
-        B03=[10, 20, 60],
-        B04=[10, 20, 60],
-        B05=[20, 60],
-        B06=[20, 60],
-        B07=[20, 60],
-        B08=[10],
-        B8A=[20, 60],
-        B09=[60],
-        B11=[20, 60],
-        B12=[20, 60],
-        SCL=[20, 60],
-        WVP=[10, 20, 60],
-    ),
-)
-
-STAC_OPEN_PARAMETERS_CDSE = dict(
-    bands=JsonArraySchema(
-        items=(JsonStringSchema(min_length=0)),
-        unique_items=True,
-        title="Names of spectral bands",
-        description="Names of spectral bands which will be included in the data cube.",
-        default=CDSE_SENITNEL_2_BANDS["L2A"],
-    ),
-    spatial_res=JsonNumberSchema(title="Spatial resolution in meter", default=20),
-)
-
-STAC_OPEN_PARAMETERS_CDSE_STACK_MODE = dict(
-    **STAC_OPEN_PARAMETERS_CDSE,
-    time_range=_SCHEMA_TIME_RANGE,
-    bbox=_SCHEMA_BBOX,
-    processing_level=_SCHEMA_PROCESSING_LEVEL,
+    time_range=SCHEMA_TIME_RANGE,
+    bbox=SCHEMA_BBOX,
+    crs=SCHEMA_CRS,
+    spatial_res=SCHEMA_SPATIAL_RES,
+    query=SCHEMA_ADDITIONAL_QUERY,
+    asset_names=SCHEMA_ASSET_NAMES,
 )
