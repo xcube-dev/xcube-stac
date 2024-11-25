@@ -471,7 +471,7 @@ class StackStoreMode(SingleStoreMode):
                 f"query {open_params.get("query", "None")!r}"
             )
             return None
-        sorted(items, key=lambda item: item.properties.get("datetime"))
+        items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
         # group items by date
         grouped_items = groupby_solar_day(items)
@@ -480,7 +480,7 @@ class StackStoreMode(SingleStoreMode):
             opener_id = ""
         if "asset_names" not in open_params:
             assets = list_assets_from_item(
-                next(iter(grouped_items.values())),
+                next(iter(grouped_items.values()))[0],
                 supported_format_ids=self._helper.supported_format_ids,
             )
             open_params["asset_names"] = [asset.extra_fields["id"] for asset in assets]
