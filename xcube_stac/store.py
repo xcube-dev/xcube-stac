@@ -49,6 +49,7 @@ from .store_mode import StackStoreMode
 from .helper import Helper
 from .helper import HelperXcube
 from .helper import HelperCdse
+from .helper import HelperCdseCreodiasVM
 from ._utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -291,7 +292,8 @@ class StacCdseDataStore(StacDataStore):
 
     def __init__(
         self,
-        stack_mode: Union[bool, str] = False,
+        stack_mode: bool = False,
+        creodias_vm: bool = False,
         **storage_options_s3,
     ):
         storage_options_s3 = update_dict(
@@ -301,7 +303,10 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._helper = HelperCdse(**storage_options_s3)
+        if creodias_vm:
+            self._helper = HelperCdseCreodiasVM()
+        else:
+            self._helper = HelperCdse(**storage_options_s3)
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod

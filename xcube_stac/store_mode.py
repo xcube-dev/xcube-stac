@@ -107,6 +107,7 @@ class SingleStoreMode:
         self._helper = helper
         self._https_accessor = None
         self._s3_accessor = None
+        self._file_accessor = None
 
     def access_item(self, data_id: str) -> pystac.Item:
         """Access item for a given data ID.
@@ -261,10 +262,18 @@ class SingleStoreMode:
                     data_type=data_type,
                     **open_params_asset,
                 )
+            elif params["protocol"] == "file":
+                opener = self._get_file_accessor(params)
+                ds_asset = opener.open_data(
+                    params,
+                    opener_id=opener_id,
+                    data_type=data_type,
+                    **open_params_asset,
+                )
             else:
                 url = get_url_from_pystac_object(item)
                 raise DataStoreError(
-                    f"Only 's3' and 'https' protocols are supported, not "
+                    f"Only 'file', 's3' and 'https' protocols are supported, not "
                     f"{params["protocol"]!r}. The asset {asset_key!r} has a href "
                     f"{params["href"]!r}. The item's url is given by {url!r}."
                 )
@@ -296,6 +305,20 @@ class SingleStoreMode:
 
     ##########################################################################
     # Implementation helpers
+
+    def _get_file_accessor(self, access_params: dict) -> S3DataAccessor:
+        """This function returns the file data accessor associated with the
+        bucket *root*.
+        Args:
+            access_params: dictionary containing access parameter for one asset
+
+        Returns:
+            file data accessor
+        """
+
+        if self._file_accessor is None:
+            self._file_accessor = self._helper.file_accessor(access_params["root"])
+        return self._s3_accessor
 
     def _get_s3_accessor(self, access_params: dict) -> S3DataAccessor:
         """This function returns the S3 data accessor associated with the
