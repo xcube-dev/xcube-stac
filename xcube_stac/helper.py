@@ -1,40 +1,36 @@
-import collections
 from typing import Iterator, Union
 
 import numpy as np
 import pystac
 import pystac_client.client
-import rasterio.session
-import s3fs
-import xarray as xr
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import JsonObjectSchema
+import s3fs
 
 from .accessor import S3DataAccessor
 from .accessor import S3Sentinel2DataAccessor
-
 from .constants import MAP_CDSE_COLLECTION_FORMAT
 from .constants import MLDATASET_FORMATS
 from .constants import STAC_SEARCH_PARAMETERS
 from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
 from .constants import STAC_OPEN_PARAMETERS
 from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
-from .constants import SCHEMA_SPATIAL_RES
 from .constants import SCHEMA_PROCESSING_LEVEL
 from .constants import SCHEMA_COLLECTIONS
+from .constants import SCHEMA_SPATIAL_RES
 from .sen2.constants import CDSE_SENITNEL_2_BANDS
 from .sen2.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
+from .sen2.constants import CDSE_SENTINEL_2_MIN_RESOLUTIONS
 from .sen2.constants import CDSE_SENITNEL_2_SCALE
 from .sen2.constants import CDSE_SENITNEL_2_OFFSET_400
 from .sen2.constants import CDSE_SENITNEL_2_NO_DATA
-from .constants import LOG
 from ._href_parse import decode_href
 from ._utils import get_format_id
 from ._utils import get_format_from_path
 from ._utils import is_valid_ml_data_type
 from ._utils import list_assets_from_item
 from ._utils import search_items
-from ._utils import search_nonsearchable_catalog
+from ._utils import normalize_crs
 
 
 class Helper:
@@ -116,71 +112,6 @@ class Helper:
     ) -> Iterator[pystac.Item]:
         return search_items(catalog, searchable, **search_params)
 
-    def apply_offset_scaling(
-        self,
-        ds: xr.Dataset,
-        items: dict,
-    ) -> xr.Dataset:
-        """This function applies scaling of the data and fills no-data pixel
-        with np.nan.
-
-        Args:
-            ds: dataset
-            items: item object or list of item objects (depending on stack-mode
-                equal to False and True, respectively.)
-
-        Returns:
-            Dataset where scaling and filling nodata values are applied.
-        """
-        if isinstance(items, pystac.Item):
-            items = [items]
-
-        if items[0].ext.has("raster"):
-            for data_varname in ds.data_vars.keys():
-                scale = np.ones(len(items))
-                offset = np.zeros(len(items))
-                nodata_val = np.zeros(len(items))
-                for i, item in enumerate(items):
-                    raster_bands = item.assets[data_varname].extra_fields.get(
-                        "raster:bands"
-                    )
-                    if not raster_bands:
-                        break
-                    nodata_val[i] = raster_bands[0].get("nodata", 0)
-                    if "scale" in raster_bands[0]:
-                        scale[i] = raster_bands[0]["scale"]
-                    if "offset" in raster_bands[0]:
-                        offset[i] = raster_bands[0]["offset"]
-
-                nodata_val = np.unique(nodata_val)
-                msg = (
-                    "Items contain different values in the "
-                    "asset's field 'raster:bands:nodata'"
-                )
-                assert len(nodata_val) == 1, msg
-                nodata_val = nodata_val[0]
-                ds[data_varname] = ds[data_varname].where(
-                    ds[data_varname] != nodata_val
-                )
-
-                offset = np.unique(offset)
-                msg = (
-                    "Items contain different values in the "
-                    "asset's field 'raster:bands:offset'"
-                )
-                assert len(offset) == 1, msg
-                ds[data_varname] += offset[0]
-
-                scale = np.unique(scale)
-                msg = (
-                    "Items contain different values in the "
-                    "asset's field 'raster:bands:scale'"
-                )
-                assert len(scale) == 1, msg
-                ds[data_varname] *= scale[0]
-
-        return ds
-
 
 class HelperXcube(Helper):
 
@@ -258,76 +189,108 @@ class HelperCdse(Helper):
         self.schema_open_params = dict(
             **STAC_OPEN_PARAMETERS, spatial_res=SCHEMA_SPATIAL_RES
         )
-        self.schema_open_params_stack = dict(
+        open_params_stack = dict(
             **STAC_OPEN_PARAMETERS_STACK_MODE, processing_level=SCHEMA_PROCESSING_LEVEL
         )
+        del open_params_stack["query"]
+        self.schema_open_params_stack = open_params_stack
         self.schema_search_params = dict(
             **STAC_SEARCH_PARAMETERS_STACK_MODE,
             collections=SCHEMA_COLLECTIONS,
             processing_level=SCHEMA_PROCESSING_LEVEL,
         )
-        self.accessor = S3Sentinel2DataAccessor(**storage_options_s3)
+        self._fs = s3fs.S3FileSystem(
+            anon=False,
+            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"],
+            key=storage_options_s3["key"],
+            secret=storage_options_s3["secret"],
+        )
+        self.s3_accessor = S3Sentinel2DataAccessor
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         processing_level = open_params.pop("processing_level", "L2A")
-        open_params["bands"] = open_params.get(
-            "bands", CDSE_SENITNEL_2_BANDS[processing_level]
+        open_params["asset_names"] = open_params.get(
+            "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
         )
         href_base = item.assets["PRODUCT"].extra_fields["alternate"]["s3"]["href"][1:]
-        res_want = open_params.get("resolution")
+        res_want = open_params.get("spatial_res", CDSE_SENTINEL_2_MIN_RESOLUTIONS)
+        if "crs" in open_params:
+            target_crs = normalize_crs(open_params["crs"])
+            if target_crs.is_geographic:
+                res_want = open_params["spatial_res"] * 111320
         time_end = None
-        for band in open_params["bands"]:
-            res_avail = CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS[processing_level][band]
+        for asset_name in open_params["asset_names"]:
+            res_avail = CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS[processing_level][
+                asset_name
+            ]
             res_select = res_avail[np.argmin(abs(np.array(res_avail) - res_want))]
             if time_end is None:
-                hrefs = self.fs.glob(f"{href_base}/**/*_{band}_{res_select}m.jp2")
+                hrefs = self._fs.glob(
+                    f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                )
                 assert len(hrefs) == 1, "No unique jp2 file found"
-                href_mod = f"s3://{hrefs[0]}"
+                href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
             else:
                 id_parts = item.id.split("_")
                 href_mod = (
-                    f"s3://{href_base}/GRANULE/L2A_T{item.properties["tileId"]}_"
+                    f"{href_base}/GRANULE/L2A_T{item.properties["tileId"]}_"
                     f"A{item.properties["orbitNumber"]:06}_{time_end}/IMG_DATA/"
                     f"R{res_select}m/T{item.properties["tileId"]}_"
-                    f"{id_parts[2]}_{band}_{res_select}m.jp2"
+                    f"{id_parts[2]}_{asset_name}_{res_select}m.jp2"
                 )
-            item.assets[band] = pystac.Asset(
+            if float(item.properties["processorVersion"]) >= 4.00:
+                offset = CDSE_SENITNEL_2_OFFSET_400[asset_name]
+            else:
+                offset = 0
+            item.assets[asset_name] = pystac.Asset(
                 href_mod,
-                band,
+                asset_name,
                 media_type="image/jp2",
                 roles=["data"],
-                extra_fields=dict(cdse=True),
+                extra_fields={
+                    "cdse": True,
+                    "raster:bands": [
+                        dict(
+                            nodata=CDSE_SENITNEL_2_NO_DATA,
+                            scale=1 / CDSE_SENITNEL_2_SCALE[asset_name],
+                            offset=offset / CDSE_SENITNEL_2_SCALE[asset_name],
+                        )
+                    ],
+                },
             )
+        # add asset for meta data for angles
         item.assets["granule_metadata"] = pystac.Asset(
-            f"s3://{href_base}/GRANULE/MTD_TL.xml",
+            f"{href_base}/GRANULE/MTD_TL.xml",
             "granule_metadata",
             media_type="application/xml",
             roles=["metadata"],
-            extra_fields=dict(cdse=True),
+            extra_fields={"cdse": True},
         )
         return item
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
         processing_level = open_params.pop("processing_level", "L2A")
-        bands = open_params.get("bands", CDSE_SENITNEL_2_BANDS[processing_level])
+        asset_names = open_params.get(
+            "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
+        )
         data_access_params = {}
-        for band in bands:
+        for asset_name in asset_names:
             protocol = "s3"
-            href_components = item.assets[band].href.split("/")
+            href_components = item.assets[asset_name].href.split("/")
             root = href_components[0]
-            instrument = href_components[3]
+            instrument = href_components[1]
             format_id = MAP_CDSE_COLLECTION_FORMAT[instrument]
             fs_path = "/".join(href_components[1:])
             storage_options = {}
-            data_access_params[band] = dict(
-                name=band,
+            data_access_params[asset_name] = dict(
+                name=asset_name,
                 protocol=protocol,
                 root=root,
                 fs_path=fs_path,
                 storage_options=storage_options,
                 format_id=format_id,
-                href=item.assets[band].href,
+                href=item.assets[asset_name].href,
             )
         return data_access_params
 
@@ -354,31 +317,3 @@ class HelperCdse(Helper):
             if not processing_level[1:] in item.properties["processingLevel"]:
                 continue
             yield item
-
-    def apply_offset_scaling(self, ds: xr.Dataset, items: dict) -> xr.Dataset:
-        """This function applies scaling of the data and fills no-data pixel with np.nan.
-
-        Args:
-            ds: dataset
-            items: item object or list of item objects (depending on stack-mode equal to
-                False and True, respectively.)
-
-        Returns:
-            Dataset where scaling and filling nodata values are applied.
-        """
-        if isinstance(items, pystac.Item):
-            items = [items]
-
-        for count, (date, items_for_date) in enumerate(items.items()):
-            assert all(
-                items_for_date[0].properties["processorVersion"]
-                == items_for_date[idx].properties["processorVersion"]
-                for idx in range(1, len(items_for_date))
-            )
-            for key in ds.data_vars.keys():
-                if key == "SCL" or key == "crs":
-                    continue
-                if float(items_for_date[0].properties["processorVersion"]) >= 4.00:
-                    ds[key] += CDSE_SENITNEL_2_OFFSET_400[key]
-                ds[key] /= CDSE_SENITNEL_2_SCALE[key]
-        return ds

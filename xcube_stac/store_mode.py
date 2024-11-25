@@ -19,42 +19,34 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import collections
 import json
 from typing import Iterator, Union
 
-import dask.array as da
 import numpy as np
-import pyproj
 import pystac
 import pystac_client.client
-import rioxarray
 import requests
+import tqdm
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
-from xcube.core.gridmapping import GridMapping
-
 from xcube.util.jsonschema import JsonObjectSchema
+from xcube.core.gridmapping import GridMapping
 
 from .accessor import (
     HttpsDataAccessor,
     S3DataAccessor,
 )
-from .constants import (
-    FloatInt,
-    LOG,
-    STAC_SEARCH_PARAMETERS_STACK_MODE,
-)
+from .constants import LOG
+from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
+from .helper import Helper
 from .constants import COLLECTION_PREFIX
 from .constants import TILE_SIZE
 from .mldataset import SingleItemMultiLevelDataset
-from .mldataset import StackModeMultiLevelDataset
-from .util import Util
-from .util import CdseUtil
-from .util import XcubeUtil
+from .stac_extension.raster import apply_offset_scaling
 from ._utils import (
-    add_nominal_datetime,
+    merge_datasets,
+    rename_dataset,
     convert_datetime2str,
     get_data_id_from_pystac_object,
     get_url_from_pystac_object,
@@ -63,9 +55,10 @@ from ._utils import (
     reproject_bbox,
     search_collections,
     update_dict,
-    xarray_rename_vars,
+    get_gridmapping,
 )
-from .stack import stack_items
+from .stack import groupby_solar_day
+from .stack import mosaic_take_first
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -105,13 +98,13 @@ class SingleStoreMode:
         url_mod: str,
         searchable: bool,
         storage_options_s3: dict,
-        util: Union[Util, CdseUtil, XcubeUtil],
+        helper: Helper,
     ):
         self._catalog = catalog
         self._url_mod = url_mod
         self._searchable = searchable
         self._storage_options_s3 = storage_options_s3
-        self._util = util
+        self._helper = helper
         self._https_accessor = None
         self._s3_accessor = None
 
@@ -143,7 +136,7 @@ class SingleStoreMode:
     ) -> Iterator[tuple[str, pystac.Item]]:
         for item in self._catalog.get_items(recursive=True):
             if is_valid_ml_data_type(data_type):
-                if not self._util.is_mldataset_available(item):
+                if not self._helper.is_mldataset_available(item):
                     continue
             data_id = get_data_id_from_pystac_object(item, catalog_url=self._url_mod)
             yield data_id, item
@@ -153,23 +146,12 @@ class SingleStoreMode:
         data_id: str = None,
         opener_id: str = None,
     ) -> JsonObjectSchema:
-        properties = {}
-        if opener_id is not None:
-            key = "_".join(opener_id.split(":")[:2])
-            key = f"open_params_{key}"
-            properties[key] = _OPEN_DATA_PARAMETERS[key]
-        if data_id is not None:
-            item = self.access_item(data_id)
-            for format_id in self._util.get_format_ids(item):
-                for key in _OPEN_DATA_PARAMETERS.keys():
-                    if format_id == key.split("_")[-1]:
-                        properties[key] = _OPEN_DATA_PARAMETERS[key]
-        if not properties:
-            properties = _OPEN_DATA_PARAMETERS
-
+        properties = self._get_open_params_data_opener(
+            data_id=data_id, opener_id=opener_id
+        )
         return JsonObjectSchema(
             properties=update_dict(
-                self._util.schema_open_params, properties, inplace=False
+                self._helper.schema_open_params, properties, inplace=False
             ),
             required=[],
             additional_properties=False,
@@ -185,7 +167,7 @@ class SingleStoreMode:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
         item = self.access_item(data_id)
-        ds = self.build_dataset(
+        ds = self.build_dataset_from_item(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
         return ds
@@ -208,21 +190,24 @@ class SingleStoreMode:
     def search_data(self, **search_params) -> Iterator[pystac.Item]:
         schema = self.get_search_params_schema()
         schema.validate_instance(search_params)
-        items = self._util.search_data(self._catalog, self._searchable, **search_params)
+        items = self._helper.search_items(
+            self._catalog, self._searchable, **search_params
+        )
         return items
 
     def get_search_params_schema(self) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=self._util.schema_search_params,
+            properties=self._helper.schema_search_params,
             required=[],
             additional_properties=False,
         )
 
-    def build_dataset(
+    def build_dataset_from_item(
         self,
         item: pystac.Item,
         opener_id: str = None,
         data_type: DataTypeLike = None,
+        target_gm: GridMapping = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         """Builds a dataset where the data variable names correspond
@@ -231,7 +216,7 @@ class SingleStoreMode:
         '<asset_key>_<data_variable_name>'
 
         Args:
-            xitem: internal item object
+            item: item object
             opener_id: Data opener identifier. Defaults to None.
             data_type: Data type assigning the return value data type.
                 May be given as type alias name, as a type, or as a
@@ -241,8 +226,8 @@ class SingleStoreMode:
             Dataset representation of the data resources identified
             by *data_id* and *open_params*.
         """
-        parsed_item = self._util.parse_item(item, **open_params)
-        access_params = self._util.get_data_access_params(
+        parsed_item = self._helper.parse_item(item, **open_params)
+        access_params = self._helper.get_data_access_params(
             parsed_item, opener_id=opener_id, data_type=data_type, **open_params
         )
         list_ds_asset = []
@@ -259,6 +244,7 @@ class SingleStoreMode:
                     f"open_params_dataset_{params["format_id"]}", {}
                 )
 
+            # open data with respective xcube data opener
             if params["protocol"] == "https":
                 opener = self._get_https_accessor(params)
                 ds_asset = opener.open_data(
@@ -283,32 +269,29 @@ class SingleStoreMode:
                     f"{params["href"]!r}. The item's url is given by {url!r}."
                 )
 
-            if isinstance(ds_asset, MultiLevelDataset):
-                var_names = list(ds_asset.base_dataset.keys())
-            else:
-                var_names = list(ds_asset.keys())
-            if len(var_names) == 1:
-                name_dict = {var_names[0]: asset_key}
-            else:
-                name_dict = {
-                    var_name: f"{asset_key}_{var_name}" for var_name in var_names
-                }
-            if isinstance(ds_asset, MultiLevelDataset):
-                ds_asset = ds_asset.apply(xarray_rename_vars, dict(name_dict=name_dict))
-            else:
-                ds_asset = ds_asset.rename_vars(name_dict=name_dict)
+            if isinstance(ds_asset, xr.Dataset):
+                ds_asset = rename_dataset(ds_asset, asset_key)
+                if open_params.get("apply_scaling", False):
+                    ds_asset = apply_offset_scaling(ds_asset, parsed_item, asset_key)
             list_ds_asset.append(ds_asset)
 
-        if len(list_ds_asset) == 1:
-            ds = list_ds_asset[0]
+        attrs = dict(
+            stac_catalog_url=self._catalog.get_self_href(), stac_item_id=item.id
+        )
+
+        if all(isinstance(ds, MultiLevelDataset) for ds in list_ds_asset):
+            ds = SingleItemMultiLevelDataset(
+                list_ds_asset,
+                parsed_item,
+                list(access_params.keys()),
+                target_gm=target_gm,
+                open_params=open_params,
+                attrs=attrs,
+            )
         else:
-            if all(isinstance(ds, MultiLevelDataset) for ds in list_ds_asset):
-                ds = SingleItemMultiLevelDataset(list_ds_asset, parsed_item)
-            else:
-                ds = list_ds_asset[0].copy()
-                for ds_asset in list_ds_asset[1:]:
-                    ds.update(ds_asset)
-                ds = self._util.apply_scaling_nodata(ds, parsed_item)
+            ds = merge_datasets(list_ds_asset, target_gm=target_gm)
+            ds.attrs = attrs
+
         return ds
 
     ##########################################################################
@@ -327,9 +310,8 @@ class SingleStoreMode:
         """
 
         if self._s3_accessor is None:
-            self._s3_accessor = self._util.s3_accessor(
+            self._s3_accessor = self._helper.s3_accessor(
                 access_params["root"],
-                fs=self._util.fs,
                 storage_options=update_dict(
                     self._storage_options_s3,
                     access_params["storage_options"],
@@ -342,9 +324,8 @@ class SingleStoreMode:
                 f"S3 object storage changed to {access_params["root"]!r}. "
                 "A new s3 data opener will be initialized."
             )
-            self._s3_accessor = self._util.s3_accessor(
+            self._s3_accessor = self._helper.s3_accessor(
                 access_params["root"],
-                fs=self._util.fs,
                 storage_options=update_dict(
                     self._storage_options_s3,
                     access_params["storage_options"],
@@ -376,23 +357,29 @@ class SingleStoreMode:
             self._https_accessor = HttpsDataAccessor(access_params["root"])
         return self._https_accessor
 
-
-class StackStoreMode:
-    """Implementations to access stacked STAC items within one collection"""
-
-    def __init__(
+    def _get_open_params_data_opener(
         self,
-        catalog: Union[pystac.Catalog, pystac_client.client.Client],
-        url_mod: str,
-        searchable: bool,
-        storage_options_s3: dict,
-        util: Util,
+        data_id: str = None,
+        opener_id: str = None,
     ):
-        self._catalog = catalog
-        self._url_mod = url_mod
-        self._searchable = searchable
-        self._storage_options_s3 = storage_options_s3
-        self._util = util
+        properties = {}
+        if opener_id is not None:
+            key = "_".join(opener_id.split(":")[:2])
+            key = f"open_params_{key}"
+            properties[key] = _OPEN_DATA_PARAMETERS[key]
+        if data_id is not None:
+            item = self.access_item(data_id)
+            for format_id in self._helper.get_format_ids(item):
+                for key in _OPEN_DATA_PARAMETERS.keys():
+                    if format_id == key.split("_")[-1]:
+                        properties[key] = _OPEN_DATA_PARAMETERS[key]
+        if not properties:
+            properties = _OPEN_DATA_PARAMETERS
+        return properties
+
+
+class StackStoreMode(SingleStoreMode):
+    """Implementations to access stacked STAC items within one collection"""
 
     def access_collection(self, data_id: str) -> pystac.Collection:
         """Access collection for a given data ID.
@@ -432,7 +419,7 @@ class StackStoreMode:
         for collection in self._catalog.get_collections():
             if is_valid_ml_data_type(data_type):
                 item = next(collection.get_items())
-                if not self._util.is_mldataset_available(item):
+                if not self._helper.is_mldataset_available(item):
                     continue
             yield collection.id, collection
 
@@ -440,16 +427,16 @@ class StackStoreMode:
         self,
         data_id: str = None,
         opener_id: str = None,
-    ):
+    ) -> JsonObjectSchema:
+        properties = self._get_open_params_data_opener(
+            data_id=data_id, opener_id=opener_id
+        )
         return JsonObjectSchema(
-            title="Open data parameters",
-            description=(
-                "All keyword arguments of the supported stacking library are "
-                "supported, but not listed specifically."
+            properties=update_dict(
+                self._helper.schema_open_params_stack, properties, inplace=False
             ),
-            properties=self._util.schema_open_params_stack,
-            required=[],
-            additional_properties=True,
+            required=["time_range", "bbox", "crs", "spatial_res"],
+            additional_properties=False,
         )
 
     def open_data(
@@ -457,58 +444,97 @@ class StackStoreMode:
         data_id: str,
         opener_id: str = None,
         data_type: DataTypeLike = None,
-        bbox: [FloatInt, FloatInt, FloatInt, FloatInt] = None,
-        spatial_res: float = None,
-        time_range: [str, str] = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> Union[xr.Dataset, MultiLevelDataset, None]:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
-        bbox_wgs84 = reproject_bbox(
-            bbox, open_params.get("crs", "EPSG:4326"), "EPSG:4326"
-        )
 
+        # search for items
+        bbox_wgs84 = reproject_bbox(
+            open_params["bbox"], open_params["crs"], "EPSG:4326"
+        )
         items = list(
-            self._util.search_data(
+            self._helper.search_items(
                 self._catalog,
                 self._searchable,
                 collections=[data_id],
                 bbox=bbox_wgs84,
-                time_range=time_range,
+                time_range=open_params["time_range"],
                 query=open_params.get("query"),
             )
         )
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
-                f"parameters bbox {bbox!r}, time_range {time_range!r} and "
+                f"parameters bbox {bbox_wgs84!r}, time_range"
+                f"{open_params["time_range"]!r} and "
                 f"query {open_params.get("query", "None")!r}"
             )
+            return None
         sorted(items, key=lambda item: item.properties.get("datetime"))
 
-        grouped = self._groupby_solar_day(items)
-        grouped = self._get_mosaic_timestamps(grouped, items)
-        parsed_items = self._util.parse_items_stack(items, grouped, **open_params)
-
-        target_gm = self._get_gridmapping(
-            bbox, spatial_res, crs, open_params.get("tile_size", TILE_SIZE)
-        )
+        # group items by date
+        grouped_items = groupby_solar_day(items)
 
         if opener_id is None:
             opener_id = ""
-        if "bands" not in open_params:
-
+        if "asset_names" not in open_params:
             assets = list_assets_from_item(
-                parsed_items[next(iter(parsed_items))][0],
-                supported_format_ids=self._util.supported_format_ids,
+                next(iter(grouped_items.values())),
+                supported_format_ids=self._helper.supported_format_ids,
             )
-            open_params["bands"] = [asset.extra_fields["id"] for asset in assets]
+            open_params["asset_names"] = [asset.extra_fields["id"] for asset in assets]
 
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds = stack_items(parsed_items, **open_params)
-            ds = self._util.apply_offset_scaling(ds, parsed_items)
+            ds = self.stack_items(grouped_items, **open_params)
+            ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
+            ds.attrs["stac_item_ids"] = dict(
+                {
+                    date.isoformat(): [item.id for item in items]
+                    for date, items in grouped_items.items()
+                }
+            )
+        return ds
+
+    def stack_items(
+        self,
+        grouped_items: dict,
+        opener_id: str = None,
+        data_type: DataTypeLike = None,
+        **open_params,
+    ) -> xr.Dataset:
+        target_gm = get_gridmapping(
+            open_params["bbox"],
+            open_params["spatial_res"],
+            open_params["crs"],
+            open_params.get("tile_size", TILE_SIZE),
+        )
+        ds_dates = []
+        np_datetimes = []
+        desc = "Stack tiles along time axis."
+        for datetime, items_for_date in tqdm.tqdm(
+            grouped_items.items(), total=len(grouped_items), desc=desc
+        ):
+            np_datetimes.append(np.datetime64(datetime).astype("datetime64[ns]"))
+            list_ds_items = []
+            for item in items_for_date:
+                ds = self.build_dataset_from_item(
+                    item,
+                    opener_id=opener_id,
+                    data_type=data_type,
+                    target_gm=target_gm,
+                    **open_params,
+                )
+                list_ds_items.append(ds)
+            ds_mosaic = mosaic_take_first(list_ds_items)
+            ds_dates.append(ds_mosaic)
+        ds = xr.concat(ds_dates, dim="time")
+        ds = ds.assign_coords(coords=dict(time=np_datetimes))
+        if "crs" in ds:
+            ds = ds.drop_vars("crs")
+            ds["crs"] = ds_dates[0].crs
         return ds
 
     def get_extent(self, data_id: str) -> dict:

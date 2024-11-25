@@ -19,96 +19,55 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import collections
-from typing import Union
 
 import dask.array as da
-import numpy as np
-import pyproj
 import pystac
-import rioxarray
 import xarray as xr
-from xcube.core.resampling import resample_in_space
-from xcube.core.gridmapping import GridMapping
-
 
 from ._utils import add_nominal_datetime
-from .constants import TILE_SIZE
-
-
-def stack_items(parsed_items: dict[list[pystac.Item]], **open_params) -> xr.Dataset:
-    target_gm = _get_gridmapping(
-        open_params["bbox"],
-        open_params["spatial_res"],
-        open_params["crs"],
-        open_params.get("tile_size", TILE_SIZE),
-    )
-    ds_dates = []
-    np_datetimes = []
-    for datetime, items_for_date in parsed_items.items():
-        print(datetime)
-        np_datetimes.append(np.datetime64(datetime).astype("datetime64[ns]"))
-        list_ds_items = []
-        for item in items_for_date:
-            list_ds_asset = []
-            for band in open_params["bands"]:
-                ds = rioxarray.open_rasterio(
-                    item.assets[band].href,
-                    chunks=dict(x=TILE_SIZE, y=TILE_SIZE),
-                    band_as_variable=True,
-                )
-                ds = ds.rename(dict(band_1=band))
-                ds = ds.where(ds != 0)
-                ds = resample_in_space(ds, target_gm)
-                list_ds_asset.append(ds)
-            ds = list_ds_asset[0].copy()
-            for ds_asset in list_ds_asset[1:]:
-                ds.update(ds_asset)
-            list_ds_items.append(ds)
-        ds_mosaic = mosaic_take_first(list_ds_items)
-        ds_dates.append(ds_mosaic)
-    ds = xr.concat(ds_dates, dim="time")
-    ds = ds.assign_coords(coords=dict(time=np_datetimes))
-    ds = ds.drop_vars("crs")
-    ds["crs"] = ds_dates[0].crs
-
-    return ds
+from ._utils import get_spatial_dims
+from .constants import PROCESSING_BASELINE_KEYS
 
 
 def groupby_solar_day(items: list[pystac.Item]) -> dict:
     items = add_nominal_datetime(items)
     nested_dict = collections.defaultdict(lambda: collections.defaultdict(list))
-    # group by date and processing baseline
+
+    processing_baseline_key = None
+    for key in PROCESSING_BASELINE_KEYS:
+        if key in items[0].properties:
+            processing_baseline_key = key
+            break
+
+    # group by date and processing baseline if given
     for idx, item in enumerate(items):
         date = item.properties["datetime_nominal"].date()
-        proc_version = float(item.properties["processorVersion"])
-        nested_dict[date][proc_version].append(idx)
+        if processing_baseline_key is None:
+            processing_baseline = 1
+        else:
+            processing_baseline = float(item.properties[processing_baseline_key])
+        nested_dict[date][processing_baseline].append(item)
+
     # if two processing baselines are available, take most recent one
     grouped = {}
     for date, proc_version_dic in nested_dict.items():
         proc_version = max(list(proc_version_dic.keys()))
         grouped[date] = nested_dict[date][proc_version]
-    return grouped
+
+    # get timestamp
+    grouped_new = {}
+    for date, items in grouped.items():
+        dt = items[0].properties["datetime_nominal"].replace(tzinfo=None)
+        grouped_new[dt] = items
+    return grouped_new
 
 
-def resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    ds = resample_in_space(ds, target_gm=target_gm, encode_cf=True)
-    if "spatial_ref" in ds.coords:
-        ds = ds.drop_vars("spatial_ref")
-    if "x_bnds" in ds.coords:
-        ds = ds.drop_vars("x_bnds")
-    if "y_bnds" in ds.coords:
-        ds = ds.drop_vars("y_bnds")
-    if "transformed_x" in ds.data_vars:
-        ds = ds.drop_vars("transformed_x")
-    if "transformed_y" in ds.data_vars:
-        ds = ds.drop_vars("transformed_y")
-    return ds
-
-
-def mosaic_take_first(list_ds):
+def mosaic_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     dim = "dummy"
     ds = xr.concat(list_ds, dim=dim)
-    ds = ds.drop_vars("crs")
+    if "crs" in ds:
+        ds = ds.drop_vars("crs")
+    y_coord, x_coord = get_spatial_dims(ds)
     ds_mosaic = xr.Dataset()
     for key in ds:
         axis = ds[key].dims.index(dim)
@@ -118,33 +77,9 @@ def mosaic_take_first(list_ds):
         da_arr_select = da.choose(first_non_nan_index, da_arr)
         ds_mosaic[key] = xr.DataArray(
             da_arr_select,
-            dims=("y", "x"),
-            coords={"y": ds.y, "x": ds.x},
+            dims=(y_coord, x_coord),
+            coords={y_coord: ds[y_coord], x_coord: ds[x_coord]},
         )
-    ds_mosaic["crs"] = list_ds[0].crs
+    if "crs" in list_ds[0]:
+        ds_mosaic["crs"] = list_ds[0].crs
     return ds_mosaic
-
-
-def _get_timestamps(grouped: dict, items: list[pystac.Item]) -> dict:
-    grouped_new = {}
-    for old_key, value in grouped.items():
-        new_key = items[value[0]].properties["datetime_nominal"].replace(tzinfo=None)
-        grouped_new[new_key] = value
-    return grouped
-
-
-def _get_gridmapping(
-    bbox: list[float],
-    spatial_res: float,
-    crs: Union[str, pyproj.crs.CRS],
-    tile_size: Union[int, tuple[int, int]] = TILE_SIZE,
-) -> GridMapping:
-    x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
-    y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
-    return GridMapping.regular(
-        size=(x_size, y_size),
-        xy_min=(bbox[0] - spatial_res / 2, bbox[1] - spatial_res / 2),
-        xy_res=spatial_res,
-        crs=crs,
-        tile_size=tile_size,
-    )

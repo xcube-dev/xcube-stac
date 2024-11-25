@@ -39,7 +39,6 @@ DATA_STORE_ID = "stac"
 DATA_STORE_ID_CDSE = "stac-cdse"
 CDSE_STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
-CDSE_S3_BUCKET = "eodata"
 MAP_CDSE_COLLECTION_FORMAT = {"Sentinel-2": "jp2"}
 
 # xcube specific constants
@@ -88,6 +87,7 @@ STAC_CRS = "EPSG:4326"
 TILE_SIZE = 1024
 LOG = logging.getLogger("xcube.stac")
 FloatInt = Union[float, int]
+PROCESSING_BASELINE_KEYS = ["processorVersion", "s2:processing_baseline"]
 
 # parameter schemas
 STAC_STORE_PARAMETERS = dict(
@@ -160,14 +160,18 @@ STAC_SEARCH_PARAMETERS = dict(
     query=SCHEMA_ADDITIONAL_QUERY,
 )
 
-
-STAC_OPEN_PARAMETERS = dict(asset_names=SCHEMA_ASSET_NAMES)
+STAC_OPEN_PARAMETERS = dict(
+    asset_names=SCHEMA_ASSET_NAMES,
+    apply_scaling=JsonBooleanSchema(
+        title="Apply scaling, offset, and no-data values to data"
+    ),
+)
 
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
+    **STAC_OPEN_PARAMETERS,
     time_range=SCHEMA_TIME_RANGE,
     bbox=SCHEMA_BBOX,
     crs=SCHEMA_CRS,
     spatial_res=SCHEMA_SPATIAL_RES,
     query=SCHEMA_ADDITIONAL_QUERY,
-    asset_names=SCHEMA_ASSET_NAMES,
 )

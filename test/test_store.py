@@ -38,7 +38,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from xcube_stac.constants import DATA_STORE_ID_CDSE
-from xcube_stac.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
+from xcube_stac.sen2.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
 from xcube_stac.accessor import HttpsDataAccessor
 from xcube_stac.accessor import S3DataAccessor
 
@@ -49,8 +49,8 @@ SKIP_HELP = (
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
 CDSE_CREDENTIALS = {
-    "key": "O0M0CUQIDQO9TDZ4D8NR",
-    "secret": "qPUyXs9G6j8on6MY5KPhQNHuA5uZTqxEscrbBCGx",
+    "key": "xxx",
+    "secret": "xxx",
 }
 
 
@@ -95,19 +95,6 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_cdse_sen2 = (
             "collections/SENTINEL-2/items/"
             "S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"
-        )
-
-    @pytest.mark.vcr()
-    def test_wrong_stack_mode_error(self):
-        # Error is raised by xcube data store framework when validating the
-        # data store parameters.
-        with self.assertRaises(DataStoreError) as cm:
-            new_data_store(
-                DATA_STORE_ID, url=self.url_searchable, stack_mode="stackstac"
-            )
-        self.assertEqual(
-            "Invalid parameterization detected: 'odc-stac' was expected",
-            f"{cm.exception}",
         )
 
     @pytest.mark.vcr()
@@ -184,7 +171,7 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = list(itertools.islice(data_ids, 1))
         self.assertEqual(1, len(data_ids))
         item = store._impl.access_item(data_ids[0])
-        format_ids = store._util.get_format_ids(item)
+        format_ids = store._helper.get_format_ids(item)
         self.assertEqual(["geotiff"], format_ids)
 
     @pytest.mark.vcr()
@@ -387,12 +374,13 @@ class StacDataStoreTest(unittest.TestCase):
             DATA_STORE_ID_CDSE,
             key=CDSE_CREDENTIALS["key"],
             secret=CDSE_CREDENTIALS["secret"],
-            stack_mode=True,
+            stack_mode=False,
         )
-        schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
+        schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen2)
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("bands", schema.properties)
-        self.assertIn("resolution", schema.properties)
+        self.assertIn("asset_names", schema.properties)
+        self.assertIn("open_params_dataset_jp2", schema.properties)
+        self.assertIn("open_params_mldataset_jp2", schema.properties)
 
     @pytest.mark.vcr()
     def test_get_open_data_params_schema_stack_mode(self):
@@ -400,8 +388,11 @@ class StacDataStoreTest(unittest.TestCase):
         schema = store.get_open_data_params_schema()
         # no optional arguments
         self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("asset_names", schema.properties)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
+        self.assertIn("crs", schema.properties)
+        self.assertIn("spatial_res", schema.properties)
         self.assertIn("query", schema.properties)
 
         # CDSE STAC API Sentinel-2
@@ -411,14 +402,17 @@ class StacDataStoreTest(unittest.TestCase):
             secret=CDSE_CREDENTIALS["secret"],
             stack_mode=True,
         )
-        schema = store.get_open_data_params_schema()
+        schema = store.get_open_data_params_schema(data_id="SENTINEL-2")
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("bands", schema.properties)
-        self.assertIn("resolution", schema.properties)
+        self.assertIn("asset_names", schema.properties)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
+        self.assertIn("crs", schema.properties)
+        self.assertIn("spatial_res", schema.properties)
         self.assertIn("processing_level", schema.properties)
-        self.assertIn("processing_baseline", schema.properties)
+        self.assertNotIn("query", schema.properties)
+        self.assertIn("open_params_dataset_jp2", schema.properties)
+        self.assertIn("open_params_mldataset_jp2", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -428,7 +422,7 @@ class StacDataStoreTest(unittest.TestCase):
         ds = store.open_data(self.data_id_time_range)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            ["blue_p50", "blue_p25", "blue_p75", "qa_f"], list(ds.data_vars)
+            ["blue_p50", "blue_p25", "blue_p75", "qa_f", "crs"], list(ds.data_vars)
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
@@ -447,11 +441,13 @@ class StacDataStoreTest(unittest.TestCase):
 
         # open data with open_params
         mlds = store.open_data(
-            self.data_id_time_range, asset_names=["blue_p25"], data_type="mldataset"
+            self.data_id_time_range,
+            asset_names=["blue_p25", "crs"],
+            data_type="mldataset",
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
-        self.assertCountEqual(["blue_p25"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25", "crs"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -465,7 +461,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
-        self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25", "blue_p75", "crs"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -630,185 +626,103 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
 
         # open data as dataset
+        bbox_utm = [659574, 5892990, 659724, 5893140]
         ds = store.open_data(
             data_id="sentinel-2-l2a",
-            data_type="dataset",
-            bbox=[9, 47, 10, 48],
-            time_range=["2020-07-01", "2020-07-05"],
-            query={"s2:processing_baseline": {"eq": "02.14"}},
-            bands=["red", "green", "blue"],
-            groupby="id",
-            chunks={"time": 1, "x": 2048, "y": 2048},
+            bbox=bbox_utm,
+            time_range=["2023-11-01", "2023-11-10"],
+            spatial_res=10,
+            crs="EPSG:32635",
+            asset_names=["red", "green", "blue"],
+            apply_scaling=True,
+            open_params_dataset_geotiff=dict(tile_size=(512, 512)),
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [8, 11163, 7603],
+            [4, 16, 16],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
-            [1, 2048, 2048],
-            [
-                ds.chunksizes["time"][0],
-                ds.chunksizes["y"][0],
-                ds.chunksizes["x"][0],
-            ],
+            [1, 16, 16],
+            [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
         )
 
-        # open data as mldataset
-        mlds = store.open_data(
-            data_id="sentinel-2-l2a",
-            data_type="mldataset",
-            bbox=[9, 47, 10, 48],
-            time_range=["2020-07-01", "2020-07-05"],
-            query={"s2:processing_baseline": {"eq": "02.14"}},
-            bands=["red", "green", "blue"],
-            groupby="id",
-            chunks={"time": 1, "x": 2048, "y": 2048},
-        )
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(5, mlds.num_levels)
-        ds = mlds.base_dataset
-        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
-        self.assertCountEqual(
-            [8, 11163, 7603],
-            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
-        )
-        self.assertCountEqual(
-            [1, 2048, 2048],
-            [
-                ds.chunksizes["time"][0],
-                ds.chunksizes["y"][0],
-                ds.chunksizes["x"][0],
-            ],
-        )
-
-        # open data as mldataset with reprojection
-        mlds = store.open_data(
-            data_id="sentinel-2-l2a",
-            data_type="mldataset",
-            bbox=[9, 47, 10, 48],
-            time_range=["2020-07-01", "2020-07-05"],
-            query={"s2:processing_baseline": {"eq": "02.14"}},
-            groupby="id",
-            crs="EPSG:4326",
-            chunks={"time": 1, "x": 2048, "y": 2048},
-        )
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(5, mlds.num_levels)
-        ds = mlds.get_dataset(3)
-        self.assertEqual(16, len(ds.data_vars))
-        self.assertCountEqual(
-            [8, 1396, 1387],
-            [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
-        )
-        self.assertCountEqual(
-            [1, 1396, 1387],
-            [
-                ds.chunksizes["time"][0],
-                ds.chunksizes["latitude"][0],
-                ds.chunksizes["longitude"][0],
-            ],
-        )
+    # TODO: the following two tests work fine locally. However, s3fs is not supported
+    # TODO: by vcrpy. New testing strategy needs to be developed in an upcoming PR.
+    # @pytest.mark.vcr()
+    # def test_open_data_cdse_seninel_2(self):
+    #     store = new_data_store(
+    #         DATA_STORE_ID_CDSE,
+    #         key=CDSE_CREDENTIALS["key"],
+    #         secret=CDSE_CREDENTIALS["secret"],
+    #         apply_scaling=True,
+    #     )
+    #
+    #     # open data as dataset
+    #     ds = store.open_data(self.data_id_cdse_sen2)
+    #     self.assertIsInstance(ds, xr.Dataset)
+    #     data_vars = list(ds.data_vars)
+    #     data_vars.remove("crs")
+    #     self.assertCountEqual(
+    #         CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS["L2A"].keys(),
+    #         data_vars,
+    #     )
+    #     self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
+    #     self.assertCountEqual(
+    #         [1024, 1024], [ds.B01.chunksizes["x"][0], ds.AOT.chunksizes["y"][0]]
+    #     )
+    #
+    #     # open data as multi-level dataset
+    #     mlds = store.open_data(
+    #         self.data_id_cdse_sen2,
+    #         asset_names=["B04", "B03", "B02"],
+    #         data_type="mldataset",
+    #         apply_scaling=True,
+    #     )
+    #     self.assertIsInstance(mlds, MultiLevelDataset)
+    #     ds = mlds.get_dataset(2)
+    #     data_vars = list(ds.data_vars)
+    #     data_vars.remove("crs")
+    #     self.assertCountEqual(["B04", "B03", "B02"], data_vars)
+    #     self.assertCountEqual([2745, 2745], [ds.sizes["y"], ds.sizes["x"]])
+    #     self.assertCountEqual(
+    #         [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+    #     )
 
     # @pytest.mark.vcr()
-    def test_open_data_cdse_seninel_2(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
-
-        # open data as dataset
-        ds = store.open_data(self.data_id_cdse_sen2)
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS["L2A"].keys(), list(ds.data_vars)
-        )
-        self.assertCountEqual([10977, 10977], [ds.sizes["y"], ds.sizes["x"]])
-        self.assertCountEqual(
-            [1024, 1024], [ds.AOT.chunksizes["x"][0], ds.AOT.chunksizes["y"][0]]
-        )
-
-        # open data as multi-level dataset
-        mlds = store.open_data(
-            self.data_id_cdse_sen2,
-            bands=["B04", "B03", "B02"],
-            data_type="mldataset",
-        )
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        ds = mlds.get_dataset(2)
-        self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
-        self.assertCountEqual([2742, 2742], [ds.sizes["y"], ds.sizes["x"]])
-        self.assertCountEqual(
-            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
-        )
-
-    # @pytest.mark.vcr()
-    def test_open_data_cdse_seninel_2_stack_mode(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-            stack_mode=True,
-        )
-
-        # open data as dataset
-        ds = store.open_data(
-            data_id="SENTINEL-2",
-            bbox=[8.0, 46.0, 9.0, 47.0],
-            time_range=["2020-07-01", "2020-07-15"],
-            processing_level="L2A",
-            processing_baseline="5.00",
-            bands=["B03", "B04"],
-            crs="EPSG:4326",
-            resolution=0.00018,
-            chunks=dict(time=1, latitude=1024, longitude=1024),
-            groupby="solar_day",
-        )
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["B03", "B04"], list(ds.data_vars))
-        self.assertCountEqual(
-            [6, 5557, 5556],
-            [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
-        )
-        self.assertCountEqual(
-            [1, 1024, 1024],
-            [
-                ds.chunksizes["time"][0],
-                ds.chunksizes["latitude"][0],
-                ds.chunksizes["longitude"][0],
-            ],
-        )
-
-        # open data as mldataset
-        mlds = store.open_data(
-            data_id="SENTINEL-2",
-            data_type="mldataset",
-            bbox=[8.0, 46.0, 9.0, 47.0],
-            time_range=["2020-07-01", "2020-07-15"],
-            processing_level="L2A",
-            processing_baseline="5.00",
-            bands=["B03", "B04"],
-            crs="EPSG:4326",
-            chunks=dict(time=1, latitude=1024, longitude=1024),
-            groupby="solar_day",
-        )
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        ds = mlds.get_dataset(2)
-        self.assertCountEqual(["B04", "B03"], list(ds.data_vars))
-        self.assertCountEqual(
-            [6, 1396, 1387],
-            [ds.sizes["time"], ds.sizes["latitude"], ds.sizes["longitude"]],
-        )
-        self.assertCountEqual(
-            [1, 1024, 1024],
-            [
-                ds.chunksizes["time"][0],
-                ds.chunksizes["latitude"][0],
-                ds.chunksizes["longitude"][0],
-            ],
-        )
+    # def test_open_data_cdse_seninel_2_stack_mode(self):
+    #     store = new_data_store(
+    #         DATA_STORE_ID_CDSE,
+    #         key=CDSE_CREDENTIALS["key"],
+    #         secret=CDSE_CREDENTIALS["secret"],
+    #         stack_mode=True,
+    #     )
+    #
+    #     # open data as dataset
+    #     bbox_utm = [659574, 5892990, 659724, 5893140]
+    #     ds = store.open_data(
+    #         data_id="SENTINEL-2",
+    #         bbox=bbox_utm,
+    #         time_range=["2023-11-01", "2023-11-10"],
+    #         processing_level="L2A",
+    #         spatial_res=10,
+    #         crs="EPSG:32635",
+    #         asset_names=["B03", "B04"],
+    #         apply_scaling=True,
+    #     )
+    #     self.assertIsInstance(ds, xr.Dataset)
+    #     data_vars = list(ds.data_vars)
+    #     data_vars.remove("crs")
+    #     self.assertCountEqual(["B03", "B04"], data_vars)
+    #     self.assertCountEqual(
+    #         [4, 16, 16],
+    #         [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
+    #     )
+    #     self.assertCountEqual(
+    #         [1, 16, 16],
+    #         [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
+    #     )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
@@ -918,7 +832,6 @@ class StacDataStoreTest(unittest.TestCase):
                 bbox=[9.0, 47.0, 9.1, 47.1],
                 time_range=["2020-07-01", "2020-07-05"],
                 processing_level="L2A",
-                processing_baseline="2.14",
             )
         )
 
@@ -926,9 +839,14 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids_expected = [
             "S2B_MSIL2A_20200705T101559_N0214_R065_T32TMT_20200705T135630.SAFE",
             "S2A_MSIL2A_20200703T103031_N0214_R108_T32TNT_20200703T142409.SAFE",
-            "S2B_MSIL2A_20200705T101559_N0214_R065_T32TNT_20200705T135630.SAFE",
+            "S2A_MSIL2A_20200703T103031_N0500_R108_T32TNT_20230613T212700.SAFE",
             "S2A_MSIL2A_20200703T103031_N0214_R108_T32TMT_20200703T142409.SAFE",
+            "S2A_MSIL2A_20200703T103031_N0500_R108_T32TMT_20230613T212700.SAFE",
+            "S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912.SAFE",
+            "S2B_MSIL2A_20200705T101559_N0500_R065_T32TNT_20230530T175912.SAFE",
+            "S2B_MSIL2A_20200705T101559_N0214_R065_T32TNT_20200705T135630.SAFE",
         ]
+
         data_ids_expected = [prefix + data_id for data_id in data_ids_expected]
 
         expected_descriptor = dict(
@@ -943,7 +861,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=("2020-07-05T10:15:59.024000Z", "2020-07-05T10:15:59.024000Z"),
         )
 
-        self.assertEqual(4, len(descriptors))
+        self.assertEqual(8, len(descriptors))
         for d in descriptors:
             self.assertIsInstance(d, DatasetDescriptor)
         self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
@@ -1095,7 +1013,6 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
         self.assertIn("processing_level", schema.properties)
-        self.assertIn("processing_baseline", schema.properties)
         self.assertIn("collections", schema.properties)
 
     @pytest.mark.vcr()

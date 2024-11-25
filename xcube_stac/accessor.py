@@ -21,8 +21,9 @@
 
 from typing import Union
 
-import s3fs
+import dask
 import rasterio.session
+import rioxarray
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
@@ -30,7 +31,6 @@ from xcube.core.store import new_data_store
 
 from ._utils import is_valid_ml_data_type
 from .constants import LOG
-from .constants import CDSE_S3_BUCKET
 from .mldataset import Jp2MultiLevelDataset
 
 
@@ -77,7 +77,7 @@ class S3DataAccessor:
     the zarr, geotiff and netcdf format via the AWS S3 protocol.
     """
 
-    def __init__(self, root: str, storage_options: dict = None, **kwargs):
+    def __init__(self, root: str, storage_options: dict = None):
         self._root = root
         if storage_options is None:
             storage_options = {}
@@ -115,28 +115,32 @@ class S3Sentinel2DataAccessor:
     the jp2 format  of Sentinel-2 data via the AWS S3 protocol.
     """
 
-    def __init__(self, **storage_options_s3):
-        self._root = CDSE_S3_BUCKET
+    def __init__(self, root: str, storage_options: dict = None):
+        self._root = root
         self.session = rasterio.session.AWSSession(
-            aws_unsigned=storage_options_s3["anon"],
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"].split(
-                "//"
-            )[1],
-            aws_access_key_id=storage_options_s3["key"],
-            aws_secret_access_key=storage_options_s3["secret"],
+            aws_unsigned=storage_options["anon"],
+            endpoint_url=storage_options["client_kwargs"]["endpoint_url"].split("//")[
+                1
+            ],
+            aws_access_key_id=storage_options["key"],
+            aws_secret_access_key=storage_options["secret"],
         )
         self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
+        # keep the rasterio environment open so that the data can be accessed
+        # when plotting or writing the data
         self.env = self.env.__enter__()
-        self.fs = s3fs.S3FileSystem(
-            anon=False,
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"],
-            key=storage_options_s3["key"],
-            secret=storage_options_s3["secret"],
-        )
+        # dask multi-threading needs to be turned off, otherwise the GDAL
+        # reader for JP2 raises error.
+        dask.config.set(scheduler="single-threaded")
+
+    def close(self):
+        if self.env is not None:
+            LOG.debug("Exit rasterio.env.Env for CDSE data access.")
+            self.env.__exit__()
+        self.env = None
 
     def __del__(self):
-        LOG.debug("Exit rasterio.env.Env for CDSE data access.")
-        self.env.__exit__()
+        self.close()
 
     @property
     def root(self) -> str:
@@ -151,9 +155,19 @@ class S3Sentinel2DataAccessor:
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         if opener_id is None:
             opener_id = ""
+        if "tile_size" in open_params:
+            LOG.info(
+                "The parameter tile_size is set to (1024, 1024), which is the "
+                "native chunk size of the jp2 files in the Sentinel-2 archive."
+            )
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
-            ds = Jp2MultiLevelDataset(access_params, **open_params)
+            return Jp2MultiLevelDataset(access_params, **open_params)
         else:
-            ds = Jp2MultiLevelDataset(access_params, **open_params)
-            ds = ds.get_dataset(0)
-        return ds
+            return rioxarray.open_rasterio(
+                (
+                    f"{access_params["protocol"]}://{access_params["root"]}/"
+                    f"{access_params["fs_path"]}"
+                ),
+                chunks=dict(x=1024, y=1024),
+                band_as_variable=True,
+            )

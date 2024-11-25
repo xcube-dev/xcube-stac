@@ -298,4 +298,204 @@ interactions:
     status:
       code: 200
       message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://catalogue.dataspace.copernicus.eu/stac/collections
+  response:
+    body:
+      string: "{\"collections\":[{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"COP-DEM\",\"title\":\"COP-DEM\",\"description\":\"The
+        Copernicus DEM is a Digital Surface Model (DSM) that represents the surface
+        of the Earth including buildings, infrastructure and vegetation. Data were
+        acquired through the TanDEM-X mission between 2011 and 2015 [https://spacedata.copernicus.eu/collections/copernicus-digital-elevation-model].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2010-12-12T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/COP-DEM\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/COP-DEM/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"S2GLC\",\"title\":\"S2GLC\",\"description\":\"The
+        S2GLC 2017 product represents land cover classification of a major portion
+        of the European continent. The classification has been performed using multi-temporal
+        Sentinel-2 data collected during the year 2017 with the methodology developed
+        in the frame of the Sentinel-2 Global Land Cover (S2GLC) project. The Sentinel-2
+        Global Land Cover (S2GLC) project was founded by the European Space Agency
+        (ESA) through its Scientific Exploitation of Operational Missions (SEOM) element
+        [https://s2glc.cbk.waw.pl/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-19.0,36.0,51.0,72.0]]},\"temporal\":{\"interval\":[[\"2017-01-01T00:00:00Z\",\"2017-12-30T23:59:59Z\"]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/S2GLC\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/S2GLC/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"TERRAAQUA\",\"title\":\"TERRAAQUA\",\"description\":\"Terra
+        MODIS and Aqua MODIS are viewing the entire Earth's surface every 1 to 2 days,
+        acquiring data in 36 spectral bands. MODIS (or Moderate Resolution Imaging
+        Spectroradiometer) is a key instrument aboard the Terra and Aqua satellites.
+        Terra's orbit around the Earth is timed so that it passes from north to south
+        across the equator in the morning, while Aqua passes south to north over the
+        equator in the afternoon [https://modis.gsfc.nasa.gov/about/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-19.0,36.0,51.0,72.0]]},\"temporal\":{\"interval\":[[\"2000-02-16T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/TERRAAQUA\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/TERRAAQUA/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SENTINEL-3\",\"title\":\"SENTINEL-3\",\"description\":\"Sentinel-3
+        is a constellation of two radar imaging satellites developed to support Copernicus
+        ocean, land, atmospheric, emergency, security and cryospheric applications.
+        Both S3A, launched in February 2016, and S3B, launched in April 2018, are
+        part of the Copernicus Programme- the European Union\u2019s Earth observation
+        program, managed by the European Commission (COM) [https://www.eoportal.org/satellite-missions/copernicus-sentinel-3].
+        The spacecraft carries four main instruments: OLCI (Ocean and Land Colour
+        Instrument), SLSTR (Sea and Land Surface Temperature Instrument), SRAL (SAR
+        Radar Altimeter) and MWR (Microwave Radiometer). The SENTINEL-3 mission is
+        jointly operated by the European Space Agency (ESA) and supported by EUMETSAT
+        (European Organisation for the Exploitation of Meteorological Satellites)
+        [https://sentinels.copernicus.eu/web/sentinel/missions/sentinel-3].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2016-03-01T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-3\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-3/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SENTINEL-5P\",\"title\":\"SENTINEL-5P\",\"description\":\"The
+        Copernicus\u202FSentinel-5 Precursor mission dedicated to monitoring our atmosphere,
+        consists of one satellite carrying the TROPOspheric Monitoring Instrument
+        (TROPOMI) instrument. It aims to fill in global atmospheric data gap between
+        the retired ENVISAT and AURA missions and the upcoming Sentinel-5 mission.
+        The primary goal of TROPOMI is to provide daily global observations of key
+        atmospheric constituents related to monitoring and forecasting air quality,
+        the ozone layer, and climate change [https://dataspace.copernicus.eu/explore-data/data-collections/sentinel-data/sentinel-5p].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2018-04-30T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-5P\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-5P/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SENTINEL-1-RTC\",\"title\":\"SENTINEL-1-RTC\",\"description\":\"Sentinel-1
+        Radiometric Terrain Corrected (RTC) SAR Backscatter is a product processed
+        from Sentinel-1 ground range detected (GRD) and is compliant with CEOS Analysis
+        Ready Data for Land (CARD4L) specifications for Normalised Radar Backscatter
+        (NRB) products [https://collections.eurodatacube.com/card4l/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2018-01-01T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-1-RTC\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-1-RTC/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SENTINEL-1\",\"title\":\"SENTINEL-1\",\"description\":\"The
+        Sentinel-1 mission is the European Radar Observatory for the Copernicus joint
+        initiative of the European Commission (EC) and the European Space Agency (ESA).
+        The Sentinel-1 mission includes C-band imaging operating in four exclusive
+        imaging modes with different resolution (down to 5 m) and coverage (up to
+        400 km). It provides dual polarization capability, short revisit times and
+        rapid product delivery. Additionally, precise measurements of spacecraft position
+        and attitude are available for every observation [https://dataspace.copernicus.eu/explore-data/data-collections/sentinel-data/sentinel-1].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2014-10-01T02:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-1\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-1/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SMOS\",\"title\":\"SMOS\",\"description\":\"The
+        Soil Moisture and Ocean Salinity (SMOS) mission was launched on 2 November
+        2009. It is one of the European Space Agency's Earth Explorer missions, which
+        form the science and research element of the Living Planet Programme. The
+        payload of SMOS consists of the Microwave Imaging Radiometer using Aperture
+        Synthesis (MIRAS) instrument, a passive microwave 2-D interferometric radiometer,
+        operating in L-band (1.413 GHz, 21 cm) within a protected wavelength/frequency
+        band [https://creodias.eu/eodata/smos/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2010-01-13T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SMOS\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SMOS/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"LANDSAT-7\",\"title\":\"LANDSAT-7\",\"description\":\"Landsat-7
+        continues the goal of the Landsat programme to image repetitively Earth's
+        land and coastal areas with the aim of monitoring changes to those areas over
+        time. The satellite continues to provide data continuity for the Thematic
+        Mapper aboard Landsat-4 and 5, utilising an enhanced version of the instrument.
+        The Enhanced Thematic Mapper Plus (ETM+) is the main instrument on board Landsat-7
+        and has been operational since 1999. It provides 30 m resolution for visible
+        (VIS), near infrared (NIR) and shortwave infrared (SWIR) as well as 60 m resolution
+        for thermal infrared. Moreover, it adds 15 m resolution panchromatic band
+        (PAN) [https://creodias.eu/eodata/landsat-7/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-19.0,36.0,51.0,72.0]]},\"temporal\":{\"interval\":[[\"1999-07-02T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/LANDSAT-7\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/LANDSAT-7/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"CCM\",\"title\":\"CCM\",\"description\":\"Copernicus
+        Complementary Missions Datasets CCM Core datasets. More information can be
+        found via https://dataspace.copernicus.eu/explore-data/data-collections/copernicus-contributing-missions/ccm-collections-description.\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2003-01-01T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/CCM\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/CCM/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"LANDSAT-5\",\"title\":\"LANDSAT-5\",\"description\":\"Landsat-5
+        was launched on 1 March 1984 and the mission ended on 5 June 2013. It launched
+        the Thematic Mapper (TM) which was a multispectral scanning radiometer operating
+        in the visible and Infra-Red regions of the Electromagnetic Spectrum. It was
+        characterized by 185 km swath width and 30 m resolution for visible (VIS),
+        near infrared (NIR) and shortwave infrared (SWIR) while 120 m resolution for
+        thermal infrared. The acquired Landsat TM scene covers approximately 183 x
+        172.8 km. The objective of Landsat-5 and any other Landsat mission was to
+        image repetitively Earth's land and coastal areas with the aim of monitoring
+        changes to those areas over time [https://creodias.eu/eodata/landsat-5/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-19.0,36.0,51.0,72.0]]},\"temporal\":{\"interval\":[[\"1984-04-06T00:00:00Z\",\"2011-11-16T23:59:59Z\"]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/LANDSAT-5\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/LANDSAT-5/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"ENVISAT\",\"title\":\"ENVISAT\",\"description\":\"Envisat
+        was ESA's successor to ERS. Launched on 1 March 2002 on an Ariane-5 rocket
+        from Europe's spaceport in French Guiana, Envisat was the largest Earth observation
+        spacecraft ever built with 10 instruments aboard and at eight tonnes was the
+        largest civilian Earth observation mission ever launched. More advanced imaging
+        radar, radar altimeter and temperature-measuring radiometer instruments extended
+        ERS data sets. This was supplemented by new instruments including a medium-resolution
+        spectrometer sensitive to both land features and ocean colour. Envisat also
+        carried two atmospheric sensors monitoring trace gases. The Envisat mission
+        ended on 8 April 2012, following the unexpected loss of contact with the satellite
+        [https://earth.esa.int/eogateway/missions/Envisat].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2002-05-17T00:00:00Z\",\"2012-04-08T23:59:59Z\"]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/ENVISAT\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/ENVISAT/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"LANDSAT-8-ESA\",\"title\":\"LANDSAT-8-ESA\",\"description\":\"Landsat-8
+        was launched on 11 February 2013. The satellite is part of the long-running
+        Landsat programme led by USGS and NASA and carries the Operational Land Imager
+        (OLI) and the Thermal Infrared Sensor (TIRS). The Operational Land Imager
+        (OLI), on board Landsat-8 measures in the VIS, NIR and SWIR portions of the
+        spectrum. Its images have 15 m panchromatic and 30 m multi-spectral spatial
+        resolutions along a 185 km wide swath, covering wide areas of the Earth\u2019s
+        landscape while providing sufficient resolution to distinguish features like
+        urban centres, farms, forests and other land uses. The entire Earth falls
+        within view once every 16 days due to Landsat-8\u2019s near-polar orbit. The
+        Thermal Infra-Red Sensor instrument, on board Landsat-8, is a thermal imager
+        operating in pushbroom mode with two Infra-Red channels: 10.8 \xB5m and 12
+        \xB5m with 100 m spatial resolution [https://creodias.eu/eodata/landsat-8/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-19.0,36.0,51.0,72.0]]},\"temporal\":{\"interval\":[[\"2013-03-24T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/LANDSAT-8-ESA\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/LANDSAT-8-ESA/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SENTINEL-6\",\"title\":\"SENTINEL-6\",\"description\":\"The
+        Sentinel-6 mission represents a groundbreaking advancement in Earth observation,
+        providing invaluable insights for scientists, environmentalists, and stakeholders
+        worldwide. At the heart of this mission is the cutting-edge radar altimeter
+        instrument, designed to measure sea surface height and monitor key oceanographic
+        parameters with unparalleled accuracy. The Sentinel-6 satellite collects precise
+        data by employing advanced radar technology, allowing for a comprehensive
+        understanding of sea level variations, ocean currents, and climate patterns
+        [https://creodias.eu/eodata/sentinel-6/].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2021-10-09T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-6\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-6/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"GLOBAL-MOSAICS\",\"title\":\"GLOBAL-MOSAICS\",\"description\":null,\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2020-01-01T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/GLOBAL-MOSAICS\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/GLOBAL-MOSAICS/items\"}]},{\"stac_version\":\"1.0.0\",\"stac_extensions\":[],\"id\":\"SENTINEL-2\",\"title\":\"SENTINEL-2\",\"description\":\"The
+        Copernicus Sentinel-2 mission consists of two polar-orbiting satellites that
+        are positioned in the same sun-synchronous orbit, with a phase difference
+        of 180\xB0. It aims to monitor changes in land surface conditions. The satellites
+        have a wide swath width (290 km) and a high revisit time. Sentinel-2 is equipped
+        with an optical instrument payload that samples 13 spectral bands: four bands
+        at 10 m, six bands at 20 m and three bands at 60 m spatial resolution [https://dataspace.copernicus.eu/explore-data/data-collections/sentinel-data/sentinel-2].\",\"type\":\"Collection\",\"license\":\"proprietary\",\"extent\":{\"spatial\":{\"bbox\":[[-180.0,-90.0,180.0,90.0]]},\"temporal\":{\"interval\":[[\"2015-07-01T00:00:00Z\",null]]}},\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"parent\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2\"},{\"rel\":\"items\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items\"}]}],\"links\":[{\"rel\":\"root\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac\"},{\"rel\":\"self\",\"type\":\"application/json\",\"href\":\"https://catalogue.dataspace.copernicus.eu/stac/collections\"}]}"
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
+      Access-Control-Allow-Methods:
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '20209'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 22 Nov 2024 09:53:51 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      request-id:
+      - f2a601ec-45cb-4886-8677-25f767b6181b
+      x-envoy-upstream-service-time:
+      - '19'
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.3
+    method: GET
+    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
+  response:
+    body:
+      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
+        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
+        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
+        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
+        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
+    headers:
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
+      Access-Control-Allow-Methods:
+      - GET, PUT, POST, DELETE, PATCH, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2879'
+      Content-Type:
+      - application/json
+      Date:
+      - Fri, 22 Nov 2024 12:29:31 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      request-id:
+      - 4cba01e7-2484-473f-bfdf-bdba5dba69ce
+      x-envoy-upstream-service-time:
+      - '70'
+    status:
+      code: 200
+      message: OK
 version: 1

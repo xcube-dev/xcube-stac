@@ -79,9 +79,8 @@ ds = store.open_data(
     time_range=["2023-11-01", "2023-12-01"],
     processing_level="L2A",
     spatial_res=10,
-    tile_size=(16, 16),
     crs="EPSG:32635",
-    bands=[
+    asset_names=[
         "B01",
         "B02",
         "B03",

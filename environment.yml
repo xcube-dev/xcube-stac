@@ -16,6 +16,7 @@ dependencies:
   - pyproj
   - pystac-client
   - shapely
+  - tqdm
   - xarray
   - xcube >= 1.7.0
   # for testing
