@@ -350,7 +350,7 @@ class HelperCdseCreodiasVM(Helper):
             "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
         )
         href_base = item.assets["PRODUCT"].extra_fields["alternate"]["s3"]["href"][1:]
-        href_base = href_base.replace("eodata", "~/eo")
+        href_base = href_base.replace("eodata", "/home/eouser/eo")
         res_want = open_params.get("spatial_res", CDSE_SENTINEL_2_MIN_RESOLUTIONS)
         if "crs" in open_params:
             target_crs = normalize_crs(open_params["crs"])
