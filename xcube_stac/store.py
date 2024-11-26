@@ -304,9 +304,6 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        import pdb
-
-        pdb.set_trace()
         if creodias_vm:
             self._helper = HelperCdseCreodiasVM()
         else:

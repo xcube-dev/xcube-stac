@@ -263,9 +263,6 @@ class SingleStoreMode:
                     **open_params_asset,
                 )
             elif params["protocol"] == "file":
-                import pdb
-
-                pdb.set_trace()
                 opener = self._get_file_accessor(params)
                 ds_asset = opener.open_data(
                     params,
@@ -321,7 +318,7 @@ class SingleStoreMode:
 
         if self._file_accessor is None:
             self._file_accessor = self._helper.file_accessor(access_params["root"])
-        return self._s3_accessor
+        return self._file_accessor
 
     def _get_s3_accessor(self, access_params: dict) -> S3DataAccessor:
         """This function returns the S3 data accessor associated with the
