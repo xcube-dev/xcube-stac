@@ -322,7 +322,7 @@ class HelperCdse(Helper):
             yield item
 
 
-class HelperCdseCreodiansVM(Helper):
+class HelperCdseCreodiasVM(Helper):
 
     def __init__(self):
         super().__init__()
