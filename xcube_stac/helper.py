@@ -366,7 +366,9 @@ class HelperCdseCreodiasVM(Helper):
                 hrefs = self._fs.glob(
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
-                assert len(hrefs) == 1, "No unique jp2 file found"
+                assert (
+                    len(hrefs) == 1
+                ), f"No unique jp2 file found; these hrefs were found {hrefs} for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
             else:
