@@ -345,6 +345,9 @@ class HelperCdseCreodiasVM(Helper):
         self.file_accessor = Sentinel2DataAccessor
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
+        import pdb
+
+        pdb.set_trace()
         processing_level = open_params.pop("processing_level", "L2A")
         open_params["asset_names"] = open_params.get(
             "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
