@@ -37,6 +37,7 @@ from xcube.core.store import (
     DataTypeLike,
 )
 from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonBooleanSchema
 
 from .constants import (
     CDSE_STAC_URL,
@@ -311,7 +312,13 @@ class StacCdseDataStore(StacDataStore):
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        stac_params = STAC_STORE_PARAMETERS.copy()
+        stac_params = dict(
+            **STAC_STORE_PARAMETERS,
+            creodias_vm=JsonBooleanSchema(
+                title="Decide if CDSE STAC API is used on a Creodias VM.",
+                default=False,
+            ),
+        )
         del stac_params["url"]
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
