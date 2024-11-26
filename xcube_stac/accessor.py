@@ -98,12 +98,11 @@ class Sentinel2DataAccessor:
                 "The parameter tile_size is set to (1024, 1024), which is the "
                 "native chunk size of the jp2 files in the Sentinel-2 archive."
             )
-        file_path = f"{access_params["root"]}/{access_params["fs_path"]}"
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
-            return Jp2MultiLevelDataset(file_path, **open_params)
+            return Jp2MultiLevelDataset(access_params["fs_path"], **open_params)
         else:
             return rioxarray.open_rasterio(
-                file_path,
+                access_params["fs_path"],
                 chunks=dict(x=1024, y=1024),
                 band_as_variable=True,
             )
