@@ -497,6 +497,9 @@ class StackStoreMode(SingleStoreMode):
         items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
         # group items by date
+        import pdb
+
+        pdb.set_trace()
         grouped_items = groupby_solar_day(items)
 
         if opener_id is None:
