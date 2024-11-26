@@ -345,14 +345,12 @@ class HelperCdseCreodiasVM(Helper):
         self.file_accessor = Sentinel2DataAccessor
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
-        import pdb
-
-        pdb.set_trace()
         processing_level = open_params.pop("processing_level", "L2A")
         open_params["asset_names"] = open_params.get(
             "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
         )
         href_base = item.assets["PRODUCT"].extra_fields["alternate"]["s3"]["href"][1:]
+        href_base = href_base.replace("eodata", "~/eo")
         res_want = open_params.get("spatial_res", CDSE_SENTINEL_2_MIN_RESOLUTIONS)
         if "crs" in open_params:
             target_crs = normalize_crs(open_params["crs"])
