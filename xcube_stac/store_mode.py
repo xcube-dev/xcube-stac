@@ -263,6 +263,9 @@ class SingleStoreMode:
                     **open_params_asset,
                 )
             elif params["protocol"] == "file":
+                import pdb
+
+                pdb.set_trace()
                 opener = self._get_file_accessor(params)
                 ds_asset = opener.open_data(
                     params,
