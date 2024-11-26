@@ -425,7 +425,7 @@ class HelperCdseCreodiasVM(Helper):
             protocol = "file"
             href_components = item.assets[asset_name].href.split("/")
             root = ""
-            instrument = href_components[4]
+            instrument = href_components[2]
             format_id = MAP_CDSE_COLLECTION_FORMAT[instrument]
             fs_path = "/".join(href_components)
             storage_options = {}
