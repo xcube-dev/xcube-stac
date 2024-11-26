@@ -416,10 +416,10 @@ class HelperCdseCreodiasVM(Helper):
         for asset_name in asset_names:
             protocol = "file"
             href_components = item.assets[asset_name].href.split("/")
-            root = href_components[0]
-            instrument = href_components[1]
+            root = href_components[1]
+            instrument = href_components[2]
             format_id = MAP_CDSE_COLLECTION_FORMAT[instrument]
-            fs_path = "/".join(href_components[1:])
+            fs_path = "/".join(href_components[2:])
             storage_options = {}
             data_access_params[asset_name] = dict(
                 name=asset_name,
