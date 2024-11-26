@@ -231,7 +231,11 @@ class HelperCdse(Helper):
                 hrefs = self._fs.glob(
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
-                assert len(hrefs) == 1, "No unique jp2 file found"
+                if len(hrefs) != 1:
+                    raise DataStoreError(
+                        "No unique jp2 file found; these hrefs were found {hrefs} "
+                        "for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                    )
                 href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
             else:
@@ -350,7 +354,7 @@ class HelperCdseCreodiasVM(Helper):
             "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
         )
         href_base = item.assets["PRODUCT"].extra_fields["alternate"]["s3"]["href"][1:]
-        href_base = href_base.replace("eodata", "/home/eouser/eo")
+        href_base = f"/{href_base}"
         res_want = open_params.get("spatial_res", CDSE_SENTINEL_2_MIN_RESOLUTIONS)
         if "crs" in open_params:
             target_crs = normalize_crs(open_params["crs"])
@@ -366,9 +370,11 @@ class HelperCdseCreodiasVM(Helper):
                 hrefs = self._fs.glob(
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
-                assert (
-                    len(hrefs) == 1
-                ), f"No unique jp2 file found; these hrefs were found {hrefs} for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                if len(hrefs) != 1:
+                    raise DataStoreError(
+                        "No unique jp2 file found; these hrefs were found {hrefs} "
+                        "for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                    )
                 href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
             else:
