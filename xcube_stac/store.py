@@ -323,8 +323,8 @@ class StacCdseDataStore(StacDataStore):
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,
-            required=["key", "secret"],
-            additional_properties=True,
+            required=[],
+            additional_properties=False,
         )
 
     def get_open_data_params_schema(
