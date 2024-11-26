@@ -384,7 +384,7 @@ class HelperCdseCreodiasVM(Helper):
                     f"A{item.properties["orbitNumber"]:06}_{time_end}/IMG_DATA/"
                     f"R{res_select}m/T{item.properties["tileId"]}_"
                     f"{id_parts[2]}_{asset_name}_{res_select}m.jp2"
-                ).replace("/eodata/", "/eo/")
+                )
             if float(item.properties["processorVersion"]) >= 4.00:
                 offset = CDSE_SENITNEL_2_OFFSET_400[asset_name]
             else:
