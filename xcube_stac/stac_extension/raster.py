@@ -40,7 +40,7 @@ def apply_offset_scaling(
 
 
 def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dataset:
-    for asset_name in ds.key():
+    for asset_name in ds.keys():
         if asset_name == "crs" or asset_name == "spatial_ref":
             continue
         for i, (date, items) in enumerate(grouped_items):
