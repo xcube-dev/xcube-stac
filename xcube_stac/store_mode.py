@@ -45,6 +45,7 @@ from .constants import COLLECTION_PREFIX
 from .constants import TILE_SIZE
 from .mldataset import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
+from .stac_extension.raster import apply_offset_scaling_odc_stac
 from ._utils import (
     merge_datasets,
     rename_dataset,
@@ -526,7 +527,10 @@ class StackStoreMode(SingleStoreMode):
                 items_odc_stac = [
                     item for sublist in grouped_items.values() for item in sublist
                 ]
-                items = [self._helper.parse_item(item, **open_params) for item in items]
+                items_odc_stac = [
+                    self._helper.parse_item(item, **open_params)
+                    for item in items_odc_stac
+                ]
                 bbox = open_params["bbox"]
                 odc_stac_params = dict(
                     bands=open_params.get("asset_names"),
@@ -541,6 +545,8 @@ class StackStoreMode(SingleStoreMode):
                     items_odc_stac,
                     **odc_stac_params,
                 )
+                ds = apply_offset_scaling_odc_stac(ds, grouped_items)
+
             else:
                 ds = self.stack_items(grouped_items, **open_params)
                 ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()

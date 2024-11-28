@@ -37,3 +37,29 @@ def apply_offset_scaling(
     offset = raster_bands[0].get("offset", 0)
     ds[asset_name] += offset
     return ds
+
+
+def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dataset:
+    for asset_name in ds.key():
+        if asset_name == "crs" or asset_name == "spatial_ref":
+            continue
+        for i, (date, items) in enumerate(grouped_items):
+            raster_bands = items[0].assets[asset_name].extra_fields.get("raster:bands")
+            if raster_bands is None:
+                LOG.warning(
+                    f"Item {items[0].id} is not conform to the stac-extension "
+                    f"'raster'. No scaling is applied."
+                )
+                return ds
+
+            if asset_name.lower() != "scl":
+                nodata_val = raster_bands[0].get("nodata")
+                if nodata_val is not None:
+                    ds[asset_name][i] = ds[asset_name][i].where(
+                        ds[asset_name] != nodata_val
+                    )
+            scale = raster_bands[0].get("scale", 1)
+            ds[asset_name][i] *= scale
+            offset = raster_bands[0].get("offset", 0)
+            ds[asset_name][i] += offset
+    return ds
