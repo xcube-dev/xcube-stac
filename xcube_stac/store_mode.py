@@ -518,10 +518,14 @@ class StackStoreMode(SingleStoreMode):
             )
             open_params["asset_names"] = [asset.extra_fields["id"] for asset in assets]
 
+        grouped_items = groupby_solar_day(items)
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
             if self._stack_mode == "odc-stac":
+                items_odc_stac = [
+                    item for sublist in grouped_items.values() for item in sublist
+                ]
                 items = [self._helper.parse_item(item, **open_params) for item in items]
                 bbox = open_params["bbox"]
                 odc_stac_params = dict(
@@ -534,11 +538,10 @@ class StackStoreMode(SingleStoreMode):
                     y=(bbox[1], bbox[3]),
                 )
                 ds = odc.stac.load(
-                    items,
+                    items_odc_stac,
                     **odc_stac_params,
                 )
             else:
-                grouped_items = groupby_solar_day(items)
                 ds = self.stack_items(grouped_items, **open_params)
                 ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
                 ds.attrs["stac_item_ids"] = dict(
