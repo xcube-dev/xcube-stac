@@ -43,7 +43,7 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
     for asset_name in ds.keys():
         if asset_name == "crs" or asset_name == "spatial_ref":
             continue
-        for i, (date, items) in enumerate(grouped_items):
+        for i, (date, items) in enumerate(grouped_items.items()):
             raster_bands = items[0].assets[asset_name].extra_fields.get("raster:bands")
             if raster_bands is None:
                 LOG.warning(
