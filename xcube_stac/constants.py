@@ -30,6 +30,7 @@ from xcube.util.jsonschema import (
     JsonNumberSchema,
     JsonObjectSchema,
     JsonStringSchema,
+    JsonComplexSchema,
 )
 
 # general stac constants
@@ -92,10 +93,19 @@ PROCESSING_BASELINE_KEYS = ["processorVersion", "s2:processing_baseline"]
 # parameter schemas
 STAC_STORE_PARAMETERS = dict(
     url=JsonStringSchema(title="URL to STAC catalog"),
-    stack_mode=JsonBooleanSchema(
-        title="Decide if stacking of STAC items is applied",
-        description="If True, 'odc-stac' is used as a default backend.",
-        default=False,
+    stack_mode=JsonComplexSchema(
+        one_of=[
+            JsonStringSchema(
+                title="Backend for stacking STAC items",
+                description="So far, only 'odc-stac' is supported as a backend.",
+                const="odc-stac",
+            ),
+            JsonBooleanSchema(
+                title="Decide if stacking of STAC items is applied",
+                description="If True, 'odc-stac' is used as a default backend.",
+                default=False,
+            ),
+        ],
     ),
 )
 STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)

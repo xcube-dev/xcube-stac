@@ -101,13 +101,21 @@ class StacDataStore(DataStore):
                 self._storage_options_s3,
                 self._helper,
             )
-        elif stack_mode is True:
+        elif stack_mode is True or stack_mode == "odc-stac":
+            if stack_mode is True:
+                stack_mode = "xcube"
             self._impl = StackStoreMode(
                 self._catalog,
                 self._url_mod,
                 self._searchable,
                 self._storage_options_s3,
                 self._helper,
+                stack_mode,
+            )
+        else:
+            raise DataStoreError(
+                "Invalid parameterization detected: a boolean or"
+                " 'odc-stac', was expected"
             )
 
     @classmethod

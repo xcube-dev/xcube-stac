@@ -23,6 +23,7 @@ import json
 from typing import Iterator, Union
 
 import numpy as np
+import odc.stac
 import pystac
 import pystac_client.client
 import requests
@@ -404,6 +405,18 @@ class SingleStoreMode:
 class StackStoreMode(SingleStoreMode):
     """Implementations to access stacked STAC items within one collection"""
 
+    def __init__(
+        self,
+        catalog: Union[pystac.Catalog, pystac_client.client.Client],
+        url_mod: str,
+        searchable: bool,
+        storage_options_s3: dict,
+        helper: Helper,
+        stack_mode: str,
+    ):
+        super().__init__(catalog, url_mod, searchable, storage_options_s3, helper)
+        self._stack_mode = stack_mode
+
     def access_collection(self, data_id: str) -> pystac.Collection:
         """Access collection for a given data ID.
 
@@ -496,14 +509,11 @@ class StackStoreMode(SingleStoreMode):
             return None
         items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
-        # group items by date
-        grouped_items = groupby_solar_day(items)
-
         if opener_id is None:
             opener_id = ""
         if "asset_names" not in open_params:
             assets = list_assets_from_item(
-                next(iter(grouped_items.values()))[0],
+                items[0],
                 supported_format_ids=self._helper.supported_format_ids,
             )
             open_params["asset_names"] = [asset.extra_fields["id"] for asset in assets]
@@ -511,14 +521,31 @@ class StackStoreMode(SingleStoreMode):
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds = self.stack_items(grouped_items, **open_params)
-            ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-            ds.attrs["stac_item_ids"] = dict(
-                {
-                    date.isoformat(): [item.id for item in items]
-                    for date, items in grouped_items.items()
-                }
-            )
+            if self._stack_mode == "odc-stac":
+                bbox = open_params["bbox"]
+                odc_stac_params = dict(
+                    bands=open_params.get("asset_names"),
+                    groupby="solar_day",
+                    chunks=dict(time=1, x=1024, y=1024),
+                    crs=open_params.get("crs"),
+                    resolution=open_params.get("asset_names"),
+                    x=(bbox[0], bbox[2]),
+                    y=(bbox[1], bbox[3]),
+                )
+                ds = odc.stac.load(
+                    items,
+                    **odc_stac_params,
+                )
+            else:
+                grouped_items = groupby_solar_day(items)
+                ds = self.stack_items(grouped_items, **open_params)
+                ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
+                ds.attrs["stac_item_ids"] = dict(
+                    {
+                        date.isoformat(): [item.id for item in items]
+                        for date, items in grouped_items.items()
+                    }
+                )
         return ds
 
     def stack_items(
