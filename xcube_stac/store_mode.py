@@ -528,7 +528,7 @@ class StackStoreMode(SingleStoreMode):
                     groupby="solar_day",
                     chunks=dict(time=1, x=1024, y=1024),
                     crs=open_params.get("crs"),
-                    resolution=open_params.get("asset_names"),
+                    resolution=open_params.get("spatial_res"),
                     x=(bbox[0], bbox[2]),
                     y=(bbox[1], bbox[3]),
                 )
