@@ -522,6 +522,7 @@ class StackStoreMode(SingleStoreMode):
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
             if self._stack_mode == "odc-stac":
+                items = [self._helper.parse_item(item, **open_params) for item in items]
                 bbox = open_params["bbox"]
                 odc_stac_params = dict(
                     bands=open_params.get("asset_names"),
