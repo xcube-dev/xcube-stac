@@ -56,7 +56,7 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
                 nodata_val = raster_bands[0].get("nodata")
                 if nodata_val is not None:
                     ds[asset_name][i] = ds[asset_name][i].where(
-                        ds[asset_name] != nodata_val
+                        ds[asset_name][i] != nodata_val
                     )
             scale = raster_bands[0].get("scale", 1)
             ds[asset_name][i] *= scale
