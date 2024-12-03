@@ -63,6 +63,8 @@ def groupby_solar_day(items: list[pystac.Item]) -> dict:
 
 
 def mosaic_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
+    if len(list_ds) == 1:
+        return list_ds[0]
     dim = "dummy"
     ds = xr.concat(list_ds, dim=dim)
     if "crs" in ds:
