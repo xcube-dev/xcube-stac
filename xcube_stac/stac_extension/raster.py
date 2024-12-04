@@ -1,5 +1,3 @@
-import pdb
-
 import numpy as np
 import pystac
 import xarray as xr
