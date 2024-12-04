@@ -64,13 +64,7 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
             scale[i] = raster_bands[0].get("scale", 1)
             offset[i] = raster_bands[0].get("offset", 0)
         assert np.unique(nodata_val).size == 1
-        import datetime
-
-        print(f"{datetime.datetime.now()}: start nan values")
         ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata_val[0])
-        print(f"{datetime.datetime.now()}: start scale")
         ds[asset_name] *= scale[:, np.newaxis, np.newaxis]
-        print(f"{datetime.datetime.now()}: start offset")
         ds[asset_name] += offset[:, np.newaxis, np.newaxis]
-        print(f"{datetime.datetime.now()}: scaling done")
     return ds
