@@ -1,3 +1,4 @@
+import numpy as np
 import pystac
 import xarray as xr
 
@@ -41,8 +42,15 @@ def apply_offset_scaling(
 
 def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dataset:
     for asset_name in ds.keys():
-        if asset_name == "crs" or asset_name == "spatial_ref":
+        if (
+            asset_name == "crs"
+            or asset_name == "spatial_ref"
+            or str(asset_name).lower() != "scl"
+        ):
             continue
+        scale = np.zeros(len(grouped_items))
+        offset = np.zeros(len(grouped_items))
+        nodata_val = np.zeros(len(grouped_items))
         for i, (date, items) in enumerate(grouped_items.items()):
             raster_bands = items[0].assets[asset_name].extra_fields.get("raster:bands")
             if raster_bands is None:
@@ -52,14 +60,17 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
                 )
                 return ds
 
-            if str(asset_name).lower() != "scl":
-                nodata_val = raster_bands[0].get("nodata")
-                if nodata_val is not None:
-                    ds[asset_name][i] = ds[asset_name][i].where(
-                        ds[asset_name][i] != nodata_val
-                    )
-            scale = raster_bands[0].get("scale", 1)
-            ds[asset_name][i] *= scale
-            offset = raster_bands[0].get("offset", 0)
-            ds[asset_name][i] += offset
+            nodata_val[i] = raster_bands[0].get("nodata")
+            scale[i] = raster_bands[0].get("scale", 1)
+            offset[i] = raster_bands[0].get("offset", 0)
+        assert np.unique(nodata_val).size == 1
+        import datetime
+
+        print(f"{datetime.datetime.now()}: start nan values")
+        ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata_val)
+        print(f"{datetime.datetime.now()}: start scale")
+        ds[asset_name] *= scale[:, np.newaxis, np.newaxis]
+        print(f"{datetime.datetime.now()}: start offset")
+        ds[asset_name] += offset[:, np.newaxis, np.newaxis]
+        print(f"{datetime.datetime.now()}: scaling done")
     return ds

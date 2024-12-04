@@ -564,7 +564,8 @@ class StackStoreMode(SingleStoreMode):
                     items_odc_stac,
                     **odc_stac_params,
                 )
-                ds = apply_offset_scaling_odc_stac(ds, grouped_items)
+                if open_params.get("apply_scaling", False):
+                    ds = apply_offset_scaling_odc_stac(ds, grouped_items)
 
             else:
                 ds = self.stack_items(grouped_items, **open_params)
