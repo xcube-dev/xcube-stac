@@ -526,8 +526,8 @@ class StackStoreMode(SingleStoreMode):
                 except Exception as e:
                     if attempt == retries:
                         raise
-                LOG.info(f"Attempt {attempt} failed: {e}. Retrying in 1 seconds...")
-                time.sleep(1)
+                    LOG.info(f"Attempt {attempt} failed: {e}. Retrying in 1 seconds.")
+                    time.sleep(1)
 
         if len(items) == 0:
             LOG.warn(
