@@ -67,7 +67,7 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
         import datetime
 
         print(f"{datetime.datetime.now()}: start nan values")
-        ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata_val)
+        ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata_val[0])
         print(f"{datetime.datetime.now()}: start scale")
         ds[asset_name] *= scale[:, np.newaxis, np.newaxis]
         print(f"{datetime.datetime.now()}: start offset")
