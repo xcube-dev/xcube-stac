@@ -509,7 +509,6 @@ class StackStoreMode(SingleStoreMode):
             time_ranges = [open_params["time_range"]]
         items = []
         for time_range in time_ranges:
-            print(len(items))
             items = items + list(
                 self._helper.search_items(
                     self._catalog,
