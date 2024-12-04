@@ -509,9 +509,6 @@ class StackStoreMode(SingleStoreMode):
             time_ranges = [open_params["time_range"]]
         items = []
         for time_range in time_ranges[:1]:
-            import pdb
-
-            pdb.set_trace()
             items = items + list(
                 self._helper.search_items(
                     self._catalog,
@@ -567,7 +564,6 @@ class StackStoreMode(SingleStoreMode):
                     items_odc_stac,
                     **odc_stac_params,
                 )
-                pdb.set_trace()
                 if open_params.get("apply_scaling", False):
                     ds = apply_offset_scaling_odc_stac(ds, grouped_items)
 

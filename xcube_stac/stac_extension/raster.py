@@ -47,7 +47,7 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
         if (
             asset_name == "crs"
             or asset_name == "spatial_ref"
-            or str(asset_name).lower() != "scl"
+            or str(asset_name).lower() == "scl"
         ):
             continue
         scale = np.zeros(len(grouped_items))
@@ -65,9 +65,6 @@ def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dat
             nodata_val[i] = raster_bands[0].get("nodata")
             scale[i] = raster_bands[0].get("scale", 1)
             offset[i] = raster_bands[0].get("offset", 0)
-        import pdb
-
-        pdb.set_trace()
         assert np.unique(nodata_val).size == 1
         ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata_val[0])
         ds[asset_name] *= scale[:, np.newaxis, np.newaxis]
