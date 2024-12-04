@@ -20,6 +20,7 @@
 # SOFTWARE.
 import datetime
 import json
+import time
 from typing import Iterator, Union
 
 import numpy as np
@@ -509,16 +510,25 @@ class StackStoreMode(SingleStoreMode):
             time_ranges = [open_params["time_range"]]
         items = []
         for time_range in time_ranges:
-            items = items + list(
-                self._helper.search_items(
-                    self._catalog,
-                    self._searchable,
-                    collections=[data_id],
-                    bbox=bbox_wgs84,
-                    time_range=time_range,
-                    query=open_params.get("query"),
-                )
-            )
+            retries = 5
+            for attempt in range(1, retries + 1):
+                try:
+                    items = items + list(
+                        self._helper.search_items(
+                            self._catalog,
+                            self._searchable,
+                            collections=[data_id],
+                            bbox=bbox_wgs84,
+                            time_range=time_range,
+                            query=open_params.get("query"),
+                        )
+                    )
+                except Exception as e:
+                    if attempt == retries:
+                        raise
+                LOG.info(f"Attempt {attempt} failed: {e}. Retrying in 1 seconds...")
+                time.sleep(1)
+
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
