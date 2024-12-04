@@ -18,7 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import datetime
 import json
 from typing import Iterator, Union
 
@@ -49,6 +49,7 @@ from .stac_extension.raster import apply_offset_scaling_odc_stac
 from ._utils import (
     merge_datasets,
     rename_dataset,
+    convert_str2datetime,
     convert_datetime2str,
     get_data_id_from_pystac_object,
     get_url_from_pystac_object,
@@ -490,16 +491,35 @@ class StackStoreMode(SingleStoreMode):
         bbox_wgs84 = reproject_bbox(
             open_params["bbox"], open_params["crs"], "EPSG:4326"
         )
-        items = list(
-            self._helper.search_items(
-                self._catalog,
-                self._searchable,
-                collections=[data_id],
-                bbox=bbox_wgs84,
-                time_range=open_params["time_range"],
-                query=open_params.get("query"),
+        dt_start = convert_str2datetime(open_params["time_range"][0])
+        dt_end = convert_str2datetime(open_params["time_range"][1])
+        nb_days = (dt_end - dt_start).days
+        if nb_days > self._helper.limit_split_timerange:
+            time_steps = [
+                convert_datetime2str(
+                    (dt_start + datetime.timedelta(days=int(days))).date()
+                )
+                for days in np.arange(0, nb_days, self._helper.limit_split_timerange)
+            ]
+            time_steps.append(open_params["time_range"][1])
+            time_ranges = [
+                [time_steps[i], time_steps[i + 1]] for i in range(len(time_steps) - 1)
+            ]
+        else:
+            time_ranges = [open_params["time_range"]]
+        items = []
+        for time_range in time_ranges:
+            print(len(items))
+            items = items + list(
+                self._helper.search_items(
+                    self._catalog,
+                    self._searchable,
+                    collections=[data_id],
+                    bbox=bbox_wgs84,
+                    time_range=time_range,
+                    query=open_params.get("query"),
+                )
             )
-        )
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
