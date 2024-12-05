@@ -23,8 +23,8 @@ def apply_offset_scaling(
     raster_bands = item.assets[asset_name].extra_fields.get("raster:bands")
     if raster_bands is None:
         LOG.warning(
-            f"Item {item.id} is not conform to the stac-extension 'raster'. "
-            f"No scaling is applied."
+            f"The asset {asset_name} in item {item.id} is not conform to "
+            f"the stac-extension 'raster'. No scaling is applied."
         )
         return ds
 

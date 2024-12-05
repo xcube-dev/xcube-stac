@@ -478,13 +478,6 @@ class StackStoreMode(SingleStoreMode):
 
         if opener_id is None:
             opener_id = ""
-        if "asset_names" not in open_params:
-            assets = list_assets_from_item(
-                next(iter(grouped_items.values()))[0],
-                supported_format_ids=self._helper.supported_format_ids,
-            )
-            open_params["asset_names"] = [asset.extra_fields["id"] for asset in assets]
-
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
