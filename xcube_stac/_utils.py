@@ -135,6 +135,7 @@ def search_items(
     if searchable:
         # rewrite to "datetime"
         search_params["datetime"] = search_params.pop("time_range", None)
+        print(f"{datetime.datetime.now()}: {search_params}")
         items = catalog.search(**search_params).items()
     else:
         items = search_nonsearchable_catalog(catalog, **search_params)

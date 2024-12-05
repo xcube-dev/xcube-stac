@@ -210,7 +210,7 @@ class HelperCdse(Helper):
             secret=storage_options_s3["secret"],
         )
         self.s3_accessor = S3Sentinel2DataAccessor
-        self.limit_split_timerange = 180
+        self.limit_split_timerange = 190
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         processing_level = open_params.pop("processing_level", "L2A")
@@ -349,7 +349,7 @@ class HelperCdseCreodiasVM(Helper):
         )
         self._fs = fsspec.filesystem("file")
         self.file_accessor = Sentinel2DataAccessor
-        self.limit_split_timerange = 370
+        self.limit_split_timerange = 190
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         processing_level = open_params.pop("processing_level", "L2A")

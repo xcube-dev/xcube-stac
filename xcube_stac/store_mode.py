@@ -510,33 +510,13 @@ class StackStoreMode(SingleStoreMode):
             time_ranges = [open_params["time_range"]]
         items = []
         for time_range in time_ranges:
-            retries = 5
-            for attempt in range(1, retries + 1):
-                try:
-                    items = items + list(
-                        self._helper.search_items(
-                            self._catalog,
-                            self._searchable,
-                            collections=[data_id],
-                            bbox=bbox_wgs84,
-                            time_range=time_range,
-                            query=open_params.get("query"),
-                        )
-                    )
-                except Exception as e:
-                    if attempt == retries:
-                        raise
-                    search_params = dict(
-                        collections=[data_id],
-                        bbox=bbox_wgs84,
-                        time_range=time_range,
-                        query=open_params.get("query"),
-                    )
-                    LOG.info(
-                        f"Attempt {attempt} failed with search parameters "
-                        f"{search_params}: {e}. Retrying in 1 seconds."
-                    )
-                    time.sleep(1)
+            search_params = dict(
+                collections=[data_id],
+                bbox=bbox_wgs84,
+                time_range=time_range,
+                query=open_params.get("query"),
+            )
+            items = items + self._retry_search_tiles(**search_params)
 
         if len(items) == 0:
             LOG.warn(
@@ -660,3 +640,21 @@ class StackStoreMode(SingleStoreMode):
             required=[],
             additional_properties=False,
         )
+
+    def _retry_search_tiles(self, **search_params) -> list[pystac.Item]:
+        retries = 5
+        for attempt in range(1, retries + 1):
+            try:
+                return list(
+                    self._helper.search_items(
+                        self._catalog, self._searchable, **search_params
+                    )
+                )
+            except Exception as e:
+                if attempt == retries:
+                    raise
+                LOG.info(
+                    f"Attempt {attempt} failed with search parameters "
+                    f"{search_params}: {e}. Retrying in 1 seconds."
+                )
+                time.sleep(1)
