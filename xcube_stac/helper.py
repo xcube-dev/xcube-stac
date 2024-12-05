@@ -349,7 +349,7 @@ class HelperCdseCreodiasVM(Helper):
         )
         self._fs = fsspec.filesystem("file")
         self.file_accessor = Sentinel2DataAccessor
-        self.limit_split_timerange = 130
+        self.limit_split_timerange = 370
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         processing_level = open_params.pop("processing_level", "L2A")
