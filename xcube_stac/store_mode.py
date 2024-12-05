@@ -652,6 +652,10 @@ class StackStoreMode(SingleStoreMode):
             except Exception as e:
                 if attempt == retries:
                     raise
+                print(
+                    f"{datetime.datetime.now()}: Attempt {attempt} failed with"
+                    f"search parameters {search_params}: {e}. Retrying in 1 seconds."
+                )
                 LOG.info(
                     f"Attempt {attempt} failed with search parameters "
                     f"{search_params}: {e}. Retrying in 1 seconds."
