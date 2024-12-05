@@ -517,7 +517,6 @@ class StackStoreMode(SingleStoreMode):
                 query=open_params.get("query"),
             )
             items = items + self._retry_search_tiles(**search_params)
-
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
