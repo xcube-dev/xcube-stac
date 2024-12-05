@@ -526,7 +526,16 @@ class StackStoreMode(SingleStoreMode):
                 except Exception as e:
                     if attempt == retries:
                         raise
-                    LOG.info(f"Attempt {attempt} failed: {e}. Retrying in 1 seconds.")
+                    search_params = dict(
+                        collections=[data_id],
+                        bbox=bbox_wgs84,
+                        time_range=time_range,
+                        query=open_params.get("query"),
+                    )
+                    LOG.info(
+                        f"Attempt {attempt} failed with search parameters "
+                        f"{search_params}: {e}. Retrying in 1 seconds."
+                    )
                     time.sleep(1)
 
         if len(items) == 0:
