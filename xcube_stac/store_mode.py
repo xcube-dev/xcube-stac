@@ -641,7 +641,7 @@ class StackStoreMode(SingleStoreMode):
         )
 
     def _retry_search_tiles(self, **search_params) -> list[pystac.Item]:
-        retries = 5
+        retries = 10
         for attempt in range(1, retries + 1):
             try:
                 return list(
