@@ -51,7 +51,6 @@ from ._utils import (
     get_data_id_from_pystac_object,
     get_url_from_pystac_object,
     is_valid_ml_data_type,
-    list_assets_from_item,
     reproject_bbox,
     search_collections,
     update_dict,

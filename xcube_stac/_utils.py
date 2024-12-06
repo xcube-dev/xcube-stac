@@ -54,11 +54,10 @@ _CATALOG_JSON = "catalog.json"
 
 
 def get_format_id(asset: pystac.Asset) -> str:
-    if hasattr(asset, "media_type"):
-        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+    if asset.media_type is None:
+        format_id = get_format_from_path(asset.href)
     else:
-        _, file_extension = os.path.splitext(asset.href)
-        format_id = MAP_FILE_EXTENSION_FORMAT.get(file_extension)
+        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
     if format_id is None:
         raise DataStoreError(f"No format_id found for asset {asset.extra_fields['id']}")
     return format_id
@@ -412,25 +411,7 @@ def get_url_from_pystac_object(
 
 def get_format_from_path(path: str) -> str:
     _, file_extension = os.path.splitext(path)
-    return MAP_FILE_EXTENSION_FORMAT[file_extension]
-
-
-def xarray_rename_vars(
-    ds: Union[xr.Dataset, xr.DataArray], name_dict: dict
-) -> Union[xr.Dataset, xr.DataArray]:
-    """Auxiliary functions which turns the method xarray.Dataset.rename_vars and
-    xarray.DataArray.rename_vars into a function which takes the Dataset or DataArray
-    as argument.
-
-    Args:
-        ds: Dataset or DataArray
-        name_dict: Dictionary whose keys are current variable names and whose values
-            are the desired names.
-
-    Returns:
-        Dataset with renamed variables
-    """
-    return ds.rename_vars(name_dict)
+    return MAP_FILE_EXTENSION_FORMAT.get(file_extension)
 
 
 def is_valid_data_type(data_type: DataTypeLike) -> bool:
@@ -622,7 +603,7 @@ def get_spatial_dims(ds: xr.Dataset) -> (str, str):
     elif "y" in ds and "x" in ds:
         y_coord, x_coord = "y", "x"
     else:
-        raise DataStoreError(f"No spatial dimensions found in dataset {ds[0]}")
+        raise DataStoreError(f"No spatial dimensions found in dataset.")
     return y_coord, x_coord
 
 
