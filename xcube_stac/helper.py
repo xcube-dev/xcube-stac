@@ -241,8 +241,8 @@ class HelperCdse(Helper):
                     )
                 elif len(hrefs) > 1:
                     LOG.warning(
-                        f"N unique jp2 file found: {hrefs} are found "
-                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                        f"Multiple hrefs {hrefs} are found "
+                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2. "
                         f"Href {hrefs[0]} is taken."
                     )
                 href_mod = hrefs[0]
@@ -387,8 +387,8 @@ class HelperCdseCreodiasVM(Helper):
                     )
                 elif len(hrefs) > 1:
                     LOG.warning(
-                        f"N unique jp2 file found: {hrefs} are found "
-                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                        f"Multiple hrefs {hrefs} are found "
+                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2. "
                         f"Href {hrefs[0]} is taken."
                     )
                 href_mod = hrefs[0]
