@@ -235,11 +235,12 @@ class HelperCdse(Helper):
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
                 if len(hrefs) == 0:
-                    raise DataStoreError(
+                    LOG.warning(
                         "No jp2 file found for "
                         f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                     )
-                elif len(hrefs) > 1:
+                    hrefs = self._fs.glob(f"{href_base}/**/*_{asset_name}_*.jp2")
+                if len(hrefs) > 1:
                     LOG.warning(
                         f"Multiple hrefs {hrefs} are found "
                         f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2. "
@@ -381,11 +382,12 @@ class HelperCdseCreodiasVM(Helper):
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
                 if len(hrefs) == 0:
-                    raise DataStoreError(
+                    LOG.warning(
                         "No jp2 file found for "
                         f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                     )
-                elif len(hrefs) > 1:
+                    hrefs = self._fs.glob(f"{href_base}/**/*_{asset_name}_*.jp2")
+                if len(hrefs) > 1:
                     LOG.warning(
                         f"Multiple hrefs {hrefs} are found "
                         f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2. "
