@@ -20,6 +20,7 @@ from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
 from .constants import SCHEMA_PROCESSING_LEVEL
 from .constants import SCHEMA_COLLECTIONS
 from .constants import SCHEMA_SPATIAL_RES
+from .constants import LOG
 from .sen2.constants import CDSE_SENITNEL_2_BANDS
 from .sen2.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
 from .sen2.constants import CDSE_SENTINEL_2_MIN_RESOLUTIONS
@@ -233,10 +234,16 @@ class HelperCdse(Helper):
                 hrefs = self._fs.glob(
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
-                if len(hrefs) != 1:
+                if len(hrefs) == 0:
                     raise DataStoreError(
-                        "No unique jp2 file found; these hrefs were found {hrefs} "
-                        "for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                        "No jp2 file found for "
+                        f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                    )
+                elif len(hrefs) > 1:
+                    LOG.warning(
+                        f"N unique jp2 file found: {hrefs} are found "
+                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                        f"Href {hrefs[0]} is taken."
                     )
                 href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
@@ -373,10 +380,16 @@ class HelperCdseCreodiasVM(Helper):
                 hrefs = self._fs.glob(
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
-                if len(hrefs) != 1:
+                if len(hrefs) == 0:
                     raise DataStoreError(
-                        "No unique jp2 file found; these hrefs were found {hrefs} "
-                        "for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                        "No jp2 file found for "
+                        f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                    )
+                elif len(hrefs) > 1:
+                    LOG.warning(
+                        f"N unique jp2 file found: {hrefs} are found "
+                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                        f"Href {hrefs[0]} is taken."
                     )
                 href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
