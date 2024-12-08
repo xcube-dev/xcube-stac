@@ -72,6 +72,42 @@ class HttpsDataAccessor:
             )
 
 
+class Sentinel2DataAccessor:
+    """Implementation of the data accessor supporting
+    the jp2 format  of Sentinel-2 data.
+    """
+
+    def __init__(self, root):
+        self._root = root
+
+    @property
+    def root(self) -> str:
+        return self._root
+
+    def open_data(
+        self,
+        access_params: dict,
+        opener_id: str = None,
+        data_type: DataTypeLike = None,
+        **open_params,
+    ) -> Union[xr.Dataset, MultiLevelDataset]:
+        if opener_id is None:
+            opener_id = ""
+        if "tile_size" in open_params:
+            LOG.info(
+                "The parameter tile_size is set to (1024, 1024), which is the "
+                "native chunk size of the jp2 files in the Sentinel-2 archive."
+            )
+        if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
+            return Jp2MultiLevelDataset(access_params["fs_path"], **open_params)
+        else:
+            return rioxarray.open_rasterio(
+                access_params["fs_path"],
+                chunks=dict(x=1024, y=1024),
+                band_as_variable=True,
+            )
+
+
 class S3DataAccessor:
     """Implementation of the data accessor supporting
     the zarr, geotiff and netcdf format via the AWS S3 protocol.
@@ -160,14 +196,15 @@ class S3Sentinel2DataAccessor:
                 "The parameter tile_size is set to (1024, 1024), which is the "
                 "native chunk size of the jp2 files in the Sentinel-2 archive."
             )
+        file_path = (
+            f"{access_params["protocol"]}://{access_params["root"]}/"
+            f"{access_params["fs_path"]}"
+        )
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
-            return Jp2MultiLevelDataset(access_params, **open_params)
+            return Jp2MultiLevelDataset(file_path, **open_params)
         else:
             return rioxarray.open_rasterio(
-                (
-                    f"{access_params["protocol"]}://{access_params["root"]}/"
-                    f"{access_params["fs_path"]}"
-                ),
+                file_path,
                 chunks=dict(x=1024, y=1024),
                 band_as_variable=True,
             )

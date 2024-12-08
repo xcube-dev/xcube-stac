@@ -134,6 +134,7 @@ def search_items(
     if searchable:
         # rewrite to "datetime"
         search_params["datetime"] = search_params.pop("time_range", None)
+        print(f"{datetime.datetime.now()}: {search_params}")
         items = catalog.search(**search_params).items()
     else:
         items = search_nonsearchable_catalog(catalog, **search_params)
@@ -551,11 +552,11 @@ def get_gridmapping(
     crs: Union[str, pyproj.crs.CRS],
     tile_size: Union[int, tuple[int, int]] = TILE_SIZE,
 ) -> GridMapping:
-    x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
-    y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
+    x_size = int((bbox[2] - bbox[0]) / spatial_res)
+    y_size = int(abs(bbox[3] - bbox[1]) / spatial_res)
     return GridMapping.regular(
         size=(x_size, y_size),
-        xy_min=(bbox[0] - spatial_res / 2, bbox[1] - spatial_res / 2),
+        xy_min=(bbox[0], bbox[1]),
         xy_res=spatial_res,
         crs=crs,
         tile_size=tile_size,

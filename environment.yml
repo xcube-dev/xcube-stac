@@ -8,6 +8,7 @@ dependencies:
   - dask
   - s3fs
   - numpy
+  - odc-stac
   - rasterio
   - rioxarray
   - requests

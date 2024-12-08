@@ -530,11 +530,11 @@ class StacDataStoreTest(unittest.TestCase):
             _ = store.open_data(data_id, asset_names=["surface_air_pressure"])
         self.assertEqual(
             (
-                "Only 's3' and 'https' protocols are supported, not 'abfs'. The asset "
-                "'surface_air_pressure' has a href 'abfs://era5/ERA5/2020/12/"
-                "surface_air_pressure.zarr'. The item's url is given by "
-                "'https://planetarycomputer.microsoft.com/api/stac/v1/collections/"
-                "era5-pds/items/era5-pds-2020-12-an'."
+                "Only 'file', 's3' and 'https' protocols are supported, not 'abfs'. "
+                "The asset 'surface_air_pressure' has a href 'abfs://era5/ERA5/2020/"
+                "12/surface_air_pressure.zarr'. The item's url is given by "
+                "'https://planetarycomputer.microsoft.com/api/stac/v1/collectio"
+                "ns/era5-pds/items/era5-pds-2020-12-an'."
             ),
             f"{cm.exception}",
         )
@@ -655,11 +655,11 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
-            [4, 16, 16],
+            [4, 15, 15],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
         )
         self.assertCountEqual(
-            [1, 16, 16],
+            [1, 15, 15],
             [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
         )
 

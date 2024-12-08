@@ -18,11 +18,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import datetime
 import json
+import time
 from typing import Iterator, Union
 
 import numpy as np
+import odc.stac
 import pystac
 import pystac_client.client
 import requests
@@ -44,9 +46,11 @@ from .constants import COLLECTION_PREFIX
 from .constants import TILE_SIZE
 from .mldataset import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
+from .stac_extension.raster import apply_offset_scaling_odc_stac
 from ._utils import (
     merge_datasets,
     rename_dataset,
+    convert_str2datetime,
     convert_datetime2str,
     get_data_id_from_pystac_object,
     get_url_from_pystac_object,
@@ -106,6 +110,7 @@ class SingleStoreMode:
         self._helper = helper
         self._https_accessor = None
         self._s3_accessor = None
+        self._file_accessor = None
 
     def access_item(self, data_id: str) -> pystac.Item:
         """Access item for a given data ID.
@@ -260,10 +265,18 @@ class SingleStoreMode:
                     data_type=data_type,
                     **open_params_asset,
                 )
+            elif params["protocol"] == "file":
+                opener = self._get_file_accessor(params)
+                ds_asset = opener.open_data(
+                    params,
+                    opener_id=opener_id,
+                    data_type=data_type,
+                    **open_params_asset,
+                )
             else:
                 url = get_url_from_pystac_object(item)
                 raise DataStoreError(
-                    f"Only 's3' and 'https' protocols are supported, not "
+                    f"Only 'file', 's3' and 'https' protocols are supported, not "
                     f"{params["protocol"]!r}. The asset {asset_key!r} has a href "
                     f"{params["href"]!r}. The item's url is given by {url!r}."
                 )
@@ -295,6 +308,20 @@ class SingleStoreMode:
 
     ##########################################################################
     # Implementation helpers
+
+    def _get_file_accessor(self, access_params: dict) -> S3DataAccessor:
+        """This function returns the file data accessor associated with the
+        bucket *root*.
+        Args:
+            access_params: dictionary containing access parameter for one asset
+
+        Returns:
+            file data accessor
+        """
+
+        if self._file_accessor is None:
+            self._file_accessor = self._helper.file_accessor(access_params["root"])
+        return self._file_accessor
 
     def _get_s3_accessor(self, access_params: dict) -> S3DataAccessor:
         """This function returns the S3 data accessor associated with the
@@ -380,6 +407,18 @@ class SingleStoreMode:
 class StackStoreMode(SingleStoreMode):
     """Implementations to access stacked STAC items within one collection"""
 
+    def __init__(
+        self,
+        catalog: Union[pystac.Catalog, pystac_client.client.Client],
+        url_mod: str,
+        searchable: bool,
+        storage_options_s3: dict,
+        helper: Helper,
+        stack_mode: str,
+    ):
+        super().__init__(catalog, url_mod, searchable, storage_options_s3, helper)
+        self._stack_mode = stack_mode
+
     def access_collection(self, data_id: str) -> pystac.Collection:
         """Access collection for a given data ID.
 
@@ -452,16 +491,31 @@ class StackStoreMode(SingleStoreMode):
         bbox_wgs84 = reproject_bbox(
             open_params["bbox"], open_params["crs"], "EPSG:4326"
         )
-        items = list(
-            self._helper.search_items(
-                self._catalog,
-                self._searchable,
+        dt_start = convert_str2datetime(open_params["time_range"][0])
+        dt_end = convert_str2datetime(open_params["time_range"][1])
+        nb_days = (dt_end - dt_start).days
+        if nb_days > self._helper.limit_split_timerange:
+            time_steps = [
+                convert_datetime2str(
+                    (dt_start + datetime.timedelta(days=int(days))).date()
+                )
+                for days in np.arange(0, nb_days, self._helper.limit_split_timerange)
+            ]
+            time_steps.append(open_params["time_range"][1])
+            time_ranges = [
+                [time_steps[i], time_steps[i + 1]] for i in range(len(time_steps) - 1)
+            ]
+        else:
+            time_ranges = [open_params["time_range"]]
+        items = []
+        for time_range in time_ranges:
+            search_params = dict(
                 collections=[data_id],
                 bbox=bbox_wgs84,
-                time_range=open_params["time_range"],
+                time_range=time_range,
                 query=open_params.get("query"),
             )
-        )
+            items = items + self._retry_search_tiles(**search_params)
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
@@ -472,22 +526,47 @@ class StackStoreMode(SingleStoreMode):
             return None
         items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
-        # group items by date
-        grouped_items = groupby_solar_day(items)
-
         if opener_id is None:
             opener_id = ""
+
+        grouped_items = groupby_solar_day(items)
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds = self.stack_items(grouped_items, **open_params)
-            ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-            ds.attrs["stac_item_ids"] = dict(
-                {
-                    date.isoformat(): [item.id for item in items]
-                    for date, items in grouped_items.items()
-                }
-            )
+            if self._stack_mode == "odc-stac":
+                items_odc_stac = [
+                    item for sublist in grouped_items.values() for item in sublist
+                ]
+                items_odc_stac = [
+                    self._helper.parse_item(item, **open_params)
+                    for item in items_odc_stac
+                ]
+                bbox = open_params["bbox"]
+                odc_stac_params = dict(
+                    bands=open_params.get("asset_names"),
+                    groupby="solar_day",
+                    chunks=dict(time=1, x=1024, y=1024),
+                    crs=open_params.get("crs"),
+                    resolution=open_params.get("spatial_res"),
+                    x=(bbox[0], bbox[2]),
+                    y=(bbox[1], bbox[3]),
+                )
+                ds = odc.stac.load(
+                    items_odc_stac,
+                    **odc_stac_params,
+                )
+                if open_params.get("apply_scaling", False):
+                    ds = apply_offset_scaling_odc_stac(ds, grouped_items)
+
+            else:
+                ds = self.stack_items(grouped_items, **open_params)
+                ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
+                ds.attrs["stac_item_ids"] = dict(
+                    {
+                        date.isoformat(): [item.id for item in items]
+                        for date, items in grouped_items.items()
+                    }
+                )
         return ds
 
     def stack_items(
@@ -553,3 +632,25 @@ class StackStoreMode(SingleStoreMode):
             required=[],
             additional_properties=False,
         )
+
+    def _retry_search_tiles(self, **search_params) -> list[pystac.Item]:
+        retries = 10
+        for attempt in range(1, retries + 1):
+            try:
+                return list(
+                    self._helper.search_items(
+                        self._catalog, self._searchable, **search_params
+                    )
+                )
+            except Exception as e:
+                if attempt == retries:
+                    raise
+                print(
+                    f"{datetime.datetime.now()}: Attempt {attempt} failed with"
+                    f"search parameters {search_params}: {e}. Retrying in 1 seconds."
+                )
+                LOG.info(
+                    f"Attempt {attempt} failed with search parameters "
+                    f"{search_params}: {e}. Retrying in 1 seconds."
+                )
+                time.sleep(1)

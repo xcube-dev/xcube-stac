@@ -1,3 +1,4 @@
+import numpy as np
 import pystac
 import xarray as xr
 
@@ -36,4 +37,34 @@ def apply_offset_scaling(
     ds[asset_name] *= scale
     offset = raster_bands[0].get("offset", 0)
     ds[asset_name] += offset
+    return ds
+
+
+def apply_offset_scaling_odc_stac(ds: xr.Dataset, grouped_items: dict) -> xr.Dataset:
+    for asset_name in ds.keys():
+        if (
+            asset_name == "crs"
+            or asset_name == "spatial_ref"
+            or str(asset_name).lower() == "scl"
+        ):
+            continue
+        scale = np.zeros(len(grouped_items))
+        offset = np.zeros(len(grouped_items))
+        nodata_val = np.zeros(len(grouped_items))
+        for i, (date, items) in enumerate(grouped_items.items()):
+            raster_bands = items[0].assets[asset_name].extra_fields.get("raster:bands")
+            if raster_bands is None:
+                LOG.warning(
+                    f"Item {items[0].id} is not conform to the stac-extension "
+                    f"'raster'. No scaling is applied."
+                )
+                return ds
+
+            nodata_val[i] = raster_bands[0].get("nodata")
+            scale[i] = raster_bands[0].get("scale", 1)
+            offset[i] = raster_bands[0].get("offset", 0)
+        assert np.unique(nodata_val).size == 1
+        ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata_val[0])
+        ds[asset_name] *= scale[:, np.newaxis, np.newaxis]
+        ds[asset_name] += offset[:, np.newaxis, np.newaxis]
     return ds

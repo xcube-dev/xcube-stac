@@ -37,6 +37,7 @@ from xcube.core.store import (
     DataTypeLike,
 )
 from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonBooleanSchema
 
 from .constants import (
     CDSE_STAC_URL,
@@ -49,6 +50,7 @@ from .store_mode import StackStoreMode
 from .helper import Helper
 from .helper import HelperXcube
 from .helper import HelperCdse
+from .helper import HelperCdseCreodiasVM
 from ._utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -99,13 +101,21 @@ class StacDataStore(DataStore):
                 self._storage_options_s3,
                 self._helper,
             )
-        elif stack_mode is True:
+        elif stack_mode is True or stack_mode == "odc-stac":
+            if stack_mode is True:
+                stack_mode = "xcube"
             self._impl = StackStoreMode(
                 self._catalog,
                 self._url_mod,
                 self._searchable,
                 self._storage_options_s3,
                 self._helper,
+                stack_mode,
+            )
+        else:
+            raise DataStoreError(
+                "Invalid parameterization detected: a boolean or"
+                " 'odc-stac', was expected"
             )
 
     @classmethod
@@ -291,7 +301,8 @@ class StacCdseDataStore(StacDataStore):
 
     def __init__(
         self,
-        stack_mode: Union[bool, str] = False,
+        stack_mode: bool = False,
+        creodias_vm: bool = False,
         **storage_options_s3,
     ):
         storage_options_s3 = update_dict(
@@ -301,18 +312,27 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._helper = HelperCdse(**storage_options_s3)
+        if creodias_vm:
+            self._helper = HelperCdseCreodiasVM()
+        else:
+            self._helper = HelperCdse(**storage_options_s3)
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        stac_params = STAC_STORE_PARAMETERS.copy()
+        stac_params = dict(
+            **STAC_STORE_PARAMETERS,
+            creodias_vm=JsonBooleanSchema(
+                title="Decide if CDSE STAC API is used on a Creodias VM.",
+                default=False,
+            ),
+        )
         del stac_params["url"]
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,
-            required=["key", "secret"],
-            additional_properties=True,
+            required=[],
+            additional_properties=False,
         )
 
     def get_open_data_params_schema(

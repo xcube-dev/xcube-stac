@@ -5,9 +5,11 @@ import pystac
 import pystac_client.client
 from xcube.core.store import DataStoreError
 import s3fs
+import fsspec
 
 from .accessor import S3DataAccessor
 from .accessor import S3Sentinel2DataAccessor
+from .accessor import Sentinel2DataAccessor
 from .constants import MAP_CDSE_COLLECTION_FORMAT
 from .constants import MLDATASET_FORMATS
 from .constants import STAC_SEARCH_PARAMETERS
@@ -17,6 +19,7 @@ from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
 from .constants import SCHEMA_PROCESSING_LEVEL
 from .constants import SCHEMA_COLLECTIONS
 from .constants import SCHEMA_SPATIAL_RES
+from .constants import LOG
 from .sen2.constants import CDSE_SENITNEL_2_BANDS
 from .sen2.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
 from .sen2.constants import CDSE_SENTINEL_2_MIN_RESOLUTIONS
@@ -42,6 +45,8 @@ class Helper:
         self.schema_search_params = STAC_SEARCH_PARAMETERS
         self.schema_search_params_stack = STAC_SEARCH_PARAMETERS_STACK_MODE
         self.s3_accessor = S3DataAccessor
+        self.file_accessor = None
+        self.limit_split_timerange = np.inf
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         return item
@@ -173,6 +178,7 @@ class HelperCdse(Helper):
             secret=storage_options_s3["secret"],
         )
         self.s3_accessor = S3Sentinel2DataAccessor
+        self.limit_split_timerange = 190
 
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         processing_level = open_params.pop("processing_level", "L2A")
@@ -195,7 +201,18 @@ class HelperCdse(Helper):
                 hrefs = self._fs.glob(
                     f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
                 )
-                assert len(hrefs) == 1, "No unique jp2 file found"
+                if len(hrefs) == 0:
+                    LOG.warning(
+                        "No jp2 file found for "
+                        f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                    )
+                    hrefs = self._fs.glob(f"{href_base}/**/*_{asset_name}_*.jp2")
+                if len(hrefs) > 1:
+                    LOG.warning(
+                        f"Multiple hrefs {hrefs} are found "
+                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2. "
+                        f"Href {hrefs[0]} is taken."
+                    )
                 href_mod = hrefs[0]
                 time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
             else:
@@ -263,6 +280,153 @@ class HelperCdse(Helper):
 
     def get_protocols(self, item: pystac.Item, **open_params) -> list[str]:
         return ["s3"]
+
+    def get_format_ids(self, item: pystac.Item, **open_params) -> list[str]:
+        return ["jp2"]
+
+    def is_mldataset_available(self, item: pystac.Item, **open_params) -> bool:
+        return True
+
+    def search_items(
+        self,
+        catalog: Union[pystac.Catalog, pystac_client.client.Client],
+        searchable: bool,
+        **search_params,
+    ) -> Iterator[pystac.Item]:
+        processing_level = search_params.pop("processing_level", "L2A")
+        if "sortby" not in search_params:
+            search_params["sortby"] = "+datetime"
+        items = search_items(catalog, searchable, **search_params)
+        for item in items:
+            if not processing_level[1:] in item.properties["processingLevel"]:
+                continue
+            yield item
+
+
+class HelperCdseCreodiasVM(Helper):
+
+    def __init__(self):
+        super().__init__()
+        self.supported_protocols = ["file"]
+        self.supported_format_ids = ["netcdf", "zarr", "geotiff", "jp2"]
+        self.schema_open_params = dict(
+            **STAC_OPEN_PARAMETERS, spatial_res=SCHEMA_SPATIAL_RES
+        )
+        open_params_stack = dict(
+            **STAC_OPEN_PARAMETERS_STACK_MODE, processing_level=SCHEMA_PROCESSING_LEVEL
+        )
+        del open_params_stack["query"]
+        self.schema_open_params_stack = open_params_stack
+        self.schema_search_params = dict(
+            **STAC_SEARCH_PARAMETERS_STACK_MODE,
+            collections=SCHEMA_COLLECTIONS,
+            processing_level=SCHEMA_PROCESSING_LEVEL,
+        )
+        self._fs = fsspec.filesystem("file")
+        self.file_accessor = Sentinel2DataAccessor
+        self.limit_split_timerange = 190
+
+    def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
+        processing_level = open_params.pop("processing_level", "L2A")
+        open_params["asset_names"] = open_params.get(
+            "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
+        )
+        href_base = item.assets["PRODUCT"].extra_fields["alternate"]["s3"]["href"][1:]
+        href_base = f"/{href_base}"
+        res_want = open_params.get("spatial_res", CDSE_SENTINEL_2_MIN_RESOLUTIONS)
+        if "crs" in open_params:
+            target_crs = normalize_crs(open_params["crs"])
+            if target_crs.is_geographic:
+                res_want = open_params["spatial_res"] * 111320
+        time_end = None
+        for asset_name in open_params["asset_names"]:
+            res_avail = CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS[processing_level][
+                asset_name
+            ]
+            res_select = res_avail[np.argmin(abs(np.array(res_avail) - res_want))]
+            if time_end is None:
+                hrefs = self._fs.glob(
+                    f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                )
+                if len(hrefs) == 0:
+                    LOG.warning(
+                        "No jp2 file found for "
+                        f"{href_base}/**/*_{asset_name}_{res_select}m.jp2"
+                    )
+                    hrefs = self._fs.glob(f"{href_base}/**/*_{asset_name}_*.jp2")
+                if len(hrefs) > 1:
+                    LOG.warning(
+                        f"Multiple hrefs {hrefs} are found "
+                        f"for {href_base}/**/*_{asset_name}_{res_select}m.jp2. "
+                        f"Href {hrefs[0]} is taken."
+                    )
+                href_mod = hrefs[0]
+                time_end = hrefs[0].split("/IMG_DATA/")[0][-15:]
+            else:
+                id_parts = item.id.split("_")
+                href_mod = (
+                    f"{href_base}/GRANULE/L2A_T{item.properties["tileId"]}_"
+                    f"A{item.properties["orbitNumber"]:06}_{time_end}/IMG_DATA/"
+                    f"R{res_select}m/T{item.properties["tileId"]}_"
+                    f"{id_parts[2]}_{asset_name}_{res_select}m.jp2"
+                )
+            if float(item.properties["processorVersion"]) >= 4.00:
+                offset = CDSE_SENITNEL_2_OFFSET_400[asset_name]
+            else:
+                offset = 0
+            item.assets[asset_name] = pystac.Asset(
+                href_mod,
+                asset_name,
+                media_type="image/jp2",
+                roles=["data"],
+                extra_fields={
+                    "cdse": True,
+                    "raster:bands": [
+                        dict(
+                            nodata=CDSE_SENITNEL_2_NO_DATA,
+                            scale=1 / CDSE_SENITNEL_2_SCALE[asset_name],
+                            offset=offset / CDSE_SENITNEL_2_SCALE[asset_name],
+                        )
+                    ],
+                },
+            )
+        # add asset for meta data for angles
+        item.assets["granule_metadata"] = pystac.Asset(
+            f"{href_base}/GRANULE/MTD_TL.xml",
+            "granule_metadata",
+            media_type="application/xml",
+            roles=["metadata"],
+            extra_fields={"cdse": True},
+        )
+        return item
+
+    def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
+        processing_level = open_params.pop("processing_level", "L2A")
+        asset_names = open_params.get(
+            "asset_names", CDSE_SENITNEL_2_BANDS[processing_level]
+        )
+        data_access_params = {}
+        for asset_name in asset_names:
+            protocol = "file"
+            href_components = item.assets[asset_name].href.split("/")
+            root = ""
+            instrument = href_components[2]
+            format_id = MAP_CDSE_COLLECTION_FORMAT[instrument]
+            fs_path = "/".join(href_components)
+            storage_options = {}
+            data_access_params[asset_name] = dict(
+                name=asset_name,
+                protocol=protocol,
+                root=root,
+                fs_path=fs_path,
+                storage_options=storage_options,
+                format_id=format_id,
+                href=item.assets[asset_name].href,
+            )
+        return data_access_params
+
+    def get_protocols(self, item: pystac.Item, **open_params) -> list[str]:
+        return ["file"]
 
     def get_format_ids(self, item: pystac.Item, **open_params) -> list[str]:
         return ["jp2"]

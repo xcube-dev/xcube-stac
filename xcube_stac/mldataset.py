@@ -91,15 +91,10 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
 
     def __init__(
         self,
-        access_params: dict,
+        file_path: str,
         **open_params: dict[str, Any],
     ):
-        file_path = (
-            f"{access_params["protocol"]}://{access_params["root"]}"
-            f"/{access_params["fs_path"]}"
-        )
         self._file_path = file_path
-        self._access_params = access_params
         self._open_params = open_params
         super().__init__(ds_id=file_path)
 
