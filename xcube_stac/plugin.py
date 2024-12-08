@@ -23,6 +23,8 @@ from xcube.constants import EXTENSION_POINT_DATA_STORES
 from xcube.util import extension
 
 from .constants import DATA_STORE_ID
+from .constants import DATA_STORE_ID_CDSE
+from .constants import DATA_STORE_ID_XCUBE
 
 
 def init_plugin(ext_registry: extension.ExtensionRegistry):
@@ -32,4 +34,20 @@ def init_plugin(ext_registry: extension.ExtensionRegistry):
         point=EXTENSION_POINT_DATA_STORES,
         name=DATA_STORE_ID,
         description="STAC DataStore",
+    )
+
+    # xcube DataStore extensions for CDSE STAC API
+    ext_registry.add_extension(
+        loader=extension.import_component("xcube_stac.store:StacCdseDataStore"),
+        point=EXTENSION_POINT_DATA_STORES,
+        name=DATA_STORE_ID_CDSE,
+        description="STAC-CDSE DataStore",
+    )
+
+    # xcube DataStore extensions for xcube STAC API
+    ext_registry.add_extension(
+        loader=extension.import_component("xcube_stac.store:StacXcubeDataStore"),
+        point=EXTENSION_POINT_DATA_STORES,
+        name=DATA_STORE_ID_XCUBE,
+        description="STAC-XCUBE DataStore",
     )

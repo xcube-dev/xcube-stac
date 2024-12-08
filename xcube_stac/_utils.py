@@ -18,18 +18,18 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import collections
 import copy
 import datetime
 import itertools
+import os
 from typing import Any, Container, Dict, Iterator, Union
 
 import numpy as np
-import odc.geo
 import pandas as pd
 import pyproj
 import pystac
-import rasterio
+import pystac_client
 from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import (
@@ -38,13 +38,35 @@ from xcube.core.store import (
     DataStoreError,
     DataTypeLike,
 )
+from xcube.core.gridmapping import GridMapping
+from xcube.core.resampling import resample_in_space
 
-from .constants import DATA_OPENER_IDS, FloatInt, MAP_MIME_TYP_FORMAT
+from .constants import (
+    TILE_SIZE,
+    DATA_OPENER_IDS,
+    FloatInt,
+    MAP_FILE_EXTENSION_FORMAT,
+    MAP_MIME_TYP_FORMAT,
+)
+
+
+_CATALOG_JSON = "catalog.json"
+
+
+def get_format_id(asset: pystac.Asset) -> str:
+    if asset.media_type is None:
+        format_id = get_format_from_path(asset.href)
+    else:
+        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+    if format_id is None:
+        raise DataStoreError(f"No format_id found for asset {asset.extra_fields['id']}")
+    return format_id
 
 
 def get_assets_from_item(
     item: pystac.Item,
     asset_names: Container[str] = None,
+    supported_format_ids: Container[str] = None,
 ) -> Iterator[pystac.Asset]:
     """Get all assets for a given item, which has a MIME data type
 
@@ -53,6 +75,10 @@ def get_assets_from_item(
         asset_names: Names of assets which will be included
             in the data cube. If None, all assets will be
             included which can be opened by the data store.
+        supported_format_ids: supported format ids. If None,
+            all format IDs will be selected, which are supported
+            by the store.
+
 
     Yields:
         An iterator over the assets
@@ -61,9 +87,15 @@ def get_assets_from_item(
         # test if asset is in 'asset_names' and the media type is
         # one of the predefined MIME types; note that if asset_names
         # is ot given all assets are returned matching the MINE types;
-        if (asset_names is None or k in asset_names) and v.media_type.split("; ")[
-            0
-        ] in MAP_MIME_TYP_FORMAT:
+        media_type = v.media_type.split("; ")[0]
+        if (
+            (asset_names is None or k in asset_names)
+            and media_type in MAP_MIME_TYP_FORMAT
+            and (
+                supported_format_ids is None
+                or MAP_MIME_TYP_FORMAT[media_type] in supported_format_ids
+            )
+        ):
             v.extra_fields["id"] = k
             yield v
 
@@ -71,6 +103,7 @@ def get_assets_from_item(
 def list_assets_from_item(
     item: pystac.Item,
     asset_names: Container[str] = None,
+    supported_format_ids: Container[str] = None,
 ) -> list[pystac.Asset]:
     """Get all assets for a given item, which has a MIME data type
 
@@ -79,11 +112,32 @@ def list_assets_from_item(
         asset_names: Names of assets which will be included
             in the data cube. If None, all assets will be
             included which can be opened by the data store.
+        supported_format_ids: supported format ids. If None,
+            all format IDs will be selected, which are supported
+            by the store.
 
-    Yields:
-        An iterator over the assets
+    Returns:
+        A list containing the assets
     """
-    return list(get_assets_from_item(item, asset_names=asset_names))
+    return list(
+        get_assets_from_item(
+            item, asset_names=asset_names, supported_format_ids=supported_format_ids
+        )
+    )
+
+
+def search_items(
+    catalog: Union[pystac.Catalog, pystac_client.client.Client],
+    searchable: bool,
+    **search_params,
+) -> Iterator[pystac.Item]:
+    if searchable:
+        # rewrite to "datetime"
+        search_params["datetime"] = search_params.pop("time_range", None)
+        items = catalog.search(**search_params).items()
+    else:
+        items = search_nonsearchable_catalog(catalog, **search_params)
+    return items
 
 
 def search_nonsearchable_catalog(
@@ -306,6 +360,17 @@ def do_bboxes_intersect(
     return box(*bbox_test).intersects(box(*open_params["bbox"]))
 
 
+def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
+    for item in items:
+        item.properties["center_point"] = get_center_from_bbox(item.bbox)
+        item.properties["datetime_nominal"] = convert_to_solar_time(
+            item.datetime,
+            (item.properties["center_point"][0] + item.properties["center_point"][1])
+            / 2,
+        )
+    return items
+
+
 def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     """It updates a dictionary recursively.
 
@@ -344,166 +409,9 @@ def get_url_from_pystac_object(
     return links[0].href
 
 
-def get_formats_from_item(
-    item: pystac.Item, asset_names: Container[str] = None
-) -> np.array:
-    """It transforms the MIME-types of selected assets stored within an item to the
-    format IDs used in xcube.
-
-    Args:
-        item: item/feature
-        asset_names: Names of assets which will be included
-            in the data cube. If None, all assets will be
-            included which can be opened by the data store.
-
-    Returns:
-        array containing all formats
-    """
-    assets = list_assets_from_item(item, asset_names=asset_names)
-    return get_formats_from_assets(assets)
-
-
-def get_formats_from_assets(assets: list[pystac.Asset]) -> np.array:
-    """It transforms the MIME-types of multiple assets to the
-    format IDs used in xcube.
-
-    Args:
-        assets: list of assets
-
-    Returns:
-        array containing all format IDs
-    """
-    return np.unique(np.array([get_format_from_asset(asset) for asset in assets]))
-
-
-def get_format_from_asset(asset: pystac.Asset) -> str:
-    """It transforms the MIME-types of one asset to the format IDs used in xcube.
-
-    Args:
-        asset: one asset object
-
-    Returns: format ID
-
-    """
-    return MAP_MIME_TYP_FORMAT[asset.media_type.split("; ")[0]]
-
-
-def are_all_assets_geotiffs(item: pystac.Item) -> bool:
-    """Auxiliary function to check if all assets are tifs, tiffs, or geotiffs.
-
-    Args:
-        item: item object
-
-    Returns: True, if all assets within the item are tifs, tiffs, or geotiffs.
-
-    """
-    formats = get_formats_from_item(item)
-    return len(formats) == 1 and formats[0] == "geotiff"
-
-
-def is_xcube_server_item(item: pystac.Item) -> bool:
-    """Auxiliary function to check if the item is published by xcube server.
-
-    Args:
-        item: item object
-
-    Returns: True, if item is published by xcube server.
-
-    """
-    assets = list_assets_from_item(item)
-    return is_xcube_server_asset(assets)
-
-
-def is_xcube_server_asset(asset: Union[pystac.Asset, list[pystac.Asset]]) -> bool:
-    """Auxiliary function to check if the asset(s) is/are published by xcube server.
-
-    Args:
-        asset: a list or single pystac.Asset object
-
-    Returns: True, if the asset(s) is/are published by xcube server.
-
-    """
-    if isinstance(asset, list):
-        asset = asset[0]
-    return "xcube:data_store_id" in asset.extra_fields
-
-
-def select_xcube_server_asset(
-    assets: list[pystac.Asset],
-    asset_names: list[str] = None,
-    data_type: DataTypeLike = None,
-) -> list[pystac.Asset]:
-    """Selects the asset from item published by xcube server according to
-    the data type. If no data type is given, the asset linking to 'dataset'
-    will be returned.
-
-    Args:
-        assets: list of asset object
-        asset_names: asset names given in *open_params* in :meth:`open_data`
-        data_type: required data type of the return value in :meth:`open_data`
-
-    Returns:
-        assets: selected asset
-
-    Raises:
-        DataStoreError: Error, if "analytic" and "analytic_multires" is selected
-            in *asset_names*
-    """
-    if asset_names is None:
-        if is_valid_ml_data_type(data_type):
-            assets = [assets[1]]
-        else:
-            assets = [assets[0]]
-    elif "analytic_multires" in asset_names and "analytic" in asset_names:
-        raise DataStoreError(
-            "Xcube server publishes data resources as 'dataset' and "
-            "'mldataset' under the asset names 'analytic' and "
-            "'analytic_multires'. Please select only one asset in "
-            "<asset_names> when opening the data."
-        )
-    return assets
-
-
-def extract_params_xcube_server_asset(
-    asset: pystac.Asset,
-) -> tuple[str, str, str, dict]:
-    """Extracts the data store parameters and the data ID from an asset
-    published by xcube server.
-
-    Args:
-        asset: asset object
-
-    Returns:
-        protocol: protocol needed for the data store ID
-        root: bucket for S3 or root url for https
-        fs_path: path to file which is equivalent to data ID needed
-            to open the data
-        storage_options: additional storage options
-    """
-    protocol = asset.extra_fields["xcube:data_store_id"]
-    data_store_params = asset.extra_fields["xcube:data_store_params"]
-    root = data_store_params["root"]
-    storage_options = data_store_params["storage_options"]
-    fs_path = asset.extra_fields["xcube:open_data_params"]["data_id"]
-    return protocol, root, fs_path, storage_options
-
-
-def xarray_rename_vars(
-    ds: Union[xr.Dataset, xr.DataArray], name_dict: dict
-) -> Union[xr.Dataset, xr.DataArray]:
-    """Auxiliary functions which turns the method xarray.Dataset.rename_vars and
-    xarray.DataArray.rename_vars into a function which takes the Dataset or DataArray
-    as argument.
-
-    Args:
-        ds: Dataset or DataArray
-        name_dict: Dictionary whose keys are current variable names and whose values
-            are the desired names.
-
-    Returns:
-        Dataset with renamed variables
-    """
-    return ds.rename_vars(name_dict)
+def get_format_from_path(path: str) -> str:
+    _, file_extension = os.path.splitext(path)
+    return MAP_FILE_EXTENSION_FORMAT.get(file_extension)
 
 
 def is_valid_data_type(data_type: DataTypeLike) -> bool:
@@ -588,106 +496,137 @@ def get_data_id_from_pystac_object(
     return get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
 
 
-def get_resolutions_cog(
-    item: pystac.Item,
-    asset_names: Container[str] = None,
-    crs: str = None,
-) -> list[odc.geo.Resolution]:
-    """This function calculates the resolution for each overview level of
-    a cloud-optimized GeoTIFF (COG).
+def modify_catalog_url(url: str) -> str:
+    url_mod = url
+    if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
+        url_mod = url_mod[:-12]
+    if url_mod[-1] != "/":
+        url_mod += "/"
+    return url_mod
 
-    Args:
-        item: item/feature object.
-        asset_names: asset names to b included in the dataset.
-        crs: crs of the dataset output.
 
-    Returns:
-        list of odc-geo resolution objects for each overview layer.
-    """
-    assets = list_assets_from_item(item, asset_names=asset_names)
-    resolutions = np.full(len(assets), np.inf)
-    for i, asset in enumerate(assets):
-        raster_bands = asset.extra_fields.get("raster:bands")
-        if not raster_bands:
-            break
-        resolutions[i] = asset.extra_fields["raster:bands"][0]["spatial_resolution"]
-    idx_min = np.argmin(resolutions)
-    with rasterio.open(assets[idx_min].href) as rio_dataset_reader:
-        overviews = [1] + rio_dataset_reader.overviews(1)
-        data_resolution = rio_dataset_reader.res
-        data_crs = rio_dataset_reader.crs
-    if crs:
-        transformer = pyproj.Transformer.from_crs(data_crs, crs)
-        pmin = transformer.transform(0, 0)
-        pmax = transformer.transform(data_resolution[0], data_resolution[1])
-        res_transformed = [pmax[0] - pmin[0], pmax[1] - pmin[1]]
+def reproject_bbox(bbox, source_crs, target_crs):
+    source_crs = normalize_crs(source_crs)
+    target_crs = normalize_crs(target_crs)
+    if source_crs == target_crs:
+        return bbox
+    t = pyproj.Transformer.from_crs(source_crs, target_crs, always_xy=True)
+    (x1, x2), (y1, y2) = t.transform((bbox[0], bbox[2]), (bbox[1], bbox[3]))
+    return [x1, y1, x2, y2]
+
+
+def convert_to_solar_time(
+    utc: datetime.datetime, longitude: float
+) -> datetime.datetime:
+    # offset_seconds snapped to 1 hour increments
+    # 1/15 == 24/360 (hours per degree of longitude)
+    offset_seconds = int(longitude / 15) * 3600
+    return utc + datetime.timedelta(seconds=offset_seconds)
+
+
+def normalize_crs(crs: Union[str, pyproj.CRS]) -> pyproj.CRS:
+    if isinstance(crs, pyproj.CRS):
+        return crs
     else:
-        res_transformed = data_resolution
-
-    return [
-        odc.geo.resxy_(
-            res_transformed[0] * overview,
-            res_transformed[1] * overview,
-        )
-        for overview in overviews
-    ]
+        return pyproj.CRS.from_string(crs)
 
 
-def apply_scaling_nodata(
-    ds: xr.Dataset, items: Union[pystac.Item, list[pystac.Item]]
+def get_center_from_bbox(bbox: list[float]) -> tuple[float, float]:
+    return (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
+
+
+def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
+    if len(list(ds.keys())) == 1:
+        name_dict = {var_name: f"{asset}" for var_name in ds.data_vars.keys()}
+    else:
+        name_dict = {
+            var_name: f"{asset}_{var_name}" for var_name in ds.data_vars.keys()
+        }
+    return ds.rename_vars(name_dict=name_dict)
+
+
+def get_gridmapping(
+    bbox: list[float],
+    spatial_res: float,
+    crs: Union[str, pyproj.crs.CRS],
+    tile_size: Union[int, tuple[int, int]] = TILE_SIZE,
+) -> GridMapping:
+    x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
+    y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
+    return GridMapping.regular(
+        size=(x_size, y_size),
+        xy_min=(bbox[0] - spatial_res / 2, bbox[1] - spatial_res / 2),
+        xy_res=spatial_res,
+        crs=crs,
+        tile_size=tile_size,
+    )
+
+
+def merge_datasets(
+    datasets: list[xr.Dataset], target_gm: GridMapping = None
 ) -> xr.Dataset:
-    """This function applies scaling of the data and fills no-data pixel with np.nan.
-
-    Args:
-        ds: dataset
-        items: item object or list of item objects (depending on stack-mode equal to
-            False and True, respectively.)
-
-    Returns:
-        Dataset where scaling and filling nodata values are applied.
-    """
-    if isinstance(items, pystac.Item):
-        items = [items]
-
-    if items[0].ext.has("raster"):
-        for data_varname in ds.data_vars.keys():
-            scale = np.ones(len(items))
-            offset = np.zeros(len(items))
-            nodata_val = np.zeros(len(items))
-            for i, item in enumerate(items):
-                raster_bands = item.assets[data_varname].extra_fields.get(
-                    "raster:bands"
+    y_coord, x_coord = get_spatial_dims(datasets[0])
+    x_ress = [abs(float((ds[x_coord][1] - ds[x_coord][0]))) for ds in datasets]
+    y_ress = [abs(float(ds[y_coord][1] - ds[y_coord][0])) for ds in datasets]
+    if (
+        np.unique(x_ress).size == 1
+        and np.unique(y_ress).size == 1
+        and target_gm is None
+    ):
+        ds = _update_datasets(datasets)
+    else:
+        if target_gm is None:
+            idx = np.argmin(x_ress)
+            target_gm = GridMapping.from_dataset(datasets[idx])
+        grouped = collections.defaultdict(lambda: collections.defaultdict(list))
+        for idx, (x_res, y_res) in enumerate(zip(x_ress, y_ress)):
+            grouped[x_res][y_res].append(idx)
+        datasets_grouped = []
+        for _, val in grouped.items():
+            for _, idxs in val.items():
+                datasets_grouped.append(
+                    _update_datasets([datasets[idx] for idx in idxs])
                 )
-                if not raster_bands:
-                    break
-                nodata_val[i] = raster_bands[0].get("nodata", 0)
-                if "scale" in raster_bands[0]:
-                    scale[i] = raster_bands[0]["scale"]
-                if "offset" in raster_bands[0]:
-                    offset[i] = raster_bands[0]["offset"]
-
-            nodata_val = np.unique(nodata_val)
-            msg = (
-                "Items contain different values in the "
-                "asset's field 'raster:bands:nodata'"
-            )
-            assert len(nodata_val) == 1, msg
-            nodata_val = nodata_val[0]
-            ds[data_varname] = ds[data_varname].where(ds[data_varname] != nodata_val)
-
-            scale = np.unique(scale)
-            msg = (
-                "Items contain different values in the "
-                "asset's field 'raster:bands:scale'"
-            )
-            assert len(scale) == 1, msg
-            ds[data_varname] *= scale[0]
-
-            offset = np.unique(offset)
-            msg = (
-                "Items contain different values in the "
-                "asset's field 'raster:bands:offset'"
-            )
-            assert len(offset) == 1, msg
-            ds[data_varname] += offset[0]
+        datasets_resampled = []
+        for ds in datasets_grouped:
+            datasets_resampled.append(wrapper_resample_in_space(ds, target_gm))
+        ds = _update_datasets(datasets_resampled)
+    if "spatial_ref" in ds.coords:
+        ds["crs"] = ds.coords["spatial_ref"]
+        ds = ds.drop_vars("spatial_ref")
     return ds
+
+
+def get_spatial_dims(ds: xr.Dataset) -> (str, str):
+    if "lat" in ds and "lon" in ds:
+        y_coord, x_coord = "lat", "lon"
+    elif "y" in ds and "x" in ds:
+        y_coord, x_coord = "y", "x"
+    else:
+        raise DataStoreError(f"No spatial dimensions found in dataset.")
+    return y_coord, x_coord
+
+
+def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
+    ds = datasets[0].copy()
+    for ds_asset in datasets[1:]:
+        ds.update(ds_asset)
+    return ds
+
+
+def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
+    ds = resample_in_space(ds, target_gm=target_gm, encode_cf=True)
+    vars = [
+        "spatial_ref",
+        "x_bnds",
+        "y_bnds",
+        "lon_bnds",
+        "lat_bnds",
+        "transformed_x",
+        "transformed_y",
+    ]
+    vars_sel = []
+    for var in vars:
+        if var in ds:
+            vars_sel.append(var)
+    return ds.drop_vars(vars_sel)

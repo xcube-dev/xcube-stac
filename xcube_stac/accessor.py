@@ -21,6 +21,9 @@
 
 from typing import Union
 
+import dask
+import rasterio.session
+import rioxarray
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
@@ -28,6 +31,7 @@ from xcube.core.store import new_data_store
 
 from ._utils import is_valid_ml_data_type
 from .constants import LOG
+from .mldataset import Jp2MultiLevelDataset
 
 
 class HttpsDataAccessor:
@@ -45,24 +49,26 @@ class HttpsDataAccessor:
 
     def open_data(
         self,
-        data_id: str,
-        format_id: str,
+        access_params: dict,
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
-        if format_id == "netcdf":
+        if access_params["format_id"] == "netcdf":
             if is_valid_ml_data_type(data_type):
                 LOG.warn(
-                    f"No data opener found for format {format_id!r} and data type "
-                    f"{data_type!r}. Data type is changed to the default data type "
-                    "'dataset'."
+                    f"No data opener found for format {access_params["format_id"]!r} "
+                    f"and data type {data_type!r}. Data type is changed to the default "
+                    f"data type 'dataset'."
                 )
-            fs_path = f"https://{self._root}/{data_id}#mode=bytes"
+            fs_path = f"https://{self._root}/{access_params["fs_path"]}#mode=bytes"
             return xr.open_dataset(fs_path, chunks={})
         else:
             return self._https_accessor.open_data(
-                data_id=data_id, opener_id=opener_id, data_type=data_type, **open_params
+                data_id=access_params["fs_path"],
+                opener_id=opener_id,
+                data_type=data_type,
+                **open_params,
             )
 
 
@@ -71,12 +77,10 @@ class S3DataAccessor:
     the zarr, geotiff and netcdf format via the AWS S3 protocol.
     """
 
-    def __init__(
-        self,
-        root: str,
-        storage_options: dict,
-    ):
+    def __init__(self, root: str, storage_options: dict = None):
         self._root = root
+        if storage_options is None:
+            storage_options = {}
         self._storage_options = storage_options
         if "anon" not in storage_options:
             storage_options["anon"] = True
@@ -93,11 +97,77 @@ class S3DataAccessor:
 
     def open_data(
         self,
-        data_id: str,
+        access_params: dict,
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         return self._s3_accessor.open_data(
-            data_id=data_id, opener_id=opener_id, data_type=data_type, **open_params
+            data_id=access_params["fs_path"],
+            opener_id=opener_id,
+            data_type=data_type,
+            **open_params,
         )
+
+
+class S3Sentinel2DataAccessor:
+    """Implementation of the data accessor supporting
+    the jp2 format  of Sentinel-2 data via the AWS S3 protocol.
+    """
+
+    def __init__(self, root: str, storage_options: dict = None):
+        self._root = root
+        self.session = rasterio.session.AWSSession(
+            aws_unsigned=storage_options["anon"],
+            endpoint_url=storage_options["client_kwargs"]["endpoint_url"].split("//")[
+                1
+            ],
+            aws_access_key_id=storage_options["key"],
+            aws_secret_access_key=storage_options["secret"],
+        )
+        self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
+        # keep the rasterio environment open so that the data can be accessed
+        # when plotting or writing the data
+        self.env = self.env.__enter__()
+        # dask multi-threading needs to be turned off, otherwise the GDAL
+        # reader for JP2 raises error.
+        dask.config.set(scheduler="single-threaded")
+
+    def close(self):
+        if self.env is not None:
+            LOG.debug("Exit rasterio.env.Env for CDSE data access.")
+            self.env.__exit__()
+        self.env = None
+
+    def __del__(self):
+        self.close()
+
+    @property
+    def root(self) -> str:
+        return self._root
+
+    def open_data(
+        self,
+        access_params: dict,
+        opener_id: str = None,
+        data_type: DataTypeLike = None,
+        **open_params,
+    ) -> Union[xr.Dataset, MultiLevelDataset]:
+        if opener_id is None:
+            opener_id = ""
+        if "tile_size" in open_params:
+            LOG.info(
+                "The parameter tile_size is set to (1024, 1024), which is the "
+                "native chunk size of the jp2 files in the Sentinel-2 archive."
+            )
+        if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
+            return Jp2MultiLevelDataset(access_params, **open_params)
+        else:
+            return rioxarray.open_rasterio(
+                (
+                    f"{access_params["protocol"]}://{access_params["root"]}/"
+                    f"{access_params["fs_path"]}"
+                ),
+                chunks=dict(x=1024, y=1024),
+                band_as_variable=True,
+            )

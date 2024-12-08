@@ -21,13 +21,17 @@
 
 from typing import Any, Optional
 
-import odc.stac
-import odc.geo
 import pystac
+import rasterio
+import rasterio.session
+import rioxarray
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
+from xcube.core.gridmapping import GridMapping
 
-from ._utils import apply_scaling_nodata, get_resolutions_cog
+from ._utils import rename_dataset
+from ._utils import merge_datasets
+from .stac_extension.raster import apply_offset_scaling
 
 
 class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
@@ -43,14 +47,20 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         self,
         ml_datasets: list[MultiLevelDataset],
         item: pystac.Item,
+        assets: list[str],
         data_id: Optional[str] = None,
+        target_gm: GridMapping = None,
+        open_params: dict = None,
+        attrs: dict = None,
     ):
-        if not ml_datasets or len(ml_datasets) < 2:
-            raise ValueError("ml_datasets must have at least two elements")
         super().__init__(ds_id=data_id)
         self._ml_datasets = ml_datasets
         self._data_id = data_id
         self._item = item
+        self._assets = assets
+        self._target_gm = target_gm
+        self._open_params = open_params
+        self._attrs = attrs
 
     def _get_num_levels_lazily(self) -> int:
         return self._ml_datasets[0].num_levels
@@ -58,16 +68,20 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
     def _get_dataset_lazily(
         self, index: int, combiner_params: dict[str, Any]
     ) -> xr.Dataset:
-        datasets = [ml_dataset.get_dataset(index) for ml_dataset in self._ml_datasets]
-        combined_dataset = datasets[0].copy()
-        for dataset in datasets[1:]:
-            combined_dataset.update(dataset)
-        combined_dataset = apply_scaling_nodata(combined_dataset, self._item)
+        datasets = []
+        for ml_dataset, asset in zip(self._ml_datasets, self._assets):
+            ds = ml_dataset.get_dataset(index)
+            ds = rename_dataset(ds, asset)
+            if self._open_params.get("apply_scaling", False):
+                ds = apply_offset_scaling(ds, self._item, asset)
+            datasets.append(ds)
+        combined_dataset = merge_datasets(datasets, target_gm=self._target_gm)
+        combined_dataset.attrs = self._attrs
         return combined_dataset
 
 
-class StackModeMultiLevelDataset(LazyMultiLevelDataset):
-    """A multi-level dataset for stack-mode.
+class Jp2MultiLevelDataset(LazyMultiLevelDataset):
+    """A multi-level dataset for accessing .jp2 files.
 
     Args:
         data_id: data identifier
@@ -77,34 +91,27 @@ class StackModeMultiLevelDataset(LazyMultiLevelDataset):
 
     def __init__(
         self,
-        data_id: str,
-        items: list[pystac.Item],
+        access_params: dict,
         **open_params: dict[str, Any],
     ):
-        super().__init__(ds_id=data_id)
-        self._data_id = data_id
-        self._open_params = open_params
-        self._items = sorted(items, key=lambda item: item.properties.get("datetime"))
-
-        self._resolutions = get_resolutions_cog(
-            self._items[0],
-            asset_names=self._open_params.get("bands", None),
-            crs=self._open_params.get("crs", None),
+        file_path = (
+            f"{access_params["protocol"]}://{access_params["root"]}"
+            f"/{access_params["fs_path"]}"
         )
-
-        # open data for each resolution/overview level, so that odc.stac.load is
-        # not called in the method _get_dataset_lazily()
-        self._datasets = []
-        for resolution in self._resolutions:
-            ds = odc.stac.load(
-                self._items,
-                resolution=resolution,
-                **self._open_params,
-            )
-            self._datasets.append(apply_scaling_nodata(ds, self._items))
+        self._file_path = file_path
+        self._access_params = access_params
+        self._open_params = open_params
+        super().__init__(ds_id=file_path)
 
     def _get_num_levels_lazily(self) -> int:
-        return len(self._resolutions)
+        with rasterio.open(self._file_path) as rio_dataset:
+            overviews = rio_dataset.overviews(1)
+        return len(overviews) + 1
 
     def _get_dataset_lazily(self, index: int, parameters) -> xr.Dataset:
-        return self._datasets[index]
+        return rioxarray.open_rasterio(
+            self._file_path,
+            overview_level=index - 1 if index > 0 else None,
+            chunks=dict(x=1024, y=1024),
+            band_as_variable=True,
+        )

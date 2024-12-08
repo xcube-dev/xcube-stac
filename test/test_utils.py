@@ -22,10 +22,21 @@
 import datetime
 import unittest
 
+import dask.array as da
 import pystac
+import pyproj
+import numpy as np
+import xarray as xr
 from xcube.core.store import DataStoreError
 
 from xcube_stac._utils import (
+    get_format_id,
+    list_assets_from_item,
+    get_format_from_path,
+    reproject_bbox,
+    get_spatial_dims,
+    merge_datasets,
+    normalize_crs,
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,
@@ -36,6 +47,71 @@ from xcube_stac._utils import (
 
 
 class UtilsTest(unittest.TestCase):
+
+    def test_get_format_id(self):
+        asset = pystac.Asset(
+            href=f"https://example.com/data/test.tif",
+            media_type="image/tiff",
+            roles=["data"],
+            extra_fields=dict(id="test"),
+        )
+        self.assertEqual("geotiff", get_format_id(asset))
+        asset = pystac.Asset(
+            href=f"https://example.com/data/test.tif",
+            roles=["data"],
+            extra_fields=dict(id="test"),
+        )
+        self.assertEqual("geotiff", get_format_id(asset))
+        asset = pystac.Asset(
+            href=f"https://example.com/data/test.xml",
+            roles=["meta"],
+            extra_fields=dict(id="test"),
+        )
+        with self.assertRaises(DataStoreError) as cm:
+            get_format_id(asset)
+        self.assertEqual(
+            "No format_id found for asset test",
+            f"{cm.exception}",
+        )
+
+    def test_list_assets_from_item(self):
+        geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]
+            ],
+        }
+        bbox = [100.0, 0.0, 101.0, 1.0]
+        dt = datetime.datetime(2023, 1, 1, 0, 0, 0)
+        item = pystac.Item(
+            id="test_item", geometry=geometry, bbox=bbox, datetime=dt, properties={}
+        )
+        supported_format_ids = ["geotiff", "netcdf"]
+
+        asset_names = ["asset1", "asset2", "asset3"]
+        media_types = ["image/tiff", "application/zarr", "meta/xml"]
+        for asset_name, media_type in zip(asset_names, media_types):
+            asset_href = f"https://example.com/data/{asset_name}.tif"
+            asset = pystac.Asset(href=asset_href, media_type=media_type, roles=["data"])
+            item.add_asset(asset_name, asset)
+        list_assets = list_assets_from_item(item)
+        self.assertCountEqual(
+            ["asset1", "asset2"], [asset.extra_fields["id"] for asset in list_assets]
+        )
+        list_assets = list_assets_from_item(item, asset_names=["asset2"])
+        self.assertCountEqual(
+            ["asset2"], [asset.extra_fields["id"] for asset in list_assets]
+        )
+        list_assets = list_assets_from_item(
+            item, supported_format_ids=supported_format_ids
+        )
+        self.assertCountEqual(
+            ["asset1"], [asset.extra_fields["id"] for asset in list_assets]
+        )
+        list_assets = list_assets_from_item(
+            item, supported_format_ids=supported_format_ids, asset_names=["asset2"]
+        )
+        self.assertCountEqual([], [asset.extra_fields["id"] for asset in list_assets])
 
     def test_convert_datetime2str(self):
         dt = datetime.datetime(2024, 1, 1, 12, 00, 00)
@@ -229,8 +305,127 @@ class UtilsTest(unittest.TestCase):
         for west, south, east, north, fun in item_test_paramss:
             fun(do_bboxes_intersect(item.bbox, bbox=[west, south, east, north]))
 
+    def test_get_format_from_path(self):
+        path = "https://example/data/file.tif"
+        self.assertEqual("geotiff", get_format_from_path(path))
+        path = "https://example/data/file.zarr"
+        self.assertEqual("zarr", get_format_from_path(path))
+
     def test_update_nested_dict(self):
         dic = dict(a=1, b=dict(c=3))
         dic_update = dict(d=1, b=dict(c=5, e=8))
         dic_expected = dict(a=1, d=1, b=dict(c=5, e=8))
         self.assertDictEqual(dic_expected, update_dict(dic, dic_update))
+
+    def test_reproject_bbox(self):
+        bbox_wgs84 = [2, 50, 3, 51]
+        crs_wgs84 = "EPSG:4326"
+        crs_3035 = "EPSG:3035"
+        bbox_3035 = [
+            3748675.952977144,
+            3018751.225593612,
+            3830472.135997862,
+            3122243.2680214494,
+        ]
+        self.assertEqual(bbox_wgs84, reproject_bbox(bbox_wgs84, crs_wgs84, crs_wgs84))
+        self.assertEqual(bbox_3035, reproject_bbox(bbox_3035, crs_3035, crs_3035))
+        np.testing.assert_almost_equal(
+            bbox_3035, reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035)
+        )
+        np.testing.assert_almost_equal(
+            bbox_wgs84, reproject_bbox(bbox_3035, crs_3035, crs_wgs84)
+        )
+
+    def test_normalize_crs(self):
+        crs_str = "EPSG:4326"
+        crs_pyproj = pyproj.CRS.from_string(crs_str)
+        self.assertEqual(crs_pyproj, normalize_crs(crs_str))
+        self.assertEqual(crs_pyproj, normalize_crs(crs_pyproj))
+
+    def test_merge_datasets(self):
+        ds1 = xr.Dataset()
+        ds1["B01"] = xr.DataArray(
+            data=da.ones((3, 3)),
+            dims=("y", "x"),
+            coords=dict(x=[1000, 1020, 1040], y=[1000, 1020, 1040]),
+        )
+        ds2 = xr.Dataset()
+        ds2["B02"] = xr.DataArray(
+            data=da.ones((5, 5)),
+            dims=("y", "x"),
+            coords=dict(
+                x=[995, 1005, 1015, 1025, 1035],
+                y=[995, 1005, 1015, 1025, 1035],
+            ),
+        )
+        ds3 = xr.Dataset()
+        ds3["B03"] = xr.DataArray(
+            data=da.ones((5, 5)),
+            dims=("y", "x"),
+            coords=dict(
+                x=[995, 1005, 1015, 1025, 1035],
+                y=[995, 1005, 1015, 1025, 1035],
+            ),
+        )
+        ds_list = [ds1, ds2, ds3]
+        wkt = (
+            'PROJCRS["ETRS89 / LAEA Europe",'
+            'BASEGEOGCRS["ETRS89",'
+            'DATUM["European Terrestrial Reference System 1989",'
+            'ELLIPSOID["GRS 1980",6378137,298.257222101,LENGTHUNIT["metre",1]]]],'
+            'CONVERSION["Europe Equal Area",'
+            'METHOD["Lambert Azimuthal Equal Area"],'
+            'PARAMETER["Latitude of natural origin",52,'
+            'ANGLEUNIT["degree",0.0174532925199433]],'
+            'PARAMETER["Longitude of natural origin",10,'
+            'ANGLEUNIT["degree",0.0174532925199433]],'
+            'PARAMETER["False easting",4321000,LENGTHUNIT["metre",1]],'
+            'PARAMETER["False northing",3210000,LENGTHUNIT["metre",1]]],'
+            "CS[Cartesian,2],"
+            'AXIS["easting (X)",east,ORDER[1]],'
+            'AXIS["northing (Y)",north,ORDER[2]],'
+            'LENGTHUNIT["metre",1]]'
+        )
+        for ds in ds_list:
+            ds["crs"] = xr.DataArray(
+                data=0,
+                attrs={
+                    "long_name": "Coordinate Reference System",
+                    "description": "WKT representation of EPSG:3035",
+                    "grid_mapping_name": "lambert_azimuthal_equal_area",
+                    "crs_wkt": wkt,
+                },
+            )
+        ds_merged = merge_datasets(ds_list)
+        ds_merged = ds_merged.drop_vars("crs")
+        ds_merged_expected = xr.Dataset()
+        ds_merged_expected["B01"] = ds3["B03"]
+        ds_merged_expected["B02"] = ds3["B03"]
+        ds_merged_expected["B03"] = ds3["B03"]
+        xr.testing.assert_allclose(ds_merged_expected.B01, ds_merged.B01)
+
+    def test_get_spatial_dims(self):
+        ds = xr.Dataset()
+        ds["var"] = xr.DataArray(
+            data=np.ones((2, 2)), dims=("y", "x"), coords=dict(y=[0, 10], x=[0, 10])
+        )
+        self.assertEqual(("y", "x"), get_spatial_dims(ds))
+        ds = xr.Dataset()
+        ds["var"] = xr.DataArray(
+            data=np.ones((2, 2)),
+            dims=("lat", "lon"),
+            coords=dict(lat=[0, 10], lon=[0, 10]),
+        )
+        self.assertEqual(("lat", "lon"), get_spatial_dims(ds))
+        ds = xr.Dataset()
+        ds["var"] = xr.DataArray(
+            data=np.ones((2, 2)),
+            dims=("dim_false0", "dim_false1"),
+            coords=dict(dim_false0=[0, 10], dim_false1=[0, 10]),
+        )
+        with self.assertRaises(DataStoreError) as cm:
+            get_spatial_dims(ds)
+        self.assertEqual(
+            "No spatial dimensions found in dataset.",
+            f"{cm.exception}",
+        )

@@ -66,15 +66,22 @@ By default, a data ID represents one item, which is opened as a dataset, with ea
 asset becoming a data variable within the dataset. 
 
 Additionally, a stack mode is
-available, enabling the stacking of items using [odc-stac](https://odc-stac.readthedocs.io/en/latest/).
-This allows for mosaicking multiple tiles and concatenating the datacube along the
-temporal axis.
+available, enabling the stacking of items using the core functionality of [xcube](https://xcube.readthedocs.io/en/latest/).
+This allows for mosaicking multiple tiles grouped by solar day, and concatenating
+the datacube along the temporal axis.
 
-Also, [stackstac](https://stackstac.readthedocs.io/en/latest/) has been
+Also, [odc-stac](https://odc-stac.readthedocs.io/en/latest/) and
+[stackstac](https://stackstac.readthedocs.io/en/latest/) has been
 considered during the evaluation of python libraries supporting stacking of STAC items.
-However, the [benchmarking report](https://benchmark-odc-stac-vs-stackstac.netlify.app/)
-comparing stackstac and odc-stac shows that ocd-stac outperforms stackstac. Furthermore,
-stackstac shows an [issue](https://github.com/gjoseph92/stackstac/issues/196) in making
+However, both stacking libraries depend on GDAL driver for reading the data with
+`rasterio.open`, which prohibit the reading the data from the
+[CDSE S3 endpoint](https://documentation.dataspace.copernicus.eu/APIs/S3.html), due to
+blocking of the rasterio AWS environments. 
+Comparing  [odc-stac](https://odc-stac.readthedocs.io/en/latest/) and
+[stackstac](https://stackstac.readthedocs.io/en/latest/), 
+the [benchmarking report](https://benchmark-odc-stac-vs-stackstac.netlify.app/) shows
+that ocd-stac outperforms stackstac. Furthermore, stackstac shows an 
+[issue](https://github.com/gjoseph92/stackstac/issues/196) in making
 use of the overview levels of COGs files. Still, stackstac shows high popularity in the
 community and might be supported in the future. 
 
@@ -83,6 +90,11 @@ community and might be supported in the future.
 ### Overview of Jupyter notebooks <a name="overview_notebooks"></a> 
 The following Jupyter notebooks provide some examples: 
 
+* `example/notebooks/cdse_sentinel_2.ipynb`:
+  This notebook shows an example how to stack multiple tiles of Sentinel-2 L2A data
+  using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html).
+  It shows stacking of individual tiles and mosaicking of multiple tiles measured on
+  the same solar day.
 * `example/notebooks/earth_search_sentinel2_l2a_stack_mode.ipynb`:
   This notebook shows an example how to stack multiple tiles of Sentinel-2 L2A data
   from Earth Search by Element 84 STAC API. It shows stacking of individual tiles and
@@ -124,8 +136,7 @@ and is specified by the segment of the URL that follows the catalog's URL. The
 `data_type` can be set to `dataset` and `mldataset`, which returns a `xr.Dataset` and
 a [xcube multi-resoltuion dataset](https://xcube.readthedocs.io/en/latest/mldatasets.html),
 respectively. Note that in the above example, if `data_type` is not assigned,
-a multi-resolution dataset will be returned. This is because the item's asset links to
-GeoTIFFs, which are opened as multi-resolution datasets by default.
+a `xarray.Dataset` will be returned.
 
 To use the stac-mode, initiate a stac store with the argument `stack_mode=True`.
 
@@ -138,50 +149,21 @@ store = new_data_store(
     stack_mode=True
 )
 ds = store.open_data(
-    "sentinel-2-l2a",
-    data_type="dataset",
-    bbox=[9.1, 53.1, 10.7, 54],
-    time_range= ["2020-07-01", "2020-08-01"],
-    query={"s2:processing_baseline": {"eq": "02.14"}},
+    bbox=[506700, 5883400, 611416, 5984840],
+    time_range=["2020-07-15", "2020-08-01"],
+    crs="EPSG:32632",
+    spatial_res=20,
+    asset_names=["red", "green", "blue"],
+    apply_scaling=True,
 )
 ```
 
 In the stacking mode, the data IDs are the collection IDs within the STAC catalog. To
 get Sentinel-2 L2A data, we assign `data_id` to `"sentinel-2-l2a"`. The bounding box and
-time range are assigned to define the temporal and spatial extent of the data cube. 
-Additionally, for this example, we need to set a query argument to select a specific
-[Sentinel-2 processing baseline](https://sentiwiki.copernicus.eu/web/s2-processing#S2Processing-L2Aprocessingbaseline),
-as the collection contains multiple items for the same tile with different processing
-procedures. Note that this requirement can vary between collections and must be
-specified by the user. To set query arguments, the STAC catalog needs to be conform with
-the [query extension](https://github.com/stac-api-extensions/query).
-
-The stacking is performed using [odc-stac](https://odc-stac.readthedocs.io/en/latest/).
-All arguments of [odc.stac.load](https://odc-stac.readthedocs.io/en/latest/_api/odc.stac.load.html)
-can be passed into the `open_data(...)` method, which forwards them to the
-`odc.stac.load` function.
-
-To apply mosaicking, we need to assign `groupby="solar_day"`, as shown in the
-[documentation of `odc.stac.load`](https://odc-stac.readthedocs.io/en/latest/_api/odc.stac.load.html).
-The following few lines of code show a small example including mosaicking.  
-
-```python
-from xcube.core.store import new_data_store
-
-store = new_data_store(
-    "stac",
-    url="https://earth-search.aws.element84.com/v1",
-    stack_mode=True
-)
-ds = store.open_data(
-    "sentinel-2-l2a",
-    data_type="dataset",
-    bbox=[9.1, 53.1, 10.7, 54],
-    time_range= ["2020-07-01", "2020-08-01"],
-    query={"s2:processing_baseline": {"eq": "02.14"}},
-    groupby="solar_day",
-)
-```
+time range are assigned to define the temporal and spatial extent of the data cube. The
+parameter `crs` and `spatial_res` are required as well and define the coordinate
+reference system (CRS) and the spatial resolution respectively. Note, that the bounding
+box and spatial resolution needs to be given in the respective CRS.
 
 ## Testing <a name="testing"></a>
 
