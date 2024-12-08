@@ -21,6 +21,7 @@
 
 import unittest
 from unittest.mock import patch
+from unittest.mock import MagicMock
 
 import dask
 import dask.array as da
@@ -59,18 +60,25 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
     def test_root(self):
         self.assertEqual("eodata", self.accessor.root)
 
+    @patch("rasterio.open")
     @patch("rioxarray.open_rasterio")
-    def test_open_data(self, mock_open_rasterio):
-        # set-up mock
+    def test_open_data(self, mock_rioxarray_open, mock_rasterio_open):
+        # set-up mock for rioxarray.open_rasterio
         mock_data = {
             "band_1": (("y", "x"), da.ones((2048, 2048), chunks=(1024, 1024))),
         }
         mock_ds = xr.Dataset(mock_data)
-        mock_open_rasterio.return_value = mock_ds
+        mock_rioxarray_open.return_value = mock_ds
 
+        # set-up mock for rasterio.open
+        mock_rio_dataset = MagicMock()
+        mock_rio_dataset.overviews.return_value = [2, 4, 8]
+        mock_rasterio_open.return_value.__enter__.return_value = mock_rio_dataset
+
+        # start tests
         access_params = dict(protocol="s3", root="eodata", fs_path="test.tif")
         ds = self.accessor.open_data(access_params)
-        mock_open_rasterio.assert_called_once_with(
+        mock_rioxarray_open.assert_called_once_with(
             "s3://eodata/test.tif",
             chunks=dict(x=1024, y=1024),
             band_as_variable=True,
@@ -97,8 +105,10 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
 
         mlds = self.accessor.open_data(access_params, data_type="mldataset")
         self.assertIsInstance(mlds, MultiLevelDataset)
+        self.assertEqual(4, mlds.num_levels)
+        mock_rasterio_open.assert_called_once_with("s3://eodata/test.tif")
         ds = mlds.base_dataset
-        mock_open_rasterio.assert_called_with(
+        mock_rioxarray_open.assert_called_with(
             "s3://eodata/test.tif",
             overview_level=None,
             chunks=dict(x=1024, y=1024),

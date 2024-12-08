@@ -38,7 +38,6 @@ from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from xcube_stac.constants import DATA_STORE_ID_CDSE
-from xcube_stac.sen2.constants import CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS
 from xcube_stac.accessor import HttpsDataAccessor
 from xcube_stac.accessor import S3DataAccessor
 
@@ -253,6 +252,7 @@ class StacDataStoreTest(unittest.TestCase):
                 data_id=self.data_id_nonsearchable, data_type="dataset"
             ),
         )
+
         # CDSE STAC API Sentinel-2
         store = new_data_store(
             DATA_STORE_ID_CDSE,
@@ -440,13 +440,22 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data with open_params
-        mlds = store.open_data(
-            self.data_id_time_range,
-            asset_names=["blue_p25", "crs"],
-            data_type="mldataset",
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            mlds = store.open_data(
+                self.data_id_time_range,
+                asset_names=["blue_p25"],
+                data_type="mldataset",
+                apply_scaling=True,
+            )
+            ds = mlds.base_dataset
+        self.assertEqual(1, len(cm.output))
+        msg = (
+            f"WARNING:xcube.stac:The asset blue_p25 in item "
+            "lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20 is not conform to "
+            f"the stac-extension 'raster'. No scaling is applied."
         )
+        self.assertEqual(msg, str(cm.output[-1]))
         self.assertIsInstance(mlds, MultiLevelDataset)
-        ds = mlds.base_dataset
         self.assertCountEqual(["blue_p25", "crs"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
@@ -587,24 +596,30 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
-        # open data store in tif format
-        mlds = store.open_data(
-            "collections/datacubes/items/cog_local", data_type="mldataset"
-        )
-        ds = mlds.base_dataset
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertEqual(3, mlds.num_levels)
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            [
-                "analytic_multires_band_1",
-                "analytic_multires_band_2",
-                "analytic_multires_band_3",
-                "analytic_multires_spatial_ref",
-            ],
-            list(ds.data_vars),
-        )
-        self.assertCountEqual([343, 343], [ds.sizes["y"], ds.sizes["x"]])
+        # open data as ml dataset
+        mldss = [
+            store.open_data(
+                "collections/datacubes/items/cog_local", data_type="mldataset"
+            ),
+            store.open_data(
+                "collections/datacubes/items/cog_local", opener_id="mldataset:levels:s3"
+            ),
+        ]
+        for mlds in mldss:
+            ds = mlds.base_dataset
+            self.assertIsInstance(mlds, MultiLevelDataset)
+            self.assertEqual(3, mlds.num_levels)
+            self.assertIsInstance(ds, xr.Dataset)
+            self.assertCountEqual(
+                [
+                    "analytic_multires_band_1",
+                    "analytic_multires_band_2",
+                    "analytic_multires_band_3",
+                    "analytic_multires_spatial_ref",
+                ],
+                list(ds.data_vars),
+            )
+            self.assertCountEqual([343, 343], [ds.sizes["y"], ds.sizes["x"]])
 
         # raise error when selecting "analytic" (asset linking to the dataset) and
         # "analytic_multires" (asset linking to the mldataset)
@@ -647,82 +662,6 @@ class StacDataStoreTest(unittest.TestCase):
             [1, 16, 16],
             [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
         )
-
-    # TODO: the following two tests work fine locally. However, s3fs is not supported
-    # TODO: by vcrpy. New testing strategy needs to be developed in an upcoming PR.
-    # @pytest.mark.vcr()
-    # def test_open_data_cdse_seninel_2(self):
-    #     store = new_data_store(
-    #         DATA_STORE_ID_CDSE,
-    #         key=CDSE_CREDENTIALS["key"],
-    #         secret=CDSE_CREDENTIALS["secret"],
-    #         apply_scaling=True,
-    #     )
-    #
-    #     # open data as dataset
-    #     ds = store.open_data(self.data_id_cdse_sen2)
-    #     self.assertIsInstance(ds, xr.Dataset)
-    #     data_vars = list(ds.data_vars)
-    #     data_vars.remove("crs")
-    #     self.assertCountEqual(
-    #         CDSE_SENTINEL_2_LEVEL_BAND_RESOLUTIONS["L2A"].keys(),
-    #         data_vars,
-    #     )
-    #     self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
-    #     self.assertCountEqual(
-    #         [1024, 1024], [ds.B01.chunksizes["x"][0], ds.AOT.chunksizes["y"][0]]
-    #     )
-    #
-    #     # open data as multi-level dataset
-    #     mlds = store.open_data(
-    #         self.data_id_cdse_sen2,
-    #         asset_names=["B04", "B03", "B02"],
-    #         data_type="mldataset",
-    #         apply_scaling=True,
-    #     )
-    #     self.assertIsInstance(mlds, MultiLevelDataset)
-    #     ds = mlds.get_dataset(2)
-    #     data_vars = list(ds.data_vars)
-    #     data_vars.remove("crs")
-    #     self.assertCountEqual(["B04", "B03", "B02"], data_vars)
-    #     self.assertCountEqual([2745, 2745], [ds.sizes["y"], ds.sizes["x"]])
-    #     self.assertCountEqual(
-    #         [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
-    #     )
-
-    # @pytest.mark.vcr()
-    # def test_open_data_cdse_seninel_2_stack_mode(self):
-    #     store = new_data_store(
-    #         DATA_STORE_ID_CDSE,
-    #         key=CDSE_CREDENTIALS["key"],
-    #         secret=CDSE_CREDENTIALS["secret"],
-    #         stack_mode=True,
-    #     )
-    #
-    #     # open data as dataset
-    #     bbox_utm = [659574, 5892990, 659724, 5893140]
-    #     ds = store.open_data(
-    #         data_id="SENTINEL-2",
-    #         bbox=bbox_utm,
-    #         time_range=["2023-11-01", "2023-11-10"],
-    #         processing_level="L2A",
-    #         spatial_res=10,
-    #         crs="EPSG:32635",
-    #         asset_names=["B03", "B04"],
-    #         apply_scaling=True,
-    #     )
-    #     self.assertIsInstance(ds, xr.Dataset)
-    #     data_vars = list(ds.data_vars)
-    #     data_vars.remove("crs")
-    #     self.assertCountEqual(["B03", "B04"], data_vars)
-    #     self.assertCountEqual(
-    #         [4, 16, 16],
-    #         [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
-    #     )
-    #     self.assertCountEqual(
-    #         [1, 16, 16],
-    #         [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
-    #     )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):

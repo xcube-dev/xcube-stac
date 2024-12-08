@@ -4,7 +4,6 @@ import numpy as np
 import pystac
 import pystac_client.client
 from xcube.core.store import DataStoreError
-from xcube.util.jsonschema import JsonObjectSchema
 import s3fs
 
 from .accessor import S3DataAccessor
@@ -47,12 +46,6 @@ class Helper:
     def parse_item(self, item: pystac.Item, **open_params) -> pystac.Item:
         return item
 
-    def parse_items_stack(self, items: dict[list[pystac.Item]], **open_params) -> dict:
-        parsed_items = {}
-        for key, items in items.items():
-            parsed_items[key] = [self.parse_item(item, **open_params) for item in items]
-        return dict(parsed_items)
-
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
         assets = list_assets_from_item(
             item,
@@ -90,19 +83,6 @@ class Helper:
     def is_mldataset_available(self, item: pystac.Item, **open_params) -> bool:
         format_ids = self.get_format_ids(item, **open_params)
         return all(format_id in MLDATASET_FORMATS for format_id in format_ids)
-
-    def get_search_params_schema(self) -> JsonObjectSchema:
-        return JsonObjectSchema(
-            properties=dict(**STAC_SEARCH_PARAMETERS),
-            required=[],
-            additional_properties=False,
-        )
-
-    def get_open_data_params_schema(self) -> JsonObjectSchema:
-        return STAC_OPEN_PARAMETERS
-
-    def get_open_data_params_schema_stack(self) -> JsonObjectSchema:
-        return STAC_OPEN_PARAMETERS_STACK_MODE
 
     def search_items(
         self,
@@ -163,21 +143,8 @@ class HelperXcube(Helper):
             )
         return data_access_params
 
-    def get_protocols(self, item: pystac.Item, **open_params) -> list[str]:
-        return ["s3"]
-
-    def get_format_ids(self, item: pystac.Item, **open_params) -> list[str]:
-        return ["zarr", "levels"]
-
     def is_mldataset_available(self, item: pystac.Item, **open_params) -> bool:
         return True
-
-    def get_search_params_schema(self) -> JsonObjectSchema:
-        return JsonObjectSchema(
-            properties=dict(**STAC_SEARCH_PARAMETERS),
-            required=[],
-            additional_properties=False,
-        )
 
 
 class HelperCdse(Helper):

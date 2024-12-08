@@ -29,7 +29,6 @@ import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
 from xcube.core.gridmapping import GridMapping
 
-from .constants import LOG
 from ._utils import rename_dataset
 from ._utils import merge_datasets
 from .stac_extension.raster import apply_offset_scaling
