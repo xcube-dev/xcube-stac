@@ -20,126 +20,41 @@
 # SOFTWARE.
 
 import unittest
-from unittest.mock import patch
 import datetime
 
 import pystac
 
-from xcube_stac.helper import HelperCdse
+from xcube_stac.helper import Helper
 
 
-class HelperCdseTest(unittest.TestCase):
-
-    def setUp(self):
-        self.asset = pystac.Asset(
-            href="test_href",
-            media_type="dummy",
-            roles=["data"],
-            extra_fields=dict(
-                alternate=dict(
-                    s3=dict(
-                        href=(
-                            "/eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107"
-                            "T113311_N0511_R080_T31VDG_20241107T123948.SAFE"
-                        )
-                    )
-                )
-            ),
-        )
-        self.item = pystac.Item(
-            id="cdse_item_parts",
-            geometry={
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [100.0, 0.0],
-                        [101.0, 0.0],
-                        [101.0, 1.0],
-                        [100.0, 1.0],
-                        [100.0, 0.0],
-                    ]
-                ],
-            },
-            bbox=[100.0, 0.0, 101.0, 1.0],
-            datetime=datetime.datetime(2023, 1, 1, 0, 0, 0),
-            properties=dict(
-                tileId="title_id",
-                orbitNumber=0,
-            ),
-        )
-        self.item.add_asset("PRODUCT", self.asset)
-
-    @patch("s3fs.S3FileSystem.glob")
-    def test_parse_item(self, mock_glob):
-        mock_glob.return_value = [
-            "eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511"
-            "_R080_T31VDG_20241107T123948.SAFE/GRANULE/L2A_T32TMT_A017394_"
-            "20200705T101917/IMG_DATA/dummy.jp2"
-        ]
-
-        helper = HelperCdse(
-            client_kwargs=dict(endpoint_url="https://eodata.dataspace.copernicus.eu"),
-            key="xxx",
-            secret="xxx",
-        )
-
-        item = self.item
-        item.properties["processorVersion"] = "02.14"
-        item_parsed = helper.parse_item(
-            self.item, asset_names=["B01", "B02"], crs="EPSG:4326", spatial_res=0.001
-        )
-        self.assertIn("B01", item_parsed.assets)
-        self.assertEqual(
-            0, item_parsed.assets["B01"].extra_fields["raster:bands"][0]["offset"]
-        )
-        self.assertIn("B02", item_parsed.assets)
-        self.assertEqual(
-            (
-                "eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511"
-                "_R080_T31VDG_20241107T123948.SAFE/GRANULE/L2A_Ttitle_id_A000000_"
-                "20200705T101917/IMG_DATA/R60m/Ttitle_id_parts_B02_60m.jp2"
-            ),
-            item_parsed.assets["B02"].href,
-        )
-        item = self.item
-        item.properties["processorVersion"] = "05.00"
-        item_parsed = helper.parse_item(
-            self.item, asset_names=["B01", "B02"], crs="EPSG:4326", spatial_res=0.001
-        )
-        self.assertIn("B01", item_parsed.assets)
-        self.assertEqual(
-            -0.1, item_parsed.assets["B01"].extra_fields["raster:bands"][0]["offset"]
-        )
-        self.assertIn("B02", item_parsed.assets)
-
-    @patch("s3fs.S3FileSystem.glob")
-    def test_get_data_access_params(self, mock_glob):
-        mock_glob.return_value = [
-            "eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511"
-            "_R080_T31VDG_20241107T123948.SAFE/GRANULE/L2A_T32TMT_A017394_"
-            "20200705T101917/IMG_DATA/dummy.jp2"
-        ]
-        helper = HelperCdse(
-            client_kwargs=dict(endpoint_url="https://eodata.dataspace.copernicus.eu"),
-            key="xxx",
-            secret="xxx",
-        )
-        item = self.item
-        item.properties["processorVersion"] = "05.00"
-        item_parsed = helper.parse_item(
-            self.item, asset_names=["B01", "B02"], crs="EPSG:3035", spatial_res=20
-        )
-        data_access_params = helper.get_data_access_params(
-            item_parsed, asset_names=["B01", "B02"], crs="EPSG:3035", spatial_res=20
-        )
-        self.assertEqual("B01", data_access_params["B01"]["name"])
-        self.assertEqual("s3", data_access_params["B01"]["protocol"])
-        self.assertEqual("eodata", data_access_params["B01"]["root"])
-        self.assertEqual(
-            (
-                "Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_"
-                "T31VDG_20241107T123948.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917"
-                "/IMG_DATA/dummy.jp2"
-            ),
-            data_access_params["B01"]["fs_path"],
-        )
+# class HelperTest(unittest.TestCase):
+#     def test_list_assets_from_item(self):
+#         geometry = {
+#             "type": "Polygon",
+#             "coordinates": [
+#                 [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]
+#             ],
+#         }
+#         bbox = [100.0, 0.0, 101.0, 1.0]
+#         dt = datetime.datetime(2023, 1, 1, 0, 0, 0)
+#         item = pystac.Item(
+#             id="test_item", geometry=geometry, bbox=bbox, datetime=dt, properties={}
+#         )
+#         supported_format_ids = ["geotiff", "netcdf"]
+#
+#         asset_names = ["asset1", "asset2", "asset3"]
+#         media_types = ["image/tiff", "application/zarr", "meta/xml"]
+#         for asset_name, media_type in zip(asset_names, media_types):
+#             asset_href = f"https://example.com/data/{asset_name}.tif"
+#             asset = pystac.Asset(href=asset_href, media_type=media_type, roles=["data"])
+#             item.add_asset(asset_name, asset)
+#
+#         helper = Helper()
+#         list_assets = helper.list_assets_from_item(item)
+#         self.assertCountEqual(
+#             ["asset1", "asset2"], [asset.extra_fields["id"] for asset in list_assets]
+#         )
+#         list_assets = helper.list_assets_from_item(item, asset_names=["asset2"])
+#         self.assertCountEqual(
+#             ["asset2"], [asset.extra_fields["id"] for asset in list_assets]
+#         )

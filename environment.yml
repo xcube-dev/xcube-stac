@@ -6,7 +6,6 @@ dependencies:
   - python>=3.10
   - boto3
   - dask
-  - s3fs
   - numpy
   - rasterio
   - rioxarray
@@ -16,7 +15,6 @@ dependencies:
   - pyproj
   - pystac-client
   - shapely
-  - tqdm
   - xarray
   - xcube >= 1.7.0
   # for testing

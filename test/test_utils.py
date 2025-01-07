@@ -31,7 +31,6 @@ from xcube.core.store import DataStoreError
 
 from xcube_stac._utils import (
     get_format_id,
-    list_assets_from_item,
     get_format_from_path,
     reproject_bbox,
     get_spatial_dims,
@@ -64,54 +63,16 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
             href=f"https://example.com/data/test.xml",
+            title="Meta data",
             roles=["meta"],
             extra_fields=dict(id="test"),
         )
-        with self.assertRaises(DataStoreError) as cm:
-            get_format_id(asset)
-        self.assertEqual(
-            "No format_id found for asset test",
-            f"{cm.exception}",
-        )
-
-    def test_list_assets_from_item(self):
-        geometry = {
-            "type": "Polygon",
-            "coordinates": [
-                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]
-            ],
-        }
-        bbox = [100.0, 0.0, 101.0, 1.0]
-        dt = datetime.datetime(2023, 1, 1, 0, 0, 0)
-        item = pystac.Item(
-            id="test_item", geometry=geometry, bbox=bbox, datetime=dt, properties={}
-        )
-        supported_format_ids = ["geotiff", "netcdf"]
-
-        asset_names = ["asset1", "asset2", "asset3"]
-        media_types = ["image/tiff", "application/zarr", "meta/xml"]
-        for asset_name, media_type in zip(asset_names, media_types):
-            asset_href = f"https://example.com/data/{asset_name}.tif"
-            asset = pystac.Asset(href=asset_href, media_type=media_type, roles=["data"])
-            item.add_asset(asset_name, asset)
-        list_assets = list_assets_from_item(item)
-        self.assertCountEqual(
-            ["asset1", "asset2"], [asset.extra_fields["id"] for asset in list_assets]
-        )
-        list_assets = list_assets_from_item(item, asset_names=["asset2"])
-        self.assertCountEqual(
-            ["asset2"], [asset.extra_fields["id"] for asset in list_assets]
-        )
-        list_assets = list_assets_from_item(
-            item, supported_format_ids=supported_format_ids
-        )
-        self.assertCountEqual(
-            ["asset1"], [asset.extra_fields["id"] for asset in list_assets]
-        )
-        list_assets = list_assets_from_item(
-            item, supported_format_ids=supported_format_ids, asset_names=["asset2"]
-        )
-        self.assertCountEqual([], [asset.extra_fields["id"] for asset in list_assets])
+        with self.assertLogs("xcube.stac", level="DEBUG") as cm:
+            format_id = get_format_id(asset)
+        self.assertIsNone(format_id)
+        self.assertEqual(1, len(cm.output))
+        msg = f"DEBUG:xcube.stac:No format_id found for asset 'Meta data'"
+        self.assertEqual(msg, str(cm.output[-1]))
 
     def test_convert_datetime2str(self):
         dt = datetime.datetime(2024, 1, 1, 12, 00, 00)

@@ -92,8 +92,8 @@ class StacDataStoreTest(unittest.TestCase):
             "S5P_DLR_NRTI_01_040201_L3_CF_20240619?f=application%2Fgeo%2Bjson"
         )
         self.data_id_cdse_sen2 = (
-            "collections/SENTINEL-2/items/"
-            "S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"
+            "collections/sentinel-2-l2a/items/"
+            "S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948"
         )
 
     @pytest.mark.vcr()
@@ -170,7 +170,7 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = list(itertools.islice(data_ids, 1))
         self.assertEqual(1, len(data_ids))
         item = store._impl.access_item(data_ids[0])
-        format_ids = store._helper.get_format_ids(item)
+        format_ids = store._helper.list_format_ids(item)
         self.assertEqual(["geotiff"], format_ids)
 
     @pytest.mark.vcr()
@@ -223,16 +223,28 @@ class StacDataStoreTest(unittest.TestCase):
         opener_ids = (
             "dataset:netcdf:https",
             "dataset:zarr:https",
+            "dataset:jp2:https",
+            "mldataset:jp2:https",
             "dataset:geotiff:https",
             "mldataset:geotiff:https",
+            "dataset:levels:https",
+            "mldataset:levels:https",
             "dataset:netcdf:s3",
             "dataset:zarr:s3",
+            "dataset:jp2:s3",
+            "mldataset:jp2:s3",
             "dataset:geotiff:s3",
             "mldataset:geotiff:s3",
+            "dataset:levels:s3",
+            "mldataset:levels:s3",
         )
         self.assertCountEqual(opener_ids, store.get_data_opener_ids())
         opener_ids = (
+            "mldataset:jp2:https",
+            "mldataset:levels:https",
             "mldataset:geotiff:https",
+            "mldataset:jp2:s3",
+            "mldataset:levels:s3",
             "mldataset:geotiff:s3",
         )
         self.assertCountEqual(
@@ -250,36 +262,6 @@ class StacDataStoreTest(unittest.TestCase):
             opener_ids,
             store.get_data_opener_ids(
                 data_id=self.data_id_nonsearchable, data_type="dataset"
-            ),
-        )
-
-        # CDSE STAC API Sentinel-2
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
-        opener_ids = (
-            "dataset:netcdf:s3",
-            "dataset:zarr:s3",
-            "dataset:geotiff:s3",
-            "mldataset:geotiff:s3",
-            "dataset:jp2:s3",
-            "mldataset:jp2:s3",
-        )
-        self.assertCountEqual(opener_ids, store.get_data_opener_ids())
-        opener_ids = (
-            "dataset:jp2:s3",
-            "mldataset:jp2:s3",
-        )
-        self.assertCountEqual(
-            opener_ids, store.get_data_opener_ids(data_id=self.data_id_cdse_sen2)
-        )
-        opener_ids = ("dataset:jp2:s3",)
-        self.assertCountEqual(
-            opener_ids,
-            store.get_data_opener_ids(
-                data_id=self.data_id_cdse_sen2, data_type="dataset"
             ),
         )
 
@@ -303,7 +285,12 @@ class StacDataStoreTest(unittest.TestCase):
     def test_get_data_opener_ids_stack_mode(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
         self.assertCountEqual(
-            ("dataset:geotiff:s3", "mldataset:geotiff:s3"),
+            (
+                "dataset:geotiff:s3",
+                "mldataset:geotiff:s3",
+                "mldataset:jp2:s3",
+                "dataset:jp2:s3",
+            ),
             store.get_data_opener_ids(data_id="sentinel-2-l2a"),
         )
         # CDSE STAC API Sentinel-2
@@ -315,7 +302,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual(
             ("dataset:jp2:s3", "mldataset:jp2:s3"),
-            store.get_data_opener_ids(data_id="SENTINEL-2"),
+            store.get_data_opener_ids(data_id="sentinel-2-l2a"),
         )
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
@@ -402,15 +389,14 @@ class StacDataStoreTest(unittest.TestCase):
             secret=CDSE_CREDENTIALS["secret"],
             stack_mode=True,
         )
-        schema = store.get_open_data_params_schema(data_id="SENTINEL-2")
+        schema = store.get_open_data_params_schema(data_id="sentinel-2-l2a")
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
         self.assertIn("time_range", schema.properties)
         self.assertIn("bbox", schema.properties)
         self.assertIn("crs", schema.properties)
         self.assertIn("spatial_res", schema.properties)
-        self.assertIn("processing_level", schema.properties)
-        self.assertNotIn("query", schema.properties)
+        self.assertIn("query", schema.properties)
         self.assertIn("open_params_dataset_jp2", schema.properties)
         self.assertIn("open_params_mldataset_jp2", schema.properties)
 
@@ -450,8 +436,8 @@ class StacDataStoreTest(unittest.TestCase):
             ds = mlds.base_dataset
         self.assertEqual(1, len(cm.output))
         msg = (
-            f"WARNING:xcube.stac:The asset blue_p25 in item "
-            "lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20 is not conform to "
+            f"WARNING:xcube.stac:The item "
+            "'lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20' is not conform to "
             f"the stac-extension 'raster'. No scaling is applied."
         )
         self.assertEqual(msg, str(cm.output[-1]))
@@ -532,9 +518,7 @@ class StacDataStoreTest(unittest.TestCase):
             (
                 "Only 's3' and 'https' protocols are supported, not 'abfs'. The asset "
                 "'surface_air_pressure' has a href 'abfs://era5/ERA5/2020/12/"
-                "surface_air_pressure.zarr'. The item's url is given by "
-                "'https://planetarycomputer.microsoft.com/api/stac/v1/collections/"
-                "era5-pds/items/era5-pds-2020-12-an'."
+                "surface_air_pressure.zarr'."
             ),
             f"{cm.exception}",
         )
@@ -767,23 +751,18 @@ class StacDataStoreTest(unittest.TestCase):
         )
         descriptors = list(
             store.search_data(
-                collections=["SENTINEL-2"],
+                collections=["sentinel-2-l2a"],
                 bbox=[9.0, 47.0, 9.1, 47.1],
                 time_range=["2020-07-01", "2020-07-05"],
-                processing_level="L2A",
             )
         )
 
-        prefix = "collections/SENTINEL-2/items/"
+        prefix = "collections/sentinel-2-l2a/items/"
         data_ids_expected = [
-            "S2B_MSIL2A_20200705T101559_N0214_R065_T32TMT_20200705T135630.SAFE",
-            "S2A_MSIL2A_20200703T103031_N0214_R108_T32TNT_20200703T142409.SAFE",
-            "S2A_MSIL2A_20200703T103031_N0500_R108_T32TNT_20230613T212700.SAFE",
-            "S2A_MSIL2A_20200703T103031_N0214_R108_T32TMT_20200703T142409.SAFE",
-            "S2A_MSIL2A_20200703T103031_N0500_R108_T32TMT_20230613T212700.SAFE",
-            "S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912.SAFE",
-            "S2B_MSIL2A_20200705T101559_N0500_R065_T32TNT_20230530T175912.SAFE",
-            "S2B_MSIL2A_20200705T101559_N0214_R065_T32TNT_20200705T135630.SAFE",
+            "S2B_MSIL2A_20200705T101559_N0500_R065_T32TNT_20230530T175912",
+            "S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912",
+            "S2A_MSIL2A_20200703T103031_N0500_R108_T32TNT_20230613T212700",
+            "S2A_MSIL2A_20200703T103031_N0500_R108_T32TMT_20230613T212700",
         ]
 
         data_ids_expected = [prefix + data_id for data_id in data_ids_expected]
@@ -791,23 +770,17 @@ class StacDataStoreTest(unittest.TestCase):
         expected_descriptor = dict(
             data_id=data_ids_expected[0],
             data_type="dataset",
-            bbox=[
-                7.760788440704346,
-                46.858551025390625,
-                9.130471229553223,
-                47.85363006591797,
-            ],
-            time_range=("2020-07-05T10:15:59.024000Z", "2020-07-05T10:15:59.024000Z"),
+            bbox=[8.999733, 46.85664, 10.467277, 47.853702],
+            time_range=("2020-07-05T10:15:59.024Z", "2020-07-05T10:15:59.024Z"),
         )
 
-        self.assertEqual(8, len(descriptors))
         for d in descriptors:
             self.assertIsInstance(d, DatasetDescriptor)
         self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
-        selected_discriptor = [
+        selected_descriptor = [
             d for d in descriptors if d.data_id == data_ids_expected[0]
         ][0]
-        self.assertEqual(expected_descriptor, selected_discriptor.to_dict())
+        self.assertEqual(expected_descriptor, selected_descriptor.to_dict())
 
     @pytest.mark.vcr()
     def test_search_data_multi_level(self):
@@ -939,20 +912,6 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("bbox", schema.properties)
         self.assertNotIn("query", schema.properties)
         self.assertNotIn("collections", schema.properties)
-
-    @pytest.mark.vcr()
-    def test_get_search_params_schema_cdse_sentinel_2(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
-        schema = store.get_search_params_schema()
-        self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("time_range", schema.properties)
-        self.assertIn("bbox", schema.properties)
-        self.assertIn("processing_level", schema.properties)
-        self.assertIn("collections", schema.properties)
 
     @pytest.mark.vcr()
     def test_access_item_failed(self):

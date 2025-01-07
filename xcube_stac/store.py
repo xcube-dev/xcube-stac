@@ -21,6 +21,7 @@
 
 from typing import Any, Container, Dict, Iterator, Tuple, Union
 
+import numpy as np
 import pystac
 import pystac_client
 import requests
@@ -42,13 +43,12 @@ from .constants import (
     CDSE_STAC_URL,
     CDSE_S3_ENDPOINT,
     DATA_OPENER_IDS,
+    MAP_FILE_EXTENSION_FORMAT,
+    PROTOCOLS,
     STAC_STORE_PARAMETERS,
 )
 from .store_mode import SingleStoreMode
 from .store_mode import StackStoreMode
-from .helper import Helper
-from .helper import HelperXcube
-from .helper import HelperCdse
 from ._utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -59,6 +59,9 @@ from ._utils import (
     modify_catalog_url,
     update_dict,
 )
+from .helper import Helper
+from .helper import HelperXcube
+from .helper import HelperCdse
 
 
 class StacDataStore(DataStore):
@@ -90,6 +93,9 @@ class StacDataStore(DataStore):
 
         if not hasattr(self, "_helper"):
             self._helper = Helper()
+
+        self._protocols = PROTOCOLS
+        self._format_ids = list(np.unique(list(MAP_FILE_EXTENSION_FORMAT.values())))
 
         if stack_mode is False:
             self._impl = SingleStoreMode(
@@ -161,10 +167,10 @@ class StacDataStore(DataStore):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
             item = self._impl.access_item(data_id)
             protocols = self._helper.get_protocols(item)
-            format_ids = self._helper.get_format_ids(item)
+            format_ids = self._helper.list_format_ids(item)
         else:
-            protocols = self._helper.supported_protocols
-            format_ids = self._helper.supported_format_ids
+            protocols = self._protocols
+            format_ids = self._format_ids
 
         return self._select_opener_id(protocols, format_ids, data_type=data_type)
 
@@ -262,17 +268,8 @@ class StacXcubeDataStore(StacDataStore):
     ):
         self._helper = HelperXcube()
         super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
-
-    def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
-        return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
-
-    def get_data_opener_ids(
-        self, data_id: str = None, data_type: DataTypeLike = None
-    ) -> Tuple[str, ...]:
-        assert_valid_data_type(data_type)
-        protocols = self._helper.supported_protocols
-        format_ids = self._helper.supported_format_ids
-        return self._select_opener_id(protocols, format_ids, data_type=data_type)
+        self._protocols = ["s3"]
+        self._format_ids = ["zarr", "levels"]
 
 
 class StacCdseDataStore(StacDataStore):
@@ -301,7 +298,7 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._helper = HelperCdse(**storage_options_s3)
+        self._helper = HelperCdse()
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod
@@ -314,23 +311,3 @@ class StacCdseDataStore(StacDataStore):
             required=["key", "secret"],
             additional_properties=True,
         )
-
-    def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
-    ) -> JsonObjectSchema:
-        assert_valid_opener_id(opener_id)
-        return self._impl.get_open_data_params_schema(
-            data_id=data_id, opener_id=opener_id
-        )
-
-    def search_data(
-        self, data_type: DataTypeLike = None, **search_params
-    ) -> Iterator[Union[DatasetDescriptor, MultiLevelDatasetDescriptor]]:
-        assert_valid_data_type(data_type)
-        pystac_objs = self._impl.search_data(**search_params)
-
-        for pystac_obj in pystac_objs:
-            data_id = get_data_id_from_pystac_object(
-                pystac_obj, catalog_url=self._url_mod
-            )
-            yield self.describe_data(data_id, data_type=data_type)

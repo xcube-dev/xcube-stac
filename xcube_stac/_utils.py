@@ -18,6 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 import collections
 import copy
 import datetime
@@ -32,98 +33,23 @@ import pystac
 import pystac_client
 from shapely.geometry import box
 import xarray as xr
-from xcube.core.store import (
-    DATASET_TYPE,
-    MULTI_LEVEL_DATASET_TYPE,
-    DataStoreError,
-    DataTypeLike,
-)
+from xcube.core.store import DATASET_TYPE
+from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
+from xcube.core.store import DataStoreError
+from xcube.core.store import DataTypeLike
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import resample_in_space
 
-from .constants import (
-    TILE_SIZE,
-    DATA_OPENER_IDS,
-    FloatInt,
-    MAP_FILE_EXTENSION_FORMAT,
-    MAP_MIME_TYP_FORMAT,
-)
+from .constants import TILE_SIZE
+from .constants import DATA_OPENER_IDS
+from .constants import FloatInt
+from .constants import MAP_FILE_EXTENSION_FORMAT
+from .constants import MAP_MIME_TYP_FORMAT
+from .constants import MLDATASET_FORMATS
+from .constants import LOG
 
 
 _CATALOG_JSON = "catalog.json"
-
-
-def get_format_id(asset: pystac.Asset) -> str:
-    if asset.media_type is None:
-        format_id = get_format_from_path(asset.href)
-    else:
-        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
-    if format_id is None:
-        raise DataStoreError(f"No format_id found for asset {asset.extra_fields['id']}")
-    return format_id
-
-
-def get_assets_from_item(
-    item: pystac.Item,
-    asset_names: Container[str] = None,
-    supported_format_ids: Container[str] = None,
-) -> Iterator[pystac.Asset]:
-    """Get all assets for a given item, which has a MIME data type
-
-    Args:
-        item: item/feature
-        asset_names: Names of assets which will be included
-            in the data cube. If None, all assets will be
-            included which can be opened by the data store.
-        supported_format_ids: supported format ids. If None,
-            all format IDs will be selected, which are supported
-            by the store.
-
-
-    Yields:
-        An iterator over the assets
-    """
-    for k, v in item.assets.items():
-        # test if asset is in 'asset_names' and the media type is
-        # one of the predefined MIME types; note that if asset_names
-        # is ot given all assets are returned matching the MINE types;
-        media_type = v.media_type.split("; ")[0]
-        if (
-            (asset_names is None or k in asset_names)
-            and media_type in MAP_MIME_TYP_FORMAT
-            and (
-                supported_format_ids is None
-                or MAP_MIME_TYP_FORMAT[media_type] in supported_format_ids
-            )
-        ):
-            v.extra_fields["id"] = k
-            yield v
-
-
-def list_assets_from_item(
-    item: pystac.Item,
-    asset_names: Container[str] = None,
-    supported_format_ids: Container[str] = None,
-) -> list[pystac.Asset]:
-    """Get all assets for a given item, which has a MIME data type
-
-    Args:
-        item: item/feature
-        asset_names: Names of assets which will be included
-            in the data cube. If None, all assets will be
-            included which can be opened by the data store.
-        supported_format_ids: supported format ids. If None,
-            all format IDs will be selected, which are supported
-            by the store.
-
-    Returns:
-        A list containing the assets
-    """
-    return list(
-        get_assets_from_item(
-            item, asset_names=asset_names, supported_format_ids=supported_format_ids
-        )
-    )
 
 
 def search_items(
@@ -216,6 +142,16 @@ def search_collections(
                 continue
         # iterate through assets of item
         yield collection
+
+
+def get_format_id(asset: pystac.Asset) -> str:
+    if asset.media_type is None:
+        format_id = get_format_from_path(asset.href)
+    else:
+        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+    if format_id is None:
+        LOG.debug(f"No format_id found for asset {repr(asset.title)}")
+    return format_id
 
 
 def get_attrs_from_pystac_object(
@@ -615,7 +551,12 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    ds = resample_in_space(ds, target_gm=target_gm, encode_cf=True)
+    ds = resample_in_space(
+        ds,
+        target_gm=target_gm,
+        encode_cf=True,
+        rectify_kwargs=dict(compute_subset=False),
+    )
     vars = [
         "spatial_ref",
         "x_bnds",

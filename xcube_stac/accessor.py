@@ -112,7 +112,7 @@ class S3DataAccessor:
 
 class S3Sentinel2DataAccessor:
     """Implementation of the data accessor supporting
-    the jp2 format  of Sentinel-2 data via the AWS S3 protocol.
+    the jp2 format of Sentinel-2 data via the AWS S3 protocol.
     """
 
     def __init__(self, root: str, storage_options: dict = None):

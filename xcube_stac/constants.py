@@ -28,6 +28,7 @@ from xcube.util.jsonschema import (
     JsonBooleanSchema,
     JsonDateSchema,
     JsonNumberSchema,
+    JsonIntegerSchema,
     JsonObjectSchema,
     JsonStringSchema,
 )
@@ -37,14 +38,21 @@ DATA_STORE_ID = "stac"
 
 # cdse specific constants
 DATA_STORE_ID_CDSE = "stac-cdse"
-CDSE_STAC_URL = "https://catalogue.dataspace.copernicus.eu/stac"
+CDSE_STAC_URL = "https://stac.dataspace.copernicus.eu/v1"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
-MAP_CDSE_COLLECTION_FORMAT = {"Sentinel-2": "jp2"}
 
 # xcube specific constants
 DATA_STORE_ID_XCUBE = "stac-xcube"
 
-# general constants for data format
+# other constants
+COLLECTION_PREFIX = "collections/"
+STAC_CRS = "EPSG:4326"
+TILE_SIZE = 1024
+LOG = logging.getLogger("xcube.stac")
+FloatInt = Union[float, int]
+
+# constants for data access
+PROTOCOLS = ["https", "s3"]
 MAP_MIME_TYP_FORMAT = {
     "application/netcdf": "netcdf",
     "application/x-netcdf": "netcdf",
@@ -60,6 +68,7 @@ MAP_FILE_EXTENSION_FORMAT = {
     ".tiff": "geotiff",
     ".geotiff": "geotiff",
     ".levels": "levels",
+    ".jp2": "jp2",
 }
 DATA_OPENER_IDS = (
     "dataset:netcdf:https",
@@ -81,14 +90,6 @@ DATA_OPENER_IDS = (
 )
 MLDATASET_FORMATS = ["levels", "geotiff", "jp2"]
 
-# other constants
-COLLECTION_PREFIX = "collections/"
-STAC_CRS = "EPSG:4326"
-TILE_SIZE = 1024
-LOG = logging.getLogger("xcube.stac")
-FloatInt = Union[float, int]
-PROCESSING_BASELINE_KEYS = ["processorVersion", "s2:processing_baseline"]
-
 # parameter schemas
 STAC_STORE_PARAMETERS = dict(
     url=JsonStringSchema(title="URL to STAC catalog"),
@@ -99,7 +100,6 @@ STAC_STORE_PARAMETERS = dict(
     ),
 )
 STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)
-
 SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,
     title="Additional query options used during item search of STAC API.",
@@ -109,9 +109,6 @@ SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
         "is supported. For more information see "
         "https://github.com/stac-api-extensions/query"
     ),
-)
-SCHEMA_PROCESSING_LEVEL = JsonStringSchema(
-    title="Processing level of Sentinel-2 data", enum=["L1C", "L2A"], default="L2A"
 )
 SCHEMA_BBOX = JsonArraySchema(
     items=(
@@ -144,34 +141,80 @@ SCHEMA_ASSET_NAMES = JsonArraySchema(
     items=(JsonStringSchema(min_length=0)),
     unique_items=True,
     title="Names of assets",
-    description="Names of assets (bands) which will be included in the data cube.",
+    description="Names of assets which will be included in the data cube.",
+)
+SCEMA_APPLY_SCALING = JsonBooleanSchema(
+    title="Apply scaling, offset, and no-data values to data."
 )
 SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
 SCHEMA_CRS = JsonStringSchema(title="Coordinate reference system", default="EPSG:4326")
-
+SCHEMA_TILE_SIZE = JsonArraySchema(
+    nullable=True,
+    title="Tile size of returned dataset",
+    description=(
+        "Tile size in y and x (or lat and lon if crs is geographic) "
+        "of returned dataset"
+    ),
+    items=[JsonIntegerSchema(minimum=1), JsonIntegerSchema(minimum=1)],
+    default=(1024, 1024),
+)
 STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
     time_range=SCHEMA_TIME_RANGE,
     bbox=SCHEMA_BBOX,
 )
-
 STAC_SEARCH_PARAMETERS = dict(
     **STAC_SEARCH_PARAMETERS_STACK_MODE,
     collections=SCHEMA_COLLECTIONS,
     query=SCHEMA_ADDITIONAL_QUERY,
 )
-
 STAC_OPEN_PARAMETERS = dict(
     asset_names=SCHEMA_ASSET_NAMES,
-    apply_scaling=JsonBooleanSchema(
-        title="Apply scaling, offset, and no-data values to data"
-    ),
+    apply_scaling=SCEMA_APPLY_SCALING,
 )
-
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
     **STAC_OPEN_PARAMETERS,
     time_range=SCHEMA_TIME_RANGE,
     bbox=SCHEMA_BBOX,
     crs=SCHEMA_CRS,
+    tile_size=SCHEMA_TILE_SIZE,
     spatial_res=SCHEMA_SPATIAL_RES,
     query=SCHEMA_ADDITIONAL_QUERY,
 )
+
+# CDSE Sentinel-2 constants
+SENITNEL_2_L2A_BANDS = [
+    "AOT",
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06",
+    "B07",
+    "B08",
+    "B8A",
+    "B09",
+    "B11",
+    "B12",
+    "SCL",
+    "WVP",
+]
+SENITNEL_2_L2A_BAND_RESOLUTIONS = {
+    "AOT": 10,
+    "B01": 60,
+    "B02": 10,
+    "B03": 10,
+    "B04": 10,
+    "B05": 20,
+    "B06": 20,
+    "B07": 20,
+    "B08": 10,
+    "B8A": 20,
+    "B09": 60,
+    "B11": 20,
+    "B12": 20,
+    "SCL": 20,
+    "WVP": 10,
+}
+SENTINEL_2_MIN_RESOLUTIONS = 10
+SENTINEL_2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"

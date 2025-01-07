@@ -26,7 +26,6 @@ import numpy as np
 import pystac
 import pystac_client.client
 import requests
-import tqdm
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
@@ -38,10 +37,13 @@ from .accessor import (
     S3DataAccessor,
 )
 from .constants import LOG
+from .constants import STAC_OPEN_PARAMETERS
+from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
+from .constants import STAC_SEARCH_PARAMETERS
 from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
-from .helper import Helper
 from .constants import COLLECTION_PREFIX
 from .constants import TILE_SIZE
+from .helper import Helper
 from .mldataset import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
 from ._utils import (
@@ -49,12 +51,12 @@ from ._utils import (
     rename_dataset,
     convert_datetime2str,
     get_data_id_from_pystac_object,
-    get_url_from_pystac_object,
     is_valid_ml_data_type,
     reproject_bbox,
     search_collections,
     update_dict,
     get_gridmapping,
+    search_items,
 )
 from .stack import groupby_solar_day
 from .stack import mosaic_take_first
@@ -103,9 +105,9 @@ class SingleStoreMode:
         self._url_mod = url_mod
         self._searchable = searchable
         self._storage_options_s3 = storage_options_s3
-        self._helper = helper
         self._https_accessor = None
         self._s3_accessor = None
+        self._helper = helper
 
     def access_item(self, data_id: str) -> pystac.Item:
         """Access item for a given data ID.
@@ -149,9 +151,7 @@ class SingleStoreMode:
             data_id=data_id, opener_id=opener_id
         )
         return JsonObjectSchema(
-            properties=update_dict(
-                self._helper.schema_open_params, properties, inplace=False
-            ),
+            properties=update_dict(STAC_OPEN_PARAMETERS, properties, inplace=False),
             required=[],
             additional_properties=False,
         )
@@ -166,10 +166,9 @@ class SingleStoreMode:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
         item = self.access_item(data_id)
-        ds = self.build_dataset_from_item(
+        return self.build_dataset_from_item(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
-        return ds
 
     def get_extent(self, data_id: str) -> dict:
         item = self.access_item(data_id)
@@ -189,14 +188,12 @@ class SingleStoreMode:
     def search_data(self, **search_params) -> Iterator[pystac.Item]:
         schema = self.get_search_params_schema()
         schema.validate_instance(search_params)
-        items = self._helper.search_items(
-            self._catalog, self._searchable, **search_params
-        )
+        items = search_items(self._catalog, self._searchable, **search_params)
         return items
 
     def get_search_params_schema(self) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=self._helper.schema_search_params,
+            properties=STAC_SEARCH_PARAMETERS,
             required=[],
             additional_properties=False,
         )
@@ -208,70 +205,19 @@ class SingleStoreMode:
         data_type: DataTypeLike = None,
         target_gm: GridMapping = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
-        """Builds a dataset where the data variable names correspond
-        to the asset keys. If the loaded data consists of multiple
-        data variables, the variable name follows the structure
-        '<asset_key>_<data_variable_name>'
-
-        Args:
-            item: item object
-            opener_id: Data opener identifier. Defaults to None.
-            data_type: Data type assigning the return value data type.
-                May be given as type alias name, as a type, or as a
-                :class:`xcube.core.store.DataType` instance.
-
-        Returns:
-            Dataset representation of the data resources identified
-            by *data_id* and *open_params*.
-        """
-        parsed_item = self._helper.parse_item(item, **open_params)
+    ) -> Union[xr.Dataset, list[xr.Dataset], MultiLevelDataset]:
         access_params = self._helper.get_data_access_params(
-            parsed_item, opener_id=opener_id, data_type=data_type, **open_params
+            item, opener_id=opener_id, data_type=data_type, **open_params
         )
         list_ds_asset = []
         for asset_key, params in access_params.items():
-            if opener_id is not None:
-                key = "_".join(opener_id.split(":")[:2])
-                open_params_asset = open_params.get(f"open_params_{key}", {})
-            elif data_type is not None:
-                open_params_asset = open_params.get(
-                    f"open_params_{data_type}_{params["format_id"]}", {}
-                )
-            else:
-                open_params_asset = open_params.get(
-                    f"open_params_dataset_{params["format_id"]}", {}
-                )
-
-            # open data with respective xcube data opener
-            if params["protocol"] == "https":
-                opener = self._get_https_accessor(params)
-                ds_asset = opener.open_data(
-                    params,
-                    opener_id=opener_id,
-                    data_type=data_type,
-                    **open_params_asset,
-                )
-            elif params["protocol"] == "s3":
-                opener = self._get_s3_accessor(params)
-                ds_asset = opener.open_data(
-                    params,
-                    opener_id=opener_id,
-                    data_type=data_type,
-                    **open_params_asset,
-                )
-            else:
-                url = get_url_from_pystac_object(item)
-                raise DataStoreError(
-                    f"Only 's3' and 'https' protocols are supported, not "
-                    f"{params["protocol"]!r}. The asset {asset_key!r} has a href "
-                    f"{params["href"]!r}. The item's url is given by {url!r}."
-                )
-
+            ds_asset = self.open_asset_dataset(
+                params, opener_id, data_type, **open_params
+            )
             if isinstance(ds_asset, xr.Dataset):
                 ds_asset = rename_dataset(ds_asset, asset_key)
                 if open_params.get("apply_scaling", False):
-                    ds_asset = apply_offset_scaling(ds_asset, parsed_item, asset_key)
+                    ds_asset = apply_offset_scaling(ds_asset, item, asset_key)
             list_ds_asset.append(ds_asset)
 
         attrs = dict(
@@ -281,7 +227,7 @@ class SingleStoreMode:
         if all(isinstance(ds, MultiLevelDataset) for ds in list_ds_asset):
             ds = SingleItemMultiLevelDataset(
                 list_ds_asset,
-                parsed_item,
+                item,
                 list(access_params.keys()),
                 target_gm=target_gm,
                 open_params=open_params,
@@ -290,8 +236,51 @@ class SingleStoreMode:
         else:
             ds = merge_datasets(list_ds_asset, target_gm=target_gm)
             ds.attrs = attrs
-
         return ds
+
+    def open_asset_dataset(
+        self,
+        params: dict,
+        opener_id: str = None,
+        data_type: DataTypeLike = None,
+        **open_params,
+    ):
+        if opener_id is not None:
+            key = "_".join(opener_id.split(":")[:2])
+            open_params_asset = open_params.get(f"open_params_{key}", {})
+        elif data_type is not None:
+            open_params_asset = open_params.get(
+                f"open_params_{data_type}_{params["format_id"]}", {}
+            )
+        else:
+            open_params_asset = open_params.get(
+                f"open_params_dataset_{params["format_id"]}", {}
+            )
+
+        # open data with respective xcube data opener
+        if params["protocol"] == "https":
+            opener = self._get_https_accessor(params)
+            ds_asset = opener.open_data(
+                params,
+                opener_id=opener_id,
+                data_type=data_type,
+                **open_params_asset,
+            )
+        elif params["protocol"] == "s3":
+            opener = self._get_s3_accessor(params)
+            ds_asset = opener.open_data(
+                params,
+                opener_id=opener_id,
+                data_type=data_type,
+                **open_params_asset,
+            )
+        else:
+            raise DataStoreError(
+                f"Only 's3' and 'https' protocols are supported, not "
+                f"{params["protocol"]!r}. The asset {params["name"]!r} has a href "
+                f"{params["href"]!r}."
+            )
+        return ds_asset
 
     ##########################################################################
     # Implementation helpers
@@ -368,7 +357,7 @@ class SingleStoreMode:
             properties[key] = _OPEN_DATA_PARAMETERS[key]
         if data_id is not None:
             item = self.access_item(data_id)
-            for format_id in self._helper.get_format_ids(item):
+            for format_id in self._helper.list_format_ids(item):
                 for key in _OPEN_DATA_PARAMETERS.keys():
                     if format_id == key.split("_")[-1]:
                         properties[key] = _OPEN_DATA_PARAMETERS[key]
@@ -432,7 +421,7 @@ class StackStoreMode(SingleStoreMode):
         )
         return JsonObjectSchema(
             properties=update_dict(
-                self._helper.schema_open_params_stack, properties, inplace=False
+                STAC_OPEN_PARAMETERS_STACK_MODE, properties, inplace=False
             ),
             required=["time_range", "bbox", "crs", "spatial_res"],
             additional_properties=False,
@@ -453,7 +442,7 @@ class StackStoreMode(SingleStoreMode):
             open_params["bbox"], open_params["crs"], "EPSG:4326"
         )
         items = list(
-            self._helper.search_items(
+            search_items(
                 self._catalog,
                 self._searchable,
                 collections=[data_id],
@@ -503,31 +492,54 @@ class StackStoreMode(SingleStoreMode):
             open_params["crs"],
             open_params.get("tile_size", TILE_SIZE),
         )
-        ds_dates = []
+
+        asset_names = open_params.get("asset_names")
+        if not asset_names:
+            first_item = next(iter(grouped_items.values()))[0]
+            nb_assets = len(self._helper.list_assets_from_item(first_item))
+        else:
+            nb_assets = len(asset_names)
+        max_nb_tiles = max(len(val) for val in grouped_items.values())
+        access_params_collection = np.empty(
+            (max_nb_tiles, nb_assets, len(grouped_items)), dtype=object
+        )
         np_datetimes = []
-        desc = "Stack tiles along time axis."
-        for datetime, items_for_date in tqdm.tqdm(
-            grouped_items.items(), total=len(grouped_items), desc=desc
-        ):
+        for i, (datetime, items_for_date) in enumerate(grouped_items.items()):
             np_datetimes.append(np.datetime64(datetime).astype("datetime64[ns]"))
-            list_ds_items = []
-            for item in items_for_date:
-                ds = self.build_dataset_from_item(
-                    item,
-                    opener_id=opener_id,
-                    data_type=data_type,
-                    target_gm=target_gm,
-                    **open_params,
+            for j, item in enumerate(items_for_date):
+                access_params = self._helper.get_data_access_params(
+                    item, opener_id=opener_id, data_type=data_type, **open_params
                 )
-                list_ds_items.append(ds)
-            ds_mosaic = mosaic_take_first(list_ds_items)
-            ds_dates.append(ds_mosaic)
-        ds = xr.concat(ds_dates, dim="time")
-        ds = ds.assign_coords(coords=dict(time=np_datetimes))
-        if "crs" in ds:
-            ds = ds.drop_vars("crs")
-            ds["crs"] = ds_dates[0].crs
-        return ds
+                for k, (asset_key, params) in enumerate(access_params.items()):
+                    access_params_collection[j, k, i] = params
+
+        list_ds_tiles = []
+        for i in range(access_params_collection.shape[0]):
+            list_ds_assets = []
+            for j in range(access_params_collection.shape[1]):
+                list_ds_time = []
+                for k in range(access_params_collection.shape[2]):
+                    params: dict = access_params_collection[i, j, k]
+                    ds = self.open_asset_dataset(
+                        params,
+                        opener_id,
+                        data_type,
+                        **open_params,
+                    )
+                    ds = rename_dataset(ds, params["name"])
+                    if open_params.get("apply_scaling", False):
+                        ds = apply_offset_scaling(ds, params["item"], params["name"])
+                    list_ds_time.append(ds)
+                ds = xr.concat(list_ds_time, dim="time", join="exact")
+                ds = ds.assign_coords(coords=dict(time=np_datetimes))
+                list_ds_assets.append(ds)
+            list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
+        ds_final = mosaic_take_first(list_ds_tiles)
+
+        if "crs" in ds_final:
+            ds_final = ds_final.drop_vars("crs")
+            ds_final["crs"] = list_ds_tiles[0].crs
+        return ds_final
 
     def get_extent(self, data_id: str) -> dict:
         collection = self.access_collection(data_id)

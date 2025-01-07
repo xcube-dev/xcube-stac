@@ -18,6 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 import collections
 
 import dask.array as da
@@ -26,26 +27,16 @@ import xarray as xr
 
 from ._utils import add_nominal_datetime
 from ._utils import get_spatial_dims
-from .constants import PROCESSING_BASELINE_KEYS
 
 
 def groupby_solar_day(items: list[pystac.Item]) -> dict:
     items = add_nominal_datetime(items)
     nested_dict = collections.defaultdict(lambda: collections.defaultdict(list))
 
-    processing_baseline_key = None
-    for key in PROCESSING_BASELINE_KEYS:
-        if key in items[0].properties:
-            processing_baseline_key = key
-            break
-
     # group by date and processing baseline if given
     for idx, item in enumerate(items):
         date = item.properties["datetime_nominal"].date()
-        if processing_baseline_key is None:
-            processing_baseline = 1
-        else:
-            processing_baseline = float(item.properties[processing_baseline_key])
+        processing_baseline = float(item.properties.get("processing:version", "1.0"))
         nested_dict[date][processing_baseline].append(item)
 
     # if two processing baselines are available, take most recent one
@@ -58,7 +49,7 @@ def groupby_solar_day(items: list[pystac.Item]) -> dict:
     grouped_new = {}
     for date, items in grouped.items():
         dt = items[0].properties["datetime_nominal"].replace(tzinfo=None)
-        grouped_new[dt] = items
+        grouped_new[dt] = sorted(items, key=lambda item: item.id)
     return grouped_new
 
 
@@ -79,8 +70,8 @@ def mosaic_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
         da_arr_select = da.choose(first_non_nan_index, da_arr)
         ds_mosaic[key] = xr.DataArray(
             da_arr_select,
-            dims=(y_coord, x_coord),
-            coords={y_coord: ds[y_coord], x_coord: ds[x_coord]},
+            dims=("time", y_coord, x_coord),
+            coords={"time": ds["time"], y_coord: ds[y_coord], x_coord: ds[x_coord]},
         )
     if "crs" in list_ds[0]:
         ds_mosaic["crs"] = list_ds[0].crs
