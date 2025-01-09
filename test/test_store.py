@@ -38,6 +38,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from xcube_stac.constants import DATA_STORE_ID_CDSE
+from xcube_stac.constants import SENITNEL_2_L2A_BANDS
 from xcube_stac.accessor import HttpsDataAccessor
 from xcube_stac.accessor import S3DataAccessor
 
@@ -48,8 +49,8 @@ SKIP_HELP = (
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
 CDSE_CREDENTIALS = {
-    "key": "xxx",
-    "secret": "xxx",
+    "key": "O0M0CUQIDQO9TDZ4D8NR",
+    "secret": "qPUyXs9G6j8on6MY5KPhQNHuA5uZTqxEscrbBCGx",
 }
 
 
@@ -172,6 +173,20 @@ class StacDataStoreTest(unittest.TestCase):
         item = store._impl.access_item(data_ids[0])
         format_ids = store._helper.list_format_ids(item)
         self.assertEqual(["geotiff"], format_ids)
+
+    @pytest.mark.vcr()
+    def test_get_data_ids_data_type_stac_mode(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_netcdf, stack_mode=True)
+        data_ids = store.get_data_ids(data_type="mldataset")
+        data_ids = list(itertools.islice(data_ids, 5))
+        expected_data_ids = [
+            "SWIM_WE",
+            "ENMAP_HSI_L0_QL",
+            "ENMAP_HSI_L2A",
+            "D4H",
+            "S2_L2A_MAJA",
+        ]
+        self.assertCountEqual(expected_data_ids, data_ids)
 
     @pytest.mark.vcr()
     def test_get_data_ids_stack_mode(self):
@@ -405,7 +420,10 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
 
         # open data without open_params
-        ds = store.open_data(self.data_id_time_range)
+        ds = store.open_data(
+            self.data_id_time_range,
+            apply_scaling=True,
+        )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             ["blue_p50", "blue_p25", "blue_p75", "qa_f", "crs"], list(ds.data_vars)
@@ -638,6 +656,65 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
+        self.assertCountEqual(
+            [4, 16, 16],
+            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
+        )
+        self.assertCountEqual(
+            [1, 16, 16],
+            [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
+        )
+
+    @pytest.mark.vcr()
+    def test_open_data_stack_mode_no_items_found(self):
+        store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
+
+        # get warning, if no tiles are found
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            bbox_utm = [659574, 5892990, 659724, 5893140]
+            ds = store.open_data(
+                data_id="sentinel-2-l2a",
+                bbox=bbox_utm,
+                time_range=["2023-11-01", "2023-11-10"],
+                query={"constellation": {"eq": "sentinel-3"}},
+                spatial_res=10,
+                crs="EPSG:32635",
+                asset_names=["red", "green", "blue"],
+                apply_scaling=True,
+                open_params_dataset_geotiff=dict(tile_size=(512, 512)),
+            )
+        self.assertIsNone(ds)
+        self.assertEqual(1, len(cm.output))
+        msg = (
+            "WARNING:xcube.stac:No items found in collection 'sentinel-2-l2a' "
+            "for the parameters bbox [29.386939787289162, 53.16233383426039, "
+            "29.389256239840616, 53.16363607273192], time_range ['2023-11-01', "
+            "'2023-11-10'] and query {'constellation': {'eq': 'sentinel-3'}}."
+        )
+        self.assertEqual(msg, str(cm.output[-1]))
+
+    @pytest.mark.vcr()
+    def test_open_data_stack_mode_cdse_sen2(self):
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+            stack_mode=True,
+        )
+
+        # open data as dataset
+        bbox_utm = [659574, 5892990, 659724, 5893140]
+        ds = store.open_data(
+            data_id="sentinel-2-l2a",
+            bbox=bbox_utm,
+            time_range=["2023-11-01", "2023-11-10"],
+            spatial_res=10,
+            crs="EPSG:32635",
+            apply_scaling=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+
+        self.assertCountEqual(SENITNEL_2_L2A_BANDS + ["crs"], list(ds.data_vars))
         self.assertCountEqual(
             [4, 16, 16],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],

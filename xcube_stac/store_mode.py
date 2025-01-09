@@ -31,6 +31,7 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 from xcube.core.gridmapping import GridMapping
+from xcube.core.geom import clip_dataset_by_geometry
 
 from .accessor import (
     HttpsDataAccessor,
@@ -59,7 +60,8 @@ from ._utils import (
     search_items,
 )
 from .stack import groupby_solar_day
-from .stack import mosaic_take_first
+from .stack import mosaic_2d_take_first
+from .stack import mosaic_3d_take_first
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -215,9 +217,11 @@ class SingleStoreMode:
                 params, opener_id, data_type, **open_params
             )
             if isinstance(ds_asset, xr.Dataset):
-                ds_asset = rename_dataset(ds_asset, asset_key)
+                ds_asset = rename_dataset(ds_asset, params["name_origin"])
                 if open_params.get("apply_scaling", False):
-                    ds_asset = apply_offset_scaling(ds_asset, item, asset_key)
+                    ds_asset[params["name_origin"]] = apply_offset_scaling(
+                        ds_asset[params["name_origin"]], item, asset_key
+                    )
             list_ds_asset.append(ds_asset)
 
         attrs = dict(
@@ -227,8 +231,7 @@ class SingleStoreMode:
         if all(isinstance(ds, MultiLevelDataset) for ds in list_ds_asset):
             ds = SingleItemMultiLevelDataset(
                 list_ds_asset,
-                item,
-                list(access_params.keys()),
+                access_params,
                 target_gm=target_gm,
                 open_params=open_params,
                 attrs=attrs,
@@ -250,11 +253,11 @@ class SingleStoreMode:
             open_params_asset = open_params.get(f"open_params_{key}", {})
         elif data_type is not None:
             open_params_asset = open_params.get(
-                f"open_params_{data_type}_{params["format_id"]}", {}
+                f"open_params_{data_type}_{params['format_id']}", {}
             )
         else:
             open_params_asset = open_params.get(
-                f"open_params_dataset_{params["format_id"]}", {}
+                f"open_params_dataset_{params['format_id']}", {}
             )
 
         # open data with respective xcube data opener
@@ -280,6 +283,21 @@ class SingleStoreMode:
                 f"{params["protocol"]!r}. The asset {params["name"]!r} has a href "
                 f"{params["href"]!r}."
             )
+
+        # clip dataset by bounding box
+        crs_asset = None
+        if "crs" in ds_asset:
+            crs_asset = ds_asset.crs.attrs["crs_wkt"]
+        if "spatial_ref" in ds_asset:
+            crs_asset = ds_asset.spatial_ref.attrs["crs_wkt"]
+        if crs_asset:
+            bbox = reproject_bbox(
+                open_params["bbox"],
+                open_params["crs"],
+                crs_asset,
+            )
+            ds_asset = clip_dataset_by_geometry(ds_asset, geometry=bbox)
+
         return ds_asset
 
     ##########################################################################
@@ -454,12 +472,11 @@ class StackStoreMode(SingleStoreMode):
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
-                f"parameters bbox {bbox_wgs84!r}, time_range"
+                f"parameters bbox {bbox_wgs84!r}, time_range "
                 f"{open_params["time_range"]!r} and "
-                f"query {open_params.get("query", "None")!r}"
+                f"query {open_params.get("query", "None")!r}."
             )
             return None
-        items = sorted(items, key=lambda item: item.properties.get("datetime"))
 
         # group items by date
         grouped_items = groupby_solar_day(items)
@@ -473,15 +490,21 @@ class StackStoreMode(SingleStoreMode):
             ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
             ds.attrs["stac_item_ids"] = dict(
                 {
-                    date.isoformat(): [item.id for item in items]
-                    for date, items in grouped_items.items()
+                    dt.astype("datetime64[ms]")
+                    .astype("O")
+                    .isoformat(): [
+                        item.id
+                        for item in grouped_items.sel(time=dt).values.flatten()
+                        if item is not None
+                    ]
+                    for dt in grouped_items.time.values
                 }
             )
         return ds
 
     def stack_items(
         self,
-        grouped_items: dict,
+        grouped_items: xr.DataArray,
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
@@ -495,46 +518,92 @@ class StackStoreMode(SingleStoreMode):
 
         asset_names = open_params.get("asset_names")
         if not asset_names:
-            first_item = next(iter(grouped_items.values()))[0]
+            first_item = next(
+                value
+                for value in grouped_items.isel(time=0, idx=0).values
+                if value is not None
+            )
             nb_assets = len(self._helper.list_assets_from_item(first_item))
         else:
             nb_assets = len(asset_names)
-        max_nb_tiles = max(len(val) for val in grouped_items.values())
-        access_params_collection = np.empty(
-            (max_nb_tiles, nb_assets, len(grouped_items)), dtype=object
-        )
-        np_datetimes = []
-        for i, (datetime, items_for_date) in enumerate(grouped_items.items()):
-            np_datetimes.append(np.datetime64(datetime).astype("datetime64[ns]"))
-            for j, item in enumerate(items_for_date):
-                access_params = self._helper.get_data_access_params(
-                    item, opener_id=opener_id, data_type=data_type, **open_params
-                )
-                for k, (asset_key, params) in enumerate(access_params.items()):
-                    access_params_collection[j, k, i] = params
 
-        list_ds_tiles = []
-        for i in range(access_params_collection.shape[0]):
-            list_ds_assets = []
-            for j in range(access_params_collection.shape[1]):
-                list_ds_time = []
-                for k in range(access_params_collection.shape[2]):
-                    params: dict = access_params_collection[i, j, k]
-                    ds = self.open_asset_dataset(
-                        params,
-                        opener_id,
-                        data_type,
+        access_params = xr.DataArray(
+            np.empty(
+                (
+                    grouped_items.sizes["tile_id"],
+                    nb_assets,
+                    grouped_items.sizes["time"],
+                    grouped_items.sizes["idx"],
+                ),
+                dtype=object,
+            ),
+            dims=("tile_id", "asset_name", "time", "idx"),
+            coords=dict(
+                tile_id=grouped_items["tile_id"],
+                asset_name=asset_names,
+                time=grouped_items["time"],
+                idx=grouped_items["idx"],
+            ),
+        )
+        for dt in grouped_items.time.values:
+            for tile_id in grouped_items.tile_id.values:
+                for idx in grouped_items.idx.values:
+                    item = grouped_items.sel(time=dt, tile_id=tile_id, idx=idx).item()
+                    if item is None:
+                        continue
+                    item_access_params = self._helper.get_data_access_params(
+                        item,
+                        opener_id=opener_id,
+                        data_type=data_type,
                         **open_params,
                     )
-                    ds = rename_dataset(ds, params["name"])
-                    if open_params.get("apply_scaling", False):
-                        ds = apply_offset_scaling(ds, params["item"], params["name"])
-                    list_ds_time.append(ds)
+                    for key, val in item_access_params.items():
+                        access_params.loc[tile_id, val["name_origin"], dt, idx] = val
+
+        list_ds_tiles = []
+        for tile_id in access_params.tile_id.values:
+            list_ds_assets = []
+            for asset_name in access_params.asset_name.values:
+                list_ds_time = []
+                idx_remove_dt = []
+                for dt_idx, dt in enumerate(access_params.time.values):
+                    list_ds_idx = []
+                    for idx in access_params.idx.values:
+                        params = access_params.sel(
+                            tile_id=tile_id, asset_name=asset_name, time=dt, idx=idx
+                        ).item()
+                        if not params:
+                            continue
+                        ds = self.open_asset_dataset(
+                            params,
+                            opener_id,
+                            data_type,
+                            **open_params,
+                        )
+                        ds = rename_dataset(ds, params["name_origin"])
+                        if open_params.get("apply_scaling", False):
+                            ds[params["name_origin"]] = apply_offset_scaling(
+                                ds[params["name_origin"]],
+                                params["item"],
+                                params["name"],
+                            )
+                        list_ds_idx.append(ds)
+                    if not list_ds_idx:
+                        idx_remove_dt.append(dt_idx)
+                        continue
+                    else:
+                        ds = mosaic_2d_take_first(list_ds_idx)
+                        list_ds_time.append(ds)
                 ds = xr.concat(list_ds_time, dim="time", join="exact")
-                ds = ds.assign_coords(coords=dict(time=np_datetimes))
+                np_datetimes_sel = [
+                    value
+                    for idx, value in enumerate(access_params.time.values)
+                    if idx not in idx_remove_dt
+                ]
+                ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
-        ds_final = mosaic_take_first(list_ds_tiles)
+        ds_final = mosaic_3d_take_first(list_ds_tiles, access_params.time.values)
 
         if "crs" in ds_final:
             ds_final = ds_final.drop_vars("crs")

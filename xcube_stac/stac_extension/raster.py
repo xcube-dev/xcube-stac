@@ -35,20 +35,20 @@ _RASTER_STAC_EXTENSION_VERSIONS = {
 
 
 def apply_offset_scaling(
-    ds: xr.Dataset, item: pystac.Item, asset_name: str, raster_version: str = None
-) -> xr.Dataset:
+    da: xr.DataArray, item: pystac.Item, asset_name: str, raster_version: str = None
+) -> xr.DataArray:
     """This function applies offset and scale to the data and fills no-data pixel
     with np.nan. The digital numbers DN are converted into radiance values by
     L = scale * DN + offset.
 
      Args:
-         ds: dataset
+         da: data array
          item: item object
          asset_name: name/key of asset
          raster_version: version of raster stac extension; on off [v1, v2].
 
      Returns:
-         Dataset where offset, scale, and filling nodata values are applied.
+         Data array where offset, scale, and filling nodata values are applied.
 
     See Also:
         `get_stac_extension` for getting the version of raster stac extension.
@@ -57,10 +57,10 @@ def apply_offset_scaling(
         raster_version = _get_stac_extension(item)
         if not raster_version:
             LOG.warning(
-                f"The item {repr(item.id)} is not conform to "
+                f"The item {item.id!r} is not conform to "
                 f"the stac-extension 'raster'. No scaling is applied."
             )
-            return ds
+            return da
 
     if raster_version == "v1":
         scale, offset, nodata = _get_scaling_v1(item, asset_name)
@@ -69,15 +69,15 @@ def apply_offset_scaling(
     else:
         LOG.warning(
             f"Stac extension raster exists only for version 'v1' and 'v2', not "
-            f"for {repr(raster_version)}. No scaling is applied."
+            f"for {raster_version!r}. No scaling is applied."
         )
-        return ds
+        return da
 
     if nodata is not None:
-        ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata)
-    ds[asset_name] *= scale
-    ds[asset_name] += offset
-    return ds
+        da = da.where(da != nodata)
+    da *= scale
+    da += offset
+    return da
 
 
 def _get_stac_extension(item: pystac.Item) -> str:

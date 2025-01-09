@@ -49,20 +49,20 @@ class UtilsTest(unittest.TestCase):
 
     def test_get_format_id(self):
         asset = pystac.Asset(
-            href=f"https://example.com/data/test.tif",
+            href="https://example.com/data/test.tif",
             media_type="image/tiff",
             roles=["data"],
             extra_fields=dict(id="test"),
         )
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
-            href=f"https://example.com/data/test.tif",
+            href="https://example.com/data/test.tif",
             roles=["data"],
             extra_fields=dict(id="test"),
         )
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
-            href=f"https://example.com/data/test.xml",
+            href="https://example.com/data/test.xml",
             title="Meta data",
             roles=["meta"],
             extra_fields=dict(id="test"),
@@ -71,7 +71,7 @@ class UtilsTest(unittest.TestCase):
             format_id = get_format_id(asset)
         self.assertIsNone(format_id)
         self.assertEqual(1, len(cm.output))
-        msg = f"DEBUG:xcube.stac:No format_id found for asset 'Meta data'"
+        msg = "DEBUG:xcube.stac:No format_id found for asset 'Meta data'"
         self.assertEqual(msg, str(cm.output[-1]))
 
     def test_convert_datetime2str(self):

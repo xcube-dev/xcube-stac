@@ -128,7 +128,7 @@ class HrefParseTest(unittest.TestCase):
         self.assertEqual(
             (
                 f"Region name {region_name!r} extracted from the href {href!r} "
-                f"is not supported by AWS S3"
+                "is not supported by AWS S3"
             ),
             f"{cm.exception}",
         )

@@ -51,6 +51,7 @@ class Helper:
             format_id = get_format_id(asset)
             if (asset_names is None or key in asset_names) and format_id is not None:
                 asset.extra_fields["id"] = key
+                asset.extra_fields["id_origin"] = key
                 asset.extra_fields["format_id"] = format_id
                 assets.append(asset)
         return assets
@@ -75,6 +76,7 @@ class Helper:
             format_id = get_format_id(asset)
             data_access_params[asset.extra_fields["id"]] = dict(
                 name=asset.extra_fields["id"],
+                name_origin=asset.extra_fields["id_origin"],
                 protocol=protocol,
                 root=root,
                 fs_path=fs_path,
@@ -118,6 +120,7 @@ class HelperXcube(Helper):
             format_id = get_format_from_path(fs_path)
             data_access_params[asset.extra_fields["id"]] = dict(
                 name=asset.extra_fields["id"],
+                name_origin=asset.extra_fields["id_origin"],
                 protocol=protocol,
                 root=root,
                 fs_path=fs_path,
@@ -151,13 +154,14 @@ class HelperCdse(Helper):
         if not asset_names:
             asset_names = SENITNEL_2_L2A_BANDS
         assets_sel = []
-        for asset_name in asset_names:
+        for i, asset_name in enumerate(asset_names):
             if not re.fullmatch(SENTINEL_2_REGEX_ASSET_NAME, asset_name):
                 asset_name = (
                     f"{asset_name}_{SENITNEL_2_L2A_BAND_RESOLUTIONS[asset_name]}m"
                 )
             asset = item.assets[asset_name]
             asset.extra_fields["id"] = asset_name
+            asset.extra_fields["id_origin"] = asset_names[i]
             asset.extra_fields["format_id"] = get_format_id(asset)
             assets_sel.append(asset)
         return assets_sel

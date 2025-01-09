@@ -31,6 +31,7 @@ import pandas as pd
 import pyproj
 import pystac
 import pystac_client
+from rasterio.warp import transform_bounds
 from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import DATASET_TYPE
@@ -45,7 +46,6 @@ from .constants import DATA_OPENER_IDS
 from .constants import FloatInt
 from .constants import MAP_FILE_EXTENSION_FORMAT
 from .constants import MAP_MIME_TYP_FORMAT
-from .constants import MLDATASET_FORMATS
 from .constants import LOG
 
 
@@ -150,7 +150,7 @@ def get_format_id(asset: pystac.Asset) -> str:
     else:
         format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
     if format_id is None:
-        LOG.debug(f"No format_id found for asset {repr(asset.title)}")
+        LOG.debug(f"No format_id found for asset {asset.title!r}")
     return format_id
 
 
@@ -300,11 +300,18 @@ def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
     for item in items:
         item.properties["center_point"] = get_center_from_bbox(item.bbox)
         item.properties["datetime_nominal"] = convert_to_solar_time(
-            item.datetime,
-            (item.properties["center_point"][0] + item.properties["center_point"][1])
-            / 2,
+            item.datetime, item.properties["center_point"][0]
         )
     return items
+
+
+def get_processing_version(item: pystac.Item) -> float:
+    return float(
+        item.properties.get(
+            "processing:version",
+            item.properties.get("s2:processing_baseline", "1.0"),
+        )
+    )
 
 
 def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
@@ -441,14 +448,28 @@ def modify_catalog_url(url: str) -> str:
     return url_mod
 
 
-def reproject_bbox(bbox, source_crs, target_crs):
+def reproject_bbox(source_bbox, source_crs, target_crs, buffer=0.05):
     source_crs = normalize_crs(source_crs)
     target_crs = normalize_crs(target_crs)
     if source_crs == target_crs:
-        return bbox
+        return source_bbox
     t = pyproj.Transformer.from_crs(source_crs, target_crs, always_xy=True)
-    (x1, x2), (y1, y2) = t.transform((bbox[0], bbox[2]), (bbox[1], bbox[3]))
-    return [x1, y1, x2, y2]
+    target_bbox = t.transform_bounds(*source_bbox, densify_pts=21)
+    x_min = target_bbox[0]
+    x_max = target_bbox[2]
+    if source_crs.is_geographic and x_min > x_max:
+        x_min += 360
+        x_max += 360
+    buffer_x = abs((x_max - x_min)) * buffer
+    buffer_y = abs((target_bbox[3] - target_bbox[1])) * buffer
+    target_bbox = (
+        target_bbox[0] - buffer_x,
+        target_bbox[1] - buffer_y,
+        target_bbox[2] + buffer_x,
+        target_bbox[3] + buffer_y,
+    )
+
+    return target_bbox
 
 
 def convert_to_solar_time(
@@ -539,7 +560,7 @@ def get_spatial_dims(ds: xr.Dataset) -> (str, str):
     elif "y" in ds and "x" in ds:
         y_coord, x_coord = "y", "x"
     else:
-        raise DataStoreError(f"No spatial dimensions found in dataset.")
+        raise DataStoreError("No spatial dimensions found in dataset.")
     return y_coord, x_coord
 
 
@@ -555,7 +576,7 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
         ds,
         target_gm=target_gm,
         encode_cf=True,
-        rectify_kwargs=dict(compute_subset=False),
+        # rectify_kwargs=dict(compute_subset=False),
     )
     vars = [
         "spatial_ref",
