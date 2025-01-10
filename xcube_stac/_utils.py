@@ -452,7 +452,7 @@ def reproject_bbox(
     source_bbox: list[FloatInt, FloatInt, FloatInt, FloatInt],
     source_crs: Union[pyproj.CRS, str],
     target_crs: Union[pyproj.CRS, str],
-    buffer: float = 0.05,
+    buffer: float = 0.0,
 ):
     source_crs = normalize_crs(source_crs)
     target_crs = normalize_crs(target_crs)
@@ -583,9 +583,7 @@ def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Datase
         crs_asset = ds.spatial_ref.attrs["crs_wkt"]
     if crs_asset and "bbox" in open_params and "crs" in open_params:
         bbox = reproject_bbox(
-            open_params["bbox"],
-            open_params["crs"],
-            crs_asset,
+            open_params["bbox"], open_params["crs"], crs_asset, buffer=0.05
         )
         ds = clip_dataset_by_geometry(ds, geometry=bbox)
     return ds

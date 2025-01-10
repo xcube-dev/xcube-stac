@@ -690,8 +690,8 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, len(cm.output))
         msg = (
             "WARNING:xcube.stac:No items found in collection 'sentinel-2-l2a' "
-            "for the parameters bbox (29.386823964661588, 53.16221925990893, "
-            "29.38937206246819, 53.16375064927322), time_range ['2023-11-01', "
+            "for the parameters bbox (29.386939787289162, 53.1622888685164, "
+            "29.389256239840616, 53.16368104066575), time_range ['2023-11-01', "
             "'2023-11-10'] and query {'constellation': {'eq': 'sentinel-3'}}."
         )
         self.assertEqual(msg, str(cm.output[-1]))

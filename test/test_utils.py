@@ -283,7 +283,7 @@ class UtilsTest(unittest.TestCase):
         bbox_wgs84 = [2, 50, 3, 51]
         crs_wgs84 = "EPSG:4326"
         crs_3035 = "EPSG:3035"
-        bbox_3035 = [3744586.1438261, 3005532.9146112, 3834561.9451489, 3135332.471277]
+        bbox_3035 = [3748675.9529771, 3011432.8944597, 3830472.1359979, 3129432.4914285]
         self.assertEqual(bbox_wgs84, reproject_bbox(bbox_wgs84, crs_wgs84, crs_wgs84))
         self.assertEqual(bbox_3035, reproject_bbox(bbox_3035, crs_3035, crs_3035))
         np.testing.assert_almost_equal(
@@ -313,12 +313,7 @@ class UtilsTest(unittest.TestCase):
         ]
         np.testing.assert_almost_equal(
             reproject_bbox(bbox_utm, crs_utm, crs_wgs84),
-            [
-                178.71151799665725,
-                49.8432508769065,
-                -178.80285969813704,
-                52.15606403940051,
-            ],
+            [178.8245008, 49.9483787, -178.9158425, 52.0509362],
         )
 
     def test_normalize_crs(self):
