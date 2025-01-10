@@ -19,16 +19,62 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import unittest
+import datetime
 
 import numpy as np
+import pystac
 import xarray as xr
 
-from xcube_stac.stack import mosaic_take_first
+from xcube_stac.stack import mosaic_3d_take_first
+from xcube_stac.stack import groupby_solar_day
 
 
 class UtilsTest(unittest.TestCase):
 
-    def test_mosaic_take_first(self):
+    def test_groupby_solar_day(self):
+        bbox = [-10.0, -10.0, 10.0, 10.0]
+        datetime_value = datetime.datetime(2023, 1, 1, 12, 0, 0)
+        grid_code = "MGRS-31TCK"
+        processing_version = "5.11"
+
+        # Create the Item
+        items = []
+        for i in range(3):
+            items.append(
+                pystac.Item(
+                    id=f"example-item{i}",
+                    geometry={
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [bbox[0], bbox[1]],
+                                [bbox[2], bbox[1]],
+                                [bbox[2], bbox[3]],
+                                [bbox[0], bbox[3]],
+                                [bbox[0], bbox[1]],
+                            ]
+                        ],
+                    },
+                    bbox=bbox,
+                    datetime=datetime_value,
+                    properties={
+                        "grid:code": grid_code,
+                        "processing:version": processing_version,
+                    },
+                )
+            )
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            grouped = groupby_solar_day(items)
+        self.assertEqual(1, len(cm.output))
+        msg = (
+            "WARNING:xcube.stac:More that two items found for datetime and tile ID: "
+            f"[example-item0, example-item1, example-item2]. Only the first "
+            "tow items are considered."
+        )
+        self.assertEqual(msg, str(cm.output[-1]))
+        self.assertEqual((1, 1, 2), grouped.shape)
+
+    def test_mosaic_3d_take_first(self):
         list_ds = []
         # first tile
         data = np.array(
@@ -73,14 +119,14 @@ class UtilsTest(unittest.TestCase):
 
         # test only one tile
         dts = np.array(["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64")
-        ds_test = mosaic_take_first(list_ds[:1], dts)
+        ds_test = mosaic_3d_take_first(list_ds[:1], dts)
         xr.testing.assert_allclose(ds_test, list_ds[0])
 
         # test two tiles
         dts = np.array(
             ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"], dtype="datetime64"
         )
-        ds_test = mosaic_take_first(list_ds, dts)
+        ds_test = mosaic_3d_take_first(list_ds, dts)
         data = np.array(
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -99,4 +145,15 @@ class UtilsTest(unittest.TestCase):
         da = xr.DataArray(data, dims=dims, coords=coords)
         crs = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
         ds_expected = xr.Dataset({"B01": da, "crs": crs})
+        xr.testing.assert_allclose(ds_test, ds_expected)
+
+        # test two tiles, where spatial ref is given in spatial_ref coord
+        spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
+        for i, ds in enumerate(list_ds):
+            ds = ds.drop("crs")
+            ds.coords["spatial_ref"] = spatial_ref
+            list_ds[i] = ds
+        ds_expected = xr.Dataset({"B01": da})
+        ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
+        ds_test = mosaic_3d_take_first(list_ds, dts)
         xr.testing.assert_allclose(ds_test, ds_expected)

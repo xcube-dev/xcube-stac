@@ -31,7 +31,6 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 from xcube.core.gridmapping import GridMapping
-from xcube.core.geom import clip_dataset_by_geometry
 
 from .accessor import (
     HttpsDataAccessor,
@@ -58,6 +57,7 @@ from ._utils import (
     update_dict,
     get_gridmapping,
     search_items,
+    wrapper_clip_dataset_by_geometry,
 )
 from .stack import groupby_solar_day
 from .stack import mosaic_2d_take_first
@@ -285,18 +285,8 @@ class SingleStoreMode:
             )
 
         # clip dataset by bounding box
-        crs_asset = None
-        if "crs" in ds_asset:
-            crs_asset = ds_asset.crs.attrs["crs_wkt"]
-        if "spatial_ref" in ds_asset:
-            crs_asset = ds_asset.spatial_ref.attrs["crs_wkt"]
-        if crs_asset:
-            bbox = reproject_bbox(
-                open_params["bbox"],
-                open_params["crs"],
-                crs_asset,
-            )
-            ds_asset = clip_dataset_by_geometry(ds_asset, geometry=bbox)
+        if isinstance(ds_asset, xr.Dataset):
+            ds_asset = wrapper_clip_dataset_by_geometry(ds_asset, **open_params)
 
         return ds_asset
 
@@ -523,15 +513,14 @@ class StackStoreMode(SingleStoreMode):
                 for value in grouped_items.isel(time=0, idx=0).values
                 if value is not None
             )
-            nb_assets = len(self._helper.list_assets_from_item(first_item))
-        else:
-            nb_assets = len(asset_names)
+            assets = self._helper.list_assets_from_item(first_item)
+            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
 
         access_params = xr.DataArray(
             np.empty(
                 (
                     grouped_items.sizes["tile_id"],
-                    nb_assets,
+                    len(asset_names),
                     grouped_items.sizes["time"],
                     grouped_items.sizes["idx"],
                 ),

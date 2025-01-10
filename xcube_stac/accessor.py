@@ -128,7 +128,7 @@ class S3Sentinel2DataAccessor:
         self.env = self.env.__enter__()
         # dask multi-threading needs to be turned off, otherwise the GDAL
         # reader for JP2 raises error.
-        # dask.config.set(scheduler="synchronous")
+        dask.config.set(scheduler="single-threaded")
 
     def close(self):
         if self.env is not None:

@@ -42,6 +42,7 @@ from xcube_stac._utils import (
     is_collection_in_time_range,
     is_item_in_time_range,
     update_dict,
+    wrapper_clip_dataset_by_geometry,
 )
 
 
@@ -282,19 +283,42 @@ class UtilsTest(unittest.TestCase):
         bbox_wgs84 = [2, 50, 3, 51]
         crs_wgs84 = "EPSG:4326"
         crs_3035 = "EPSG:3035"
-        bbox_3035 = [
-            3748675.952977144,
-            3018751.225593612,
-            3830472.135997862,
-            3122243.2680214494,
-        ]
+        bbox_3035 = [3744586.1438261, 3005532.9146112, 3834561.9451489, 3135332.471277]
         self.assertEqual(bbox_wgs84, reproject_bbox(bbox_wgs84, crs_wgs84, crs_wgs84))
         self.assertEqual(bbox_3035, reproject_bbox(bbox_3035, crs_3035, crs_3035))
         np.testing.assert_almost_equal(
-            bbox_3035, reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035)
+            reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035), bbox_3035
         )
         np.testing.assert_almost_equal(
-            bbox_wgs84, reproject_bbox(bbox_3035, crs_3035, crs_wgs84)
+            reproject_bbox(
+                reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035, buffer=0.0),
+                crs_3035,
+                crs_wgs84,
+                buffer=0.0,
+            ),
+            [
+                1.829619451017442,
+                49.93464594063249,
+                3.1462425554926226,
+                51.06428203128216,
+            ],
+        )
+
+        crs_utm = "EPSG:32601"
+        bbox_utm = [
+            213372.0489639729,
+            5540547.369934658,
+            362705.63410562894,
+            5768595.563692021,
+        ]
+        np.testing.assert_almost_equal(
+            reproject_bbox(bbox_utm, crs_utm, crs_wgs84),
+            [
+                178.71151799665725,
+                49.8432508769065,
+                -178.80285969813704,
+                52.15606403940051,
+            ],
         )
 
     def test_normalize_crs(self):
@@ -389,4 +413,51 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(
             "No spatial dimensions found in dataset.",
             f"{cm.exception}",
+        )
+
+    def test_wrapper_clip_dataset_by_geometry(self):
+
+        # Example data dimensions
+        nx, ny = 11, 11
+        x = np.linspace(0, 500000, nx)
+        y = np.linspace(5000000, 6000000, ny)
+        data = np.arange(nx * ny).reshape((ny, nx))
+
+        # Define dataset with CF-compliant CRS variable
+        ds = xr.Dataset(
+            {
+                "temperature": (("y", "x"), data),
+            },
+            coords={
+                "x": ("x", x, {"units": "meters", "long_name": "x coordinate"}),
+                "y": ("y", y, {"units": "meters", "long_name": "y coordinate"}),
+            },
+        )
+        crs_wkt = pyproj.CRS.from_epsg(32601).to_wkt()
+        ds["crs"] = xr.DataArray(
+            data=0,
+            attrs={
+                "grid_mapping_name": "transverse_mercator",
+                "semi_major_axis": 6378137.0,
+                "inverse_flattening": 298.257223563,
+                "latitude_of_projection_origin": 0.0,
+                "longitude_of_central_meridian": -177.0,
+                "scale_factor_at_central_meridian": 0.9996,
+                "false_easting": 500000.0,
+                "false_northing": 0.0,
+                "unit": "meters",
+                "spatial_ref": "EPSG:32601",
+                "crs_wkt": crs_wkt,
+            },
+        )
+
+        ds_clipped = wrapper_clip_dataset_by_geometry(
+            ds, crs="EPSG:4326", bbox=[179, 50, -179, 52]
+        )
+        self.assertEqual((4, 4), ds_clipped.temperature.shape)
+        np.testing.assert_allclose(
+            ds_clipped.x.values, np.array([200000.0, 250000.0, 300000.0, 350000.0])
+        )
+        np.testing.assert_allclose(
+            ds_clipped.y.values, np.array([5500000.0, 5600000.0, 5700000.0, 5800000.0])
         )

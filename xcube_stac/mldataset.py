@@ -31,6 +31,7 @@ from xcube.core.gridmapping import GridMapping
 
 from ._utils import rename_dataset
 from ._utils import merge_datasets
+from ._utils import wrapper_clip_dataset_by_geometry
 from .stac_extension.raster import apply_offset_scaling
 
 
@@ -71,6 +72,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
             self._ml_datasets, self._access_params.items()
         ):
             ds = ml_dataset.get_dataset(index)
+            ds = wrapper_clip_dataset_by_geometry(ds, **self._open_params)
             ds = rename_dataset(ds, params["name_origin"])
             if self._open_params.get("apply_scaling", False):
                 ds[params["name_origin"]] = apply_offset_scaling(

@@ -31,13 +31,13 @@ import pandas as pd
 import pyproj
 import pystac
 import pystac_client
-from rasterio.warp import transform_bounds
 from shapely.geometry import box
 import xarray as xr
 from xcube.core.store import DATASET_TYPE
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
 from xcube.core.store import DataStoreError
 from xcube.core.store import DataTypeLike
+from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import resample_in_space
 
@@ -448,7 +448,12 @@ def modify_catalog_url(url: str) -> str:
     return url_mod
 
 
-def reproject_bbox(source_bbox, source_crs, target_crs, buffer=0.05):
+def reproject_bbox(
+    source_bbox: list[FloatInt, FloatInt, FloatInt, FloatInt],
+    source_crs: Union[pyproj.CRS, str],
+    target_crs: Union[pyproj.CRS, str],
+    buffer: float = 0.05,
+):
     source_crs = normalize_crs(source_crs)
     target_crs = normalize_crs(target_crs)
     if source_crs == target_crs:
@@ -457,8 +462,7 @@ def reproject_bbox(source_bbox, source_crs, target_crs, buffer=0.05):
     target_bbox = t.transform_bounds(*source_bbox, densify_pts=21)
     x_min = target_bbox[0]
     x_max = target_bbox[2]
-    if source_crs.is_geographic and x_min > x_max:
-        x_min += 360
+    if target_crs.is_geographic and x_min > x_max:
         x_max += 360
     buffer_x = abs((x_max - x_min)) * buffer
     buffer_y = abs((target_bbox[3] - target_bbox[1])) * buffer
@@ -568,6 +572,22 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     ds = datasets[0].copy()
     for ds_asset in datasets[1:]:
         ds.update(ds_asset)
+    return ds
+
+
+def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Dataset:
+    crs_asset = None
+    if "crs" in ds:
+        crs_asset = ds.crs.attrs["crs_wkt"]
+    if "spatial_ref" in ds:
+        crs_asset = ds.spatial_ref.attrs["crs_wkt"]
+    if crs_asset and "bbox" in open_params and "crs" in open_params:
+        bbox = reproject_bbox(
+            open_params["bbox"],
+            open_params["crs"],
+            crs_asset,
+        )
+        ds = clip_dataset_by_geometry(ds, geometry=bbox)
     return ds
 
 

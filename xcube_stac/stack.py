@@ -70,13 +70,14 @@ def groupby_solar_day(items: list[pystac.Item]) -> xr.DataArray:
         else:
             item0 = grouped.sel(
                 time=date, tile_id=tile_id, idx=0, proc_version=proc_version
-            ).values
+            ).item()
             item1 = grouped.sel(
                 time=date, tile_id=tile_id, idx=1, proc_version=proc_version
-            ).values
+            ).item()
             LOG.warn(
                 "More that two items found for datetime and tile ID: "
-                f"[{item0.id}, {item1.id}, {item.id}]"
+                f"[{item0.id}, {item1.id}, {item.id}]. Only the first tow items "
+                "are considered."
             )
 
     # take the latest processing version
@@ -115,7 +116,7 @@ def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     ds = xr.concat(list_ds, dim=dim)
     if "crs" in ds:
         ds = ds.drop_vars("crs")
-    if "spatial_ref" in ds:
+    if "spatial_ref" in ds.coords:
         ds = ds.drop_vars("spatial_ref")
     y_coord, x_coord = get_spatial_dims(list_ds[0])
 
@@ -147,9 +148,9 @@ def mosaic_3d_take_first(
     final_slices = []
     for dt in dts:
         slice_ds = [ds.sel(time=dt) for ds in list_ds if dt in ds.coords["time"].values]
+        slice_ds = [ds.drop("time") for ds in slice_ds]
         if len(slice_ds) == 1:
             ds_mosaic = slice_ds[0]
-            ds_mosaic = ds_mosaic.drop("time")
         else:
             ds_mosaic = mosaic_2d_take_first(slice_ds)
         final_slices.append(ds_mosaic)
