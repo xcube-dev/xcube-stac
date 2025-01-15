@@ -590,12 +590,7 @@ def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Datase
 
 
 def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    ds = resample_in_space(
-        ds,
-        target_gm=target_gm,
-        encode_cf=True,
-        # rectify_kwargs=dict(compute_subset=False),
-    )
+    ds = resample_in_space(ds, target_gm=target_gm, encode_cf=True)
     vars = [
         "spatial_ref",
         "x_bnds",

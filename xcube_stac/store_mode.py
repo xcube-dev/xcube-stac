@@ -25,6 +25,7 @@ from typing import Iterator, Union
 import numpy as np
 import pystac
 import pystac_client.client
+import rasterio
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
@@ -563,12 +564,19 @@ class StackStoreMode(SingleStoreMode):
                         ).item()
                         if not params:
                             continue
-                        ds = self.open_asset_dataset(
-                            params,
-                            opener_id,
-                            data_type,
-                            **open_params,
-                        )
+                        try:
+                            ds = self.open_asset_dataset(
+                                params,
+                                opener_id,
+                                data_type,
+                                **open_params,
+                            )
+                        except Exception as e:
+                            LOG.error(
+                                f"An error occurred: {e}. Data could not be opened "
+                                f"with parameters {params}"
+                            )
+                            continue
                         ds = rename_dataset(ds, params["name_origin"])
                         if open_params.get("apply_scaling", False):
                             ds[params["name_origin"]] = apply_offset_scaling(
