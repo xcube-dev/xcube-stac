@@ -27,7 +27,7 @@ import pystac
 import xarray as xr
 
 from ._utils import add_nominal_datetime
-from ._utils import get_spatial_dims
+from ._utils import get_processing_version
 from .constants import LOG
 
 
@@ -143,7 +143,7 @@ def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     return ds_mosaic
 
 
-def mosaic_3d_take_first(
+def mosaic_spatial_along_time_take_first(
     list_ds: list[xr.Dataset], dts: list[datetime.datetime] = None
 ) -> xr.Dataset:
     if len(list_ds) == 1:
@@ -152,12 +152,15 @@ def mosaic_3d_take_first(
     final_slices = []
     for dt in dts:
         slice_ds = [ds.sel(time=dt) for ds in list_ds if dt in ds.coords["time"].values]
-        slice_ds = [ds.drop("time") for ds in slice_ds]
+        slice_ds = [ds.drop_vars("time") for ds in slice_ds]
         if len(slice_ds) == 1:
             ds_mosaic = slice_ds[0]
         else:
-            ds_mosaic = mosaic_2d_take_first(slice_ds)
+            ds_mosaic = mosaic_spatial_take_first(slice_ds)
         final_slices.append(ds_mosaic)
     final_ds = xr.concat(final_slices, dim="time", join="exact")
     final_ds = final_ds.assign_coords(coords=dict(time=dts))
+    if "crs" in final_ds:
+        final_ds = final_ds.drop_vars("crs")
+        final_ds["crs"] = list_ds[0].crs
     return final_ds

@@ -308,8 +308,8 @@ class UtilsTest(unittest.TestCase):
             5768595.563692021,
         ]
         np.testing.assert_almost_equal(
-            reproject_bbox(bbox_utm, crs_utm, crs_wgs84),
-            [178.8245008, 49.9483787, -178.9158425, 52.0509362],
+            reproject_bbox(bbox_utm, crs_utm, crs_wgs84, buffer=0.02),
+            [178.77930769, 49.90632759, -178.87064939, 52.09298731],
         )
 
     def test_normalize_crs(self):

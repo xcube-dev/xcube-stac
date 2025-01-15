@@ -24,8 +24,6 @@ import unittest
 from unittest.mock import patch
 import urllib.request
 
-import dask.array as da
-import numpy as np
 import pytest
 import requests
 import xarray as xr
@@ -41,9 +39,11 @@ from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from xcube_stac.constants import DATA_STORE_ID_CDSE
-from xcube_stac.constants import SENITNEL_2_L2A_BANDS
-from xcube_stac.accessor import HttpsDataAccessor
-from xcube_stac.accessor import S3DataAccessor
+from xcube_stac.constants import SENITNEL2_L2A_BANDS
+from xcube_stac.accessor.https import HttpsDataAccessor
+from xcube_stac.accessor.s3 import S3DataAccessor
+from xcube_stac._utils import reproject_bbox
+from .sampledata import sentinel_2_band_data
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -51,9 +51,13 @@ SKIP_HELP = (
 )
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
+# CDSE_CREDENTIALS = {
+#     "key": "xxx",
+#     "secret": "xxx",
+# }
 CDSE_CREDENTIALS = {
-    "key": "xxx",
-    "secret": "xxx",
+    "key": "O0M0CUQIDQO9TDZ4D8NR",
+    "secret": "qPUyXs9G6j8on6MY5KPhQNHuA5uZTqxEscrbBCGx",
 }
 
 
@@ -85,7 +89,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_EW_GRDM_1SDV_20250121T072110_20250121T072152_057539_071657"
+            "S1A_IW_GRDH_1SSH_20250120T103300_20250120T103325_057526_0715CD"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -429,7 +433,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            ["blue_p50", "blue_p25", "blue_p75", "qa_f"], list(ds.data_vars)
+            ["blue_p50", "blue_p25", "blue_p75", "qa_f", "crs"], list(ds.data_vars)
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
@@ -463,7 +467,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertEqual(msg, str(cm.output[-1]))
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertCountEqual(["blue_p25"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25", "crs"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -477,7 +481,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
-        self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25", "blue_p75", "crs"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -620,6 +624,7 @@ class StacDataStoreTest(unittest.TestCase):
                     "analytic_multires_band_1",
                     "analytic_multires_band_2",
                     "analytic_multires_band_3",
+                    "analytic_multires_spatial_ref",
                 ],
                 list(ds.data_vars),
             )
@@ -641,23 +646,88 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen2(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data()
+
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+
+        data_id = (
+            "collections/sentinel-2-l2a/items/S2A_MSIL2A_20200301T090901"
+            "_N0500_R050_T35UPU_20230630T033416"
+        )
+
+        # open data as dataset
+        ds = store.open_data(
+            data_id=data_id,
+            apply_scaling=True,
+            angles_sentinel2=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            SENITNEL2_L2A_BANDS + ["crs", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual(
+            [10980, 10980, 23, 23, 2, 12],
+            [
+                ds.sizes["y"],
+                ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+
+        # open data as multi-level dataset
+        mlds = store.open_data(
+            data_id=data_id,
+            data_type="mldataset",
+            asset_names=["B01", "B02", "B03"],
+            apply_scaling=True,
+            angles_sentinel2=True,
+        )
+        ds = mlds.get_dataset(0)
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        self.assertCountEqual(
+            ["B01", "B02", "B03", "crs", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual(
+            [10980, 10980, 23, 23, 2, 3],
+            [
+                ds.sizes["y"],
+                ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+
+    @pytest.mark.vcr()
     def test_open_data_stack_mode(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
 
         # open data as dataset
-        bbox_utm = [659574, 5892990, 659724, 5893140]
+        bbox_utm = [5599905, 3511735, 5600064, 3511894]
         ds = store.open_data(
             data_id="sentinel-2-l2a",
             bbox=bbox_utm,
             time_range=["2023-11-01", "2023-11-10"],
             spatial_res=10,
-            crs="EPSG:32635",
+            crs="EPSG:3035",
             asset_names=["red", "green", "blue"],
             apply_scaling=True,
             open_params_dataset_geotiff=dict(tile_size=(512, 512)),
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
+        self.assertCountEqual(["red", "green", "blue", "crs"], list(ds.data_vars))
         self.assertCountEqual(
             [4, 16, 16],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
@@ -698,64 +768,7 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_stack_mode_cdse_sen2(self, mock_rioxarray_open):
-        mock_data = {
-            "band_1": (
-                ("y", "x"),
-                da.ones((10980, 10980), chunks=(1024, 1024), dtype=np.uint16),
-            ),
-        }
-        spatial_ref = xr.DataArray(
-            np.array(0),
-            attrs={
-                "crs_wkt": (
-                    'PROJCS["WGS 84 / UTM zone 35N",GEOGCS["WGS 84",DATUM["WGS_1984",'
-                    'SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],'
-                    'AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG"'
-                    ',"8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG",'
-                    '"9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_'
-                    'Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central'
-                    '_meridian",27],PARAMETER["scale_factor",0.9996],PARAMETER["false'
-                    '_easting",500000],PARAMETER["false_northing",0],UNIT["metre"'
-                    ',1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing"'
-                    ',NORTH],AUTHORITY["EPSG","32635"]]'
-                ),
-                "semi_major_axis": 6378137.0,
-                "semi_minor_axis": 6356752.314245179,
-                "inverse_flattening": 298.257223563,
-                "reference_ellipsoid_name": "WGS 84",
-                "longitude_of_prime_meridian": 0.0,
-                "prime_meridian_name": "Greenwich",
-                "geographic_crs_name": "WGS 84",
-                "horizontal_datum_name": "World Geodetic System 1984",
-                "projected_crs_name": "WGS 84 / UTM zone 35N",
-                "grid_mapping_name": "transverse_mercator",
-                "latitude_of_projection_origin": 0.0,
-                "longitude_of_central_meridian": 27.0,
-                "false_easting": 500000.0,
-                "false_northing": 0.0,
-                "scale_factor_at_central_meridian": 0.9996,
-                "spatial_ref": (
-                    'PROJCS["WGS 84 / UTM zone 35N",GEOGCS["WGS 84",DATUM["WGS_1984",'
-                    'SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]'
-                    ',AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG"'
-                    ',"8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG",'
-                    '"9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_'
-                    'Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_'
-                    'meridian",27],PARAMETER["scale_factor",0.9996],PARAMETER["false_'
-                    'easting",500000],PARAMETER["false_northing",0],UNIT["metre",1,'
-                    'AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",'
-                    'NORTH],AUTHORITY["EPSG","32635"]]'
-                ),
-                "GeoTransform": "600000.0 10.0 0.0 5900040.0 0.0 -10.0",
-            },
-        )
-        coords = {
-            "x": np.arange(600005.0, 709796.0, 10.0),
-            "y": np.arange(5900035.0, 5790244.0, -10.0),
-            "spatial_ref": spatial_ref,
-        }
-        mock_ds = xr.Dataset(mock_data, coords=coords)
-        mock_rioxarray_open.return_value = mock_ds
+        mock_rioxarray_open.return_value = sentinel_2_band_data()
 
         store = new_data_store(
             DATA_STORE_ID_CDSE,
@@ -764,26 +777,106 @@ class StacDataStoreTest(unittest.TestCase):
             stack_mode=True,
         )
 
-        # open data as dataset
-        bbox_utm = [659574, 5892990, 659724, 5893140]
+        # open data in UTM crs
+        bbox_utm = [620000, 5800000, 630000, 5810000]
         ds = store.open_data(
             data_id="sentinel-2-l2a",
             bbox=bbox_utm,
             time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=10,
+            spatial_res=20,
             crs="EPSG:32635",
             apply_scaling=True,
+            angles_sentinel2=True,
         )
         self.assertIsInstance(ds, xr.Dataset)
 
-        self.assertCountEqual(SENITNEL_2_L2A_BANDS, list(ds.data_vars))
         self.assertCountEqual(
-            [4, 16, 16],
-            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
+            SENITNEL2_L2A_BANDS + ["crs", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
         )
         self.assertCountEqual(
-            [1, 16, 16],
-            [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
+            [4, 501, 501, 3, 3, 2, 12],
+            [
+                ds.sizes["time"],
+                ds.sizes["y"],
+                ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+        self.assertCountEqual(
+            [1, 501, 501, 3, 3, 2, 12],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["y"][0],
+                ds.chunksizes["x"][0],
+                ds.chunksizes["angle_y"][0],
+                ds.chunksizes["angle_x"][0],
+                ds.chunksizes["angle"][0],
+                ds.chunksizes["band"][0],
+            ],
+        )
+
+        # open dataset in WGS84
+        bbox_wgs84 = reproject_bbox(bbox_utm, "EPSG:32635", "EPSG:4326")
+        ds = store.open_data(
+            data_id="sentinel-2-l2a",
+            asset_names=["B01", "B02", "B03"],
+            bbox=bbox_wgs84,
+            time_range=["2023-11-01", "2023-11-10"],
+            spatial_res=0.00018,
+            crs="EPSG:4326",
+            apply_scaling=True,
+            angles_sentinel2=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+
+        self.assertCountEqual(
+            ["B01", "B02", "B03", "crs", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual(
+            [4, 512, 837, 3, 4, 2, 3],
+            [
+                ds.sizes["time"],
+                ds.sizes["lat"],
+                ds.sizes["lon"],
+                ds.sizes["angle_lat"],
+                ds.sizes["angle_lon"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+        self.assertCountEqual(
+            [1, 512, 837, 3, 4, 2, 3],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+                ds.chunksizes["angle_lat"][0],
+                ds.chunksizes["angle_lon"][0],
+                ds.chunksizes["angle"][0],
+                ds.chunksizes["band"][0],
+            ],
+        )
+
+        # catch NotImplementedError for multi-level dataset
+        with self.assertRaises(NotImplementedError) as context:
+            ds = store.open_data(
+                data_id="sentinel-2-l2a",
+                data_type="mldataset",
+                asset_names=["B01", "B02", "B03"],
+                bbox=bbox_wgs84,
+                time_range=["2023-11-01", "2023-11-10"],
+                spatial_res=0.00018,
+                crs="EPSG:4326",
+                apply_scaling=True,
+                angles_sentinel2=True,
+            )
+        self.assertEqual(
+            str(context.exception), "mldataset not supported in stacking mode"
         )
 
     @pytest.mark.vcr()

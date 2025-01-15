@@ -33,10 +33,8 @@ from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 from xcube.core.gridmapping import GridMapping
 
-from .accessor import (
-    HttpsDataAccessor,
-    S3DataAccessor,
-)
+from .accessor import HttpsDataAccessor
+from .accessor import S3DataAccessor
 from .constants import LOG
 from .constants import STAC_OPEN_PARAMETERS
 from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
@@ -238,9 +236,13 @@ class SingleStoreMode:
                 target_gm=target_gm,
                 open_params=open_params,
                 attrs=attrs,
+                item=item,
+                s3_accessor=self._s3_accessor,
             )
         else:
             ds = merge_datasets(list_ds_asset, target_gm=target_gm)
+            if open_params.get("angles_sentinel2", False):
+                ds = self._s3_accessor.read_angles(item, ds)
             ds.attrs = attrs
         return ds
 

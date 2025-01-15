@@ -143,6 +143,14 @@ SCHEMA_ASSET_NAMES = JsonArraySchema(
     title="Names of assets",
     description="Names of assets which will be included in the data cube.",
 )
+SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
+    title="Add viewing and solar angles from Sentinel2 metadata.",
+    description=(
+        "Viewing angle will be extracted for all spectral "
+        "bands defined in keyword `asset_name`."
+    ),
+    default=False,
+)
 SCHEMA_APPLY_SCALING = JsonBooleanSchema(
     title="Apply scaling, offset, and no-data values to data."
 )
@@ -169,6 +177,7 @@ STAC_SEARCH_PARAMETERS = dict(
 )
 STAC_OPEN_PARAMETERS = dict(
     asset_names=SCHEMA_ASSET_NAMES,
+    angles_sentinel2=SCHEMA_ANGLES_SENTINEL2,
     apply_scaling=SCHEMA_APPLY_SCALING,
 )
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
@@ -182,8 +191,7 @@ STAC_OPEN_PARAMETERS_STACK_MODE = dict(
 )
 
 # CDSE Sentinel-2 constants
-SENITNEL_2_L2A_BANDS = [
-    "AOT",
+SENITNEL2_BANDS = [
     "B01",
     "B02",
     "B03",
@@ -194,13 +202,13 @@ SENITNEL_2_L2A_BANDS = [
     "B08",
     "B8A",
     "B09",
+    "B10",
     "B11",
     "B12",
-    "SCL",
-    "WVP",
 ]
-SENITNEL_2_L2A_BAND_RESOLUTIONS = {
-    "AOT": 10,
+SENITNEL2_L2A_BANDS = SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
+SENITNEL2_L2A_BANDS.remove("B10")
+SENITNEL2_L2A_BAND_RESOLUTIONS = {
     "B01": 60,
     "B02": 10,
     "B03": 10,
@@ -213,8 +221,9 @@ SENITNEL_2_L2A_BAND_RESOLUTIONS = {
     "B09": 60,
     "B11": 20,
     "B12": 20,
+    "AOT": 10,
     "SCL": 20,
     "WVP": 10,
 }
-SENTINEL_2_MIN_RESOLUTIONS = 10
-SENTINEL_2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
+SENTINEL2_MIN_RESOLUTIONS = 10
+SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"

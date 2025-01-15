@@ -25,7 +25,7 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stack import mosaic_3d_take_first
+from xcube_stac.stack import mosaic_spatial_along_time_take_first
 from xcube_stac.stack import groupby_solar_day
 
 
@@ -118,15 +118,20 @@ class UtilsTest(unittest.TestCase):
         list_ds.append(xr.Dataset({"B01": da, "crs": crs}))
 
         # test only one tile
-        dts = np.array(["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64")
-        ds_test = mosaic_3d_take_first(list_ds[:1], dts)
+        dts = list(
+            np.array(["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64")
+        )
+        ds_test = mosaic_spatial_along_time_take_first(list_ds[:1], dts)
         xr.testing.assert_allclose(ds_test, list_ds[0])
 
         # test two tiles
-        dts = np.array(
-            ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"], dtype="datetime64"
+        dts = list(
+            np.array(
+                ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"],
+                dtype="datetime64",
+            )
         )
-        ds_test = mosaic_3d_take_first(list_ds, dts)
+        ds_test = mosaic_spatial_along_time_take_first(list_ds, dts)
         data = np.array(
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -154,5 +159,5 @@ class UtilsTest(unittest.TestCase):
             list_ds[i] = ds
         ds_expected = xr.Dataset({"B01": da})
         ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
-        ds_test = mosaic_3d_take_first(list_ds, dts)
+        ds_test = mosaic_spatial_along_time_take_first(list_ds, dts)
         xr.testing.assert_allclose(ds_test, ds_expected)

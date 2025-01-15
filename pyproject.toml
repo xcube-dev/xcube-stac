@@ -29,6 +29,7 @@ dependencies = [
     "rioxarray",
     "requests",
     "shapely",
+    "xmltodict",
     "xarray",
     "xcube"
 ]

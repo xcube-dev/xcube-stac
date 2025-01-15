@@ -24,13 +24,12 @@ import pystac
 import re
 from xcube.core.store import DataStoreError
 
-from .accessor import S3DataAccessor
-from .accessor import S3Sentinel2DataAccessor
-from .constants import MAP_MIME_TYP_FORMAT
+from .accessor.s3 import S3DataAccessor
+from .accessor.sen2 import S3Sentinel2DataAccessor
 from .constants import MLDATASET_FORMATS
-from .constants import SENITNEL_2_L2A_BANDS
-from .constants import SENTINEL_2_REGEX_ASSET_NAME
-from .constants import SENITNEL_2_L2A_BAND_RESOLUTIONS
+from .constants import SENITNEL2_L2A_BANDS
+from .constants import SENTINEL2_REGEX_ASSET_NAME
+from .constants import SENITNEL2_L2A_BAND_RESOLUTIONS
 from ._href_parse import decode_href
 from ._utils import get_format_id
 from ._utils import get_format_from_path
@@ -152,12 +151,12 @@ class HelperCdse(Helper):
     ) -> list[pystac.Asset]:
         asset_names = open_params.get("asset_names")
         if not asset_names:
-            asset_names = SENITNEL_2_L2A_BANDS
+            asset_names = SENITNEL2_L2A_BANDS
         assets_sel = []
         for i, asset_name in enumerate(asset_names):
-            if not re.fullmatch(SENTINEL_2_REGEX_ASSET_NAME, asset_name):
+            if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
                 asset_name = (
-                    f"{asset_name}_{SENITNEL_2_L2A_BAND_RESOLUTIONS[asset_name]}m"
+                    f"{asset_name}_{SENITNEL2_L2A_BAND_RESOLUTIONS[asset_name]}m"
                 )
             asset = item.assets[asset_name]
             asset.extra_fields["id"] = asset_name
