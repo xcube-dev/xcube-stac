@@ -46,7 +46,6 @@ from .constants import DATA_OPENER_IDS
 from .constants import FloatInt
 from .constants import MAP_FILE_EXTENSION_FORMAT
 from .constants import MAP_MIME_TYP_FORMAT
-from .constants import LOG
 
 
 _CATALOG_JSON = "catalog.json"
@@ -149,8 +148,6 @@ def get_format_id(asset: pystac.Asset) -> str:
         format_id = get_format_from_path(asset.href)
     else:
         format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
-    if format_id is None:
-        LOG.debug(f"No format_id found for asset {asset.title!r}")
     return format_id
 
 
@@ -305,13 +302,33 @@ def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
     return items
 
 
-def get_processing_version(item: pystac.Item) -> float:
-    return float(
-        item.properties.get(
-            "processing:version",
-            item.properties.get("s2:processing_baseline", "1.0"),
-        )
-    )
+def get_grid_mapping_name(ds: xr.Dataset) -> str | None:
+    gm_names = []
+    for var in ds.data_vars:
+        if "grid_mapping" in ds[var].attrs:
+            gm_names.append(ds[var].attrs["grid_mapping"])
+    if "crs" in ds:
+        gm_names.append("crs")
+    if "spatial_ref" in ds.coords:
+        gm_names.append("spatial_ref")
+    gm_names = np.unique(gm_names)
+    assert len(gm_names) <= 1, "Multiple grid mapping names found."
+    if len(gm_names) == 1:
+        return str(gm_names[0])
+    else:
+        return None
+
+
+def normalize_grid_mapping(ds: xr.Dataset) -> xr.Dataset:
+    gm_name = get_grid_mapping_name(ds)
+    if gm_name is None:
+        return ds
+    for var in ds.data_vars:
+        ds[var].attrs["grid_mapping"] = "spatial_ref"
+    gm_var = ds[gm_name]
+    ds = ds.drop_vars(gm_name)
+    ds = ds.assign_coords(spatial_ref=xr.DataArray(0, attrs=gm_var.attrs))
+    return ds
 
 
 def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
@@ -347,7 +364,11 @@ def get_url_from_pystac_object(
     Returns:
         the URL of an item.
     """
-    links = [link for link in pystac_obj.links if link.rel == "self"]
+    links = [
+        link
+        for link in pystac_obj.links
+        if link.rel == "self" and link.href.startswith("https://")
+    ]
     assert len(links) == 1
     return links[0].href
 
@@ -552,9 +573,6 @@ def merge_datasets(
         for ds in datasets_grouped:
             datasets_resampled.append(wrapper_resample_in_space(ds, target_gm))
         ds = _update_datasets(datasets_resampled)
-    if "spatial_ref" in ds.coords:
-        ds["crs"] = ds.coords["spatial_ref"]
-        ds = ds.drop_vars("spatial_ref")
     return ds
 
 
@@ -576,16 +594,14 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Dataset:
-    crs_asset = None
-    if "crs" in ds:
-        crs_asset = ds.crs.attrs["crs_wkt"]
-    if "spatial_ref" in ds:
-        crs_asset = ds.spatial_ref.attrs["crs_wkt"]
-    if crs_asset and "bbox" in open_params and "crs" in open_params:
-        bbox = reproject_bbox(
-            open_params["bbox"], open_params["crs"], crs_asset, buffer=0.05
-        )
-        ds = clip_dataset_by_geometry(ds, geometry=bbox)
+    gm_name = get_grid_mapping_name(ds)
+    if gm_name is not None:
+        crs_asset = ds[gm_name].attrs["crs_wkt"]
+        if "bbox" in open_params and "crs" in open_params:
+            bbox = reproject_bbox(
+                open_params["bbox"], open_params["crs"], crs_asset, buffer=0.05
+            )
+            ds = clip_dataset_by_geometry(ds, geometry=bbox)
     return ds
 
 

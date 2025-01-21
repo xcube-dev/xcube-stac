@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -14,13 +14,12 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
-        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
-        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
-        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
-        \   }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA52PMW8CMQyFd36FdTMEWNkq1naCDaGTLzGcW19ySgxqQfx3kjtEh7ZLF0t+fu97
+        8nUCUCVFW58pJg6+WkG1NAuzmEVrltW03PWrp6KvUVHCcRTZFUmwIanpU8mXdO2oC48Qq9DTAk8L
+        fFscJRu510ftBrteCN5eQSOyZ38ElxthACRgD9oSbLYvaziE2KGOFGH/kXJ+lxeA6zCzHEkKNIYw
+        +gaxjXQoqpnb8RfznnL5cL5NfwXYlsX9JFzQX7jBOLdBhGz54d+s1KMlTzprTvme/05/UPPcT253
+        9D4MQ7QBAAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -41,13 +40,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:43 GMT
+      - Tue, 21 Jan 2025 09:17:12 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 03 Sep 2024 08:55:43 GMT
+      - Tue, 21 Jan 2025 09:22:12 GMT
       Source-Age:
-      - '25'
+      - '34'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +60,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 9d2eb0c0e2f96f6b608428103b8a758730694981
+      - 83d65e1d7592bd8876a7601d1c5c8ed13d0a8bfa
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291916E:2AF27D8:66D6CA86
+      - BF26:112B:5C2C6E:60D757:678F65F5
       X-Served-By:
-      - cache-fra-eddf8230158-FRA
+      - cache-fra-eddf8230154-FRA
       X-Timer:
-      - S1725353443.483246,VS0,VE1
+      - S1737451032.371639,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +112,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:43 GMT
+      - Tue, 21 Jan 2025 09:17:12 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 03 Sep 2024 08:55:43 GMT
+      - Tue, 21 Jan 2025 09:22:12 GMT
       Source-Age:
-      - '25'
+      - '34'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +132,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 4c1d89dffe914a23c89372ca091d5e24e6ef84ec
+      - 291f6cff13152ff9d70760662b8e94eaee9d964c
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291918D:2AF27FB:66D6CA86
+      - BF26:112B:5C2CC4:60D798:678F65F6
       X-Served-By:
-      - cache-fra-eddf8230076-FRA
+      - cache-fra-eddf8230127-FRA
       X-Timer:
-      - S1725353444.584402,VS0,VE1
+      - S1737451032.420059,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -153,7 +152,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -162,41 +161,24 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA8VV227jNhR8z1cQel1b99hSiqBIA2zRosAWi92HdhEEFHUksUuJKknbUYL8e0nJ
+        uq2ipEDR1jB84TkazhyORk8XCFlSYXJ/BCEpr6wrZHm2a7tbQWzP2gx1eFBQmQ6pW77oZV0olKrl
+        leOYhu3YYOdUFYfEptxhOAHmHA2i50hSQIntP6TeZvN3Ec68Ogx3hqEh7lqCNDW0H6tH1z1TVk0N
+        Zu09YHUQ0C0mCX8YyAex7UexF0f7Xbj34zjuGG0v7X0YuH7kR4Hr+dFuv+nbA8+s78Mo9v3dbmz3
+        fd/z93EYB/td7A2kcuAlKNHoHZ86sT2pXzlr8nEGhHOR0gorGEeLhu/pr1XW3WvJfSjebdbgXlL1
+        r8EtRvUW3Oti1+Aupt/m87k9ESwlKDmeR2vO8b85IaoYjF66bzusflurEJCZau/a0+lkp4LX2lc2
+        4aUjC4eoQHoPPo7C3UPQMOfm5ubj7c2HPwvyMeWf959/+ZDEP/7MYuzkgqb3ehNbG8XY+fuUXXvj
+        Xr1ZcF0zSrAy94DufNc7/yxKdwosFYjXZNQCjhROhOfrWjittgVXXJa2DGxc4kde4ZNsdV3iDFLs
+        XfrJDruRRvSiy8zzsOOulRJb0WwphpY4B0eXsu/QRNi1FtYt1oJnlME1YfyQbnmtaEkfIZ0L1tFQ
+        JhWm7DXNY9N/Jrmu8jXJptRpGNyopdYgFIWJI1MdAlpye6HvevHWDbd+8Ml1r9r3731k6MHppGzb
+        bm+3P/y2DW13qBnPXs3Q+5vKSg6U6aiZ0CS8Sqk5g47e3QwkBUkErdX5udBfjTLOVS1opSQqcXXA
+        jDUItZdAinCVIsL0vUYzav4S0sZbjhRHA4Iecc3AACMd/eog5+wVll9nxCXkJVQKrzHtp30EoriY
+        g+kULng6g+tYz4GmD8A5QKtmNsjedbqlwt1xLUZrhru4sF1u9NIirJ4369jjIb0NfttNFqxpWFo/
+        VeTF9ff8UKWTqc4YvTBnrqdkomRlGGfXNfdfoVkdit5SfUv7afJ7ItxMajMvtZfrWhiG7qTyvEZ/
+        uN8YrSaeGnJDgIkRS2hLL5PCth2dUJjx3F7k7rcINRbaoUsMwhnTrtQjfhtj7P1nOJIfBIH/K+z7
+        JP5UAOqYoDYFRYNUARLGGOiewOgEAlAKgh51YGSClyNYZ7vhyT16ZvTW7GlvTv3u4vkv0nCoRdgK
+        AAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -217,11 +199,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:43 GMT
+      - Tue, 21 Jan 2025 09:17:12 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 03 Sep 2024 08:55:43 GMT
+      - Tue, 21 Jan 2025 09:22:12 GMT
       Source-Age:
       - '7'
       Strict-Transport-Security:
@@ -237,15 +219,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 0faced98983eb3549f19817f8b375b44c89e53c5
+      - 26edece45199ebaf993084e80d07344389a0bf15
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
+      - C651:115D:38BA54:3BF897:678F6611
       X-Served-By:
-      - cache-fra-eddf8230143-FRA
+      - cache-fra-eddf8230088-FRA
       X-Timer:
-      - S1725353444.635731,VS0,VE1
+      - S1737451032.469862,VS0,VE2
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -257,7 +239,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -266,29 +248,33 @@ interactions:
     uri: https://geoservice.dlr.de/eoc/ogc/stac/v1
   response:
     body:
-      string: '{"title":"EOC EO Products Service","description":"*BETA* Provides interoperable
-        access to metadata from EO collections and products of DLR''s Earth Observation
-        Center (EOC). *BETA*","links":[{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fjson","rel":"self","type":"application/json","title":"This
-        document"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fx-yaml","rel":"alternate","type":"application/x-yaml","title":"This
-        document as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml","rel":"alternate","type":"text/html","title":"This
-        document as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fvnd.oai.openapi%2Bjson%3Bversion%3D3.0","rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"API
-        definition for this endpoint as application/vnd.oai.openapi+json;version=3.0"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fx-yaml","rel":"service-desc","type":"application/x-yaml","title":"API
-        definition for this endpoint as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=text%2Fhtml","rel":"service-doc","type":"text/html","title":"API
-        definition for this endpoint as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson","rel":"conformance","type":"application/json","title":"Conformance
-        declaration as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fx-yaml","rel":"conformance","type":"application/x-yaml","title":"Conformance
-        declaration as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml","rel":"conformance","type":"text/html","title":"Conformance
-        declaration as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","rel":"data","type":"application/json","title":"Collections
-        Metadata as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","rel":"data","type":"text/html","title":"Collections
-        Metadata as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Collect","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L4_P1D_NO2surf","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_DEM_90","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L3A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_FNF_50","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_RH95_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_AGBD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_COMP_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L0_QL","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L1B","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_NONRES_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L3A_WASP","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SUPERSITES","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2015","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_NONRES_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_Evolution","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2019","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_COMP_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Scene","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_COVER_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_VOLUME_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_HEIGHT_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
-        as application/geo+json","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
-        as text/html","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application%2Fjson","rel":"root","type":"application/json","title":"Root
-        Catalog as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
-        as application/geo+json","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
-        as text/html","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
-        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"text/html","title":"Queryables
-        as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"application/schema+json","title":"Sortables
-        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"text/html","title":"Sortables
-        as text/html"}],"id":"GeoserverSTACLandingPage","conformsTo":["http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#filter","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/item-search#fields","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/filter","http://geoserver.org/spec/ecql/1.0/req/gs-ecql","http://geoserver.org/spec/ecql/1.0/req/ecql-text","http://www.opengis.net/spec/cql2/1.0/req/basic-cql2","http://www.opengis.net/spec/cql2/1.0/req/advanced-comparison-operators","http://www.opengis.net/spec/cql2/1.0/req/arithmetic","http://www.opengis.net/spec/cql2/1.0/req/property-property","http://www.opengis.net/spec/cql2/1.0/req/basic-spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/functions","http://www.opengis.net/spec/cql2/1.0/req/cql2-text"],"type":"Catalog","stac_version":"1.0.0"}'
+      string: !!binary |
+        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
+        QB98kLRA6ce/AAAA//8DAJtV27xfKwAA
     headers:
       API-Version:
       - 1.0.0
@@ -305,7 +291,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 03 Sep 2024 08:50:43 GMT
+      - Tue, 21 Jan 2025 09:17:12 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -322,7 +308,9 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_-32a0acc7:191b6ef45fd:-3228
+      - GS_FLOW_CONTROL=GS_CFLOW_4989b17e:19487879ebf:64eb
+      Transfer-Encoding:
+      - chunked
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -338,7 +326,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -387,11 +375,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 03 Sep 2024 08:50:44 GMT
+      - Tue, 21 Jan 2025 09:17:13 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_-32a0acc7:191b6ef45fd:-3227
+      - GS_FLOW_CONTROL=GS_CFLOW_ffb45b9:1948809789f:-64bf
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -407,102 +395,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac
-  response:
-    body:
-      string: '{"stac_version":"1.0.0","type":"Catalog","id":"Catalogue","description":"Catalogue
-        of data available in the platform","conformsTo":["https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"],"links":[{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"root","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"self","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/api","rel":"service-desc","type":"application/vnd.oai.openapi"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/conformance","rel":"conformance","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/collections","rel":"data","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
-        search","rel":"search","type":"application/json","method":"GET"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
-        search","rel":"search","type":"application/json","method":"POST"}]}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '1279'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:44 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - 966f8e1d-ced6-4707-b7ad-daf7569b0633
-      x-envoy-upstream-service-time:
-      - '8'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
-  response:
-    body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
-        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
-        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
-        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
-        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '2879'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:44 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - faf0d913-c3b8-466a-9ea8-9018f93cb157
-      x-envoy-upstream-service-time:
-      - '63'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -511,32 +404,34 @@ interactions:
     uri: https://stac.dataspace.copernicus.eu/v1
   response:
     body:
-      string: '{"type":"Catalog","id":"Copernicus Data Space Ecosystem (CDSE) asset-level
-        STAC catalogue","title":"cdse-stac","description":"A comprehensive and searchable
-        catalog of Earth observation and scientific datasets that is actively maintained
-        and updated by the Copernicus Data Space Ecosystem. The integrated STAC (SpatioTemporal
-        Asset Catalog) API, which follows the open STAC specification, enables users
-        to access detailed asset-level metadata, including spatial information, temporal
-        coverage, and data specifications. This standardized interface facilitates
-        efficient data discovery and retrieval across the extensive collection of
-        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.1.0","conformsTo":["https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0-rc.1/collection-search#query","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/item-search#query","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort","https://api.stacspec.org/v1.0.0/collections/extensions/transaction","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query","https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/item-search#fields","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields","https://api.stacspec.org/v1.0.0-rc.1/collection-search","https://api.stacspec.org/v1.0.0/ogcapi-features"],"links":[{"rel":"self","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
-        conformance classes implemented by this server","href":"https://stac.dataspace.copernicus.eu/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"child","type":"application/json","title":"Sentinel-1
-        Ground Range Detected (GRD)","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-1-grd"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Global Mosaics","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-global-mosaics"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Level-2A","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
-        service description","href":"https://stac.dataspace.copernicus.eu/v1/api"},{"rel":"service-doc","type":"text/html","title":"OpenAPI
-        service documentation","href":"https://stac.dataspace.copernicus.eu/v1/api.html"}],"stac_extensions":[]}'
+      string: !!binary |
+        G+wPAGQzVV9fHDqWJMbOT51O0jl+GwEhmS1FMATk7v9/P1fSUl3Ii4v9n903QTSJaYJz7zPMtYlG
+        i+KlijcohZaJxJVIzyRs2LRrv7SFywExdhFv/y/67yo44ik5ZZ2xwxRxxFOt0kri1eCMnOB9JRZ4
+        yJrKbfvrp2fvH94AMhPve5aaHd5/2J0CizrBKtihJ8+CI3I06c2JscP4X/wfXT1pwRF3wLrUJnsp
+        lg6ymIaQmi6WzrMI3AJ0gofUfA/Z1JLJk5bnfyYnKZ6mxBDJycQNkv3eORkQezpI/g1LUZhEqUjU
+        seRaI7lE6LyqSmHXHeDDXiAVl7m91Hgc8fr7Sp70gyxVG2XYmYkDjcNuwO7N0w66QpI5l6mL1iqF
+        KfYbIKM0NXXwvxDbGawmzcAV0gZ4gRNRqle4iFMkp7e4l7RKniiDXUM7cIQQHagPsD1EcgIBlQ94
+        RVT6I7HYU7SJWODP6IeQi0FCPA8XFRSTKXD9Pt2xibckB8oQGiHyyw2chTVnYfs11QkcsUbKBn1P
+        E9O1sdgAL7VJ2fYZYe9ebQwhKq8ikjxpGXwgTyWWga267SBrwA7Nib+mN1wfR9wMR8MRdsgq2dw+
+        KI4f8QBU02BObFV40DaHw2sKBJ2ZaupjxzOUrasWCwvTyP7Nv17YCZuibzxsAh/wi6ZFdOlilfZb
+        RD9Nm+8mMCSX5WVSSud1StmlHXnklR9ZKr5FS/VdzhjCz58/B61S5mRDEQ9WhQNf5G3YDEeBtUxD
+        2t1/N6tQYogppLTxSlWlP1athRlJZgdQcjTc+rh5JudkiXu+yNuXcgtqsRlI1iYSCE0gVd2yNg+a
+        mnVZtPSF8bbuCFd4bzN8H6eSHR9RLhMIqrZCwVPB5sMd6vIrsPU4kW5DYjfoiFk0wDAJUvXm8T93
+        mFP5YTh+/ItNMo5okifs2iek8QKq05pMOCLomznxZCDXYRPwfyfeHZuqr9wmktMK84c12aZdfafC
+        ohCaYEu//7A7Da8fn8KLOd0UCBKDSApbpLSKsicDk3aocrVCRuAQMSxcRGh7m0VvIS4CIaaRNKbv
+        z2ER32vEER8//ICn2ZvX7/cy4bdelCk0yUFnrrqNWs5oI0rwOEPjvSx0Lvb2lTrRU60ybEIaIQ0u
+        +DUsxVOR3G/gcdO1RHhHZRY4Exd2iXD98buzG0hJ5eJtegaxn1uE+m/YwuOs55ThpRolNnRB234W
+        beqXwgT6a7yQg+R+cwrxB+QN4/om293Keksso/YY+ijGds16KHFQSjEVRDXVL563W//+d49b/kBn
+        vtdVyu7NUxBcDGZO9dLaKtWEtaju1trll4e9LxkHmavRf+d0HyPw/+cZHzTRTcTx4+f/
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '1028'
+      - '1020'
       Content-Type:
       - application/json
       Date:
-      - Tue, 07 Jan 2025 09:33:44 GMT
+      - Tue, 21 Jan 2025 09:17:13 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -552,38 +447,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://stac.dataspace.copernicus.eu/v1/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
-  response:
-    body:
-      string: '{"code":"NotFoundError","description":"Collection SENTINEL-2 does not
-        exist."}'
-    headers:
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '78'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 07 Jan 2025 09:33:44 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-    status:
-      code: 404
-      message: Not Found
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -592,155 +456,142 @@ interactions:
     uri: https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a/items/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948
   response:
     body:
-      string: '{"id":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948","bbox":[2.881305,62.91788,4.888851,63.904903],"type":"Feature","links":[{"rel":"collection","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a"},{"rel":"parent","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a"},{"rel":"root","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"self","type":"application/geo+json","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a/items/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948"},{"rel":"version-history","href":"https://trace.dataspace.copernicus.eu/api/v1/traces/name/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE.zip","type":"application/json","title":"Product
-        history record from the CDSE traceability service"}],"assets":{"AOT_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_AOT_10m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_AOT_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":385213,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"1620052d183937ce2f328658cff1c3053fad7ad0865e8ab436105d832f334b9181e8","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_AOT_10m.jp2","gsd":10,"type":"image/jp2","roles":["data","gsd:10m"],"title":"Aerosol
-        optical thickness (AOT) - 10m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"AOT_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_AOT_20m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_AOT_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":272313,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"16208ae0119c17d6d39e0785b6b3a84f8d91ef06eb6646084f3036f135c9dcf1ca1d","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_AOT_20m.jp2","gsd":20,"type":"image/jp2","roles":["data","gsd:20m"],"title":"Aerosol
-        optical thickness (AOT) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"AOT_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_AOT_60m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_AOT_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":94515,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"1620de1d67362472ebd907a050c287e35339a7c419412667bd95e7c625badda93bbe","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_AOT_60m.jp2","gsd":60,"type":"image/jp2","roles":["data","gsd:60m"],"title":"Aerosol
-        optical thickness (AOT) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B01_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B01_20m.jp2","bands":[{"eo:center_wavelength":0.443,"eo:full_width_half_max":0.228,"name":"B01","eo:common_name":"coastal"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B01_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":13022415,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.136847385394,"file:checksum":"1620a3add7c0955e156dd07b3fb0c7a14373227bfa1fe371e7ffa7254088fee13401","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B01_20m.jp2","view:incidence_angle":8.2736079323086,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:upsampled","gsd:20m"],"title":"Coastal
-        aerosol (band 1) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B01_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B01_60m.jp2","bands":[{"eo:center_wavelength":0.443,"eo:full_width_half_max":0.228,"name":"B01","eo:common_name":"coastal"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B01_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":2743191,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.136847385394,"file:checksum":"1620370b2a325c33a03c0e22c1860abf5cb12b14f3cab3cd092009a84abe1e9f1885","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B01_60m.jp2","view:incidence_angle":8.2736079323086,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:60m"],"title":"Coastal
-        aerosol (band 1) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B02_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B02_10m.jp2","bands":[{"eo:center_wavelength":0.493,"eo:full_width_half_max":0.267,"name":"B02","eo:common_name":"blue"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_B02_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":76996899,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.554427665687,"file:checksum":"1620064a470cfc1688896a0bda10a15a3546f719869928c1a01496a68361e7e8b999","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B02_10m.jp2","view:incidence_angle":8.07170471834482,"gsd":10,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:10m"],"title":"Blue
-        (band 2) - 10m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B02_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B02_20m.jp2","bands":[{"eo:center_wavelength":0.493,"eo:full_width_half_max":0.267,"name":"B02","eo:common_name":"blue"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B02_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":21382965,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.554427665687,"file:checksum":"16209d4e6d39acc10b6f5ca85003bfbe2a03bf9283c84ded3b8fd76cef47f27ec1d4","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B02_20m.jp2","view:incidence_angle":8.07170471834482,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:20m"],"title":"Blue
-        (band 2) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B02_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B02_60m.jp2","bands":[{"eo:center_wavelength":0.493,"eo:full_width_half_max":0.267,"name":"B02","eo:common_name":"blue"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B02_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":2994205,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.554427665687,"file:checksum":"162049b0112529f4cc3800811d35980a2fd0860071c03996adcdcd79d3424867dccd","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B02_60m.jp2","view:incidence_angle":8.07170471834482,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"Blue
-        (band 2) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B03_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B03_10m.jp2","bands":[{"eo:center_wavelength":0.56,"eo:full_width_half_max":0.291,"name":"B03","eo:common_name":"green"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_B03_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":75621900,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.694389976946,"file:checksum":"16207e1ac1f53ae18320419c8082ed9b4a2d3c130f6a4dc1f5f8fbebb644b10d9fc9","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B03_10m.jp2","view:incidence_angle":8.10944382377827,"gsd":10,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:10m"],"title":"Green
-        (band 3) - 10m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B03_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B03_20m.jp2","bands":[{"eo:center_wavelength":0.56,"eo:full_width_half_max":0.291,"name":"B03","eo:common_name":"green"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B03_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":21258604,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.694389976946,"file:checksum":"1620a79b1f6e5c3f332b0f8e9adbd6b79693099afcadb7efe5560ec7a5e2441f5b13","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B03_20m.jp2","view:incidence_angle":8.10944382377827,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:20m"],"title":"Green
-        (band 3) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B03_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B03_60m.jp2","bands":[{"eo:center_wavelength":0.56,"eo:full_width_half_max":0.291,"name":"B03","eo:common_name":"green"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B03_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":3013834,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.694389976946,"file:checksum":"16209f7b404f08741ff2b8e75b62dee95b22c6ebd7a7f2df347b2984ffce34a6b1bc","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B03_60m.jp2","view:incidence_angle":8.10944382377827,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"Green
-        (band 3) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B04_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B04_10m.jp2","bands":[{"eo:center_wavelength":0.665,"eo:full_width_half_max":0.342,"name":"B04","eo:common_name":"red"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_B04_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":75936952,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.841778249892,"file:checksum":"1620cae463cffd18923d67540fa25b5a80e099b2b1d15ac1adfdf7abab6f67501818","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B04_10m.jp2","view:incidence_angle":8.14246215839774,"gsd":10,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:10m"],"title":"Red
-        (band 4) - 10m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B04_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B04_20m.jp2","bands":[{"eo:center_wavelength":0.665,"eo:full_width_half_max":0.342,"name":"B04","eo:common_name":"red"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B04_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":21519377,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.841778249892,"file:checksum":"162046c9e20c5ba92dd65dbe513374c5b40eae7b5a5d1f938d45a5bc0cfac4dc40be","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B04_20m.jp2","view:incidence_angle":8.14246215839774,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:20m"],"title":"Red
-        (band 4) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B04_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B04_60m.jp2","bands":[{"eo:center_wavelength":0.665,"eo:full_width_half_max":0.342,"name":"B04","eo:common_name":"red"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B04_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":3064304,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.841778249892,"file:checksum":"1620b9397c3124a585d998be19c268acc30418d762ceb955c89f4d2032da8cf64806","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B04_60m.jp2","view:incidence_angle":8.14246215839774,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"Red
-        (band 4) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B05_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B05_20m.jp2","bands":[{"eo:center_wavelength":0.704,"eo:full_width_half_max":0.357,"name":"B05","eo:common_name":"rededge071"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B05_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":20988169,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.906013892732,"file:checksum":"1620bbfaea345ded4be00ecd0245792da7b1a2045bdea7474234198506938a6fbe05","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B05_20m.jp2","view:incidence_angle":8.16448692139847,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:20m"],"title":"Red
-        edge 1 (band 5) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B05_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B05_60m.jp2","bands":[{"eo:center_wavelength":0.704,"eo:full_width_half_max":0.357,"name":"B05","eo:common_name":"rededge071"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B05_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":3031923,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.906013892732,"file:checksum":"1620bf201ee32f52ec7001071c0e6d886ee1ff10a3cc9e69419297f5041775b61c16","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B05_60m.jp2","view:incidence_angle":8.16448692139847,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"Red
-        edge 1 (band 5) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B06_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B06_20m.jp2","bands":[{"eo:center_wavelength":0.741,"eo:full_width_half_max":0.374,"name":"B06","eo:common_name":"rededge075"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B06_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":21320386,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","view:azimuth":293.987065557917,"file:checksum":"1620973bb79a2dc7402edbb1cfc6ce95100faebae124b2672b18d09fbeb7681b5cdb","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B06_20m.jp2","view:incidence_angle":8.18911895400247,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:20m"],"title":"Red
-        edge 2 (band 6) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B06_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B06_60m.jp2","bands":[{"eo:center_wavelength":0.741,"eo:full_width_half_max":0.374,"name":"B06","eo:common_name":"rededge075"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B06_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":3056160,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.987065557917,"file:checksum":"162051644377e26aa1e45bebca8ce4f442bc9822ae108b4756cf127da55662bcff29","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B06_60m.jp2","view:incidence_angle":8.18911895400247,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"Red
-        edge 2 (band 6) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B07_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B07_20m.jp2","bands":[{"eo:center_wavelength":0.783,"eo:full_width_half_max":0.399,"name":"B07","eo:common_name":"rededge078"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B07_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":21481979,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.029373210009,"file:checksum":"1620d504804fca9a93852a803ffe325a1e5b76e393616412313c2a85b76059b4ae2d","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B07_20m.jp2","view:incidence_angle":8.21155764163709,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:20m"],"title":"Red
-        edge 3 (band 7) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B07_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B07_60m.jp2","bands":[{"eo:center_wavelength":0.783,"eo:full_width_half_max":0.399,"name":"B07","eo:common_name":"rededge078"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B07_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":3078572,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.029373210009,"file:checksum":"1620457a2ae305b5dd0496a4b7154fe96bffb8909d023a3d9c966e62d59ac62bb685","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B07_60m.jp2","view:incidence_angle":8.21155764163709,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"Red
-        edge 3 (band 7) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B08_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B08_10m.jp2","bands":[{"eo:center_wavelength":0.833,"eo:full_width_half_max":0.454,"name":"B08","eo:common_name":"nir"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_B08_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":77745243,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.615714632706,"file:checksum":"1620e8e61c3dcca2f55ef72349f485112c8f6b3966f24b4681f28a15924dd8bc13b7","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_B08_10m.jp2","view:incidence_angle":8.08368684641007,"gsd":10,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:10m"],"title":"NIR
-        1 (band 8) - 10m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B09_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B09_60m.jp2","bands":[{"eo:center_wavelength":0.945,"eo:full_width_half_max":0.479,"name":"B09","eo:common_name":"nir09"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B09_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":2167841,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.248642425455,"file:checksum":"1620d6a5d48db6585469919feae96630e437353ba952d36dde9567766770f7dfbba5","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B09_60m.jp2","view:incidence_angle":8.32005944939557,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:60m"],"title":"NIR
-        3 (band 9) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B11_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B11_20m.jp2","bands":[{"eo:center_wavelength":1.614,"eo:full_width_half_max":0.841,"name":"B11","eo:common_name":"swir16"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B11_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":19732518,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.912094482223,"file:checksum":"1620b3a57acc6fec2469853ae644a8525760e9f471f2ccde3c8ffedc7854dc84d1c2","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B11_20m.jp2","view:incidence_angle":8.19036170188529,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:20m"],"title":"SWIR
-        1 (band 11) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B11_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B11_60m.jp2","bands":[{"eo:center_wavelength":1.614,"eo:full_width_half_max":0.841,"name":"B11","eo:common_name":"swir16"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B11_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":2966891,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":293.912094482223,"file:checksum":"1620995eab6f160b58ecc277735b870c443d7e0818e167098fcb290ce194dd487013","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B11_60m.jp2","view:incidence_angle":8.19036170188529,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"SWIR
-        1 (band 11) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B12_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B12_20m.jp2","bands":[{"eo:center_wavelength":2.202,"eo:full_width_half_max":1.16,"name":"B12","eo:common_name":"swir22"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B12_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":19221534,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.087898938574,"file:checksum":"16205283a76902e57a9f781387e10d176e5c97fb96e32cd3fe8851c0bb964363ff74","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B12_20m.jp2","view:incidence_angle":8.26445469703613,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:20m"],"title":"SWIR
-        2 (band 12) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B12_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B12_60m.jp2","bands":[{"eo:center_wavelength":2.202,"eo:full_width_half_max":1.16,"name":"B12","eo:common_name":"swir22"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B12_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":2869646,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.087898938574,"file:checksum":"1620bb28bf039bdeb90140c40dd2be2138f3cc648b1ec8c85da1e44ef21e24ddfd18","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B12_60m.jp2","view:incidence_angle":8.26445469703613,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"SWIR
-        2 (band 12) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B8A_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B8A_20m.jp2","bands":[{"eo:center_wavelength":0.865,"eo:full_width_half_max":0.441,"name":"B8A","eo:common_name":"nir08"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_B8A_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":22040790,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.137293442533,"file:checksum":"1620a84b520a407b1d06506a4c09e6f0bef11ba7b99e729d557a74e20cbbffa645d4","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_B8A_20m.jp2","view:incidence_angle":8.25222583581769,"gsd":20,"type":"image/jp2","roles":["data","reflectance","sampling:original","gsd:20m"],"title":"NIR
-        2 (band 8A) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"B8A_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B8A_60m.jp2","bands":[{"eo:center_wavelength":0.865,"eo:full_width_half_max":0.441,"name":"B8A","eo:common_name":"nir08"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_B8A_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":3100926,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","view:azimuth":294.137293442533,"file:checksum":"16203355e62cfd4dc48e11decd2a8c81a571fe56c364beb949066bf473a7fa56203e","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_B8A_60m.jp2","view:incidence_angle":8.25222583581769,"gsd":60,"type":"image/jp2","roles":["data","reflectance","sampling:downsampled","gsd:60m"],"title":"NIR
-        2 (band 8A) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"Product":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/$value","auth:refs":["oidc"],"file:size":549189374,"file:checksum":"d50110540736a977c89b28e12e6487518987a5","alternate:name":"HTTPS","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE.zip","type":"application/zip","roles":["data","metadata","archive"],"title":"Zipped
-        product"},"SCL_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_SCL_20m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_SCL_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":104273,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"16206efbd43a5a1e8219d9d71ebe05006e35454f3ef7b8b3755f86f4da5d889dac15","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_SCL_20m.jp2","classification:classes":[{"percentage":38.105485,"name":"no_data","value":0,"nodata":true},{"name":"saturated_or_defective","value":1,"percentage":0},{"percentage":0.0,"name":"dark_area_pixels","value":2},{"percentage":0.0,"name":"cloud_shadows","value":3},{"percentage":0.0,"name":"vegetation","value":4},{"percentage":0.0,"name":"not_vegetated","value":5},{"percentage":0.0,"name":"water","value":6},{"percentage":0.0,"name":"unclassified","value":7},{"percentage":0.183307,"name":"cloud_medium_probability","value":8},{"percentage":99.816692,"name":"cloud_high_probability","value":9},{"percentage":5e-6,"name":"thin_cirrus","value":10},{"percentage":0.0,"name":"snow","value":11}],"gsd":20,"type":"image/jp2","roles":["data","sampling:original","gsd:20m"],"title":"Scene
-        classfication map (SCL) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint8","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"SCL_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_SCL_60m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_SCL_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":40878,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"1620a930dc5427c77339895be98d911c3c2d4df0c8215257afcf86bc542c101bc56b","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_SCL_60m.jp2","gsd":60,"type":"image/jp2","roles":["data","sampling:downsampled","gsd:60m"],"title":"Scene
-        classfication map (SCL) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint8","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3","classification:classes":[{"name":"no_data","value":0,"nodata":true},{"name":"saturated_or_defective","value":1},{"name":"dark_area_pixels","value":2},{"name":"cloud_shadows","value":3},{"name":"vegetation","value":4},{"name":"not_vegetated","value":5},{"name":"water","value":6},{"name":"unclassified","value":7},{"name":"cloud_medium_probability","value":8},{"name":"cloud_high_probability","value":9},{"name":"thin_cirrus","value":10},{"name":"snow","value":11}]},"TCI_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_TCI_10m.jp2","bands":[{"eo:center_wavelength":0.665,"eo:full_width_half_max":0.342,"name":"B04","description":"Red
-        (band 4)","eo:common_name":"red"},{"eo:center_wavelength":0.56,"eo:full_width_half_max":0.291,"name":"B03","description":"Green
-        (band 3)","eo:common_name":"green"},{"eo:center_wavelength":0.493,"eo:full_width_half_max":0.267,"name":"B02","description":"Blue
-        (band 2)","eo:common_name":"blue"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_TCI_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":697055,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","file:checksum":"162068fb77a531133ded1d89c906f8000c23e3b8404162bab06a9fde2a0cc268c6d9","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_TCI_10m.jp2","gsd":10,"type":"image/jp2","roles":["visual","sampling:original","gsd:10m"],"title":"True
-        color image","nodata":0,"auth:refs":["s3"],"data_type":"uint8","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"TCI_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_TCI_20m.jp2","bands":[{"eo:center_wavelength":0.665,"eo:full_width_half_max":0.342,"name":"B04","description":"Red
-        (band 4)","eo:common_name":"red"},{"eo:center_wavelength":0.56,"eo:full_width_half_max":0.291,"name":"B03","description":"Green
-        (band 3)","eo:common_name":"green"},{"eo:center_wavelength":0.493,"eo:full_width_half_max":0.267,"name":"B02","description":"Blue
-        (band 2)","eo:common_name":"blue"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_TCI_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":283804,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","file:checksum":"162083b018320864df356fed114d60a8036c8e9726cdb52a079074b4a881c91f8ac3","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_TCI_20m.jp2","gsd":20,"type":"image/jp2","roles":["visual","sampling:downsampled","gsd:20m"],"title":"True
-        color image","nodata":0,"auth:refs":["s3"],"data_type":"uint8","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"TCI_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_TCI_60m.jp2","bands":[{"eo:center_wavelength":0.665,"eo:full_width_half_max":0.342,"name":"B04","description":"Red
-        (band 4)","eo:common_name":"red"},{"eo:center_wavelength":0.56,"eo:full_width_half_max":0.291,"name":"B03","description":"Green
-        (band 3)","eo:common_name":"green"},{"eo:center_wavelength":0.493,"eo:full_width_half_max":0.267,"name":"B02","description":"Blue
-        (band 2)","eo:common_name":"blue"}],"alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_TCI_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":112410,"proj:bbox":[199980.0,6990240.0,309780.0,7100040.0],"proj:code":"EPSG:32632","file:checksum":"16205e4f511a0168075ad4b2fb1c34f24b82a03ea25a6c4d835dbdf2edee5e440004","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_TCI_60m.jp2","gsd":60,"type":"image/jp2","roles":["visual","sampling:downsampled","gsd:60m"],"title":"True
-        color image","nodata":0,"auth:refs":["s3"],"data_type":"uint8","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"WVP_10m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_WVP_10m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R10m)/Nodes(T32VKR_20241107T113311_WVP_10m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":11811,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"1620153b13f89a4caece6baadce03bc578114d620e002b6ad4138c0f570a77ab6cbb","proj:transform":[10.0,0.0,199980.0,0.0,-10.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R10m/T32VKR_20241107T113311_WVP_10m.jp2","gsd":10,"type":"image/jp2","roles":["data","gsd:10m"],"title":"Water
-        vapour (WVP) - 10m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[10980,10980],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"WVP_20m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_WVP_20m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R20m)/Nodes(T32VKR_20241107T113311_WVP_20m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":26285,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"1620432f21c25f6eb2fbcd999674660f4447bfaa8488a28a9d0edf40c688cebb54a3","proj:transform":[20.0,0.0,199980.0,0.0,-20.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R20m/T32VKR_20241107T113311_WVP_20m.jp2","gsd":20,"type":"image/jp2","roles":["data","gsd:20m"],"title":"Water
-        vapour (WVP) - 20m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[5490,5490],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"WVP_60m":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_WVP_60m.jp2","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(IMG_DATA)/Nodes(R60m)/Nodes(T32VKR_20241107T113311_WVP_60m.jp2)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":14273,"proj:bbox":[199980.0,6990240,309780,7100040.0],"proj:code":"EPSG:32632","file:checksum":"162070738bc315633ad6a40e2b58731e53093cadb208a44f65c2930b041e2ba4d544","proj:transform":[60.0,0.0,199980.0,0.0,-60.0,7100040.0],"file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/IMG_DATA/R60m/T32VKR_20241107T113311_WVP_60m.jp2","gsd":60,"type":"image/jp2","roles":["data","gsd:60m"],"title":"Water
-        vapour (WVP) - 60m","nodata":0,"auth:refs":["s3"],"data_type":"uint16","proj:shape":[1830,1830],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","raster:scale":0.0001,"storage:refs":["cdse-s3","creodias-s3"],"raster:offset":-0.1,"alternate:name":"S3"},"thumbnail":{"href":"https://datahub.creodias.eu/odata/v1/Assets(a3510f62-1c11-4b9c-a1c1-4e22a6c59d3e)/$value","alternate":{"s3":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948-ql.jpg","auth:refs":["s3"],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"}},"auth:refs":["oidc"],"file:size":4844,"file:checksum":"d5011020812eb7f621493fb3820823cb484de9","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948-ql.jpg","type":"image/jpeg","roles":["thumbnail","overview"],"title":"Quicklook","data_type":"uint8","proj:code":null,"proj:shape":[343,343],"alternate:name":"HTTPS"},"safe_manifest":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/manifest.safe","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(manifest.safe)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":69752,"file:checksum":"d50110be903f7ab4fecc37274e688372ad67ee","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/manifest.safe","type":"application/xml","roles":["metadata"],"title":"manifest.safe","auth:refs":["s3"],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"granule_metadata":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/MTD_TL.xml","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes()/Nodes(GRANULE)/Nodes(L2A_T32VKR_A048983_20241107T113314)/Nodes(MTD_TL.xml)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":446963,"file:checksum":"d50120d5ef47711ef76ecc71380fd369a392f8bfb1b62833e39b79f53c66dae99d87fe","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/GRANULE/L2A_T32VKR_A048983_20241107T113314/MTD_TL.xml","type":"application/xml","roles":["metadata"],"title":"MTD_TL.xml","auth:refs":["s3"],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"inspire_metadata":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/INSPIRE.xml","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(INSPIRE.xml)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":19510,"file:checksum":"d50120c77d5c0d50eb0de88969c5961612b586c33c53a4ee76b5a5a260ca99985380c8","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/INSPIRE.xml","type":"application/xml","roles":["metadata"],"title":"INSPIRE.xml","auth:refs":["s3"],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"product_metadata":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/MTD_MSIL2A.xml","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes(MTD_MSIL2A.xml)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":55442,"file:checksum":"d501204ef1cdb40efee46ab63fc42484fd5ebf1319ad5f678e3c8434f3ee086d11bc7a","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/MTD_MSIL2A.xml","type":"application/xml","roles":["metadata"],"title":"MTD_MSIL2A.xml","auth:refs":["s3"],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"},"datastrip_metadata":{"href":"s3://eodata/Sentinel-2/MSI/L2A/2024/11/07/S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/DATASTRIP/DS_2APS_20241107T123948_S20241107T113314/MTD_DS.xml","alternate":{"https":{"href":"https://zipper.dataspace.copernicus.eu/odata/v1/Products(e0fec106-686f-46e0-bc5e-a1ad084ec75c)/Nodes(S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE)/Nodes()/Nodes(DATASTRIP)/Nodes(DS_2APS_20241107T123948_S20241107T113314)/Nodes(MTD_DS.xml)/$value","auth:refs":["oidc"],"alternate:name":"HTTPS"}},"file:size":4134791,"file:checksum":"d5012012d5732c771f4b4e069c576203307c9ea3a6155c33945db4eab68c338d7ee623","file:local_path":"S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948.SAFE/DATASTRIP/DS_2APS_20241107T123948_S20241107T113314/MTD_DS.xml","type":"application/xml","roles":["metadata"],"title":"MTD_DS.xml","auth:refs":["s3"],"description":"S3
-        storage provided by CloudFerro Cloud and OpenTelekom Cloud (OTC). Use endpoint
-        URL `https://eodata.dataspace.copernicus.eu`.","storage:refs":["cdse-s3","creodias-s3"],"alternate:name":"S3"}},"geometry":{"type":"Polygon","coordinates":[[[3.084194487655621,63.9049030927372],[3.495193846917864,63.82601198963879],[3.515801079841674,63.822040117766086],[3.514413077064294,63.82056846738504],[3.939781562988383,63.733428617311816],[3.939965963304139,63.73362110717541],[3.94027331110674,63.73355826198182],[3.940358581576934,63.73364703117323],[3.944501601136984,63.73279992301655],[3.944852253748159,63.73316494312076],[3.94507554165201,63.73311938991473],[3.945127560612735,63.73317367449584],[3.945637056687219,63.733069990098016],[3.946087380085336,63.733538952443794],[4.405045773278682,63.63787569586936],[4.424838863132698,63.633719294741695],[4.423396991372675,63.632240191240925],[4.428577565364242,63.63107426912104],[4.428507189345341,63.63100224263192],[4.468009400258071,63.622199876321005],[4.888850940590534,63.52748673031764],[4.754234453769629,63.39159976336405],[4.618727903133853,63.253462482411656],[4.484193479624383,63.115253144898816],[4.350905431999962,62.97693686257665],[4.335413301435215,62.960691527002076],[3.087335605539036,62.91787954831143],[2.881304703762592,63.89788287375309],[3.084194487655621,63.9049030927372]]]},"collection":"sentinel-2-l2a","properties":{"gsd":10,"created":"2024-11-07T13:19:40.000000Z","updated":"2024-11-07T13:29:40.962127Z","datetime":"2024-11-07T11:33:11.024Z","platform":"sentinel-2a","grid:code":"MGRS-32VKR","published":"2024-11-07T13:29:12.724905Z","statistics":{"water":0.0,"nodata":38.105485,"dark_area":0.0,"vegetation":0.0,"thin_cirrus":5e-6,"cloud_shadow":0.0,"unclassified":0.0,"not_vegetated":0.0,"high_proba_clouds":99.816692,"medium_proba_clouds":0.183307,"saturated_defective":0.0},"instruments":["msi"],"auth:schemes":{"s3":{"type":"s3"},"oidc":{"type":"openIdConnect","openIdConnectUrl":"https://identity.dataspace.copernicus.eu/auth/realms/CDSE/.well-known/openid-configuration"}},"end_datetime":"2024-11-07T11:33:11.024Z","product:type":"S2MSI2A","view:azimuth":293.9117403926552,"constellation":"sentinel-2","eo:snow_cover":0.0,"eo:cloud_cover":100.0,"start_datetime":"2024-11-07T11:33:11.024Z","sat:orbit_state":"descending","storage:schemes":{"cdse-s3":{"title":"Copernicus
-        Data Space Ecosystem S3","platform":"https://eodata.dataspace.copernicus.eu","description":"This
-        endpoint provides access to EO data which is stored on the Object Storage.
-        A Global Service Load Balancer (GSLB) directs the request to either CloudFerro
-        Cloud or OpenTelekom Cloud (OTC) S3 endpoint based on the location of the
-        DNS resolver.","requester_pays":false},"creodias-s3":{"title":"CREODIAS S3","platform":"https://eodata.cloudferro.com","description":"Comprehensive
-        Earth Observation Data (EODATA) archive offered by CREODIAS as a commercial
-        part of CDSE, designed to provide users with access to a vast repository of
-        satellite data without predefined quota limits","requester_pays":true}},"eopf:datatake_id":"GS2A_20241107T113311_048983_N05.11","processing:level":"L2","view:sun_azimuth":181.469307019498,"eopf:datastrip_id":"S2A_OPER_MSI_L2A_DS_2APS_20241107T123948_S20241107T113314_N05.11","processing:version":"05.11","product:timeliness":"PT24H","sat:absolute_orbit":48983,"sat:relative_orbit":80,"view:sun_elevation":10.041011639605898,"processing:datetime":"2024-11-07T12:39:48.000000Z","processing:facility":"ESA","eopf:instrument_mode":"INS-NOBS","eopf:origin_datetime":"2024-11-07T13:19:40.000000Z","view:incidence_angle":8.185432430449008,"product:timeliness_category":"NRT","sat:platform_international_designator":"2015-028A"},"stac_extensions":["https://stac-extensions.github.io/eo/v2.0.0/schema.json","https://stac-extensions.github.io/raster/v2.0.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v2.0.0/schema.json","https://stac-extensions.github.io/grid/v1.1.0/schema.json","https://stac-extensions.github.io/view/v1.0.0/schema.json","https://stac-extensions.github.io/file/v2.1.0/schema.json","https://stac-extensions.github.io/processing/v1.2.0/schema.json","https://stac-extensions.github.io/alternate-assets/v1.2.0/schema.json","https://stac-extensions.github.io/timestamps/v1.1.0/schema.json","https://stac-extensions.github.io/authentication/v1.1.0/schema.json","https://stac-extensions.github.io/classification/v2.0.0/schema.json","https://stac-extensions.github.io/product/v0.1.0/schema.json","https://cs-si.github.io/eopf-stac-extension/v1.2.0/schema.json","https://stac-extensions.github.io/storage/v2.0.0/schema.json"],"stac_version":"1.1.0"}'
+      string: !!binary |
+        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
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '7106'
+      - '7161'
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 07 Jan 2025 10:17:30 GMT
+      - Tue, 21 Jan 2025 09:17:13 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:

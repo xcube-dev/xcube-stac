@@ -25,7 +25,6 @@ from typing import Iterator, Union
 import numpy as np
 import pystac
 import pystac_client.client
-import rasterio
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
@@ -57,6 +56,7 @@ from ._utils import (
     search_collections,
     update_dict,
     get_gridmapping,
+    normalize_grid_mapping,
     search_items,
     wrapper_clip_dataset_by_geometry,
 )
@@ -218,6 +218,7 @@ class SingleStoreMode:
                 params, opener_id, data_type, **open_params
             )
             if isinstance(ds_asset, xr.Dataset):
+                ds_asset = normalize_grid_mapping(ds_asset)
                 ds_asset = rename_dataset(ds_asset, params["name_origin"])
                 if open_params.get("apply_scaling", False):
                     ds_asset[params["name_origin"]] = apply_offset_scaling(
@@ -478,7 +479,11 @@ class StackStoreMode(SingleStoreMode):
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
             ds = self.stack_items(grouped_items, **open_params)
+            ds = normalize_grid_mapping(ds)
             ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
+            # Gather all used STAC item IDs used  in the data cube for each time step
+            # and organize them in a dictionary. The dictionary keys are datetime
+            # strings, and the values are lists of corresponding item IDs.
             ds.attrs["stac_item_ids"] = dict(
                 {
                     dt.astype("datetime64[ms]")
@@ -601,10 +606,6 @@ class StackStoreMode(SingleStoreMode):
                 list_ds_assets.append(ds)
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
         ds_final = mosaic_3d_take_first(list_ds_tiles, access_params.time.values)
-
-        if "crs" in ds_final:
-            ds_final = ds_final.drop_vars("crs")
-            ds_final["crs"] = list_ds_tiles[0].crs
         return ds_final
 
     def get_extent(self, data_id: str) -> dict:

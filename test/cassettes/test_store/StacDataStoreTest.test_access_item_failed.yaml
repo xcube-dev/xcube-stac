@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -14,13 +14,12 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
-        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
-        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
-        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
-        \   }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA52PMW8CMQyFd36FdTMEWNkq1naCDaGTLzGcW19ySgxqQfx3kjtEh7ZLF0t+fu97
+        8nUCUCVFW58pJg6+WkG1NAuzmEVrltW03PWrp6KvUVHCcRTZFUmwIanpU8mXdO2oC48Qq9DTAk8L
+        fFscJRu510ftBrteCN5eQSOyZ38ElxthACRgD9oSbLYvaziE2KGOFGH/kXJ+lxeA6zCzHEkKNIYw
+        +gaxjXQoqpnb8RfznnL5cL5NfwXYlsX9JFzQX7jBOLdBhGz54d+s1KMlTzprTvme/05/UPPcT253
+        9D4MQ7QBAAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -41,11 +40,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:18 GMT
+      - Tue, 21 Jan 2025 09:16:38 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 03 Sep 2024 08:55:18 GMT
+      - Tue, 21 Jan 2025 09:21:38 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -55,21 +54,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - cc6c55c02a5f7ecc82fa603538759835e596d166
+      - c50aec4a75daa7f953efda2ab7a82fa194a2b961
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291916E:2AF27D8:66D6CA86
+      - BF26:112B:5C2C6E:60D757:678F65F5
       X-Served-By:
-      - cache-fra-eddf8230138-FRA
+      - cache-fra-eddf8230179-FRA
       X-Timer:
-      - S1725353418.105957,VS0,VE181
+      - S1737450998.058468,VS0,VE205
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,11 +112,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:18 GMT
+      - Tue, 21 Jan 2025 09:16:38 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 03 Sep 2024 08:55:18 GMT
+      - Tue, 21 Jan 2025 09:21:38 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -127,21 +126,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
       - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 103a17021fdcd60a5f8cfc0a4722520c3ae2599f
+      - 3bd9b2b2d4473411bd160dd07cc474531e5ef8ac
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291918D:2AF27FB:66D6CA86
+      - BF26:112B:5C2CC4:60D798:678F65F6
       X-Served-By:
-      - cache-fra-eddf8230092-FRA
+      - cache-fra-eddf8230048-FRA
       X-Timer:
-      - S1725353418.339219,VS0,VE149
+      - S1737450998.332005,VS0,VE196
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -153,7 +152,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -179,9 +178,9 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:18 GMT
+      - Tue, 21 Jan 2025 09:16:38 GMT
       Expires:
-      - Tue, 03 Sep 2024 08:55:18 GMT
+      - Tue, 21 Jan 2025 09:21:38 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -197,15 +196,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 5f14a55505b0455f989a99a4f1030884d15267fa
+      - 3fbd41aeaa734796ab45105aebd525d72b7fb0b0
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 22E3:3BF546:2954E9A:2B302E9:66D6CDC9
+      - 7EE8:FF75:F3515F:FCED30:678F65F6
       X-Served-By:
-      - cache-fra-eddf8230075-FRA
+      - cache-fra-eddf8230022-FRA
       X-Timer:
-      - S1725353419.536701,VS0,VE151
+      - S1737450999.576373,VS0,VE155
       X-XSS-Protection:
       - 1; mode=block
     status:

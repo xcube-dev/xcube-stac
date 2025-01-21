@@ -85,7 +85,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_IW_GRDH_1SDV_20240903T064655_20240903T064720_055497_06C567"
+            "S1A_EW_GRDM_1SDV_20250121T072110_20250121T072152_057539_071657"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -429,7 +429,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            ["blue_p50", "blue_p25", "blue_p75", "qa_f", "crs"], list(ds.data_vars)
+            ["blue_p50", "blue_p25", "blue_p75", "qa_f"], list(ds.data_vars)
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
@@ -463,7 +463,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertEqual(msg, str(cm.output[-1]))
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertCountEqual(["blue_p25", "crs"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -477,7 +477,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
-        self.assertCountEqual(["blue_p25", "blue_p75", "crs"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -620,7 +620,6 @@ class StacDataStoreTest(unittest.TestCase):
                     "analytic_multires_band_1",
                     "analytic_multires_band_2",
                     "analytic_multires_band_3",
-                    "analytic_multires_spatial_ref",
                 ],
                 list(ds.data_vars),
             )
@@ -777,7 +776,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
 
-        self.assertCountEqual(SENITNEL_2_L2A_BANDS + ["crs"], list(ds.data_vars))
+        self.assertCountEqual(SENITNEL_2_L2A_BANDS, list(ds.data_vars))
         self.assertCountEqual(
             [4, 16, 16],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],

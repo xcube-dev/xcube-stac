@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -24,15 +24,15 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 03 Sep 2024 08:50:42 GMT
+      - Tue, 21 Jan 2025 09:17:11 GMT
       Via:
-      - 1.1 19c54bffe8b0bb7f9e7501fa2c823262.cloudfront.net (CloudFront)
+      - 1.1 5d217f1e3e1cc27be2d78854345b4f24.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - MQB-TvyhT7UzxFLnA4yMR1ajqWnq63vugRDFfKfPFCZCPFKjUyEV5Q==
+      - D482W_n77QaDybiIGHcAXs2YpyWFMxSI9AR4b-AKq0QZgo2ryOr0yQ==
       X-Amz-Cf-Pop:
       - HAM50-C1
       X-Amzn-Trace-Id:
-      - Root=1-66d6cde2-5fec859a239ce24d2acf81a5;Parent=168bfe4062753528;Sampled=0;lineage=9e2884e9:0
+      - Root=1-678f6617-7b102ee20687290b489793de;Parent=57374963cdd08d94;Sampled=0;Lineage=1:9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -40,11 +40,11 @@ interactions:
       etag:
       - W/"d29-QPs+H0wJLUX32EZKNgzG3k6wfQ8"
       x-amz-apigw-id:
-      - dhUbcH3FvHcEGwQ=
+      - EuzjuFOBvHcEulA=
       x-amzn-Remapped-content-length:
       - '3369'
       x-amzn-RequestId:
-      - 4be2ea37-5bd3-41fa-bee9-0ea2cd0d45dd
+      - c7e4313c-67ae-4c23-8b32-3fca2a89d031
       x-powered-by:
       - Express
     status:

@@ -152,11 +152,6 @@ class S3Sentinel2DataAccessor:
     ) -> Union[xr.Dataset, MultiLevelDataset]:
         if opener_id is None:
             opener_id = ""
-        if "tile_size" in open_params:
-            LOG.info(
-                "The parameter tile_size is set to (1024, 1024), which is the "
-                "native chunk size of the jp2 files in the Sentinel-2 archive."
-            )
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             return Jp2MultiLevelDataset(access_params, **open_params)
         else:

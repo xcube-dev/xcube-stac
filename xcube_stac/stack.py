@@ -28,7 +28,6 @@ import xarray as xr
 
 from ._utils import add_nominal_datetime
 from ._utils import get_spatial_dims
-from ._utils import get_processing_version
 from .constants import LOG
 
 
@@ -109,33 +108,38 @@ def groupby_solar_day(items: list[pystac.Item]) -> xr.DataArray:
     return grouped
 
 
+def get_processing_version(item: pystac.Item) -> float:
+    return float(
+        item.properties.get(
+            "processing:version",
+            item.properties.get("s2:processing_baseline", "1.0"),
+        )
+    )
+
+
 def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     if len(list_ds) == 1:
         return list_ds[0]
     dim = "dummy"
     ds = xr.concat(list_ds, dim=dim)
-    if "crs" in ds:
-        ds = ds.drop_vars("crs")
-    if "spatial_ref" in ds.coords:
-        ds = ds.drop_vars("spatial_ref")
     y_coord, x_coord = get_spatial_dims(list_ds[0])
 
     ds_mosaic = xr.Dataset()
     for key in ds:
-        axis = ds[key].dims.index(dim)
-        da_arr = ds[key].data
-        nan_mask = da.isnan(da_arr)
-        first_non_nan_index = (~nan_mask).argmax(axis=axis)
-        da_arr_select = da.choose(first_non_nan_index, da_arr)
-        ds_mosaic[key] = xr.DataArray(
-            da_arr_select,
-            dims=(y_coord, x_coord),
-            coords={y_coord: ds[y_coord], x_coord: ds[x_coord]},
-        )
-    if "crs" in list_ds[0]:
-        ds_mosaic["crs"] = list_ds[0].crs
-    if "spatial_ref" in list_ds[0]:
-        ds_mosaic.coords["spatial_ref"] = list_ds[0].spatial_ref
+        if ds[key].dims == (dim, y_coord, x_coord):
+            axis = ds[key].dims.index(dim)
+            da_arr = ds[key].data
+            nan_mask = da.isnan(da_arr)
+            first_non_nan_index = (~nan_mask).argmax(axis=axis)
+            da_arr_select = da.choose(first_non_nan_index, da_arr)
+            ds_mosaic[key] = xr.DataArray(
+                da_arr_select,
+                dims=(y_coord, x_coord),
+                coords={y_coord: ds[y_coord], x_coord: ds[x_coord]},
+            )
+        else:
+            ds_mosaic[key] = ds[key]
+
     return ds_mosaic
 
 
@@ -156,7 +160,4 @@ def mosaic_3d_take_first(
         final_slices.append(ds_mosaic)
     final_ds = xr.concat(final_slices, dim="time", join="exact")
     final_ds = final_ds.assign_coords(coords=dict(time=dts))
-    if "crs" in final_ds:
-        final_ds = final_ds.drop_vars("crs")
-        final_ds["crs"] = list_ds[0].crs
     return final_ds

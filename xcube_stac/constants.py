@@ -143,7 +143,7 @@ SCHEMA_ASSET_NAMES = JsonArraySchema(
     title="Names of assets",
     description="Names of assets which will be included in the data cube.",
 )
-SCEMA_APPLY_SCALING = JsonBooleanSchema(
+SCHEMA_APPLY_SCALING = JsonBooleanSchema(
     title="Apply scaling, offset, and no-data values to data."
 )
 SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
@@ -169,7 +169,7 @@ STAC_SEARCH_PARAMETERS = dict(
 )
 STAC_OPEN_PARAMETERS = dict(
     asset_names=SCHEMA_ASSET_NAMES,
-    apply_scaling=SCEMA_APPLY_SCALING,
+    apply_scaling=SCHEMA_APPLY_SCALING,
 )
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
     **STAC_OPEN_PARAMETERS,

@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -14,13 +14,12 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
-        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
-        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
-        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
-        \   }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA52PMW8CMQyFd36FdTMEWNkq1naCDaGTLzGcW19ySgxqQfx3kjtEh7ZLF0t+fu97
+        8nUCUCVFW58pJg6+WkG1NAuzmEVrltW03PWrp6KvUVHCcRTZFUmwIanpU8mXdO2oC48Qq9DTAk8L
+        fFscJRu510ftBrteCN5eQSOyZ38ElxthACRgD9oSbLYvaziE2KGOFGH/kXJ+lxeA6zCzHEkKNIYw
+        +gaxjXQoqpnb8RfznnL5cL5NfwXYlsX9JFzQX7jBOLdBhGz54d+s1KMlTzprTvme/05/UPPcT253
+        9D4MQ7QBAAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -41,13 +40,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:42 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 03 Sep 2024 09:45:42 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '71'
+      - '79'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +60,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 7684638fdf8f086f2696b8a3fe818695f72705d5
+      - 3fc9562df42f41b3afbea805b73e4e944546aab4
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291916E:2AF27D8:66D6CA86
+      - BF26:112B:5C2C6E:60D757:678F65F5
       X-Served-By:
-      - cache-fra-eddf8230062-FRA
+      - cache-fra-eddf8230149-FRA
       X-Timer:
-      - S1725356443.677651,VS0,VE1
+      - S1737451077.169887,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +112,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:42 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 03 Sep 2024 09:45:42 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '71'
+      - '79'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +132,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - abc960647559a12ea006aef96a0212d172bbc899
+      - c7ffc33a88ee53d34734f84c7cca01235f8ce254
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291918D:2AF27FB:66D6CA86
+      - BF26:112B:5C2CC4:60D798:678F65F6
       X-Served-By:
-      - cache-fra-eddf8230113-FRA
+      - cache-fra-eddf8230131-FRA
       X-Timer:
-      - S1725356443.725619,VS0,VE1
+      - S1737451077.221415,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -203,13 +202,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:42 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - '"ddd340bc27c120dd2e43868bcde0510a326a6223dac1b0c47c05100e20d1397e"'
       Expires:
-      - Tue, 03 Sep 2024 09:45:42 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '0'
+      - '76'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -223,15 +222,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - c55adca64fa313e03c88abe55839e7e33aa3e9b1
+      - 893c11936795ee2563e70c20e55ba059eedbb9e1
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2292:12833F:293E5C8:2B18F41:66D6CDCD
+      - 8DE6:1B429:40F8C65:43B231E:678F65F9
       X-Served-By:
-      - cache-fra-eddf8230141-FRA
+      - cache-fra-eddf8230020-FRA
       X-Timer:
-      - S1725356443.775813,VS0,VE127
+      - S1737451077.278444,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -287,13 +286,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:43 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - '"3263faca1f19517d02862736694703cc8519bed9344039cace8aa2c5f9379bcf"'
       Expires:
-      - Tue, 03 Sep 2024 09:45:43 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '0'
+      - '75'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -307,15 +306,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 2d3ce0c0da969dc823f2fa9b31df03ac27e2552b
+      - 3813d252876cc6ccb32480315d4cfd55881434f0
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - CBB5:145261:29920E4:2B6D57B:66D6CDCD
+      - F6E5:11B7:21AC507:232AC0E:678F65F9
       X-Served-By:
-      - cache-fra-eddf8230059-FRA
+      - cache-fra-eddf8230172-FRA
       X-Timer:
-      - S1725356443.956139,VS0,VE227
+      - S1737451077.330765,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -387,13 +386,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:43 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - '"80ec96bc0acf2e604a03f109bd730426aa82e442d44946231cbe82a531b944f7"'
       Expires:
-      - Tue, 03 Sep 2024 09:45:43 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '0'
+      - '75'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -407,15 +406,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - b2ce4dd71910d45f05593ac55ac79c3ca7735fcb
+      - 08567a7e9a74a9160d607a637c33300cc7f87dde
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 9723:3AA05A:C772E5:CFAD77:66D6CDCE
+      - C652:1314DE:79F765:7FC1E2:678F65F9
       X-Served-By:
-      - cache-fra-eddf8230089-FRA
+      - cache-fra-eddf8230046-FRA
       X-Timer:
-      - S1725356443.250838,VS0,VE174
+      - S1737451077.385589,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -427,7 +426,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -436,41 +435,24 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA8VV227jNhR8z1cQel1b99hSiqBIA2zRosAWi92HdhEEFHUksUuJKknbUYL8e0nJ
+        uq2ipEDR1jB84TkazhyORk8XCFlSYXJ/BCEpr6wrZHm2a7tbQWzP2gx1eFBQmQ6pW77oZV0olKrl
+        leOYhu3YYOdUFYfEptxhOAHmHA2i50hSQIntP6TeZvN3Ec68Ogx3hqEh7lqCNDW0H6tH1z1TVk0N
+        Zu09YHUQ0C0mCX8YyAex7UexF0f7Xbj34zjuGG0v7X0YuH7kR4Hr+dFuv+nbA8+s78Mo9v3dbmz3
+        fd/z93EYB/td7A2kcuAlKNHoHZ86sT2pXzlr8nEGhHOR0gorGEeLhu/pr1XW3WvJfSjebdbgXlL1
+        r8EtRvUW3Oti1+Aupt/m87k9ESwlKDmeR2vO8b85IaoYjF66bzusflurEJCZau/a0+lkp4LX2lc2
+        4aUjC4eoQHoPPo7C3UPQMOfm5ubj7c2HPwvyMeWf959/+ZDEP/7MYuzkgqb3ehNbG8XY+fuUXXvj
+        Xr1ZcF0zSrAy94DufNc7/yxKdwosFYjXZNQCjhROhOfrWjittgVXXJa2DGxc4kde4ZNsdV3iDFLs
+        XfrJDruRRvSiy8zzsOOulRJb0WwphpY4B0eXsu/QRNi1FtYt1oJnlME1YfyQbnmtaEkfIZ0L1tFQ
+        JhWm7DXNY9N/Jrmu8jXJptRpGNyopdYgFIWJI1MdAlpye6HvevHWDbd+8Ml1r9r3731k6MHppGzb
+        bm+3P/y2DW13qBnPXs3Q+5vKSg6U6aiZ0CS8Sqk5g47e3QwkBUkErdX5udBfjTLOVS1opSQqcXXA
+        jDUItZdAinCVIsL0vUYzav4S0sZbjhRHA4Iecc3AACMd/eog5+wVll9nxCXkJVQKrzHtp30EoriY
+        g+kULng6g+tYz4GmD8A5QKtmNsjedbqlwt1xLUZrhru4sF1u9NIirJ4369jjIb0NfttNFqxpWFo/
+        VeTF9ff8UKWTqc4YvTBnrqdkomRlGGfXNfdfoVkdit5SfUv7afJ7ItxMajMvtZfrWhiG7qTyvEZ/
+        uN8YrSaeGnJDgIkRS2hLL5PCth2dUJjx3F7k7rcINRbaoUsMwhnTrtQjfhtj7P1nOJIfBIH/K+z7
+        JP5UAOqYoDYFRYNUARLGGOiewOgEAlAKgh51YGSClyNYZ7vhyT16ZvTW7GlvTv3u4vkv0nCoRdgK
+        AAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -491,13 +473,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:43 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 03 Sep 2024 09:45:43 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '72'
+      - '52'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -507,19 +489,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '0'
+      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 9b385509b3e9f95cd4a1ba41202a59ff1bfcaefc
+      - f5dd8a18df9dbf4793c38a84e0e74827411037f6
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
+      - C651:115D:38BA54:3BF897:678F6611
       X-Served-By:
-      - cache-fra-eddf8230081-FRA
+      - cache-fra-eddf8230159-FRA
       X-Timer:
-      - S1725356443.477238,VS0,VE1
+      - S1737451077.443903,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -591,13 +573,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 09:40:43 GMT
+      - Tue, 21 Jan 2025 09:17:57 GMT
       ETag:
       - '"726870312c74ead0b10c3125045c301e8600929684c49447d64c2db72dc779fc"'
       Expires:
-      - Tue, 03 Sep 2024 09:45:43 GMT
+      - Tue, 21 Jan 2025 09:22:57 GMT
       Source-Age:
-      - '0'
+      - '75'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -611,15 +593,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 14ff24e27b6b670b84a5cfa781a4a4d9a2f992a1
+      - 3660d2928b6085c5aa58a661e4a375deda71e739
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - A693:14F19C:2893542:2A6DD03:66D6CDCE
+      - C931:115D:38A5F4:3BE37C:678F65FA
       X-Served-By:
-      - cache-fra-eddf8230103-FRA
+      - cache-fra-eddf8230149-FRA
       X-Timer:
-      - S1725356444.527371,VS0,VE166
+      - S1737451077.496791,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

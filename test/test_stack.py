@@ -143,9 +143,8 @@ class UtilsTest(unittest.TestCase):
             "lon": [100.0, 110.0, 120.0],
         }
         da = xr.DataArray(data, dims=dims, coords=coords)
-        crs = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
-        ds_expected = xr.Dataset({"B01": da, "crs": crs})
-        xr.testing.assert_allclose(ds_test, ds_expected)
+        ds_expected = xr.Dataset({"B01": da})
+        xr.testing.assert_allclose(ds_test.drop_vars("crs"), ds_expected)
 
         # test two tiles, where spatial ref is given in spatial_ref coord
         spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))

@@ -68,12 +68,8 @@ class UtilsTest(unittest.TestCase):
             roles=["meta"],
             extra_fields=dict(id="test"),
         )
-        with self.assertLogs("xcube.stac", level="DEBUG") as cm:
-            format_id = get_format_id(asset)
+        format_id = get_format_id(asset)
         self.assertIsNone(format_id)
-        self.assertEqual(1, len(cm.output))
-        msg = "DEBUG:xcube.stac:No format_id found for asset 'Meta data'"
-        self.assertEqual(msg, str(cm.output[-1]))
 
     def test_convert_datetime2str(self):
         dt = datetime.datetime(2024, 1, 1, 12, 00, 00)
