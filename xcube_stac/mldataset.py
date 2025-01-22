@@ -21,7 +21,6 @@
 
 from typing import Any, Optional
 
-import pystac
 import rasterio
 import rasterio.session
 import rioxarray
@@ -30,7 +29,9 @@ from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
 from xcube.core.gridmapping import GridMapping
 
 from ._utils import rename_dataset
+from ._utils import normalize_grid_mapping
 from ._utils import merge_datasets
+from ._utils import wrapper_clip_dataset_by_geometry
 from .stac_extension.raster import apply_offset_scaling
 
 
@@ -46,9 +47,8 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
     def __init__(
         self,
         ml_datasets: list[MultiLevelDataset],
-        item: pystac.Item,
-        assets: list[str],
-        data_id: Optional[str] = None,
+        access_params: dict,
+        data_id: str | None = None,
         target_gm: GridMapping = None,
         open_params: dict = None,
         attrs: dict = None,
@@ -56,8 +56,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         super().__init__(ds_id=data_id)
         self._ml_datasets = ml_datasets
         self._data_id = data_id
-        self._item = item
-        self._assets = assets
+        self._access_params = access_params
         self._target_gm = target_gm
         self._open_params = open_params
         self._attrs = attrs
@@ -69,11 +68,17 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         self, index: int, combiner_params: dict[str, Any]
     ) -> xr.Dataset:
         datasets = []
-        for ml_dataset, asset in zip(self._ml_datasets, self._assets):
+        for ml_dataset, (asset_name, params) in zip(
+            self._ml_datasets, self._access_params.items()
+        ):
             ds = ml_dataset.get_dataset(index)
-            ds = rename_dataset(ds, asset)
+            ds = normalize_grid_mapping(ds)
+            ds = wrapper_clip_dataset_by_geometry(ds, **self._open_params)
+            ds = rename_dataset(ds, params["name_origin"])
             if self._open_params.get("apply_scaling", False):
-                ds = apply_offset_scaling(ds, self._item, asset)
+                ds[params["name_origin"]] = apply_offset_scaling(
+                    ds[params["name_origin"]], params["item"], params["name"]
+                )
             datasets.append(ds)
         combined_dataset = merge_datasets(datasets, target_gm=self._target_gm)
         combined_dataset.attrs = self._attrs
@@ -95,8 +100,8 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
         **open_params: dict[str, Any],
     ):
         file_path = (
-            f"{access_params["protocol"]}://{access_params["root"]}"
-            f"/{access_params["fs_path"]}"
+            f"{access_params['protocol']}://{access_params['root']}"
+            f"/{access_params['fs_path']}"
         )
         self._file_path = file_path
         self._access_params = access_params

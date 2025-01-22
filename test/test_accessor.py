@@ -89,20 +89,6 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
             [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
-        with self.assertLogs("xcube.stac", level="INFO") as cm:
-            ds = self.accessor.open_data(access_params, tile_size=(512, 512))
-        self.assertEqual(1, len(cm.output))
-        msg = (
-            "INFO:xcube.stac:The parameter tile_size is set to (1024, 1024), which "
-            "is the native chunk size of the jp2 files in the Sentinel-2 archive."
-        )
-        self.assertEqual(msg, str(cm.output[-1]))
-        self.assertTrue("band_1" in ds)
-        self.assertEqual(ds["band_1"].shape, (2048, 2048))
-        self.assertCountEqual(
-            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
-        )
-
         mlds = self.accessor.open_data(access_params, data_type="mldataset")
         self.assertIsInstance(mlds, MultiLevelDataset)
         self.assertEqual(4, mlds.num_levels)

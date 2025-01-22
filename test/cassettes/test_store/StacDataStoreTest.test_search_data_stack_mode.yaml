@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -24,15 +24,15 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 03 Sep 2024 09:41:38 GMT
+      - Tue, 21 Jan 2025 09:18:51 GMT
       Via:
-      - 1.1 53767392640cf5282c1ce18d7cc7b0e0.cloudfront.net (CloudFront)
+      - 1.1 d050e2738eeca6f287a6d79edd9743de.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - NFuG3liBpUHPvh5oq9MAdw_XDCOfX5gTWDxPWPhBsKnd2A084qux6Q==
+      - 9_7qgmJlzyE4SMub-E1q3qpOrE3jLhSW6qdxgtZhrJyiF1zHXUDEsg==
       X-Amz-Cf-Pop:
       - HAM50-C1
       X-Amzn-Trace-Id:
-      - Root=1-66d6d9d2-0893a30252faf92e712cce58;Parent=390e556992663058;Sampled=0;lineage=9e2884e9:0
+      - Root=1-678f667b-2d98450541475a2e21fcf56a;Parent=502ce68227f8d40f;Sampled=0;Lineage=1:9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -40,11 +40,11 @@ interactions:
       etag:
       - W/"d29-QPs+H0wJLUX32EZKNgzG3k6wfQ8"
       x-amz-apigw-id:
-      - dhb47FdlvHcEDjw=
+      - EuzzaGiAvHcEhtQ=
       x-amzn-Remapped-content-length:
       - '3369'
       x-amzn-RequestId:
-      - aed07d22-746d-4cdc-8a06-da444b158ac1
+      - a7228c6c-434f-49ce-a987-70bc21df62e2
       x-powered-by:
       - Express
     status:
@@ -56,7 +56,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -482,15 +482,15 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 03 Sep 2024 09:41:38 GMT
+      - Tue, 21 Jan 2025 09:18:52 GMT
       Via:
-      - 1.1 6c0cf54c85a45b06ce06eb9b5a31a1c6.cloudfront.net (CloudFront)
+      - 1.1 d050e2738eeca6f287a6d79edd9743de.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - ncMZ3_P7wZWYWZ8zPhqsrBzP22TfsoYxHC918SFb9gRoBPkBEJ_mnA==
+      - XsbQLJVF2fw2wCZHCB9riNzATlxaluBRdA4MigpUzB7VUvhxel4krA==
       X-Amz-Cf-Pop:
       - HAM50-C1
       X-Amzn-Trace-Id:
-      - Root=1-66d6d9d2-31454a2d44559f2d4edf7cd4;Parent=2b0416f695d3f1c4;Sampled=0;lineage=9e2884e9:0
+      - Root=1-678f667c-4a3341cc6daf33ed5d1d473b;Parent=73618a2b6c60afe6;Sampled=0;Lineage=1:9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -498,11 +498,11 @@ interactions:
       etag:
       - W/"141dd-9fMv6YJnvxPn9adSQK466CnIbE0"
       x-amz-apigw-id:
-      - dhb4-HqqPHcEtJA=
+      - EuzzfFg_PHcErRQ=
       x-amzn-Remapped-content-length:
       - '82397'
       x-amzn-RequestId:
-      - 3af83162-6c54-4f56-b417-964b208723ec
+      - 32f9aafd-60fe-4616-9d44-758cd53ac52e
       x-powered-by:
       - Express
     status:
@@ -514,7 +514,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -940,15 +940,15 @@ interactions:
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 03 Sep 2024 09:41:39 GMT
+      - Tue, 21 Jan 2025 09:18:53 GMT
       Via:
-      - 1.1 e37f79ad8aac2f2f2e74a09fc473b7be.cloudfront.net (CloudFront)
+      - 1.1 d050e2738eeca6f287a6d79edd9743de.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - 90FDCxzKsItHCKyN9abaie_e91FZEC28mzMkCbr09OxWgxAFZVNhcQ==
+      - gtRkqITCVTlhuyKi3W_IjpQrWGzhUtgzubsJWTYv3ghZBklcUFASdw==
       X-Amz-Cf-Pop:
       - HAM50-C1
       X-Amzn-Trace-Id:
-      - Root=1-66d6d9d3-0b8200d749c9ac674ac22bda;Parent=4708fe77b8d0c3d5;Sampled=0;lineage=9e2884e9:0
+      - Root=1-678f667d-6fa3b4ba47b7a7547ae36515;Parent=1bd5f7c09f952a9f;Sampled=0;Lineage=1:9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -956,11 +956,11 @@ interactions:
       etag:
       - W/"141dd-9fMv6YJnvxPn9adSQK466CnIbE0"
       x-amz-apigw-id:
-      - dhb5DGlFPHcEkAA=
+      - EuzznEMOvHcEfJA=
       x-amzn-Remapped-content-length:
       - '82397'
       x-amzn-RequestId:
-      - 4b874a1e-809f-4374-a341-2c50cc7858ad
+      - 5ff8fc06-4eba-48a6-be78-ed2ef2d03f92
       x-powered-by:
       - Express
     status:

@@ -31,7 +31,6 @@ from xcube.core.store import DataStoreError
 
 from xcube_stac._utils import (
     get_format_id,
-    list_assets_from_item,
     get_format_from_path,
     reproject_bbox,
     get_spatial_dims,
@@ -43,6 +42,7 @@ from xcube_stac._utils import (
     is_collection_in_time_range,
     is_item_in_time_range,
     update_dict,
+    wrapper_clip_dataset_by_geometry,
 )
 
 
@@ -50,68 +50,26 @@ class UtilsTest(unittest.TestCase):
 
     def test_get_format_id(self):
         asset = pystac.Asset(
-            href=f"https://example.com/data/test.tif",
+            href="https://example.com/data/test.tif",
             media_type="image/tiff",
             roles=["data"],
             extra_fields=dict(id="test"),
         )
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
-            href=f"https://example.com/data/test.tif",
+            href="https://example.com/data/test.tif",
             roles=["data"],
             extra_fields=dict(id="test"),
         )
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
-            href=f"https://example.com/data/test.xml",
+            href="https://example.com/data/test.xml",
+            title="Meta data",
             roles=["meta"],
             extra_fields=dict(id="test"),
         )
-        with self.assertRaises(DataStoreError) as cm:
-            get_format_id(asset)
-        self.assertEqual(
-            "No format_id found for asset test",
-            f"{cm.exception}",
-        )
-
-    def test_list_assets_from_item(self):
-        geometry = {
-            "type": "Polygon",
-            "coordinates": [
-                [[100.0, 0.0], [101.0, 0.0], [101.0, 1.0], [100.0, 1.0], [100.0, 0.0]]
-            ],
-        }
-        bbox = [100.0, 0.0, 101.0, 1.0]
-        dt = datetime.datetime(2023, 1, 1, 0, 0, 0)
-        item = pystac.Item(
-            id="test_item", geometry=geometry, bbox=bbox, datetime=dt, properties={}
-        )
-        supported_format_ids = ["geotiff", "netcdf"]
-
-        asset_names = ["asset1", "asset2", "asset3"]
-        media_types = ["image/tiff", "application/zarr", "meta/xml"]
-        for asset_name, media_type in zip(asset_names, media_types):
-            asset_href = f"https://example.com/data/{asset_name}.tif"
-            asset = pystac.Asset(href=asset_href, media_type=media_type, roles=["data"])
-            item.add_asset(asset_name, asset)
-        list_assets = list_assets_from_item(item)
-        self.assertCountEqual(
-            ["asset1", "asset2"], [asset.extra_fields["id"] for asset in list_assets]
-        )
-        list_assets = list_assets_from_item(item, asset_names=["asset2"])
-        self.assertCountEqual(
-            ["asset2"], [asset.extra_fields["id"] for asset in list_assets]
-        )
-        list_assets = list_assets_from_item(
-            item, supported_format_ids=supported_format_ids
-        )
-        self.assertCountEqual(
-            ["asset1"], [asset.extra_fields["id"] for asset in list_assets]
-        )
-        list_assets = list_assets_from_item(
-            item, supported_format_ids=supported_format_ids, asset_names=["asset2"]
-        )
-        self.assertCountEqual([], [asset.extra_fields["id"] for asset in list_assets])
+        format_id = get_format_id(asset)
+        self.assertIsNone(format_id)
 
     def test_convert_datetime2str(self):
         dt = datetime.datetime(2024, 1, 1, 12, 00, 00)
@@ -321,19 +279,37 @@ class UtilsTest(unittest.TestCase):
         bbox_wgs84 = [2, 50, 3, 51]
         crs_wgs84 = "EPSG:4326"
         crs_3035 = "EPSG:3035"
-        bbox_3035 = [
-            3748675.952977144,
-            3018751.225593612,
-            3830472.135997862,
-            3122243.2680214494,
-        ]
+        bbox_3035 = [3748675.9529771, 3011432.8944597, 3830472.1359979, 3129432.4914285]
         self.assertEqual(bbox_wgs84, reproject_bbox(bbox_wgs84, crs_wgs84, crs_wgs84))
         self.assertEqual(bbox_3035, reproject_bbox(bbox_3035, crs_3035, crs_3035))
         np.testing.assert_almost_equal(
-            bbox_3035, reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035)
+            reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035), bbox_3035
         )
         np.testing.assert_almost_equal(
-            bbox_wgs84, reproject_bbox(bbox_3035, crs_3035, crs_wgs84)
+            reproject_bbox(
+                reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035, buffer=0.0),
+                crs_3035,
+                crs_wgs84,
+                buffer=0.0,
+            ),
+            [
+                1.829619451017442,
+                49.93464594063249,
+                3.1462425554926226,
+                51.06428203128216,
+            ],
+        )
+
+        crs_utm = "EPSG:32601"
+        bbox_utm = [
+            213372.0489639729,
+            5540547.369934658,
+            362705.63410562894,
+            5768595.563692021,
+        ]
+        np.testing.assert_almost_equal(
+            reproject_bbox(bbox_utm, crs_utm, crs_wgs84),
+            [178.8245008, 49.9483787, -178.9158425, 52.0509362],
         )
 
     def test_normalize_crs(self):
@@ -428,4 +404,51 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(
             "No spatial dimensions found in dataset.",
             f"{cm.exception}",
+        )
+
+    def test_wrapper_clip_dataset_by_geometry(self):
+
+        # Example data dimensions
+        nx, ny = 11, 11
+        x = np.linspace(0, 500000, nx)
+        y = np.linspace(5000000, 6000000, ny)
+        data = np.arange(nx * ny).reshape((ny, nx))
+
+        # Define dataset with CF-compliant CRS variable
+        ds = xr.Dataset(
+            {
+                "temperature": (("y", "x"), data),
+            },
+            coords={
+                "x": ("x", x, {"units": "meters", "long_name": "x coordinate"}),
+                "y": ("y", y, {"units": "meters", "long_name": "y coordinate"}),
+            },
+        )
+        crs_wkt = pyproj.CRS.from_epsg(32601).to_wkt()
+        ds["crs"] = xr.DataArray(
+            data=0,
+            attrs={
+                "grid_mapping_name": "transverse_mercator",
+                "semi_major_axis": 6378137.0,
+                "inverse_flattening": 298.257223563,
+                "latitude_of_projection_origin": 0.0,
+                "longitude_of_central_meridian": -177.0,
+                "scale_factor_at_central_meridian": 0.9996,
+                "false_easting": 500000.0,
+                "false_northing": 0.0,
+                "unit": "meters",
+                "spatial_ref": "EPSG:32601",
+                "crs_wkt": crs_wkt,
+            },
+        )
+
+        ds_clipped = wrapper_clip_dataset_by_geometry(
+            ds, crs="EPSG:4326", bbox=[179, 50, -179, 52]
+        )
+        self.assertEqual((4, 4), ds_clipped.temperature.shape)
+        np.testing.assert_allclose(
+            ds_clipped.x.values, np.array([200000.0, 250000.0, 300000.0, 350000.0])
+        )
+        np.testing.assert_allclose(
+            ds_clipped.y.values, np.array([5500000.0, 5600000.0, 5700000.0, 5800000.0])
         )

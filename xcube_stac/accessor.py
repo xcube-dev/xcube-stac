@@ -53,15 +53,15 @@ class HttpsDataAccessor:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         if access_params["format_id"] == "netcdf":
             if is_valid_ml_data_type(data_type):
                 LOG.warn(
-                    f"No data opener found for format {access_params["format_id"]!r} "
+                    f"No data opener found for format {access_params['format_id']!r} "
                     f"and data type {data_type!r}. Data type is changed to the default "
                     f"data type 'dataset'."
                 )
-            fs_path = f"https://{self._root}/{access_params["fs_path"]}#mode=bytes"
+            fs_path = f"https://{self._root}/{access_params['fs_path']}#mode=bytes"
             return xr.open_dataset(fs_path, chunks={})
         else:
             return self._https_accessor.open_data(
@@ -77,11 +77,8 @@ class S3DataAccessor:
     the zarr, geotiff and netcdf format via the AWS S3 protocol.
     """
 
-    def __init__(self, root: str, storage_options: dict = None):
+    def __init__(self, root: str, storage_options: dict):
         self._root = root
-        if storage_options is None:
-            storage_options = {}
-        self._storage_options = storage_options
         if "anon" not in storage_options:
             storage_options["anon"] = True
         self._s3_accessor = new_data_store(
@@ -101,7 +98,7 @@ class S3DataAccessor:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         return self._s3_accessor.open_data(
             data_id=access_params["fs_path"],
             opener_id=opener_id,
@@ -112,10 +109,10 @@ class S3DataAccessor:
 
 class S3Sentinel2DataAccessor:
     """Implementation of the data accessor supporting
-    the jp2 format  of Sentinel-2 data via the AWS S3 protocol.
+    the jp2 format of Sentinel-2 data via the AWS S3 protocol.
     """
 
-    def __init__(self, root: str, storage_options: dict = None):
+    def __init__(self, root: str, storage_options: dict):
         self._root = root
         self.session = rasterio.session.AWSSession(
             aws_unsigned=storage_options["anon"],
@@ -152,21 +149,16 @@ class S3Sentinel2DataAccessor:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         if opener_id is None:
             opener_id = ""
-        if "tile_size" in open_params:
-            LOG.info(
-                "The parameter tile_size is set to (1024, 1024), which is the "
-                "native chunk size of the jp2 files in the Sentinel-2 archive."
-            )
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             return Jp2MultiLevelDataset(access_params, **open_params)
         else:
             return rioxarray.open_rasterio(
                 (
-                    f"{access_params["protocol"]}://{access_params["root"]}/"
-                    f"{access_params["fs_path"]}"
+                    f"{access_params['protocol']}://{access_params['root']}/"
+                    f"{access_params['fs_path']}"
                 ),
                 chunks=dict(x=1024, y=1024),
                 band_as_variable=True,

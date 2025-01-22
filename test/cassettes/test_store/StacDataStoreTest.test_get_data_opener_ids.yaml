@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -14,13 +14,12 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"type\": \"Catalog\",\n
-        \ \"id\": \"label_extension_demo\",\n  \"title\": \"label extension demo\",\n
-        \ \"description\": \"Sample ML training data labels in the STAC format\",\n
-        \ \"links\": [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"zanzibar/collection.json\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"spacenet-buildings/collection.json\"\n
-        \   }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA52PMW8CMQyFd36FdTMEWNkq1naCDaGTLzGcW19ySgxqQfx3kjtEh7ZLF0t+fu97
+        8nUCUCVFW58pJg6+WkG1NAuzmEVrltW03PWrp6KvUVHCcRTZFUmwIanpU8mXdO2oC48Qq9DTAk8L
+        fFscJRu510ftBrteCN5eQSOyZ38ElxthACRgD9oSbLYvaziE2KGOFGH/kXJ+lxeA6zCzHEkKNIYw
+        +gaxjXQoqpnb8RfznnL5cL5NfwXYlsX9JFzQX7jBOLdBhGz54d+s1KMlTzprTvme/05/UPPcT253
+        9D4MQ7QBAAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -41,13 +40,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:36 GMT
+      - Tue, 21 Jan 2025 09:17:05 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 03 Sep 2024 08:55:36 GMT
+      - Tue, 21 Jan 2025 09:22:05 GMT
       Source-Age:
-      - '18'
+      - '27'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -61,15 +60,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - a4ee4306a4472ee4a47dc6bb319a908a56d699ce
+      - d33e000d3e7e9aad6f78836299df1e00b307bc64
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291916E:2AF27D8:66D6CA86
+      - BF26:112B:5C2C6E:60D757:678F65F5
       X-Served-By:
-      - cache-fra-eddf8230136-FRA
+      - cache-fra-eddf8230049-FRA
       X-Timer:
-      - S1725353437.716210,VS0,VE1
+      - S1737451025.451734,VS0,VE2
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +112,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:36 GMT
+      - Tue, 21 Jan 2025 09:17:05 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 03 Sep 2024 08:55:36 GMT
+      - Tue, 21 Jan 2025 09:22:05 GMT
       Source-Age:
-      - '18'
+      - '27'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -129,19 +128,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '4'
+      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 74591f613c44846f0d926410ee6fd82ba41bcff8
+      - f86b0f10b58494cab983f90e8a2a8df06c852aa3
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2609:93430:291918D:2AF27FB:66D6CA86
+      - BF26:112B:5C2CC4:60D798:678F65F6
       X-Served-By:
-      - cache-fra-eddf8230123-FRA
+      - cache-fra-eddf8230060-FRA
       X-Timer:
-      - S1725353437.764420,VS0,VE0
+      - S1737451026.500886,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -153,7 +152,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -162,41 +161,24 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA8VV227jNhR8z1cQel1b99hSiqBIA2zRosAWi92HdhEEFHUksUuJKknbUYL8e0nJ
+        uq2ipEDR1jB84TkazhyORk8XCFlSYXJ/BCEpr6wrZHm2a7tbQWzP2gx1eFBQmQ6pW77oZV0olKrl
+        leOYhu3YYOdUFYfEptxhOAHmHA2i50hSQIntP6TeZvN3Ec68Ogx3hqEh7lqCNDW0H6tH1z1TVk0N
+        Zu09YHUQ0C0mCX8YyAex7UexF0f7Xbj34zjuGG0v7X0YuH7kR4Hr+dFuv+nbA8+s78Mo9v3dbmz3
+        fd/z93EYB/td7A2kcuAlKNHoHZ86sT2pXzlr8nEGhHOR0gorGEeLhu/pr1XW3WvJfSjebdbgXlL1
+        r8EtRvUW3Oti1+Aupt/m87k9ESwlKDmeR2vO8b85IaoYjF66bzusflurEJCZau/a0+lkp4LX2lc2
+        4aUjC4eoQHoPPo7C3UPQMOfm5ubj7c2HPwvyMeWf959/+ZDEP/7MYuzkgqb3ehNbG8XY+fuUXXvj
+        Xr1ZcF0zSrAy94DufNc7/yxKdwosFYjXZNQCjhROhOfrWjittgVXXJa2DGxc4kde4ZNsdV3iDFLs
+        XfrJDruRRvSiy8zzsOOulRJb0WwphpY4B0eXsu/QRNi1FtYt1oJnlME1YfyQbnmtaEkfIZ0L1tFQ
+        JhWm7DXNY9N/Jrmu8jXJptRpGNyopdYgFIWJI1MdAlpye6HvevHWDbd+8Ml1r9r3731k6MHppGzb
+        bm+3P/y2DW13qBnPXs3Q+5vKSg6U6aiZ0CS8Sqk5g47e3QwkBUkErdX5udBfjTLOVS1opSQqcXXA
+        jDUItZdAinCVIsL0vUYzav4S0sZbjhRHA4Iecc3AACMd/eog5+wVll9nxCXkJVQKrzHtp30EoriY
+        g+kULng6g+tYz4GmD8A5QKtmNsjedbqlwt1xLUZrhru4sF1u9NIirJ4369jjIb0NfttNFqxpWFo/
+        VeTF9ff8UKWTqc4YvTBnrqdkomRlGGfXNfdfoVkdit5SfUv7afJ7ItxMajMvtZfrWhiG7qTyvEZ/
+        uN8YrSaeGnJDgIkRS2hLL5PCth2dUJjx3F7k7rcINRbaoUsMwhnTrtQjfhtj7P1nOJIfBIH/K+z7
+        JP5UAOqYoDYFRYNUARLGGOiewOgEAlAKgh51YGSClyNYZ7vhyT16ZvTW7GlvTv3u4vkv0nCoRdgK
+        AAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -217,11 +199,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:36 GMT
+      - Tue, 21 Jan 2025 09:17:05 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 03 Sep 2024 08:55:36 GMT
+      - Tue, 21 Jan 2025 09:22:05 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -231,21 +213,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
-      - '1'
+      - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 4afd4e4e8d3cdf8dcfccdabe96bc9fabdf636659
+      - dc72bd19be9c39e9887de8ef46e9f5aaba01df99
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
+      - C651:115D:38BA54:3BF897:678F6611
       X-Served-By:
-      - cache-fra-eddf8230034-FRA
+      - cache-fra-eddf8230110-FRA
       X-Timer:
-      - S1725353437.812248,VS0,VE93
+      - S1737451026.550747,VS0,VE170
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -257,7 +239,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -266,41 +248,24 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA8VV227jNhR8z1cQel1b99hSiqBIA2zRosAWi92HdhEEFHUksUuJKknbUYL8e0nJ
+        uq2ipEDR1jB84TkazhyORk8XCFlSYXJ/BCEpr6wrZHm2a7tbQWzP2gx1eFBQmQ6pW77oZV0olKrl
+        leOYhu3YYOdUFYfEptxhOAHmHA2i50hSQIntP6TeZvN3Ec68Ogx3hqEh7lqCNDW0H6tH1z1TVk0N
+        Zu09YHUQ0C0mCX8YyAex7UexF0f7Xbj34zjuGG0v7X0YuH7kR4Hr+dFuv+nbA8+s78Mo9v3dbmz3
+        fd/z93EYB/td7A2kcuAlKNHoHZ86sT2pXzlr8nEGhHOR0gorGEeLhu/pr1XW3WvJfSjebdbgXlL1
+        r8EtRvUW3Oti1+Aupt/m87k9ESwlKDmeR2vO8b85IaoYjF66bzusflurEJCZau/a0+lkp4LX2lc2
+        4aUjC4eoQHoPPo7C3UPQMOfm5ubj7c2HPwvyMeWf959/+ZDEP/7MYuzkgqb3ehNbG8XY+fuUXXvj
+        Xr1ZcF0zSrAy94DufNc7/yxKdwosFYjXZNQCjhROhOfrWjittgVXXJa2DGxc4kde4ZNsdV3iDFLs
+        XfrJDruRRvSiy8zzsOOulRJb0WwphpY4B0eXsu/QRNi1FtYt1oJnlME1YfyQbnmtaEkfIZ0L1tFQ
+        JhWm7DXNY9N/Jrmu8jXJptRpGNyopdYgFIWJI1MdAlpye6HvevHWDbd+8Ml1r9r3731k6MHppGzb
+        bm+3P/y2DW13qBnPXs3Q+5vKSg6U6aiZ0CS8Sqk5g47e3QwkBUkErdX5udBfjTLOVS1opSQqcXXA
+        jDUItZdAinCVIsL0vUYzav4S0sZbjhRHA4Iecc3AACMd/eog5+wVll9nxCXkJVQKrzHtp30EoriY
+        g+kULng6g+tYz4GmD8A5QKtmNsjedbqlwt1xLUZrhru4sF1u9NIirJ4369jjIb0NfttNFqxpWFo/
+        VeTF9ff8UKWTqc4YvTBnrqdkomRlGGfXNfdfoVkdit5SfUv7afJ7ItxMajMvtZfrWhiG7qTyvEZ/
+        uN8YrSaeGnJDgIkRS2hLL5PCth2dUJjx3F7k7rcINRbaoUsMwhnTrtQjfhtj7P1nOJIfBIH/K+z7
+        JP5UAOqYoDYFRYNUARLGGOiewOgEAlAKgh51YGSClyNYZ7vhyT16ZvTW7GlvTv3u4vkv0nCoRdgK
+        AAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -321,11 +286,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:36 GMT
+      - Tue, 21 Jan 2025 09:17:05 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 03 Sep 2024 08:55:36 GMT
+      - Tue, 21 Jan 2025 09:22:05 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -341,15 +306,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 11975285ea13e0345d14f038bcd74fd3f36330b2
+      - 4931c1b7261959b968771d0b774f93468b9a8585
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
+      - C651:115D:38BA54:3BF897:678F6611
       X-Served-By:
-      - cache-fra-eddf8230043-FRA
+      - cache-fra-eddf8230055-FRA
       X-Timer:
-      - S1725353437.956739,VS0,VE1
+      - S1737451026.792103,VS0,VE7
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -361,7 +326,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -370,41 +335,24 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA8VV227jNhR8z1cQel1b99hSiqBIA2zRosAWi92HdhEEFHUksUuJKknbUYL8e0nJ
+        uq2ipEDR1jB84TkazhyORk8XCFlSYXJ/BCEpr6wrZHm2a7tbQWzP2gx1eFBQmQ6pW77oZV0olKrl
+        leOYhu3YYOdUFYfEptxhOAHmHA2i50hSQIntP6TeZvN3Ec68Ogx3hqEh7lqCNDW0H6tH1z1TVk0N
+        Zu09YHUQ0C0mCX8YyAex7UexF0f7Xbj34zjuGG0v7X0YuH7kR4Hr+dFuv+nbA8+s78Mo9v3dbmz3
+        fd/z93EYB/td7A2kcuAlKNHoHZ86sT2pXzlr8nEGhHOR0gorGEeLhu/pr1XW3WvJfSjebdbgXlL1
+        r8EtRvUW3Oti1+Aupt/m87k9ESwlKDmeR2vO8b85IaoYjF66bzusflurEJCZau/a0+lkp4LX2lc2
+        4aUjC4eoQHoPPo7C3UPQMOfm5ubj7c2HPwvyMeWf959/+ZDEP/7MYuzkgqb3ehNbG8XY+fuUXXvj
+        Xr1ZcF0zSrAy94DufNc7/yxKdwosFYjXZNQCjhROhOfrWjittgVXXJa2DGxc4kde4ZNsdV3iDFLs
+        XfrJDruRRvSiy8zzsOOulRJb0WwphpY4B0eXsu/QRNi1FtYt1oJnlME1YfyQbnmtaEkfIZ0L1tFQ
+        JhWm7DXNY9N/Jrmu8jXJptRpGNyopdYgFIWJI1MdAlpye6HvevHWDbd+8Ml1r9r3731k6MHppGzb
+        bm+3P/y2DW13qBnPXs3Q+5vKSg6U6aiZ0CS8Sqk5g47e3QwkBUkErdX5udBfjTLOVS1opSQqcXXA
+        jDUItZdAinCVIsL0vUYzav4S0sZbjhRHA4Iecc3AACMd/eog5+wVll9nxCXkJVQKrzHtp30EoriY
+        g+kULng6g+tYz4GmD8A5QKtmNsjedbqlwt1xLUZrhru4sF1u9NIirJ4369jjIb0NfttNFqxpWFo/
+        VeTF9ff8UKWTqc4YvTBnrqdkomRlGGfXNfdfoVkdit5SfUv7afJ7ItxMajMvtZfrWhiG7qTyvEZ/
+        uN8YrSaeGnJDgIkRS2hLL5PCth2dUJjx3F7k7rcINRbaoUsMwhnTrtQjfhtj7P1nOJIfBIH/K+z7
+        JP5UAOqYoDYFRYNUARLGGOiewOgEAlAKgh51YGSClyNYZ7vhyT16ZvTW7GlvTv3u4vkv0nCoRdgK
+        AAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -425,11 +373,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
+      - Tue, 21 Jan 2025 09:17:05 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 03 Sep 2024 08:55:37 GMT
+      - Tue, 21 Jan 2025 09:22:05 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -445,15 +393,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 4af70d9243ac52bb2fbd700dce98ebb5047c6b8d
+      - 7988a96d7b97b789efa2ec89ed70ea2f51684ba2
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
+      - C651:115D:38BA54:3BF897:678F6611
       X-Served-By:
-      - cache-fra-eddf8230157-FRA
+      - cache-fra-eddf8230040-FRA
       X-Timer:
-      - S1725353437.004653,VS0,VE1
+      - S1737451026.849337,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -465,7 +413,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br, zstd
+      - gzip, deflate, br
       Connection:
       - keep-alive
       User-Agent:
@@ -474,41 +422,24 @@ interactions:
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
     body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
+      string: !!binary |
+        H4sIAAAAAAAAA8VV227jNhR8z1cQel1b99hSiqBIA2zRosAWi92HdhEEFHUksUuJKknbUYL8e0nJ
+        uq2ipEDR1jB84TkazhyORk8XCFlSYXJ/BCEpr6wrZHm2a7tbQWzP2gx1eFBQmQ6pW77oZV0olKrl
+        leOYhu3YYOdUFYfEptxhOAHmHA2i50hSQIntP6TeZvN3Ec68Ogx3hqEh7lqCNDW0H6tH1z1TVk0N
+        Zu09YHUQ0C0mCX8YyAex7UexF0f7Xbj34zjuGG0v7X0YuH7kR4Hr+dFuv+nbA8+s78Mo9v3dbmz3
+        fd/z93EYB/td7A2kcuAlKNHoHZ86sT2pXzlr8nEGhHOR0gorGEeLhu/pr1XW3WvJfSjebdbgXlL1
+        r8EtRvUW3Oti1+Aupt/m87k9ESwlKDmeR2vO8b85IaoYjF66bzusflurEJCZau/a0+lkp4LX2lc2
+        4aUjC4eoQHoPPo7C3UPQMOfm5ubj7c2HPwvyMeWf959/+ZDEP/7MYuzkgqb3ehNbG8XY+fuUXXvj
+        Xr1ZcF0zSrAy94DufNc7/yxKdwosFYjXZNQCjhROhOfrWjittgVXXJa2DGxc4kde4ZNsdV3iDFLs
+        XfrJDruRRvSiy8zzsOOulRJb0WwphpY4B0eXsu/QRNi1FtYt1oJnlME1YfyQbnmtaEkfIZ0L1tFQ
+        JhWm7DXNY9N/Jrmu8jXJptRpGNyopdYgFIWJI1MdAlpye6HvevHWDbd+8Ml1r9r3731k6MHppGzb
+        bm+3P/y2DW13qBnPXs3Q+5vKSg6U6aiZ0CS8Sqk5g47e3QwkBUkErdX5udBfjTLOVS1opSQqcXXA
+        jDUItZdAinCVIsL0vUYzav4S0sZbjhRHA4Iecc3AACMd/eog5+wVll9nxCXkJVQKrzHtp30EoriY
+        g+kULng6g+tYz4GmD8A5QKtmNsjedbqlwt1xLUZrhru4sF1u9NIirJ4369jjIb0NfttNFqxpWFo/
+        VeTF9ff8UKWTqc4YvTBnrqdkomRlGGfXNfdfoVkdit5SfUv7afJ7ItxMajMvtZfrWhiG7qTyvEZ/
+        uN8YrSaeGnJDgIkRS2hLL5PCth2dUJjx3F7k7rcINRbaoUsMwhnTrtQjfhtj7P1nOJIfBIH/K+z7
+        JP5UAOqYoDYFRYNUARLGGOiewOgEAlAKgh51YGSClyNYZ7vhyT16ZvTW7GlvTv3u4vkv0nCoRdgK
+        AAA=
     headers:
       Accept-Ranges:
       - bytes
@@ -529,11 +460,11 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
+      - Tue, 21 Jan 2025 09:17:05 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 03 Sep 2024 08:55:37 GMT
+      - Tue, 21 Jan 2025 09:22:05 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -549,256 +480,17 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - c3b2d70541d0f25df47b6c61fc8dfae0a84a7911
+      - e53096ef7301e08664d2e83eb4ce7e078880c48b
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4F0B:13A290:2919B86:2AF3CF7:66D6CA85
+      - C651:115D:38BA54:3BF897:678F6611
       X-Served-By:
-      - cache-fra-eddf8230032-FRA
+      - cache-fra-eddf8230143-FRA
       X-Timer:
-      - S1725353437.056077,VS0,VE1
+      - S1737451026.902320,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac
-  response:
-    body:
-      string: '{"stac_version":"1.0.0","type":"Catalog","id":"Catalogue","description":"Catalogue
-        of data available in the platform","conformsTo":["https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","https://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson"],"links":[{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"root","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac","rel":"self","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/api","rel":"service-desc","type":"application/vnd.oai.openapi"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/conformance","rel":"conformance","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/collections","rel":"data","type":"application/json"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
-        search","rel":"search","type":"application/json","method":"GET"},{"href":"https://catalogue.dataspace.copernicus.eu/stac/search","title":"STAC
-        search","rel":"search","type":"application/json","method":"POST"}]}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '1279'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - c52315d2-884e-491a-95ad-720caf9d712b
-      x-envoy-upstream-service-time:
-      - '12'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
-  response:
-    body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
-        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
-        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
-        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
-        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '2879'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - 7caeaba5-17f0-4a00-8070-0d7451ae4bf7
-      x-envoy-upstream-service-time:
-      - '66'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
-  response:
-    body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
-        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
-        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
-        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
-        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '2879'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - 574a691b-3b1f-40ca-9ab3-7e53c1625c5b
-      x-envoy-upstream-service-time:
-      - '64'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
-  response:
-    body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
-        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
-        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
-        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
-        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '2879'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - 9726d17d-a697-4ca2-88bd-d1790caeb859
-      x-envoy-upstream-service-time:
-      - '61'
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE
-  response:
-    body:
-      string: '{"type":"Feature","stac_version":"1.0.0","stac_extensions":["https://stac-extensions.github.io/alternate-assets/v1.1.0/schema.json","https://stac-extensions.github.io/storage/v1.0.0/schema.json"],"id":"S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","collection":"SENTINEL-2","geometry":{"type":"Polygon","coordinates":[[[10.094784371465,48.745918775914],[10.058597320983,48.668796944794],[9.9915982240349,48.524109066067],[9.9249098218547,48.379478438533],[9.8590709590698,48.234734026961],[9.793020145753,48.090059753028],[9.7271632873825,47.945325414773],[9.6617717751076,47.800446953062],[9.6441368279311,47.761054884789],[8.9997330963449,47.765166566722],[8.9997279041062,48.753013004476],[10.094784371465,48.745918775914]]]},"properties":{"origin":"ESA","tileId":"32UNU","authority":"ESA","cloudCover":57.35018,"coordinates":"48.745918775914106,10.094784371464955
-        48.66879694479388,10.058597320982935 48.524109066067446,9.991598224034878
-        48.37947843853331,9.924909821854747 48.23473402696084,9.859070959069824 48.09005975302811,9.793020145752958
-        47.94532541477256,9.727163287382528 47.80044695306151,9.661771775107594 47.761054884788905,9.644136827931069
-        47.765166566721895,8.999733096344924 48.7530130044756,8.999727904106205 48.745918775914106,10.094784371464955","orbitNumber":26274,"productType":"S2MSI2A","orbitDirection":"DESCENDING","productGroupId":"GS2A_20200703T103031_026274_N02.14","operationalMode":"","processingLevel":"S2MSI2A","processorVersion":"2.14","platformShortName":"SENTINEL-2","spatialResolution":"60.0","instrumentShortName":"MSI","relativeOrbitNumber":108,"platformSerialIdentifier":"A","datetime":"2020-07-03T10:30:31.024000Z","end_datetime":"2020-07-03T10:30:31.024000Z","start_datetime":"2020-07-03T10:30:31.024000Z"},"bbox":[8.999727249145508,47.761051177978516,10.0947847366333,48.753013610839844],"links":[{"rel":"root","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac"},{"rel":"self","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2/items/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE"},{"rel":"collection","type":"application/json","href":"https://catalogue.dataspace.copernicus.eu/stac/collections/SENTINEL-2"}],"assets":{"QUICKLOOK":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Assets(eedf4763-4ce9-400b-9a5d-46f1e207b364)/$value","title":"QUICKLOOK","type":"image/jpeg"},"PRODUCT":{"href":"https://catalogue.dataspace.copernicus.eu/odata/v1/Products(b2a4636d-5716-5a9b-afb3-7fa9680128a1)/$value","title":"Product","type":"application/octet-stream","alternate":{"s3":{"href":"/eodata/Sentinel-2/MSI/L2A/2020/07/03/S2A_MSIL2A_20200703T103031_N0214_R108_T32UNU_20200703T142409.SAFE","storage:platform":"CLOUDFERRO","storage:region":"waw","storage:requester_pays":false,"storage:tier":"Online"}}}}}'
-    headers:
-      Access-Control-Allow-Credentials:
-      - 'true'
-      Access-Control-Allow-Headers:
-      - DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization
-      Access-Control-Allow-Methods:
-      - GET, PUT, POST, DELETE, PATCH, OPTIONS
-      Access-Control-Allow-Origin:
-      - '*'
-      Access-Control-Max-Age:
-      - '1728000'
-      Connection:
-      - keep-alive
-      Content-Length:
-      - '2879'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 03 Sep 2024 08:50:37 GMT
-      Strict-Transport-Security:
-      - max-age=15724800; includeSubDomains
-      request-id:
-      - 5b8bd721-15c9-4a93-a7fe-633daacfe034
-      x-envoy-upstream-service-time:
-      - '57'
     status:
       code: 200
       message: OK

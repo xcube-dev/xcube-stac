@@ -6,7 +6,6 @@ dependencies:
   - python>=3.10
   - boto3
   - dask
-  - s3fs
   - numpy
   - rasterio
   - rioxarray
@@ -16,9 +15,9 @@ dependencies:
   - pyproj
   - pystac-client
   - shapely
-  - tqdm
   - xarray
   - xcube >= 1.7.0
+  - zarr >=2.11,<3  # until we can ensure zarr 3 compatibility; see Issue xcube #1102
   # for testing
   - black
   - flake8
