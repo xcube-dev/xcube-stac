@@ -354,7 +354,7 @@ def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     return dic
 
 
-def get_url_from_pystac_object(pystac_obj: pystac.Item | pystac.collection) -> str:
+def get_url_from_pystac_object(pystac_obj: pystac.Item | pystac.Collection) -> str:
     """Extracts the URL an item object.
 
     Args:
