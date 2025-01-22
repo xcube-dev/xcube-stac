@@ -48,7 +48,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         self,
         ml_datasets: list[MultiLevelDataset],
         access_params: dict,
-        data_id: Optional[str] = None,
+        data_id: str | None = None,
         target_gm: GridMapping = None,
         open_params: dict = None,
         attrs: dict = None,

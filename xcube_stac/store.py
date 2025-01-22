@@ -19,7 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Container, Dict, Iterator, Tuple, Union
+from typing import Any, Dict, Tuple, Union
+from collections.abc import Container, Iterator
 
 import numpy as np
 import pystac
@@ -124,10 +125,10 @@ class StacDataStore(DataStore):
         )
 
     @classmethod
-    def get_data_types(cls) -> Tuple[str, ...]:
+    def get_data_types(cls) -> tuple[str, ...]:
         return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
 
-    def get_data_types_for_data(self, data_id: str) -> Tuple[str, ...]:
+    def get_data_types_for_data(self, data_id: str) -> tuple[str, ...]:
         item = self._impl.access_item(data_id)
         if self._helper.is_mldataset_available(item):
             return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
@@ -136,7 +137,7 @@ class StacDataStore(DataStore):
 
     def get_data_ids(
         self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
-    ) -> Union[Iterator[str], Iterator[Tuple[str, Dict[str, Any]]]]:
+    ) -> Iterator[str] | Iterator[tuple[str, dict[str, Any]]]:
         assert_valid_data_type(data_type)
         data_ids_obj = self._impl.get_data_ids(data_type=data_type)
         for data_id, pystac_obj in data_ids_obj:
@@ -159,7 +160,7 @@ class StacDataStore(DataStore):
 
     def get_data_opener_ids(
         self, data_id: str = None, data_type: DataTypeLike = None
-    ) -> Tuple[str, ...]:
+    ) -> tuple[str, ...]:
         assert_valid_data_type(data_type)
 
         if data_id is not None:
@@ -188,7 +189,7 @@ class StacDataStore(DataStore):
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         assert_valid_data_type(data_type)
         assert_valid_opener_id(opener_id)
         return self._impl.open_data(
@@ -200,7 +201,7 @@ class StacDataStore(DataStore):
 
     def describe_data(
         self, data_id: str, data_type: DataTypeLike = None
-    ) -> Union[DatasetDescriptor, MultiLevelDatasetDescriptor]:
+    ) -> DatasetDescriptor | MultiLevelDatasetDescriptor:
         assert_valid_data_type(data_type)
         metadata = self._impl.get_extent(data_id)
 
@@ -212,7 +213,7 @@ class StacDataStore(DataStore):
 
     def search_data(
         self, data_type: DataTypeLike = None, **search_params
-    ) -> Iterator[Union[DatasetDescriptor, MultiLevelDatasetDescriptor]]:
+    ) -> Iterator[DatasetDescriptor | MultiLevelDatasetDescriptor]:
         assert_valid_data_type(data_type)
         pystac_objs = self._impl.search_data(**search_params)
 
@@ -263,7 +264,7 @@ class StacXcubeDataStore(StacDataStore):
     def __init__(
         self,
         url: str,
-        stack_mode: Union[bool, str] = False,
+        stack_mode: bool | str = False,
         **storage_options_s3,
     ):
         self._helper = HelperXcube()
@@ -288,7 +289,7 @@ class StacCdseDataStore(StacDataStore):
 
     def __init__(
         self,
-        stack_mode: Union[bool, str] = False,
+        stack_mode: bool | str = False,
         **storage_options_s3,
     ):
         storage_options_s3 = update_dict(

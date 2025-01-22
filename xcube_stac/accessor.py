@@ -53,7 +53,7 @@ class HttpsDataAccessor:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         if access_params["format_id"] == "netcdf":
             if is_valid_ml_data_type(data_type):
                 LOG.warn(
@@ -98,7 +98,7 @@ class S3DataAccessor:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         return self._s3_accessor.open_data(
             data_id=access_params["fs_path"],
             opener_id=opener_id,
@@ -149,7 +149,7 @@ class S3Sentinel2DataAccessor:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         if opener_id is None:
             opener_id = ""
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":

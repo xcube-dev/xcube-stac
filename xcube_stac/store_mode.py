@@ -20,7 +20,8 @@
 # SOFTWARE.
 
 import json
-from typing import Iterator, Union
+from typing import Union
+from collections.abc import Iterator
 
 import numpy as np
 import pystac
@@ -98,7 +99,7 @@ class SingleStoreMode:
 
     def __init__(
         self,
-        catalog: Union[pystac.Catalog, pystac_client.client.Client],
+        catalog: pystac.Catalog | pystac_client.client.Client,
         url_mod: str,
         searchable: bool,
         storage_options_s3: dict,
@@ -165,7 +166,7 @@ class SingleStoreMode:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset]:
+    ) -> xr.Dataset | MultiLevelDataset:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
         item = self.access_item(data_id)
@@ -208,7 +209,7 @@ class SingleStoreMode:
         data_type: DataTypeLike = None,
         target_gm: GridMapping = None,
         **open_params,
-    ) -> Union[xr.Dataset, list[xr.Dataset], MultiLevelDataset]:
+    ) -> xr.Dataset | list[xr.Dataset] | MultiLevelDataset:
         access_params = self._helper.get_data_access_params(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
@@ -443,7 +444,7 @@ class StackStoreMode(SingleStoreMode):
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> Union[xr.Dataset, MultiLevelDataset, None]:
+    ) -> xr.Dataset | MultiLevelDataset | None:
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
 

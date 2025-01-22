@@ -109,7 +109,7 @@ def _get_scaling_v1(item: pystac.Item, asset_name: str) -> tuple[Any, Any, Any]:
     return scale, offset, nodata_val
 
 
-def _get_scaling_v2(item: pystac.Item, asset_name: str) -> Union[Any, Any, Any]:
+def _get_scaling_v2(item: pystac.Item, asset_name: str) -> Any | Any | Any:
     nodata_val = item.assets[asset_name].extra_fields.get("nodata", None)
     scale = item.assets[asset_name].extra_fields.get("raster:scale", 1)
     offset = item.assets[asset_name].extra_fields.get("raster:offset", 0)

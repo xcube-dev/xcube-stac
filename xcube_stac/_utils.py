@@ -24,7 +24,8 @@ import copy
 import datetime
 import itertools
 import os
-from typing import Any, Container, Dict, Iterator, Union
+from typing import Any, Dict, Union
+from collections.abc import Container, Iterator
 
 import numpy as np
 import pandas as pd
@@ -52,7 +53,7 @@ _CATALOG_JSON = "catalog.json"
 
 
 def search_items(
-    catalog: Union[pystac.Catalog, pystac_client.client.Client],
+    catalog: pystac.Catalog | pystac_client.client.Client,
     searchable: bool,
     **search_params,
 ) -> Iterator[pystac.Item]:
@@ -66,7 +67,7 @@ def search_items(
 
 
 def search_nonsearchable_catalog(
-    pystac_object: Union[pystac.Catalog, pystac.Collection],
+    pystac_object: pystac.Catalog | pystac.Collection,
     recursive: bool = True,
     **search_params,
 ) -> Iterator[pystac.Item]:
@@ -152,8 +153,8 @@ def get_format_id(asset: pystac.Asset) -> str:
 
 
 def get_attrs_from_pystac_object(
-    pystac_obj: Union[pystac.Item, pystac.Collection], include_attrs: Container[str]
-) -> Dict[str, Any]:
+    pystac_obj: pystac.Item | pystac.Collection, include_attrs: Container[str]
+) -> dict[str, Any]:
     """Extracts the desired attributes from an item object.
 
     Args:
@@ -204,7 +205,7 @@ def convert_str2datetime(datetime_str: str) -> datetime.datetime:
     return dt
 
 
-def convert_datetime2str(dt: Union[datetime.datetime, datetime.date]) -> str:
+def convert_datetime2str(dt: datetime.datetime | datetime.date) -> str:
     """Converting datetime to ISO 8601 string.
 
     Args:
@@ -353,9 +354,7 @@ def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     return dic
 
 
-def get_url_from_pystac_object(
-    pystac_obj: Union[pystac.Item, pystac.collection]
-) -> str:
+def get_url_from_pystac_object(pystac_obj: pystac.Item | pystac.collection) -> str:
     """Extracts the URL an item object.
 
     Args:
@@ -445,7 +444,7 @@ def assert_valid_opener_id(opener_id: str):
 
 
 def get_data_id_from_pystac_object(
-    pystac_obj: Union[pystac.Item, pystac.Collection], catalog_url: str
+    pystac_obj: pystac.Item | pystac.Collection, catalog_url: str
 ) -> str:
     """Extracts the data ID from an item object.
 
@@ -471,8 +470,8 @@ def modify_catalog_url(url: str) -> str:
 
 def reproject_bbox(
     source_bbox: list[FloatInt, FloatInt, FloatInt, FloatInt],
-    source_crs: Union[pyproj.CRS, str],
-    target_crs: Union[pyproj.CRS, str],
+    source_crs: pyproj.CRS | str,
+    target_crs: pyproj.CRS | str,
     buffer: float = 0.0,
 ):
     source_crs = normalize_crs(source_crs)
@@ -485,8 +484,8 @@ def reproject_bbox(
     x_max = target_bbox[2]
     if target_crs.is_geographic and x_min > x_max:
         x_max += 360
-    buffer_x = abs((x_max - x_min)) * buffer
-    buffer_y = abs((target_bbox[3] - target_bbox[1])) * buffer
+    buffer_x = abs(x_max - x_min) * buffer
+    buffer_y = abs(target_bbox[3] - target_bbox[1]) * buffer
     target_bbox = (
         target_bbox[0] - buffer_x,
         target_bbox[1] - buffer_y,
@@ -506,7 +505,7 @@ def convert_to_solar_time(
     return utc + datetime.timedelta(seconds=offset_seconds)
 
 
-def normalize_crs(crs: Union[str, pyproj.CRS]) -> pyproj.CRS:
+def normalize_crs(crs: str | pyproj.CRS) -> pyproj.CRS:
     if isinstance(crs, pyproj.CRS):
         return crs
     else:
@@ -530,8 +529,8 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
 def get_gridmapping(
     bbox: list[float],
     spatial_res: float,
-    crs: Union[str, pyproj.crs.CRS],
-    tile_size: Union[int, tuple[int, int]] = TILE_SIZE,
+    crs: str | pyproj.crs.CRS,
+    tile_size: int | tuple[int, int] = TILE_SIZE,
 ) -> GridMapping:
     x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
     y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
@@ -548,7 +547,7 @@ def merge_datasets(
     datasets: list[xr.Dataset], target_gm: GridMapping = None
 ) -> xr.Dataset:
     y_coord, x_coord = get_spatial_dims(datasets[0])
-    x_ress = [abs(float((ds[x_coord][1] - ds[x_coord][0]))) for ds in datasets]
+    x_ress = [abs(float(ds[x_coord][1] - ds[x_coord][0])) for ds in datasets]
     y_ress = [abs(float(ds[y_coord][1] - ds[y_coord][0])) for ds in datasets]
     if (
         np.unique(x_ress).size == 1
