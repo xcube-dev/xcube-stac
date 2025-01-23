@@ -25,15 +25,6 @@ jobs:
         with:
           environment-file: xcube-stac/environment.yml
 
-      # quick and dirty, will be removed after xcube 1.8 release
-      - name: Install xcube from source
-        shell: bash -l {0}
-        run: |
-          micromamba install -c conda-forge tabulate
-          cd /home/runner/work/xcube-stac/xcube-stac/xcube
-          ls
-          pip install --no-deps . 
-
       - name: Start xcube server
         shell: bash -l {0}
         run: |
