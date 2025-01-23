@@ -20,7 +20,6 @@
 # SOFTWARE.
 
 import json
-from typing import Union
 from collections.abc import Iterator
 
 import numpy as np
@@ -33,8 +32,9 @@ from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 from xcube.core.gridmapping import GridMapping
 
-from .accessor import HttpsDataAccessor
-from .accessor import S3DataAccessor
+from .accessor.https import HttpsDataAccessor
+from .accessor.sen2 import S3Sentinel2DataAccessor
+from .accessor.s3 import S3DataAccessor
 from .constants import LOG
 from .constants import STAC_OPEN_PARAMETERS
 from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
@@ -43,7 +43,7 @@ from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
 from .constants import COLLECTION_PREFIX
 from .constants import TILE_SIZE
 from .helper import Helper
-from .mldataset import SingleItemMultiLevelDataset
+from .mldataset.single_item import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
 from ._utils import (
     merge_datasets,
@@ -60,8 +60,8 @@ from ._utils import (
     wrapper_clip_dataset_by_geometry,
 )
 from .stack import groupby_solar_day
-from .stack import mosaic_2d_take_first
-from .stack import mosaic_3d_take_first
+from .stack import mosaic_spatial_take_first
+from .stack import mosaic_spatial_along_time_take_first
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -108,7 +108,7 @@ class SingleStoreMode:
         self._searchable = searchable
         self._storage_options_s3 = storage_options_s3
         self._https_accessor = None
-        self._s3_accessor = None
+        self._s3_accessor: S3Sentinel2DataAccessor | S3DataAccessor = None
         self._helper = helper
 
     def access_item(self, data_id: str) -> pystac.Item:
@@ -242,7 +242,7 @@ class SingleStoreMode:
         else:
             ds = merge_datasets(list_ds_asset, target_gm=target_gm)
             if open_params.get("angles_sentinel2", False):
-                ds = self._s3_accessor.read_angles(item, ds)
+                ds = self._s3_accessor.add_sen2_angles(item, ds)
             ds.attrs = attrs
         return ds
 
@@ -597,7 +597,7 @@ class StackStoreMode(SingleStoreMode):
                         idx_remove_dt.append(dt_idx)
                         continue
                     else:
-                        ds = mosaic_2d_take_first(list_ds_idx)
+                        ds = mosaic_spatial_take_first(list_ds_idx)
                         list_ds_time.append(ds)
                 ds = xr.concat(list_ds_time, dim="time", join="exact")
                 np_datetimes_sel = [
@@ -608,7 +608,9 @@ class StackStoreMode(SingleStoreMode):
                 ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
-        ds_final = mosaic_3d_take_first(list_ds_tiles, access_params.time.values)
+        ds_final = mosaic_spatial_along_time_take_first(
+            list_ds_tiles, access_params.time.values
+        )
         return ds_final
 
     def get_extent(self, data_id: str) -> dict:

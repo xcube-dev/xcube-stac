@@ -32,7 +32,6 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
 
 from .._href_parse import decode_href
-from ..constants import SENITNEL2_BANDS
 from .._utils import is_valid_ml_data_type
 from .._utils import get_gridmapping
 from .._utils import get_spatial_dims
@@ -41,6 +40,44 @@ from ..constants import LOG
 from ..mldataset.jp2 import Jp2MultiLevelDataset
 from ..stack import mosaic_spatial_along_time_take_first
 from ..stack import mosaic_spatial_take_first
+
+
+SENITNEL2_BANDS = [
+    "B01",
+    "B02",
+    "B03",
+    "B04",
+    "B05",
+    "B06",
+    "B07",
+    "B08",
+    "B8A",
+    "B09",
+    "B10",
+    "B11",
+    "B12",
+]
+SENITNEL2_L2A_BANDS = SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
+SENITNEL2_L2A_BANDS.remove("B10")
+SENITNEL2_L2A_BAND_RESOLUTIONS = {
+    "B01": 60,
+    "B02": 10,
+    "B03": 10,
+    "B04": 10,
+    "B05": 20,
+    "B06": 20,
+    "B07": 20,
+    "B08": 10,
+    "B8A": 20,
+    "B09": 60,
+    "B11": 20,
+    "B12": 20,
+    "AOT": 10,
+    "SCL": 20,
+    "WVP": 10,
+}
+SENTINEL2_MIN_RESOLUTIONS = 10
+SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
 
 
 class S3Sentinel2DataAccessor:

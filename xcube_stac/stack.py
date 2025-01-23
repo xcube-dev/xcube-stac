@@ -27,7 +27,7 @@ import pystac
 import xarray as xr
 
 from ._utils import add_nominal_datetime
-from ._utils import get_processing_version
+from ._utils import get_spatial_dims
 from .constants import LOG
 
 
@@ -117,7 +117,7 @@ def get_processing_version(item: pystac.Item) -> float:
     )
 
 
-def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
+def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     if len(list_ds) == 1:
         return list_ds[0]
     dim = "dummy"

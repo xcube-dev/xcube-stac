@@ -19,22 +19,23 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Optional
+from typing import Any
 
 import rasterio
 import rasterio.session
 import rioxarray
+import pystac
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset, LazyMultiLevelDataset
 from xcube.core.gridmapping import GridMapping
 
-from ._utils import rename_dataset
-from ._utils import normalize_grid_mapping
-from ._utils import merge_datasets
-from ._utils import wrapper_clip_dataset_by_geometry
-from .stac_extension.raster import apply_offset_scaling
-from .accessor import S3DataAccessor
-from .accessor import S3Sentinel2DataAccessor
+from .._utils import rename_dataset
+from .._utils import normalize_grid_mapping
+from .._utils import merge_datasets
+from .._utils import wrapper_clip_dataset_by_geometry
+from ..stac_extension.raster import apply_offset_scaling
+from ..accessor.s3 import S3DataAccessor
+from ..accessor.sen2 import S3Sentinel2DataAccessor
 
 
 class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
@@ -88,7 +89,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
             datasets.append(ds)
         combined_dataset = merge_datasets(datasets, target_gm=self._target_gm)
         if self._open_params.get("angles_sentinel2", False):
-            combined_dataset = self._s3_accessor.read_angles(
+            combined_dataset = self._s3_accessor.add_sen2_angles(
                 self._item, combined_dataset
             )
         combined_dataset.attrs = self._attrs

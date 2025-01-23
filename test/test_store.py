@@ -39,7 +39,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.constants import DATA_STORE_ID
 from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from xcube_stac.constants import DATA_STORE_ID_CDSE
-from xcube_stac.constants import SENITNEL2_L2A_BANDS
+from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac._utils import reproject_bbox
@@ -51,13 +51,9 @@ SKIP_HELP = (
 )
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
-# CDSE_CREDENTIALS = {
-#     "key": "xxx",
-#     "secret": "xxx",
-# }
 CDSE_CREDENTIALS = {
-    "key": "O0M0CUQIDQO9TDZ4D8NR",
-    "secret": "qPUyXs9G6j8on6MY5KPhQNHuA5uZTqxEscrbBCGx",
+    "key": "xxx",
+    "secret": "xxx",
 }
 
 
@@ -89,7 +85,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_IW_GRDH_1SSH_20250120T103300_20250120T103325_057526_0715CD"
+            "S1A_EW_GRDM_1SDV_20250121T072110_20250121T072152_057539_071657"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -433,7 +429,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            ["blue_p50", "blue_p25", "blue_p75", "qa_f", "crs"], list(ds.data_vars)
+            ["blue_p50", "blue_p25", "blue_p75", "qa_f"], list(ds.data_vars)
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
@@ -467,7 +463,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertEqual(msg, str(cm.output[-1]))
         self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertCountEqual(["blue_p25", "crs"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -481,7 +477,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(mlds, MultiLevelDataset)
         ds = mlds.base_dataset
-        self.assertCountEqual(["blue_p25", "blue_p75", "crs"], list(ds.data_vars))
+        self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
@@ -624,7 +620,6 @@ class StacDataStoreTest(unittest.TestCase):
                     "analytic_multires_band_1",
                     "analytic_multires_band_2",
                     "analytic_multires_band_3",
-                    "analytic_multires_spatial_ref",
                 ],
                 list(ds.data_vars),
             )
@@ -669,7 +664,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            SENITNEL2_L2A_BANDS + ["crs", "solar_angle", "viewing_angle"],
+            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
@@ -695,7 +690,7 @@ class StacDataStoreTest(unittest.TestCase):
         ds = mlds.get_dataset(0)
         self.assertIsInstance(mlds, MultiLevelDataset)
         self.assertCountEqual(
-            ["B01", "B02", "B03", "crs", "solar_angle", "viewing_angle"],
+            ["B01", "B02", "B03", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
@@ -727,7 +722,7 @@ class StacDataStoreTest(unittest.TestCase):
             open_params_dataset_geotiff=dict(tile_size=(512, 512)),
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["red", "green", "blue", "crs"], list(ds.data_vars))
+        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
         self.assertCountEqual(
             [4, 16, 16],
             [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
@@ -791,7 +786,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
 
         self.assertCountEqual(
-            SENITNEL2_L2A_BANDS + ["crs", "solar_angle", "viewing_angle"],
+            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
@@ -834,7 +829,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
 
         self.assertCountEqual(
-            ["B01", "B02", "B03", "crs", "solar_angle", "viewing_angle"],
+            ["B01", "B02", "B03", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(

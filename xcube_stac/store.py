@@ -19,7 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, Tuple, Union
+from typing import Any
 from collections.abc import Container, Iterator
 
 import numpy as np

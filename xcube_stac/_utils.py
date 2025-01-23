@@ -304,13 +304,33 @@ def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
     return items
 
 
-def get_processing_version(item: pystac.Item) -> float:
-    return float(
-        item.properties.get(
-            "processing:version",
-            item.properties.get("s2:processing_baseline", "1.0"),
-        )
-    )
+def get_grid_mapping_name(ds: xr.Dataset) -> str | None:
+    gm_names = []
+    for var in ds.data_vars:
+        if "grid_mapping" in ds[var].attrs:
+            gm_names.append(ds[var].attrs["grid_mapping"])
+    if "crs" in ds:
+        gm_names.append("crs")
+    if "spatial_ref" in ds.coords:
+        gm_names.append("spatial_ref")
+    gm_names = np.unique(gm_names)
+    assert len(gm_names) <= 1, "Multiple grid mapping names found."
+    if len(gm_names) == 1:
+        return str(gm_names[0])
+    else:
+        return None
+
+
+def normalize_grid_mapping(ds: xr.Dataset) -> xr.Dataset:
+    gm_name = get_grid_mapping_name(ds)
+    if gm_name is None:
+        return ds
+    for var in ds.data_vars:
+        ds[var].attrs["grid_mapping"] = "spatial_ref"
+    gm_var = ds[gm_name]
+    ds = ds.drop_vars(gm_name)
+    ds = ds.assign_coords(spatial_ref=xr.DataArray(0, attrs=gm_var.attrs))
+    return ds
 
 
 def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
@@ -346,7 +366,11 @@ def get_url_from_pystac_object(
     Returns:
         the URL of an item.
     """
-    links = [link for link in pystac_obj.links if link.rel == "self"]
+    links = [
+        link
+        for link in pystac_obj.links
+        if link.rel == "self" and link.href.startswith("https://")
+    ]
     assert len(links) == 1
     return links[0].href
 
@@ -595,7 +619,7 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
     # and encoded crs in the data variable "crs". This is needed until the
     # issue https://github.com/xcube-dev/xcube/issues/1013 is addressed.
     ds = resample_in_space(ds, target_gm=target_gm, gm_name="crs", encode_cf=True)
-    vars = [
+    var_names = [
         "x_bnds",
         "y_bnds",
         "lon_bnds",
@@ -604,7 +628,7 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
         "transformed_y",
     ]
     vars_sel = []
-    for var in vars:
-        if var in ds:
-            vars_sel.append(var)
+    for var_ame in var_names:
+        if var_ame in ds:
+            vars_sel.append(var_ame)
     return ds.drop_vars(vars_sel)
