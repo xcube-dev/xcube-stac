@@ -24,7 +24,8 @@ import copy
 import datetime
 import itertools
 import os
-from typing import Any, Container, Dict, Iterator, Union
+from typing import Any
+from collections.abc import Container, Iterator
 
 import numpy as np
 import pandas as pd
@@ -42,17 +43,17 @@ from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import resample_in_space
 
 from .constants import DATA_OPENER_IDS
+from .constants import TILE_SIZE
 from .constants import FloatInt
 from .constants import MAP_FILE_EXTENSION_FORMAT
 from .constants import MAP_MIME_TYP_FORMAT
-from .constants import LOG
 
 
 _CATALOG_JSON = "catalog.json"
 
 
 def search_items(
-    catalog: Union[pystac.Catalog, pystac_client.client.Client],
+    catalog: pystac.Catalog | pystac_client.client.Client,
     searchable: bool,
     **search_params,
 ) -> Iterator[pystac.Item]:
@@ -66,7 +67,7 @@ def search_items(
 
 
 def search_nonsearchable_catalog(
-    pystac_object: Union[pystac.Catalog, pystac.Collection],
+    pystac_object: pystac.Catalog | pystac.Collection,
     recursive: bool = True,
     **search_params,
 ) -> Iterator[pystac.Item]:
@@ -148,14 +149,12 @@ def get_format_id(asset: pystac.Asset) -> str:
         format_id = get_format_from_path(asset.href)
     else:
         format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
-    if format_id is None:
-        LOG.debug(f"No format_id found for asset {asset.title!r}")
     return format_id
 
 
 def get_attrs_from_pystac_object(
-    pystac_obj: Union[pystac.Item, pystac.Collection], include_attrs: Container[str]
-) -> Dict[str, Any]:
+    pystac_obj: pystac.Item | pystac.Collection, include_attrs: Container[str]
+) -> dict[str, Any]:
     """Extracts the desired attributes from an item object.
 
     Args:
@@ -206,7 +205,7 @@ def convert_str2datetime(datetime_str: str) -> datetime.datetime:
     return dt
 
 
-def convert_datetime2str(dt: Union[datetime.datetime, datetime.date]) -> str:
+def convert_datetime2str(dt: datetime.datetime | datetime.date) -> str:
     """Converting datetime to ISO 8601 string.
 
     Args:
@@ -355,9 +354,7 @@ def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     return dic
 
 
-def get_url_from_pystac_object(
-    pystac_obj: Union[pystac.Item, pystac.collection]
-) -> str:
+def get_url_from_pystac_object(pystac_obj: pystac.Item | pystac.Collection) -> str:
     """Extracts the URL an item object.
 
     Args:
@@ -447,7 +444,7 @@ def assert_valid_opener_id(opener_id: str):
 
 
 def get_data_id_from_pystac_object(
-    pystac_obj: Union[pystac.Item, pystac.Collection], catalog_url: str
+    pystac_obj: pystac.Item | pystac.Collection, catalog_url: str
 ) -> str:
     """Extracts the data ID from an item object.
 
@@ -473,8 +470,8 @@ def modify_catalog_url(url: str) -> str:
 
 def reproject_bbox(
     source_bbox: list[int] | list[float],
-    source_crs: Union[pyproj.CRS, str],
-    target_crs: Union[pyproj.CRS, str],
+    source_crs: pyproj.CRS | str,
+    target_crs: pyproj.CRS | str,
     buffer: float = 0.0,
 ):
     source_crs = normalize_crs(source_crs)
@@ -489,8 +486,8 @@ def reproject_bbox(
         x_max = target_bbox[2]
         if target_crs.is_geographic and x_min > x_max:
             x_max += 360
-        buffer_x = abs((x_max - x_min)) * buffer
-        buffer_y = abs((target_bbox[3] - target_bbox[1])) * buffer
+        buffer_x = abs(x_max - x_min) * buffer
+        buffer_y = abs(target_bbox[3] - target_bbox[1]) * buffer
         target_bbox = (
             target_bbox[0] - buffer_x,
             target_bbox[1] - buffer_y,
@@ -510,7 +507,7 @@ def convert_to_solar_time(
     return utc + datetime.timedelta(seconds=offset_seconds)
 
 
-def normalize_crs(crs: Union[str, pyproj.CRS]) -> pyproj.CRS:
+def normalize_crs(crs: str | pyproj.CRS) -> pyproj.CRS:
     if isinstance(crs, pyproj.CRS):
         return crs
     else:
@@ -534,8 +531,8 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
 def get_gridmapping(
     bbox: list[float],
     spatial_res: float,
-    crs: Union[str, pyproj.crs.CRS],
-    tile_size: Union[int, tuple[int, int]] = None,
+    crs: str | pyproj.crs.CRS,
+    tile_size: int | tuple[int, int] = TILE_SIZE,
 ) -> GridMapping:
     x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
     y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
@@ -552,7 +549,7 @@ def merge_datasets(
     datasets: list[xr.Dataset], target_gm: GridMapping = None
 ) -> xr.Dataset:
     y_coord, x_coord = get_spatial_dims(datasets[0])
-    x_ress = [abs(float((ds[x_coord][1] - ds[x_coord][0]))) for ds in datasets]
+    x_ress = [abs(float(ds[x_coord][1] - ds[x_coord][0])) for ds in datasets]
     y_ress = [abs(float(ds[y_coord][1] - ds[y_coord][0])) for ds in datasets]
     if (
         np.unique(x_ress).size == 1
@@ -577,9 +574,6 @@ def merge_datasets(
         for ds in datasets_grouped:
             datasets_resampled.append(wrapper_resample_in_space(ds, target_gm))
         ds = _update_datasets(datasets_resampled)
-    if "spatial_ref" in ds.coords:
-        ds["crs"] = ds.coords["spatial_ref"]
-        ds = ds.drop_vars("spatial_ref")
     return ds
 
 
@@ -601,16 +595,14 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Dataset:
-    crs_asset = None
-    if "crs" in ds:
-        crs_asset = ds.crs.attrs["crs_wkt"]
-    if "spatial_ref" in ds:
-        crs_asset = ds.spatial_ref.attrs["crs_wkt"]
-    if crs_asset and "bbox" in open_params and "crs" in open_params:
-        bbox = reproject_bbox(
-            open_params["bbox"], open_params["crs"], crs_asset, buffer=0.01
-        )
-        ds = clip_dataset_by_geometry(ds, geometry=bbox)
+    gm_name = get_grid_mapping_name(ds)
+    if gm_name is not None:
+        crs_asset = ds[gm_name].attrs["crs_wkt"]
+        if "bbox" in open_params and "crs" in open_params:
+            bbox = reproject_bbox(
+                open_params["bbox"], open_params["crs"], crs_asset, buffer=0.05
+            )
+            ds = clip_dataset_by_geometry(ds, geometry=bbox)
     return ds
 
 
@@ -618,7 +610,9 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
     # gm_name is set to "crs" to force resample_in_space to return a dataset with
     # and encoded crs in the data variable "crs". This is needed until the
     # issue https://github.com/xcube-dev/xcube/issues/1013 is addressed.
-    ds = resample_in_space(ds, target_gm=target_gm, gm_name="crs", encode_cf=True)
+    ds = resample_in_space(
+        ds, target_gm=target_gm, gm_name="spatial_ref", encode_cf=True
+    )
     var_names = [
         "x_bnds",
         "y_bnds",
@@ -628,7 +622,7 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
         "transformed_y",
     ]
     vars_sel = []
-    for var_ame in var_names:
-        if var_ame in ds:
-            vars_sel.append(var_ame)
+    for var_name in var_names:
+        if var_name in ds:
+            vars_sel.append(var_name)
     return ds.drop_vars(vars_sel)

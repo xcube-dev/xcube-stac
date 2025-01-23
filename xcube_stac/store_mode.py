@@ -107,8 +107,8 @@ class SingleStoreMode:
         self._url_mod = url_mod
         self._searchable = searchable
         self._storage_options_s3 = storage_options_s3
-        self._https_accessor = None
-        self._s3_accessor: S3Sentinel2DataAccessor | S3DataAccessor = None
+        self._https_accessor: HttpsDataAccessor | None = None
+        self._s3_accessor: S3Sentinel2DataAccessor | S3DataAccessor | None = None
         self._helper = helper
 
     def access_item(self, data_id: str) -> pystac.Item:

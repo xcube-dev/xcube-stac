@@ -160,7 +160,4 @@ def mosaic_spatial_along_time_take_first(
         final_slices.append(ds_mosaic)
     final_ds = xr.concat(final_slices, dim="time", join="exact")
     final_ds = final_ds.assign_coords(coords=dict(time=dts))
-    if "crs" in final_ds:
-        final_ds = final_ds.drop_vars("crs")
-        final_ds["crs"] = list_ds[0].crs
     return final_ds

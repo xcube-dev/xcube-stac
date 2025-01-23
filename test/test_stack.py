@@ -118,18 +118,14 @@ class UtilsTest(unittest.TestCase):
         list_ds.append(xr.Dataset({"B01": da, "crs": crs}))
 
         # test only one tile
-        dts = list(
-            np.array(["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64")
-        )
+        dts = np.array(["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64")
+
         ds_test = mosaic_spatial_along_time_take_first(list_ds[:1], dts)
         xr.testing.assert_allclose(ds_test, list_ds[0])
 
         # test two tiles
-        dts = list(
-            np.array(
-                ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"],
-                dtype="datetime64",
-            )
+        dts = np.array(
+            ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"], dtype="datetime64"
         )
         ds_test = mosaic_spatial_along_time_take_first(list_ds, dts)
         data = np.array(
