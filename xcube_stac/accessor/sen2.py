@@ -32,15 +32,12 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
 
 from .._href_parse import decode_href
-from .._utils import is_valid_ml_data_type
-from .._utils import get_gridmapping
-from .._utils import get_spatial_dims
-from .._utils import wrapper_resample_in_space
+from .._utils import (get_gridmapping, get_spatial_dims, is_valid_ml_data_type,
+                      wrapper_resample_in_space)
 from ..constants import LOG
 from ..mldataset.jp2 import Jp2MultiLevelDataset
-from ..stack import mosaic_spatial_along_time_take_first
-from ..stack import mosaic_spatial_take_first
-
+from ..stack import (mosaic_spatial_along_time_take_first,
+                     mosaic_spatial_take_first)
 
 SENITNEL2_BANDS = [
     "B01",
@@ -163,7 +160,7 @@ class S3Sentinel2DataAccessor:
     ) -> xr.Dataset:
         # create target grid mapping, native resolution of 5000 is kept since the
         # angles from the xml meta data, which needs to be done eager
-        crs = pyproj.CRS.from_cf(ds.crs.attrs)
+        crs = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
         if crs.is_geographic:
             spatial_res = 5000 / 111320
         else:

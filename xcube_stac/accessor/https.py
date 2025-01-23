@@ -21,8 +21,7 @@
 
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import DataTypeLike
-from xcube.core.store import new_data_store
+from xcube.core.store import DataTypeLike, new_data_store
 
 from .._utils import is_valid_ml_data_type
 from ..constants import LOG

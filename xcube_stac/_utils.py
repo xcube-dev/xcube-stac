@@ -24,30 +24,24 @@ import copy
 import datetime
 import itertools
 import os
-from typing import Any
 from collections.abc import Container, Iterator
+from typing import Any
 
 import numpy as np
 import pandas as pd
 import pyproj
 import pystac
 import pystac_client
-from shapely.geometry import box
 import xarray as xr
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataTypeLike
+from shapely.geometry import box
 from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import resample_in_space
+from xcube.core.store import (DATASET_TYPE, MULTI_LEVEL_DATASET_TYPE,
+                              DataStoreError, DataTypeLike)
 
-from .constants import DATA_OPENER_IDS
-from .constants import TILE_SIZE
-from .constants import FloatInt
-from .constants import MAP_FILE_EXTENSION_FORMAT
-from .constants import MAP_MIME_TYP_FORMAT
-
+from .constants import (DATA_OPENER_IDS, MAP_FILE_EXTENSION_FORMAT,
+                        MAP_MIME_TYP_FORMAT, TILE_SIZE, FloatInt)
 
 _CATALOG_JSON = "catalog.json"
 
@@ -607,12 +601,18 @@ def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Datase
 
 
 def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    # gm_name is set to "crs" to force resample_in_space to return a dataset with
-    # and encoded crs in the data variable "crs". This is needed until the
-    # issue https://github.com/xcube-dev/xcube/issues/1013 is addressed.
-    ds = resample_in_space(
-        ds, target_gm=target_gm, gm_name="spatial_ref", encode_cf=True
-    )
+    # Extra care needs to be taken for the grid_mapping variable. This is needed
+    # until the issue https://github.com/xcube-dev/xcube/issues/1013
+    # is addressed. More details are given in the above-mentioned issue.
+    source_gm = GridMapping.from_dataset(ds)
+    if source_gm.crs == target_gm.crs:
+        ds = resample_in_space(
+            ds, source_gm=source_gm, target_gm=target_gm, encode_cf=False
+        )
+    else:
+        ds = resample_in_space(
+            ds, source_gm=source_gm, target_gm=target_gm, gm_name="crs", encode_cf=True
+        )
     var_names = [
         "x_bnds",
         "y_bnds",

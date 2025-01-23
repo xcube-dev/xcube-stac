@@ -22,9 +22,7 @@
 from xcube.constants import EXTENSION_POINT_DATA_STORES
 from xcube.util import extension
 
-from .constants import DATA_STORE_ID
-from .constants import DATA_STORE_ID_CDSE
-from .constants import DATA_STORE_ID_XCUBE
+from .constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
 
 
 def init_plugin(ext_registry: extension.ExtensionRegistry):

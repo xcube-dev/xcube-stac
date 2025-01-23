@@ -26,8 +26,7 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from ._utils import add_nominal_datetime
-from ._utils import get_spatial_dims
+from ._utils import add_nominal_datetime, get_spatial_dims
 from .constants import LOG
 
 
@@ -126,7 +125,7 @@ def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
 
     ds_mosaic = xr.Dataset()
     for key in ds:
-        if ds[key].dims == (dim, y_coord, x_coord):
+        if ds[key].dims[-2:] == (y_coord, x_coord):
             axis = ds[key].dims.index(dim)
             da_arr = ds[key].data
             nan_mask = da.isnan(da_arr)
@@ -134,8 +133,8 @@ def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
                 da_arr_select,
-                dims=(y_coord, x_coord),
-                coords={y_coord: ds[y_coord], x_coord: ds[x_coord]},
+                dims=ds[key].dims[1:],
+                coords=ds[key].coords,
             )
         else:
             ds_mosaic[key] = ds[key]

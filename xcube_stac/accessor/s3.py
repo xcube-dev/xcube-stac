@@ -21,8 +21,7 @@
 
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import DataTypeLike
-from xcube.core.store import new_data_store
+from xcube.core.store import DataTypeLike, new_data_store
 
 
 class S3DataAccessor:

@@ -19,11 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import unittest
 import datetime
+import unittest
 
-import pystac
 import numpy as np
+import pystac
 import xarray as xr
 
 from xcube_stac.stac_extension.raster import apply_offset_scaling

@@ -19,8 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any
 from collections.abc import Container, Iterator
+from typing import Any
 
 import numpy as np
 import pystac
@@ -28,41 +28,21 @@ import pystac_client
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (
-    DATASET_TYPE,
-    MULTI_LEVEL_DATASET_TYPE,
-    DatasetDescriptor,
-    MultiLevelDatasetDescriptor,
-    DataStore,
-    DataStoreError,
-    DataType,
-    DataTypeLike,
-)
+from xcube.core.store import (DATASET_TYPE, MULTI_LEVEL_DATASET_TYPE,
+                              DatasetDescriptor, DataStore, DataStoreError,
+                              DataType, DataTypeLike,
+                              MultiLevelDatasetDescriptor)
 from xcube.util.jsonschema import JsonObjectSchema
 
-from .constants import (
-    CDSE_STAC_URL,
-    CDSE_S3_ENDPOINT,
-    DATA_OPENER_IDS,
-    MAP_FILE_EXTENSION_FORMAT,
-    PROTOCOLS,
-    STAC_STORE_PARAMETERS,
-)
-from .store_mode import SingleStoreMode
-from .store_mode import StackStoreMode
-from ._utils import (
-    assert_valid_data_type,
-    assert_valid_opener_id,
-    get_attrs_from_pystac_object,
-    get_data_id_from_pystac_object,
-    is_valid_data_type,
-    is_valid_ml_data_type,
-    modify_catalog_url,
-    update_dict,
-)
-from .helper import Helper
-from .helper import HelperXcube
-from .helper import HelperCdse
+from ._utils import (assert_valid_data_type, assert_valid_opener_id,
+                     get_attrs_from_pystac_object,
+                     get_data_id_from_pystac_object, is_valid_data_type,
+                     is_valid_ml_data_type, modify_catalog_url, update_dict)
+from .constants import (CDSE_S3_ENDPOINT, CDSE_STAC_URL, DATA_OPENER_IDS,
+                        MAP_FILE_EXTENSION_FORMAT, PROTOCOLS,
+                        STAC_STORE_PARAMETERS)
+from .helper import Helper, HelperCdse, HelperXcube
+from .store_mode import SingleStoreMode, StackStoreMode
 
 
 class StacDataStore(DataStore):

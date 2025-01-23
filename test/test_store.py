@@ -21,28 +21,24 @@
 
 import itertools
 import unittest
-from unittest.mock import patch
 import urllib.request
+from unittest.mock import patch
 
 import pytest
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (
-    DatasetDescriptor,
-    DataStoreError,
-    MultiLevelDatasetDescriptor,
-    new_data_store,
-)
+from xcube.core.store import (DatasetDescriptor, DataStoreError,
+                              MultiLevelDatasetDescriptor, new_data_store)
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac.constants import DATA_STORE_ID
-from xcube_stac.constants import DATA_STORE_ID_XCUBE
-from xcube_stac.constants import DATA_STORE_ID_CDSE
-from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
+from xcube_stac._utils import reproject_bbox
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
-from xcube_stac._utils import reproject_bbox
+from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
+from xcube_stac.constants import (DATA_STORE_ID, DATA_STORE_ID_CDSE,
+                                  DATA_STORE_ID_XCUBE)
+
 from .sampledata import sentinel_2_band_data
 
 SKIP_HELP = (

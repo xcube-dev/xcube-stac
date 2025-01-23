@@ -19,21 +19,19 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import re
+
 import numpy as np
 import pystac
-import re
 from xcube.core.store import DataStoreError
 
-from .accessor.s3 import S3DataAccessor
-from .accessor.sen2 import S3Sentinel2DataAccessor
-from .accessor.sen2 import SENITNEL2_L2A_BANDS
-from .accessor.sen2 import SENTINEL2_REGEX_ASSET_NAME
-from .accessor.sen2 import SENITNEL2_L2A_BAND_RESOLUTIONS
-from .constants import MLDATASET_FORMATS
 from ._href_parse import decode_href
-from ._utils import get_format_id
-from ._utils import get_format_from_path
-from ._utils import is_valid_ml_data_type
+from ._utils import get_format_from_path, get_format_id, is_valid_ml_data_type
+from .accessor.s3 import S3DataAccessor
+from .accessor.sen2 import (SENITNEL2_L2A_BAND_RESOLUTIONS,
+                            SENITNEL2_L2A_BANDS, SENTINEL2_REGEX_ASSET_NAME,
+                            S3Sentinel2DataAccessor)
+from .constants import MLDATASET_FORMATS
 
 
 class Helper:

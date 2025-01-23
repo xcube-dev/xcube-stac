@@ -27,41 +27,28 @@ import pystac
 import pystac_client.client
 import requests
 import xarray as xr
+from xcube.core.gridmapping import GridMapping
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
-from xcube.core.gridmapping import GridMapping
 
+from ._utils import (convert_datetime2str, get_data_id_from_pystac_object,
+                     get_gridmapping, is_valid_ml_data_type, merge_datasets,
+                     normalize_grid_mapping, rename_dataset, reproject_bbox,
+                     search_collections, search_items, update_dict,
+                     wrapper_clip_dataset_by_geometry)
 from .accessor.https import HttpsDataAccessor
-from .accessor.sen2 import S3Sentinel2DataAccessor
 from .accessor.s3 import S3DataAccessor
-from .constants import LOG
-from .constants import STAC_OPEN_PARAMETERS
-from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
-from .constants import STAC_SEARCH_PARAMETERS
-from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
-from .constants import COLLECTION_PREFIX
-from .constants import TILE_SIZE
+from .accessor.sen2 import S3Sentinel2DataAccessor
+from .constants import (COLLECTION_PREFIX, LOG, STAC_OPEN_PARAMETERS,
+                        STAC_OPEN_PARAMETERS_STACK_MODE,
+                        STAC_SEARCH_PARAMETERS,
+                        STAC_SEARCH_PARAMETERS_STACK_MODE, TILE_SIZE)
 from .helper import Helper
 from .mldataset.single_item import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
-from ._utils import (
-    merge_datasets,
-    rename_dataset,
-    convert_datetime2str,
-    get_data_id_from_pystac_object,
-    is_valid_ml_data_type,
-    reproject_bbox,
-    search_collections,
-    update_dict,
-    get_gridmapping,
-    normalize_grid_mapping,
-    search_items,
-    wrapper_clip_dataset_by_geometry,
-)
-from .stack import groupby_solar_day
-from .stack import mosaic_spatial_take_first
-from .stack import mosaic_spatial_along_time_take_first
+from .stack import (groupby_solar_day, mosaic_spatial_along_time_take_first,
+                    mosaic_spatial_take_first)
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -483,6 +470,8 @@ class StackStoreMode(SingleStoreMode):
         else:
             ds = self.stack_items(grouped_items, **open_params)
             ds = normalize_grid_mapping(ds)
+            if open_params.get("angles_sentinel2", False):
+                ds = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds)
             ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
             # Gather all used STAC item IDs used  in the data cube for each time step
             # and organize them in a dictionary. The dictionary keys are datetime

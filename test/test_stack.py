@@ -18,15 +18,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import unittest
 import datetime
+import unittest
 
 import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stack import mosaic_spatial_along_time_take_first
-from xcube_stac.stack import groupby_solar_day
+from xcube_stac.stack import (groupby_solar_day,
+                              mosaic_spatial_along_time_take_first)
 
 
 class UtilsTest(unittest.TestCase):

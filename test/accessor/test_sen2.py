@@ -20,14 +20,13 @@
 # SOFTWARE.
 
 import unittest
-from unittest.mock import patch
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 import dask
 import dask.array as da
-import xarray as xr
 import rasterio
 import rasterio.session
+import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 
 from xcube_stac.accessor.sen2 import S3Sentinel2DataAccessor

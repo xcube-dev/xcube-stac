@@ -23,27 +23,19 @@ import datetime
 import unittest
 
 import dask.array as da
-import pystac
-import pyproj
 import numpy as np
+import pyproj
+import pystac
 import xarray as xr
 from xcube.core.store import DataStoreError
 
-from xcube_stac._utils import (
-    get_format_id,
-    get_format_from_path,
-    reproject_bbox,
-    get_spatial_dims,
-    merge_datasets,
-    normalize_crs,
-    convert_datetime2str,
-    convert_str2datetime,
-    do_bboxes_intersect,
-    is_collection_in_time_range,
-    is_item_in_time_range,
-    update_dict,
-    wrapper_clip_dataset_by_geometry,
-)
+from xcube_stac._utils import (convert_datetime2str, convert_str2datetime,
+                               do_bboxes_intersect, get_format_from_path,
+                               get_format_id, get_spatial_dims,
+                               is_collection_in_time_range,
+                               is_item_in_time_range, merge_datasets,
+                               normalize_crs, reproject_bbox, update_dict,
+                               wrapper_clip_dataset_by_geometry)
 
 
 class UtilsTest(unittest.TestCase):
