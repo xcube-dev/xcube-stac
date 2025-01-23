@@ -25,8 +25,8 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stack import (groupby_solar_day,
-                              mosaic_spatial_along_time_take_first)
+from xcube_stac.stack import groupby_solar_day
+from xcube_stac.stack import mosaic_spatial_along_time_take_first
 
 
 class UtilsTest(unittest.TestCase):
@@ -68,7 +68,7 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(1, len(cm.output))
         msg = (
             "WARNING:xcube.stac:More that two items found for datetime and tile ID: "
-            f"[example-item0, example-item1, example-item2]. Only the first "
+            "[example-item0, example-item1, example-item2]. Only the first "
             "tow items are considered."
         )
         self.assertEqual(msg, str(cm.output[-1]))

@@ -27,10 +27,13 @@ import rasterio.session
 import rioxarray
 import xarray as xr
 from xcube.core.gridmapping import GridMapping
-from xcube.core.mldataset import LazyMultiLevelDataset, MultiLevelDataset
+from xcube.core.mldataset import LazyMultiLevelDataset
+from xcube.core.mldataset import MultiLevelDataset
 
-from .._utils import (merge_datasets, normalize_grid_mapping, rename_dataset,
-                      wrapper_clip_dataset_by_geometry)
+from .._utils import merge_datasets
+from .._utils import normalize_grid_mapping
+from .._utils import rename_dataset
+from .._utils import wrapper_clip_dataset_by_geometry
 from ..accessor.s3 import S3DataAccessor
 from ..accessor.sen2 import S3Sentinel2DataAccessor
 from ..stac_extension.raster import apply_offset_scaling

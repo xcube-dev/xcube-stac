@@ -37,11 +37,16 @@ from shapely.geometry import box
 from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import resample_in_space
-from xcube.core.store import (DATASET_TYPE, MULTI_LEVEL_DATASET_TYPE,
-                              DataStoreError, DataTypeLike)
+from xcube.core.store import DATASET_TYPE
+from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
+from xcube.core.store import DataStoreError
+from xcube.core.store import DataTypeLike
+from .constants import DATA_OPENER_IDS
+from .constants import MAP_FILE_EXTENSION_FORMAT
+from .constants import MAP_MIME_TYP_FORMAT
+from .constants import TILE_SIZE
+from .constants import FloatInt
 
-from .constants import (DATA_OPENER_IDS, MAP_FILE_EXTENSION_FORMAT,
-                        MAP_MIME_TYP_FORMAT, TILE_SIZE, FloatInt)
 
 _CATALOG_JSON = "catalog.json"
 

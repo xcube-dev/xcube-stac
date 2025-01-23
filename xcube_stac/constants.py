@@ -23,10 +23,13 @@ import logging
 from typing import Union
 
 from xcube.core.store.fs.impl.fs import S3FsAccessor
-from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
-                                   JsonDateSchema, JsonIntegerSchema,
-                                   JsonNumberSchema, JsonObjectSchema,
-                                   JsonStringSchema)
+from xcube.util.jsonschema import JsonArraySchema
+from xcube.util.jsonschema import JsonBooleanSchema
+from xcube.util.jsonschema import JsonDateSchema
+from xcube.util.jsonschema import JsonIntegerSchema
+from xcube.util.jsonschema import JsonNumberSchema
+from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonStringSchema
 
 # general stac constants
 DATA_STORE_ID = "stac"

@@ -28,21 +28,34 @@ import pystac_client
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (DATASET_TYPE, MULTI_LEVEL_DATASET_TYPE,
-                              DatasetDescriptor, DataStore, DataStoreError,
-                              DataType, DataTypeLike,
-                              MultiLevelDatasetDescriptor)
+from xcube.core.store import DATASET_TYPE
+from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
+from xcube.core.store import DatasetDescriptor
+from xcube.core.store import DataStore
+from xcube.core.store import DataStoreError
+from xcube.core.store import DataType
+from xcube.core.store import DataTypeLike
+from xcube.core.store import MultiLevelDatasetDescriptor
 from xcube.util.jsonschema import JsonObjectSchema
-
-from ._utils import (assert_valid_data_type, assert_valid_opener_id,
-                     get_attrs_from_pystac_object,
-                     get_data_id_from_pystac_object, is_valid_data_type,
-                     is_valid_ml_data_type, modify_catalog_url, update_dict)
-from .constants import (CDSE_S3_ENDPOINT, CDSE_STAC_URL, DATA_OPENER_IDS,
-                        MAP_FILE_EXTENSION_FORMAT, PROTOCOLS,
-                        STAC_STORE_PARAMETERS)
-from .helper import Helper, HelperCdse, HelperXcube
-from .store_mode import SingleStoreMode, StackStoreMode
+from ._utils import assert_valid_data_type
+from ._utils import assert_valid_opener_id
+from ._utils import get_attrs_from_pystac_object
+from ._utils import get_data_id_from_pystac_object
+from ._utils import is_valid_data_type
+from ._utils import is_valid_ml_data_type
+from ._utils import modify_catalog_url
+from ._utils import update_dict
+from .constants import CDSE_S3_ENDPOINT
+from .constants import CDSE_STAC_URL
+from .constants import DATA_OPENER_IDS
+from .constants import MAP_FILE_EXTENSION_FORMAT
+from .constants import PROTOCOLS
+from .constants import STAC_STORE_PARAMETERS
+from .helper import Helper
+from .helper import HelperCdse
+from .helper import HelperXcube
+from .store_mode import SingleStoreMode
+from .store_mode import StackStoreMode
 
 
 class StacDataStore(DataStore):

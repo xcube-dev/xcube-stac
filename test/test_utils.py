@@ -29,13 +29,19 @@ import pystac
 import xarray as xr
 from xcube.core.store import DataStoreError
 
-from xcube_stac._utils import (convert_datetime2str, convert_str2datetime,
-                               do_bboxes_intersect, get_format_from_path,
-                               get_format_id, get_spatial_dims,
-                               is_collection_in_time_range,
-                               is_item_in_time_range, merge_datasets,
-                               normalize_crs, reproject_bbox, update_dict,
-                               wrapper_clip_dataset_by_geometry)
+from xcube_stac._utils import convert_datetime2str
+from xcube_stac._utils import convert_str2datetime
+from xcube_stac._utils import do_bboxes_intersect
+from xcube_stac._utils import get_format_from_path
+from xcube_stac._utils import get_format_id
+from xcube_stac._utils import get_spatial_dims
+from xcube_stac._utils import is_collection_in_time_range
+from xcube_stac._utils import is_item_in_time_range
+from xcube_stac._utils import merge_datasets
+from xcube_stac._utils import normalize_crs
+from xcube_stac._utils import reproject_bbox
+from xcube_stac._utils import update_dict
+from xcube_stac._utils import wrapper_clip_dataset_by_geometry
 
 
 class UtilsTest(unittest.TestCase):

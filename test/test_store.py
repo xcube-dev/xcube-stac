@@ -28,17 +28,19 @@ import pytest
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (DatasetDescriptor, DataStoreError,
-                              MultiLevelDatasetDescriptor, new_data_store)
+from xcube.core.store import DatasetDescriptor
+from xcube.core.store import DataStoreError
+from xcube.core.store import MultiLevelDatasetDescriptor
+from xcube.core.store import new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_stac._utils import reproject_bbox
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
-from xcube_stac.constants import (DATA_STORE_ID, DATA_STORE_ID_CDSE,
-                                  DATA_STORE_ID_XCUBE)
-
+from xcube_stac.constants import DATA_STORE_ID
+from xcube_stac.constants import DATA_STORE_ID_CDSE
+from xcube_stac.constants import DATA_STORE_ID_XCUBE
 from .sampledata import sentinel_2_band_data
 
 SKIP_HELP = (
@@ -453,9 +455,9 @@ class StacDataStoreTest(unittest.TestCase):
             ds = mlds.base_dataset
         self.assertEqual(1, len(cm.output))
         msg = (
-            f"WARNING:xcube.stac:The item "
+            "WARNING:xcube.stac:The item "
             "'lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20' is not conform to "
-            f"the stac-extension 'raster'. No scaling is applied."
+            "the stac-extension 'raster'. No scaling is applied."
         )
         self.assertEqual(msg, str(cm.output[-1]))
         self.assertIsInstance(mlds, MultiLevelDataset)
@@ -504,7 +506,7 @@ class StacDataStoreTest(unittest.TestCase):
             )
         self.assertEqual(1, len(cm.output))
         msg = (
-            f"WARNING:xcube.stac:No data opener found for format 'netcdf' and "
+            "WARNING:xcube.stac:No data opener found for format 'netcdf' and "
             "data type 'mldataset'. Data type is changed to the default "
             "data type 'dataset'."
         )
