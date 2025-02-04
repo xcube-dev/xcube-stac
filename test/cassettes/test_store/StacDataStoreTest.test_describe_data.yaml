@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -14,33 +14,29 @@ interactions:
     uri: https://geoservice.dlr.de/eoc/ogc/stac/v1
   response:
     body:
-      string: !!binary |
-        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
-        QB98kLRA6ce/AAAA//8DAJtV27xfKwAA
+      string: '{"title":"EOC EO Products Service","description":"Provides interoperable
+        access to metadata from EO collections and products of DLR''s Earth Observation
+        Center (EOC).","links":[{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fjson","rel":"self","type":"application/json","title":"This
+        document"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=application%2Fx-yaml","rel":"alternate","type":"application/x-yaml","title":"This
+        document as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/?f=text%2Fhtml","rel":"alternate","type":"text/html","title":"This
+        document as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fvnd.oai.openapi%2Bjson%3Bversion%3D3.0","rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"API
+        definition for this endpoint as application/vnd.oai.openapi+json;version=3.0"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=application%2Fx-yaml","rel":"service-desc","type":"application/x-yaml","title":"API
+        definition for this endpoint as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/openapi?f=text%2Fhtml","rel":"service-doc","type":"text/html","title":"API
+        definition for this endpoint as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson","rel":"conformance","type":"application/json","title":"Conformance
+        declaration as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fx-yaml","rel":"conformance","type":"application/x-yaml","title":"Conformance
+        declaration as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml","rel":"conformance","type":"text/html","title":"Conformance
+        declaration as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","rel":"data","type":"application/json","title":"Collections
+        Metadata as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","rel":"data","type":"text/html","title":"Collections
+        Metadata as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Collect","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L4_P1D_NO2surf","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCD_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_DEM_90","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDL_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L3A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSScene4Band","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDL_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_FNF_50","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_RH95_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_AGBD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDE_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_COMP_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSScene3Band","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L0_QL","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L1B","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_NONRES_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L3A_WASP","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SUPERSITES","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SWIM_WE","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2015","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2-soilsuite-europe-2018-2022-P5Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_NONRES_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_Evolution","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSOrthoTiles","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2019","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/N2N_NOISE_DE_2017","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDE_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/CROPTYPES_DE_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_COMP_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Scene","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_COVER_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCE_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_VOLUME_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_HEIGHT_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        as application/geo+json","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
+        as text/html","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application%2Fjson","rel":"root","type":"application/json","title":"Root
+        Catalog as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        as application/geo+json","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
+        as text/html","method":"POST"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/queryables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"text/html","title":"Queryables
+        as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=application%2Fschema%2Bjson","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"application/schema+json","title":"Sortables
+        as application/schema+json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/sortables?f=text%2Fhtml","rel":"http://www.opengis.net/def/rel/ogc/1.0/sortables","type":"text/html","title":"Sortables
+        as text/html"}],"id":"GeoserverSTACLandingPage","conformsTo":["http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/html","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#filter","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/item-search#fields","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/req/filter","http://geoserver.org/spec/ecql/1.0/req/gs-ecql","http://geoserver.org/spec/ecql/1.0/req/ecql-text","http://www.opengis.net/spec/cql2/1.0/req/basic-cql2","http://www.opengis.net/spec/cql2/1.0/req/advanced-comparison-operators","http://www.opengis.net/spec/cql2/1.0/req/arithmetic","http://www.opengis.net/spec/cql2/1.0/req/property-property","http://www.opengis.net/spec/cql2/1.0/req/basic-spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/spatial-operators","http://www.opengis.net/spec/cql2/1.0/req/functions","http://www.opengis.net/spec/cql2/1.0/req/cql2-text"],"type":"Catalog","stac_version":"1.0.0"}'
     headers:
       API-Version:
       - 1.0.0
@@ -57,7 +53,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 21 Jan 2025 09:16:38 GMT
+      - Tue, 04 Feb 2025 11:50:01 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -74,13 +70,13 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_4989b17e:19487879ebf:61ae
+      - GS_FLOW_CONTROL=GS_CFLOW_-217c0c98:194d083bec1:-4f83
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
-      - '1'
+      - '0'
       X-Frame-Options:
       - SAMEORIGIN
     status:
@@ -92,7 +88,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -135,11 +131,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 21 Jan 2025 09:16:39 GMT
+      - Tue, 04 Feb 2025 11:50:02 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_4989b17e:19487879ebf:61b0
+      - GS_FLOW_CONTROL=GS_CFLOW_-6b3f718e:194d084d056:-239d
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -155,7 +151,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -198,11 +194,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 21 Jan 2025 09:16:40 GMT
+      - Tue, 04 Feb 2025 11:50:03 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_4989b17e:19487879ebf:61d7
+      - GS_FLOW_CONTROL=GS_CFLOW_-6b3f718e:194d084d056:-2376
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -218,7 +214,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -261,11 +257,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 21 Jan 2025 09:16:40 GMT
+      - Tue, 04 Feb 2025 11:50:04 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_4989b17e:19487879ebf:61fd
+      - GS_FLOW_CONTROL=GS_CFLOW_-6b3f718e:194d084d056:-2350
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:

@@ -150,7 +150,7 @@ class UtilsTest(unittest.TestCase):
         # test two tiles, where spatial ref is given in spatial_ref coord
         spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
         for i, ds in enumerate(list_ds):
-            ds = ds.drop("crs")
+            ds = ds.drop_vars("crs")
             ds.coords["spatial_ref"] = spatial_ref
             list_ds[i] = ds
         ds_expected = xr.Dataset({"B01": da})

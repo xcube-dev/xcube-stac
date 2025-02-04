@@ -5,7 +5,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -22,7 +22,7 @@ interactions:
         to access detailed asset-level metadata, including spatial information, temporal
         coverage, and data specifications. This standardized interface facilitates
         efficient data discovery and retrieval across the extensive collection of
-        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","https://api.stacspec.org/v1.0.0-rc.1/collection-search","https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction","https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","https://api.stacspec.org/v1.0.0/collections/extensions/transaction","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0/item-search","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0-rc.1/collection-search#query","http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query"],"links":[{"rel":"self","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
+        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["https://api.stacspec.org/v1.0.0/collections/extensions/transaction","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort","https://api.stacspec.org/v1.0.0/item-search","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","https://api.stacspec.org/v1.0.0/item-search#query","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","https://api.stacspec.org/v1.0.0-rc.1/collection-search#query","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction","http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/ogcapi-features","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"],"links":[{"rel":"self","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
         conformance classes implemented by this server","href":"https://stac.dataspace.copernicus.eu/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
         search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
         search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"child","type":"application/json","title":"Sentinel-1
@@ -35,17 +35,18 @@ interactions:
     headers:
       Connection:
       - keep-alive
+      Content-Length:
+      - '1038'
       Content-Type:
       - application/json
       Date:
-      - Thu, 23 Jan 2025 12:15:56 GMT
-      Set-Cookie:
-      - TSd2a210ea029=08ae79db2dab280052f3a0007560eae5f2ae633112f655e5bd0e01dd5f04bc1c13b7675ecc0cc6901fb41728cd389f80;
-        Max-Age=30; Path=/
+      - Tue, 04 Feb 2025 12:07:01 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
-      Transfer-Encoding:
-      - chunked
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
     status:
       code: 200
       message: OK
@@ -55,7 +56,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -126,17 +127,18 @@ interactions:
     headers:
       Connection:
       - keep-alive
+      Content-Length:
+      - '6848'
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 23 Jan 2025 12:15:56 GMT
-      Set-Cookie:
-      - TSd2a210ea029=08ae79db2dab2800dea0170c1f571d278a6b003a7fb19f4ec3c150a0a6bc5afcf52bbafde8fc58378660a4edfd10b159;
-        Max-Age=30; Path=/
+      - Tue, 04 Feb 2025 12:07:01 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
-      Transfer-Encoding:
-      - chunked
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
     status:
       code: 200
       message: OK
@@ -146,7 +148,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -217,17 +219,18 @@ interactions:
     headers:
       Connection:
       - keep-alive
+      Content-Length:
+      - '6848'
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 23 Jan 2025 12:15:56 GMT
-      Set-Cookie:
-      - TSd2a210ea029=08ae79db2dab280029ad263e2fd196870b6bb14afec0ea1d402a759342adde96a65902f3f960e01920f641ddffb54dfa;
-        Max-Age=30; Path=/
+      - Tue, 04 Feb 2025 12:07:01 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
-      Transfer-Encoding:
-      - chunked
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
     status:
       code: 200
       message: OK
@@ -236,26 +239,26 @@ interactions:
     headers:
       Authorization:
       - !!binary |
-        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU9YOTRKS0NGRUYxUExOVk5BVTJKLzIwMjUwMTIz
+        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU9YOTRKS0NGRUYxUExOVk5BVTJKLzIwMjUwMjA0
         L2RlZmF1bHQvczMvYXdzNF9yZXF1ZXN0LCBTaWduZWRIZWFkZXJzPWhvc3Q7eC1hbXotY2hlY2tz
-        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9NjY5YTUz
-        MTE4NWFjNmM5Yjg3MmUyNzA3MTNhMzVkMjQyNmViZjJiOTcxNDUxMjMwNWY1ZWY3MjEyZWNjZWMy
-        MA==
+        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9M2JkZTIz
+        N2IyNDk0YjZhMDJlYTkyZTQ5ODAyYWRjZDc5MzgyOTQ1ZjgxMzM5NDkxOGE5MWI5YmVkOWExMDRk
+        ZA==
       User-Agent:
       - !!binary |
-        Qm90bzMvMS4zNi4xIG1kL0JvdG9jb3JlIzEuMzYuMSB1YS8yLjAgb3MvbGludXgjNi44LjAtNTEt
+        Qm90bzMvMS4zNi4zIG1kL0JvdG9jb3JlIzEuMzYuMyB1YS8yLjAgb3MvbGludXgjNi44LjAtNTIt
         Z2VuZXJpYyBtZC9hcmNoI3g4Nl82NCBsYW5nL3B5dGhvbiMzLjEyLjggbWQvcHlpbXBsI0NQeXRo
-        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzYuMQ==
+        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzYuMw==
       X-Amz-Content-SHA256:
       - !!binary |
         ZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3
         ODUyYjg1NQ==
       X-Amz-Date:
       - !!binary |
-        MjAyNTAxMjNUMTIxNTU3Wg==
+        MjAyNTAyMDRUMTIwNzAyWg==
       amz-sdk-invocation-id:
       - !!binary |
-        MDIzYTUxMTMtZWU4NC00OWVjLTliODgtZGY5ZTE1OTg0ZmFl
+        OTA4YWI3ZjgtOTk4MS00NjM0LWIzYTYtZmNiYzA3NTBmNjJj
       amz-sdk-request:
       - !!binary |
         YXR0ZW1wdD0x
@@ -8262,7 +8265,7 @@ interactions:
       content-type:
       - binary/octet-stream
       date:
-      - Thu, 23 Jan 2025 12:15:57 GMT
+      - Tue, 04 Feb 2025 12:07:02 GMT
       etag:
       - '"7c37cd6524551dc6bc230d61fe44ecfe-1"'
       expires:
@@ -8278,15 +8281,15 @@ interactions:
       server:
       - envoy
       x-amz-request-id:
-      - tx00000000000007c79f544-00679232fd-8ebc88ae-default
+      - tx00000000000008111a2f6-0067a202e6-8ebc88ae-default
       x-envoy-upstream-service-time:
-      - '37'
+      - '45'
       x-ratelimit-limit:
       - 2000, 2000;w=60
       x-ratelimit-remaining:
       - '1999'
       x-ratelimit-reset:
-      - '3'
+      - '58'
       x-rgw-object-type:
       - Normal
     status:
@@ -8298,7 +8301,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -8369,17 +8372,18 @@ interactions:
     headers:
       Connection:
       - keep-alive
+      Content-Length:
+      - '6848'
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 23 Jan 2025 12:15:58 GMT
-      Set-Cookie:
-      - TSd2a210ea029=08ae79db2dab2800c5b393d4b03f1937bac91a1ce8ff851bd2d8483f88572d1618dd620117f6c4af2abf037a5495bcde;
-        Max-Age=30; Path=/
+      - Tue, 04 Feb 2025 12:07:02 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
-      Transfer-Encoding:
-      - chunked
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
     status:
       code: 200
       message: OK
@@ -8389,7 +8393,7 @@ interactions:
       Accept:
       - '*/*'
       Accept-Encoding:
-      - gzip, deflate, br
+      - gzip, deflate, br, zstd
       Connection:
       - keep-alive
       User-Agent:
@@ -8460,17 +8464,18 @@ interactions:
     headers:
       Connection:
       - keep-alive
+      Content-Length:
+      - '6848'
       Content-Type:
       - application/geo+json
       Date:
-      - Thu, 23 Jan 2025 12:15:59 GMT
-      Set-Cookie:
-      - TSd2a210ea029=08ae79db2dab2800f99728c08afbc01073c45160970c6363ab61fd5895093a51e073665b38d0f9473835a08ab903307f;
-        Max-Age=30; Path=/
+      - Tue, 04 Feb 2025 12:07:03 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
-      Transfer-Encoding:
-      - chunked
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
     status:
       code: 200
       message: OK
@@ -8479,26 +8484,26 @@ interactions:
     headers:
       Authorization:
       - !!binary |
-        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU9YOTRKS0NGRUYxUExOVk5BVTJKLzIwMjUwMTIz
+        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU9YOTRKS0NGRUYxUExOVk5BVTJKLzIwMjUwMjA0
         L2RlZmF1bHQvczMvYXdzNF9yZXF1ZXN0LCBTaWduZWRIZWFkZXJzPWhvc3Q7eC1hbXotY2hlY2tz
-        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9YjBkMDJh
-        MjQwZWM5Yzk0Nzk3Zjg0OTFhZTc4OTljZDdlYjlmNjIwOGRhMmEzMzhkYWVjMzFmMjI2MjdmNzRh
-        MQ==
+        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9YjJlNWQ4
+        Y2IyNTExY2VlZjU0ZjA3NTQ0MDk0Mzg1MDVlZTJlNjllOGNhYWUzNmU5MzhlNWE0OTBjZmNiYjI4
+        Mg==
       User-Agent:
       - !!binary |
-        Qm90bzMvMS4zNi4xIG1kL0JvdG9jb3JlIzEuMzYuMSB1YS8yLjAgb3MvbGludXgjNi44LjAtNTEt
+        Qm90bzMvMS4zNi4zIG1kL0JvdG9jb3JlIzEuMzYuMyB1YS8yLjAgb3MvbGludXgjNi44LjAtNTIt
         Z2VuZXJpYyBtZC9hcmNoI3g4Nl82NCBsYW5nL3B5dGhvbiMzLjEyLjggbWQvcHlpbXBsI0NQeXRo
-        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzYuMQ==
+        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzYuMw==
       X-Amz-Content-SHA256:
       - !!binary |
         ZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3
         ODUyYjg1NQ==
       X-Amz-Date:
       - !!binary |
-        MjAyNTAxMjNUMTIxNTU5Wg==
+        MjAyNTAyMDRUMTIwNzAzWg==
       amz-sdk-invocation-id:
       - !!binary |
-        YmRjYzU0NjgtMTY3Zi00ZTNhLTljZDItZTE4ZWYyNzMxN2Ew
+        MWY0MTljNDQtYjkwNi00ZWFiLWI5MzktYWM3NDE3OGUzYWQx
       amz-sdk-request:
       - !!binary |
         YXR0ZW1wdD0x
@@ -16505,7 +16510,7 @@ interactions:
       content-type:
       - binary/octet-stream
       date:
-      - Thu, 23 Jan 2025 12:15:59 GMT
+      - Tue, 04 Feb 2025 12:07:03 GMT
       etag:
       - '"7c37cd6524551dc6bc230d61fe44ecfe-1"'
       expires:
@@ -16521,7 +16526,7 @@ interactions:
       server:
       - envoy
       x-amz-request-id:
-      - tx0000000000000755d8239-00679232ff-8ebbfb26-default
+      - tx00000000000007a633d83-0067a202e7-8ebc8cd2-default
       x-envoy-upstream-service-time:
       - '18'
       x-ratelimit-limit:
@@ -16529,7 +16534,7 @@ interactions:
       x-ratelimit-remaining:
       - '1998'
       x-ratelimit-reset:
-      - '1'
+      - '57'
       x-rgw-object-type:
       - Normal
     status:

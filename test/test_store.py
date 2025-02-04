@@ -83,7 +83,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
             "collections/sentinel-1-grd/items/"
-            "S1A_EW_GRDM_1SDV_20250121T072110_20250121T072152_057539_071657"
+            "S1A_IW_GRDH_1SDH_20250204T101545_20250204T101559_057745_071E73"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
