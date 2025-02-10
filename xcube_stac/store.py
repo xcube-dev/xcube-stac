@@ -301,15 +301,12 @@ class StacCdseDataStore(StacDataStore):
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         stac_params = STAC_STORE_PARAMETERS.copy()
         del stac_params["url"]
-        stac_params["creodias_vm"] = (
-            JsonBooleanSchema(
-                title="Decide if xcube-stac is used on a Creodias VM.",
-                default=False,
-            ),
+        stac_params["creodias_vm"] = JsonBooleanSchema(
+            title="Decide if xcube-stac is used on a Creodias VM.",
+            default=False,
         )
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,
-            required=["key", "secret"],
-            additional_properties=True,
+            additional_properties=False,
         )
