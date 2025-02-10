@@ -34,6 +34,7 @@ from .accessor.sen2 import SENITNEL2_L2A_BAND_RESOLUTIONS
 from .accessor.sen2 import SENITNEL2_L2A_BANDS
 from .accessor.sen2 import SENTINEL2_REGEX_ASSET_NAME
 from .accessor.sen2 import S3Sentinel2DataAccessor
+from .accessor.sen2 import FileSentinel2DataAccessor
 from .constants import MLDATASET_FORMATS
 
 
@@ -143,9 +144,12 @@ class HelperXcube(Helper):
 
 class HelperCdse(Helper):
 
-    def __init__(self):
+    def __init__(self, creodias_vm: bool = False):
         super().__init__()
-        self.s3_accessor = S3Sentinel2DataAccessor
+        if creodias_vm:
+            self.s3_accessor = FileSentinel2DataAccessor
+        else:
+            self.s3_accessor = S3Sentinel2DataAccessor
 
     def list_assets_from_item(
         self, item: pystac.Item, **open_params

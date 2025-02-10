@@ -27,6 +27,7 @@ import pystac
 import pystac_client
 import requests
 import xarray as xr
+from xcube.util.jsonschema import JsonBooleanSchema
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DATASET_TYPE
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
@@ -283,6 +284,7 @@ class StacCdseDataStore(StacDataStore):
     def __init__(
         self,
         stack_mode: bool | str = False,
+        creodias_vm: bool = False,
         **storage_options_s3,
     ):
         storage_options_s3 = update_dict(
@@ -292,13 +294,19 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._helper = HelperCdse()
+        self._helper = HelperCdse(creodias_vm=creodias_vm)
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         stac_params = STAC_STORE_PARAMETERS.copy()
         del stac_params["url"]
+        stac_params["creodias_vm"] = (
+            JsonBooleanSchema(
+                title="Decide if xcube-stac is used on a Creodias VM.",
+                default=False,
+            ),
+        )
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,
