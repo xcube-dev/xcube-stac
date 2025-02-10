@@ -204,7 +204,7 @@ class FileSentinel2DataAccessor:
             return NotImplemented("Multi-level datasets are not implemented.")
         else:
             return rioxarray.open_rasterio(
-                f"{access_params['root']}/{access_params['fs_path']}",
+                f"/{access_params['root']}/{access_params['fs_path']}",
                 chunks=dict(x=1024, y=1024),
                 band_as_variable=True,
             )
@@ -221,7 +221,7 @@ class FileSentinel2DataAccessor:
         # read xml file and parse to dict
         href = item.assets["granule_metadata"].href
         protocol, root, fs_path, storage_options = decode_href(href)
-        with open(f"{root}/{fs_path}", "r", encoding="utf-8") as file:
+        with open(f"/{root}/{fs_path}", "r", encoding="utf-8") as file:
             xml_content = file.read()
         return xmltodict.parse(xml_content)
 
