@@ -586,6 +586,9 @@ class StackStoreMode(SingleStoreMode):
                                 f"with parameters {params}"
                             )
                             continue
+                        # due to clipping the dataset to the bbox, ds can be None.
+                        if ds is None:
+                            continue
                         ds = rename_dataset(ds, params["name_origin"])
                         if open_params.get("apply_scaling", False):
                             ds[params["name_origin"]] = apply_offset_scaling(
