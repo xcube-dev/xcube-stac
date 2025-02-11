@@ -603,6 +603,8 @@ class StackStoreMode(SingleStoreMode):
                     else:
                         ds = mosaic_spatial_take_first(list_ds_idx)
                         list_ds_time.append(ds)
+                if not list_ds_time:
+                    continue
                 ds = xr.concat(list_ds_time, dim="time", join="exact")
                 np_datetimes_sel = [
                     value
