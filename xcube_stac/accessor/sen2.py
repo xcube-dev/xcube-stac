@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 from typing import Callable
+import time
 
 import boto3
 import dask
@@ -203,11 +204,24 @@ class FileSentinel2DataAccessor:
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             return NotImplemented("Multi-level datasets are not implemented.")
         else:
-            return rioxarray.open_rasterio(
-                f"/{access_params['root']}/{access_params['fs_path']}",
-                chunks=dict(x=1024, y=1024),
-                band_as_variable=True,
-            )
+            fs_path = f"/{access_params['root']}/{access_params['fs_path']}"
+            attempt = 0
+            max_retries = 3
+            delay = 2
+            while attempt < max_retries:
+                try:
+                    return rioxarray.open_rasterio(
+                        fs_path,
+                        chunks=dict(x=1024, y=1024),
+                        band_as_variable=True,
+                    )
+                except Exception as e:
+                    LOG.error(
+                        f"An error occurred when opening {fs_path!r}: {e}. "
+                        f"Retrying in {delay}sec..."
+                    )
+                    attempt += 1
+                    time.sleep(delay)
 
     def add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
         return _add_sen2_angles(self._read_meta_data, item, ds)
