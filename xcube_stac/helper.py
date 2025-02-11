@@ -169,3 +169,24 @@ class HelperCdse(Helper):
             asset.extra_fields["format_id"] = get_format_id(asset)
             assets_sel.append(asset)
         return assets_sel
+
+    def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
+        assets = self.list_assets_from_item(item, **open_params)
+        data_access_params = {}
+        for asset in assets:
+            protocol, remain = asset.href.split("://")
+            root = "eodata"
+            fs_path = remain.replace(f"{root}/", "")
+            format_id = get_format_id(asset)
+            data_access_params[asset.extra_fields["id"]] = dict(
+                name=asset.extra_fields["id"],
+                name_origin=asset.extra_fields["id_origin"],
+                protocol=protocol,
+                root=root,
+                fs_path=fs_path,
+                storage_options=None,
+                format_id=format_id,
+                href=asset.href,
+                item=item,
+            )
+        return data_access_params
