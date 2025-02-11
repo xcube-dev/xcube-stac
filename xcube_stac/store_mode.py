@@ -617,7 +617,6 @@ class StackStoreMode(SingleStoreMode):
                 ]
                 ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
-            print(list_ds_assets)
             if not list_ds_assets:
                 continue
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
