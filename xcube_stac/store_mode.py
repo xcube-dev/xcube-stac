@@ -18,7 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
+import datetime
 import json
 from collections.abc import Iterator
 
@@ -566,7 +566,8 @@ class StackStoreMode(SingleStoreMode):
                 list_ds_time = []
                 idx_remove_dt = []
                 for dt_idx, dt in enumerate(access_params.time.values):
-                    LOG.info(
+                    print(
+                        f"{datetime.datetime.now()}: "
                         f"Tile ID: {tile_id}, asset name: {asset_name}, "
                         f"timestamp {dt_idx} of {access_params.sizes['time']}"
                     )
