@@ -175,6 +175,8 @@ class HelperCdse(Helper):
         data_access_params = {}
         for asset in assets:
             protocol, remain = asset.href.split("://")
+            # some STAC items show hrefs with s3://DIAS/..., which does not exist;
+            # error has been reported.
             root = "eodata"
             fs_path = remain.replace(f"{root}/", "")
             format_id = get_format_id(asset)
