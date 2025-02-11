@@ -566,6 +566,10 @@ class StackStoreMode(SingleStoreMode):
                 list_ds_time = []
                 idx_remove_dt = []
                 for dt_idx, dt in enumerate(access_params.time.values):
+                    LOG.info(
+                        f"Tile ID: {tile_id}, asset name: {asset_name}, "
+                        f"timestamp {dt_idx} of {access_params.sizes['time']}"
+                    )
                     list_ds_idx = []
                     for idx in access_params.idx.values:
                         params = access_params.sel(
