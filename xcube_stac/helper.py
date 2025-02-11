@@ -178,7 +178,7 @@ class HelperCdse(Helper):
             # some STAC items show hrefs with s3://DIAS/..., which does not exist;
             # error has been reported.
             root = "eodata"
-            fs_path = remain.replace(f"{root}/", "")
+            fs_path = "/".join(remain.split("/")[1:])
             format_id = get_format_id(asset)
             data_access_params[asset.extra_fields["id"]] = dict(
                 name=asset.extra_fields["id"],
