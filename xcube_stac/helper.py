@@ -186,7 +186,7 @@ class HelperCdse(Helper):
                 protocol=protocol,
                 root=root,
                 fs_path=fs_path,
-                storage_options=None,
+                storage_options={},
                 format_id=format_id,
                 href=asset.href,
                 item=item,
