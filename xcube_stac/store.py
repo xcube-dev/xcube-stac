@@ -79,7 +79,7 @@ class StacDataStore(DataStore):
         # falls back to pystac; to prevent warnings from pystac_client
         # use catalog from pystac instead. For more discussion refer to
         # https://github.com/xcube-dev/xcube-stac/issues/5
-        catalog = pystac_client.Client.open(url)
+        catalog = pystac_client.Client.open(url, timeout=3600)
         self._searchable = True
         if not catalog.conforms_to("ITEM_SEARCH"):
             catalog = pystac.Catalog.from_file(url)
