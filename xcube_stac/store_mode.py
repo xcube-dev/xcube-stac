@@ -563,14 +563,13 @@ class StackStoreMode(SingleStoreMode):
         for tile_id in access_params.tile_id.values:
             list_ds_assets = []
             for asset_name in access_params.asset_name.values:
+                print(
+                    f"{datetime.datetime.now()}: "
+                    f"Tile ID: {tile_id}, asset name: {asset_name}"
+                )
                 list_ds_time = []
                 idx_remove_dt = []
                 for dt_idx, dt in enumerate(access_params.time.values):
-                    print(
-                        f"{datetime.datetime.now()}: "
-                        f"Tile ID: {tile_id}, asset name: {asset_name}, "
-                        f"timestamp {dt_idx} of {access_params.sizes['time']}"
-                    )
                     list_ds_idx = []
                     for idx in access_params.idx.values:
                         params = access_params.sel(
