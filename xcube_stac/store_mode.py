@@ -620,9 +620,7 @@ class StackStoreMode(SingleStoreMode):
             if not list_ds_assets:
                 continue
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
-        ds_final = mosaic_spatial_along_time_take_first(
-            list_ds_tiles, access_params.time.values
-        )
+        ds_final = mosaic_spatial_along_time_take_first(list_ds_tiles)
         return ds_final
 
     def get_extent(self, data_id: str) -> dict:

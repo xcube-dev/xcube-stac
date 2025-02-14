@@ -314,9 +314,7 @@ def _add_sen2_angles_stack(
                 },
             )
         )
-    ds_angles = mosaic_spatial_along_time_take_first(
-        list_ds_tiles, grouped_items.time.values
-    )
+    ds_angles = mosaic_spatial_along_time_take_first(list_ds_tiles)
 
     # add the angles to the datacube
     ds_angles = _rename_spatial_axis(ds_angles)

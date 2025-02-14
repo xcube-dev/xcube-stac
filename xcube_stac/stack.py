@@ -143,12 +143,11 @@ def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     return ds_mosaic
 
 
-def mosaic_spatial_along_time_take_first(
-    list_ds: list[xr.Dataset], dts: list[datetime.datetime] = None
-) -> xr.Dataset:
+def mosaic_spatial_along_time_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     if len(list_ds) == 1:
         return list_ds[0]
 
+    dts = np.sort(np.unique(np.concatenate([ds.time.values for ds in list_ds])))
     final_slices = []
     for dt in dts:
         slice_ds = [ds.sel(time=dt) for ds in list_ds if dt in ds.coords["time"].values]
