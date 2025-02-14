@@ -164,7 +164,11 @@ class S3Sentinel2DataAccessor:
     def _read_meta_data(self, item: pystac.Item):
         # read xml file and parse to dict
         href = item.assets["granule_metadata"].href
-        protocol, root, fs_path, storage_options = decode_href(href)
+        protocol, remain = href.split("://")
+        # some STAC items show hrefs with s3://DIAS/..., which does not exist;
+        # error has been reported.
+        root = "eodata"
+        fs_path = "/".join(remain.split("/")[1:])
         response = self.s3_boto.get_object(Bucket=root, Key=fs_path)
         xml_content = response["Body"].read().decode("utf-8")
         return xmltodict.parse(xml_content)
@@ -220,7 +224,11 @@ class FileSentinel2DataAccessor:
     def _read_meta_data(self, item: pystac.Item):
         # read xml file and parse to dict
         href = item.assets["granule_metadata"].href
-        protocol, root, fs_path, storage_options = decode_href(href)
+        protocol, remain = href.split("://")
+        # some STAC items show hrefs with s3://DIAS/..., which does not exist;
+        # error has been reported.
+        root = "eodata"
+        fs_path = "/".join(remain.split("/")[1:])
         with open(f"/{root}/{fs_path}", "r", encoding="utf-8") as file:
             xml_content = file.read()
         return xmltodict.parse(xml_content)
