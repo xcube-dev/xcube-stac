@@ -49,6 +49,7 @@ from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import S3Sentinel2DataAccessor
 from .constants import COLLECTION_PREFIX
 from .constants import LOG
+from .constants import CDSE_STAC_URL
 from .constants import STAC_OPEN_PARAMETERS
 from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
 from .constants import STAC_SEARCH_PARAMETERS
@@ -472,6 +473,13 @@ class StackStoreMode(SingleStoreMode):
             )
             return None
 
+        # delete items with wrong bbox in CDSE sentinel-2-l2a
+        import pdb
+
+        pdb.set_trace()
+        if self._searchable:
+            if self._catalog.url == CDSE_STAC_URL and data_id == "sentinel-2-l2a":
+                items = [item for item in items if item.bbox[2] - item.bbox[1] < 2]
         # group items by date
         grouped_items = groupby_solar_day(items)
 
@@ -590,9 +598,6 @@ class StackStoreMode(SingleStoreMode):
                                 f"with parameters {params}"
                             )
                             continue
-                        # due to clipping the dataset to the bbox, ds can be None.
-                        if ds is None:
-                            continue
                         ds = rename_dataset(ds, params["name_origin"])
                         if open_params.get("apply_scaling", False):
                             ds[params["name_origin"]] = apply_offset_scaling(
@@ -607,8 +612,6 @@ class StackStoreMode(SingleStoreMode):
                     else:
                         ds = mosaic_spatial_take_first(list_ds_idx)
                         list_ds_time.append(ds)
-                if not list_ds_time:
-                    continue
                 ds = xr.concat(list_ds_time, dim="time", join="exact")
                 np_datetimes_sel = [
                     value
@@ -617,8 +620,6 @@ class StackStoreMode(SingleStoreMode):
                 ]
                 ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
-            if not list_ds_assets:
-                continue
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
         ds_final = mosaic_spatial_along_time_take_first(list_ds_tiles)
         return ds_final

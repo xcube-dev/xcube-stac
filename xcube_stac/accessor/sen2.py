@@ -293,8 +293,6 @@ def _add_sen2_angles_stack(
             else:
                 ds_time = mosaic_spatial_take_first(list_ds_idx)
                 list_ds_time.append(ds_time)
-        if not list_ds_time:
-            continue
         ds_tile = xr.concat(list_ds_time, dim="time", join="exact")
         np_datetimes_sel = [
             value
