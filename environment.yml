@@ -7,6 +7,7 @@ dependencies:
   - boto3
   - dask
   - numpy
+  - libgdal-jp2openjpeg
   - rasterio
   - rioxarray
   - requests
@@ -16,7 +17,8 @@ dependencies:
   - pystac-client
   - shapely
   - xarray
-  - xcube >= 1.7.0
+  - xmltodict
+  - xcube >= 1.8.0
   - zarr >=2.11,<3  # until we can ensure zarr 3 compatibility; see Issue xcube #1102
   # for testing
   - black

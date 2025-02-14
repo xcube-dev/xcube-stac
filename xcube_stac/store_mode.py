@@ -20,7 +20,6 @@
 # SOFTWARE.
 
 import json
-from typing import Union
 from collections.abc import Iterator
 
 import numpy as np
@@ -28,42 +27,40 @@ import pystac
 import pystac_client.client
 import requests
 import xarray as xr
+from xcube.core.gridmapping import GridMapping
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
-from xcube.core.gridmapping import GridMapping
 
-from .accessor import (
-    HttpsDataAccessor,
-    S3DataAccessor,
-)
+from ._utils import convert_datetime2str
+from ._utils import get_data_id_from_pystac_object
+from ._utils import get_gridmapping
+from ._utils import is_valid_ml_data_type
+from ._utils import merge_datasets
+from ._utils import normalize_grid_mapping
+from ._utils import rename_dataset
+from ._utils import reproject_bbox
+from ._utils import search_collections
+from ._utils import search_items
+from ._utils import update_dict
+from ._utils import wrapper_clip_dataset_by_geometry
+from .accessor.https import HttpsDataAccessor
+from .accessor.s3 import S3DataAccessor
+from .accessor.sen2 import S3Sentinel2DataAccessor
+from .constants import COLLECTION_PREFIX
 from .constants import LOG
 from .constants import STAC_OPEN_PARAMETERS
 from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
 from .constants import STAC_SEARCH_PARAMETERS
 from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
-from .constants import COLLECTION_PREFIX
 from .constants import TILE_SIZE
 from .helper import Helper
-from .mldataset import SingleItemMultiLevelDataset
+from .mldataset.single_item import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
-from ._utils import (
-    merge_datasets,
-    rename_dataset,
-    convert_datetime2str,
-    get_data_id_from_pystac_object,
-    is_valid_ml_data_type,
-    reproject_bbox,
-    search_collections,
-    update_dict,
-    get_gridmapping,
-    normalize_grid_mapping,
-    search_items,
-    wrapper_clip_dataset_by_geometry,
-)
 from .stack import groupby_solar_day
-from .stack import mosaic_2d_take_first
-from .stack import mosaic_3d_take_first
+from .stack import mosaic_spatial_along_time_take_first
+from .stack import mosaic_spatial_take_first
+
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -109,8 +106,8 @@ class SingleStoreMode:
         self._url_mod = url_mod
         self._searchable = searchable
         self._storage_options_s3 = storage_options_s3
-        self._https_accessor = None
-        self._s3_accessor = None
+        self._https_accessor: HttpsDataAccessor | None = None
+        self._s3_accessor: S3Sentinel2DataAccessor | S3DataAccessor | None = None
         self._helper = helper
 
     def access_item(self, data_id: str) -> pystac.Item:
@@ -238,9 +235,13 @@ class SingleStoreMode:
                 target_gm=target_gm,
                 open_params=open_params,
                 attrs=attrs,
+                item=item,
+                s3_accessor=self._s3_accessor,
             )
         else:
             ds = merge_datasets(list_ds_asset, target_gm=target_gm)
+            if open_params.get("angles_sentinel2", False):
+                ds = self._s3_accessor.add_sen2_angles(item, ds)
             ds.attrs = attrs
         return ds
 
@@ -481,6 +482,8 @@ class StackStoreMode(SingleStoreMode):
         else:
             ds = self.stack_items(grouped_items, **open_params)
             ds = normalize_grid_mapping(ds)
+            if open_params.get("angles_sentinel2", False):
+                ds = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds)
             ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
             # Gather all used STAC item IDs used  in the data cube for each time step
             # and organize them in a dictionary. The dictionary keys are datetime
@@ -595,7 +598,7 @@ class StackStoreMode(SingleStoreMode):
                         idx_remove_dt.append(dt_idx)
                         continue
                     else:
-                        ds = mosaic_2d_take_first(list_ds_idx)
+                        ds = mosaic_spatial_take_first(list_ds_idx)
                         list_ds_time.append(ds)
                 ds = xr.concat(list_ds_time, dim="time", join="exact")
                 np_datetimes_sel = [
@@ -606,7 +609,9 @@ class StackStoreMode(SingleStoreMode):
                 ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
-        ds_final = mosaic_3d_take_first(list_ds_tiles, access_params.time.values)
+        ds_final = mosaic_spatial_along_time_take_first(
+            list_ds_tiles, access_params.time.values
+        )
         return ds_final
 
     def get_extent(self, data_id: str) -> dict:

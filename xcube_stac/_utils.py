@@ -24,29 +24,28 @@ import copy
 import datetime
 import itertools
 import os
-from typing import Any, Dict, Union
 from collections.abc import Container, Iterator
+from typing import Any
 
 import numpy as np
 import pandas as pd
 import pyproj
 import pystac
 import pystac_client
-from shapely.geometry import box
 import xarray as xr
+from shapely.geometry import box
+from xcube.core.geom import clip_dataset_by_geometry
+from xcube.core.gridmapping import GridMapping
+from xcube.core.resampling import resample_in_space
 from xcube.core.store import DATASET_TYPE
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
 from xcube.core.store import DataStoreError
 from xcube.core.store import DataTypeLike
-from xcube.core.geom import clip_dataset_by_geometry
-from xcube.core.gridmapping import GridMapping
-from xcube.core.resampling import resample_in_space
-
-from .constants import TILE_SIZE
 from .constants import DATA_OPENER_IDS
-from .constants import FloatInt
 from .constants import MAP_FILE_EXTENSION_FORMAT
 from .constants import MAP_MIME_TYP_FORMAT
+from .constants import TILE_SIZE
+from .constants import FloatInt
 
 
 _CATALOG_JSON = "catalog.json"
@@ -469,29 +468,31 @@ def modify_catalog_url(url: str) -> str:
 
 
 def reproject_bbox(
-    source_bbox: list[FloatInt, FloatInt, FloatInt, FloatInt],
+    source_bbox: list[int] | list[float],
     source_crs: pyproj.CRS | str,
     target_crs: pyproj.CRS | str,
     buffer: float = 0.0,
 ):
     source_crs = normalize_crs(source_crs)
     target_crs = normalize_crs(target_crs)
-    if source_crs == target_crs:
-        return source_bbox
-    t = pyproj.Transformer.from_crs(source_crs, target_crs, always_xy=True)
-    target_bbox = t.transform_bounds(*source_bbox, densify_pts=21)
-    x_min = target_bbox[0]
-    x_max = target_bbox[2]
-    if target_crs.is_geographic and x_min > x_max:
-        x_max += 360
-    buffer_x = abs(x_max - x_min) * buffer
-    buffer_y = abs(target_bbox[3] - target_bbox[1]) * buffer
-    target_bbox = (
-        target_bbox[0] - buffer_x,
-        target_bbox[1] - buffer_y,
-        target_bbox[2] + buffer_x,
-        target_bbox[3] + buffer_y,
-    )
+    if source_crs != target_crs:
+        t = pyproj.Transformer.from_crs(source_crs, target_crs, always_xy=True)
+        target_bbox = t.transform_bounds(*source_bbox, densify_pts=21)
+    else:
+        target_bbox = source_bbox
+    if buffer > 0.0:
+        x_min = target_bbox[0]
+        x_max = target_bbox[2]
+        if target_crs.is_geographic and x_min > x_max:
+            x_max += 360
+        buffer_x = abs(x_max - x_min) * buffer
+        buffer_y = abs(target_bbox[3] - target_bbox[1]) * buffer
+        target_bbox = (
+            target_bbox[0] - buffer_x,
+            target_bbox[1] - buffer_y,
+            target_bbox[2] + buffer_x,
+            target_bbox[3] + buffer_y,
+        )
 
     return target_bbox
 
@@ -605,9 +606,19 @@ def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Datase
 
 
 def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    ds = resample_in_space(ds, target_gm=target_gm, encode_cf=True)
-    vars = [
-        "spatial_ref",
+    # Extra care needs to be taken for the grid_mapping variable. This is needed
+    # until the issue https://github.com/xcube-dev/xcube/issues/1013
+    # is addressed. More details are given in the above-mentioned issue.
+    source_gm = GridMapping.from_dataset(ds)
+    if source_gm.crs == target_gm.crs:
+        ds = resample_in_space(
+            ds, source_gm=source_gm, target_gm=target_gm, encode_cf=False
+        )
+    else:
+        ds = resample_in_space(
+            ds, source_gm=source_gm, target_gm=target_gm, gm_name="crs", encode_cf=True
+        )
+    var_names = [
         "x_bnds",
         "y_bnds",
         "lon_bnds",
@@ -616,7 +627,7 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
         "transformed_y",
     ]
     vars_sel = []
-    for var in vars:
-        if var in ds:
-            vars_sel.append(var)
+    for var_name in var_names:
+        if var_name in ds:
+            vars_sel.append(var_name)
     return ds.drop_vars(vars_sel)

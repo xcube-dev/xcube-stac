@@ -19,11 +19,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import unittest
 import datetime
+import unittest
 
-import pystac
 import numpy as np
+import pystac
 import xarray as xr
 
 from xcube_stac.stac_extension.raster import apply_offset_scaling
@@ -48,7 +48,7 @@ def create_raster_stac_item_v1() -> pystac.Item:
         stac_extensions=["https://stac-extensions.github.io/raster/v1.1.0/schema.json"],
     )
 
-    asset_href = f"https://example.com/data/B01.tif"
+    asset_href = "https://example.com/data/B01.tif"
     asset = pystac.Asset(href=asset_href, media_type="image/tiff", roles=["data"])
     asset.extra_fields["raster:bands"] = [
         dict(
@@ -82,7 +82,7 @@ def create_raster_stac_item_v2() -> pystac.Item:
         stac_extensions=["https://stac-extensions.github.io/raster/v2.0.0/schema.json"],
     )
 
-    asset_href = f"https://example.com/data/B01.tif"
+    asset_href = "https://example.com/data/B01.tif"
     asset = pystac.Asset(href=asset_href, media_type="image/tiff", roles=["data"])
     asset.extra_fields["nodata"] = 0
     asset.extra_fields["raster:scale"] = 0.1

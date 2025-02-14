@@ -19,8 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Any, Dict, Tuple, Union
 from collections.abc import Container, Iterator
+from typing import Any
 
 import numpy as np
 import pystac
@@ -28,41 +28,34 @@ import pystac_client
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (
-    DATASET_TYPE,
-    MULTI_LEVEL_DATASET_TYPE,
-    DatasetDescriptor,
-    MultiLevelDatasetDescriptor,
-    DataStore,
-    DataStoreError,
-    DataType,
-    DataTypeLike,
-)
+from xcube.core.store import DATASET_TYPE
+from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
+from xcube.core.store import DatasetDescriptor
+from xcube.core.store import DataStore
+from xcube.core.store import DataStoreError
+from xcube.core.store import DataType
+from xcube.core.store import DataTypeLike
+from xcube.core.store import MultiLevelDatasetDescriptor
 from xcube.util.jsonschema import JsonObjectSchema
-
-from .constants import (
-    CDSE_STAC_URL,
-    CDSE_S3_ENDPOINT,
-    DATA_OPENER_IDS,
-    MAP_FILE_EXTENSION_FORMAT,
-    PROTOCOLS,
-    STAC_STORE_PARAMETERS,
-)
+from ._utils import assert_valid_data_type
+from ._utils import assert_valid_opener_id
+from ._utils import get_attrs_from_pystac_object
+from ._utils import get_data_id_from_pystac_object
+from ._utils import is_valid_data_type
+from ._utils import is_valid_ml_data_type
+from ._utils import modify_catalog_url
+from ._utils import update_dict
+from .constants import CDSE_S3_ENDPOINT
+from .constants import CDSE_STAC_URL
+from .constants import DATA_OPENER_IDS
+from .constants import MAP_FILE_EXTENSION_FORMAT
+from .constants import PROTOCOLS
+from .constants import STAC_STORE_PARAMETERS
+from .helper import Helper
+from .helper import HelperCdse
+from .helper import HelperXcube
 from .store_mode import SingleStoreMode
 from .store_mode import StackStoreMode
-from ._utils import (
-    assert_valid_data_type,
-    assert_valid_opener_id,
-    get_attrs_from_pystac_object,
-    get_data_id_from_pystac_object,
-    is_valid_data_type,
-    is_valid_ml_data_type,
-    modify_catalog_url,
-    update_dict,
-)
-from .helper import Helper
-from .helper import HelperXcube
-from .helper import HelperCdse
 
 
 class StacDataStore(DataStore):

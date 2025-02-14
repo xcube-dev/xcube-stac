@@ -20,6 +20,7 @@ requires-python = ">=3.10"
 dependencies = [
     "boto3",
     "dask",
+    "libgdal-jp2openjpeg",
     "numpy",
     "pandas",
     "pyproj",
@@ -29,6 +30,7 @@ dependencies = [
     "rioxarray",
     "requests",
     "shapely",
+    "xmltodict",
     "xarray",
     "xcube"
 ]

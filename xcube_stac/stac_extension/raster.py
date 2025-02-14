@@ -19,13 +19,12 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Union, Any
+from typing import Any
 
 import pystac
 import xarray as xr
 
 from ..constants import LOG
-
 
 _RASTER_STAC_EXTENSION_VERSIONS = {
     "v1.0.0": "https://stac-extensions.github.io/raster/v1.0.0/schema.json",

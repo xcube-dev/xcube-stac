@@ -117,7 +117,7 @@ def get_processing_version(item: pystac.Item) -> float:
     )
 
 
-def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
+def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     if len(list_ds) == 1:
         return list_ds[0]
     dim = "dummy"
@@ -126,7 +126,7 @@ def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
 
     ds_mosaic = xr.Dataset()
     for key in ds:
-        if ds[key].dims == (dim, y_coord, x_coord):
+        if ds[key].dims[-2:] == (y_coord, x_coord):
             axis = ds[key].dims.index(dim)
             da_arr = ds[key].data
             nan_mask = da.isnan(da_arr)
@@ -134,8 +134,8 @@ def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
                 da_arr_select,
-                dims=(y_coord, x_coord),
-                coords={y_coord: ds[y_coord], x_coord: ds[x_coord]},
+                dims=ds[key].dims[1:],
+                coords=ds[key].coords,
             )
         else:
             ds_mosaic[key] = ds[key]
@@ -143,7 +143,7 @@ def mosaic_2d_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     return ds_mosaic
 
 
-def mosaic_3d_take_first(
+def mosaic_spatial_along_time_take_first(
     list_ds: list[xr.Dataset], dts: list[datetime.datetime] = None
 ) -> xr.Dataset:
     if len(list_ds) == 1:
@@ -152,11 +152,11 @@ def mosaic_3d_take_first(
     final_slices = []
     for dt in dts:
         slice_ds = [ds.sel(time=dt) for ds in list_ds if dt in ds.coords["time"].values]
-        slice_ds = [ds.drop("time") for ds in slice_ds]
+        slice_ds = [ds.drop_vars("time") for ds in slice_ds]
         if len(slice_ds) == 1:
             ds_mosaic = slice_ds[0]
         else:
-            ds_mosaic = mosaic_2d_take_first(slice_ds)
+            ds_mosaic = mosaic_spatial_take_first(slice_ds)
         final_slices.append(ds_mosaic)
     final_ds = xr.concat(final_slices, dim="time", join="exact")
     final_ds = final_ds.assign_coords(coords=dict(time=dts))

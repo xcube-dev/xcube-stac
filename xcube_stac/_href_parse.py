@@ -23,7 +23,6 @@ import re
 
 from xcube.core.store import DataStoreError
 
-
 # Bucket naming rules:
 # https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html
 AWS_REGEX_BUCKET_NAME = (

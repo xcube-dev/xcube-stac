@@ -23,27 +23,25 @@ import datetime
 import unittest
 
 import dask.array as da
-import pystac
-import pyproj
 import numpy as np
+import pyproj
+import pystac
 import xarray as xr
 from xcube.core.store import DataStoreError
 
-from xcube_stac._utils import (
-    get_format_id,
-    get_format_from_path,
-    reproject_bbox,
-    get_spatial_dims,
-    merge_datasets,
-    normalize_crs,
-    convert_datetime2str,
-    convert_str2datetime,
-    do_bboxes_intersect,
-    is_collection_in_time_range,
-    is_item_in_time_range,
-    update_dict,
-    wrapper_clip_dataset_by_geometry,
-)
+from xcube_stac._utils import convert_datetime2str
+from xcube_stac._utils import convert_str2datetime
+from xcube_stac._utils import do_bboxes_intersect
+from xcube_stac._utils import get_format_from_path
+from xcube_stac._utils import get_format_id
+from xcube_stac._utils import get_spatial_dims
+from xcube_stac._utils import is_collection_in_time_range
+from xcube_stac._utils import is_item_in_time_range
+from xcube_stac._utils import merge_datasets
+from xcube_stac._utils import normalize_crs
+from xcube_stac._utils import reproject_bbox
+from xcube_stac._utils import update_dict
+from xcube_stac._utils import wrapper_clip_dataset_by_geometry
 
 
 class UtilsTest(unittest.TestCase):
@@ -308,8 +306,8 @@ class UtilsTest(unittest.TestCase):
             5768595.563692021,
         ]
         np.testing.assert_almost_equal(
-            reproject_bbox(bbox_utm, crs_utm, crs_wgs84),
-            [178.8245008, 49.9483787, -178.9158425, 52.0509362],
+            reproject_bbox(bbox_utm, crs_utm, crs_wgs84, buffer=0.02),
+            [178.77930769, 49.90632759, -178.87064939, 52.09298731],
         )
 
     def test_normalize_crs(self):

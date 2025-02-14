@@ -23,15 +23,13 @@ import logging
 from typing import Union
 
 from xcube.core.store.fs.impl.fs import S3FsAccessor
-from xcube.util.jsonschema import (
-    JsonArraySchema,
-    JsonBooleanSchema,
-    JsonDateSchema,
-    JsonNumberSchema,
-    JsonIntegerSchema,
-    JsonObjectSchema,
-    JsonStringSchema,
-)
+from xcube.util.jsonschema import JsonArraySchema
+from xcube.util.jsonschema import JsonBooleanSchema
+from xcube.util.jsonschema import JsonDateSchema
+from xcube.util.jsonschema import JsonIntegerSchema
+from xcube.util.jsonschema import JsonNumberSchema
+from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonStringSchema
 
 # general stac constants
 DATA_STORE_ID = "stac"
@@ -143,6 +141,14 @@ SCHEMA_ASSET_NAMES = JsonArraySchema(
     title="Names of assets",
     description="Names of assets which will be included in the data cube.",
 )
+SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
+    title="Add viewing and solar angles from Sentinel2 metadata.",
+    description=(
+        "Viewing and solar angles will be extracted for all spectral "
+        "bands defined in keyword `asset_name`."
+    ),
+    default=False,
+)
 SCHEMA_APPLY_SCALING = JsonBooleanSchema(
     title="Apply scaling, offset, and no-data values to data."
 )
@@ -169,6 +175,7 @@ STAC_SEARCH_PARAMETERS = dict(
 )
 STAC_OPEN_PARAMETERS = dict(
     asset_names=SCHEMA_ASSET_NAMES,
+    angles_sentinel2=SCHEMA_ANGLES_SENTINEL2,
     apply_scaling=SCHEMA_APPLY_SCALING,
 )
 STAC_OPEN_PARAMETERS_STACK_MODE = dict(
@@ -180,41 +187,3 @@ STAC_OPEN_PARAMETERS_STACK_MODE = dict(
     spatial_res=SCHEMA_SPATIAL_RES,
     query=SCHEMA_ADDITIONAL_QUERY,
 )
-
-# CDSE Sentinel-2 constants
-SENITNEL_2_L2A_BANDS = [
-    "AOT",
-    "B01",
-    "B02",
-    "B03",
-    "B04",
-    "B05",
-    "B06",
-    "B07",
-    "B08",
-    "B8A",
-    "B09",
-    "B11",
-    "B12",
-    "SCL",
-    "WVP",
-]
-SENITNEL_2_L2A_BAND_RESOLUTIONS = {
-    "AOT": 10,
-    "B01": 60,
-    "B02": 10,
-    "B03": 10,
-    "B04": 10,
-    "B05": 20,
-    "B06": 20,
-    "B07": 20,
-    "B08": 10,
-    "B8A": 20,
-    "B09": 60,
-    "B11": 20,
-    "B12": 20,
-    "SCL": 20,
-    "WVP": 10,
-}
-SENTINEL_2_MIN_RESOLUTIONS = 10
-SENTINEL_2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"

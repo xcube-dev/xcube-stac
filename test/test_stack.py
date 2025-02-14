@@ -18,15 +18,15 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import unittest
 import datetime
+import unittest
 
 import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stack import mosaic_3d_take_first
 from xcube_stac.stack import groupby_solar_day
+from xcube_stac.stack import mosaic_spatial_along_time_take_first
 
 
 class UtilsTest(unittest.TestCase):
@@ -68,7 +68,7 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(1, len(cm.output))
         msg = (
             "WARNING:xcube.stac:More that two items found for datetime and tile ID: "
-            f"[example-item0, example-item1, example-item2]. Only the first "
+            "[example-item0, example-item1, example-item2]. Only the first "
             "tow items are considered."
         )
         self.assertEqual(msg, str(cm.output[-1]))
@@ -119,14 +119,15 @@ class UtilsTest(unittest.TestCase):
 
         # test only one tile
         dts = np.array(["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64")
-        ds_test = mosaic_3d_take_first(list_ds[:1], dts)
+
+        ds_test = mosaic_spatial_along_time_take_first(list_ds[:1], dts)
         xr.testing.assert_allclose(ds_test, list_ds[0])
 
         # test two tiles
         dts = np.array(
             ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"], dtype="datetime64"
         )
-        ds_test = mosaic_3d_take_first(list_ds, dts)
+        ds_test = mosaic_spatial_along_time_take_first(list_ds, dts)
         data = np.array(
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -149,10 +150,10 @@ class UtilsTest(unittest.TestCase):
         # test two tiles, where spatial ref is given in spatial_ref coord
         spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
         for i, ds in enumerate(list_ds):
-            ds = ds.drop("crs")
+            ds = ds.drop_vars("crs")
             ds.coords["spatial_ref"] = spatial_ref
             list_ds[i] = ds
         ds_expected = xr.Dataset({"B01": da})
         ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
-        ds_test = mosaic_3d_take_first(list_ds, dts)
+        ds_test = mosaic_spatial_along_time_take_first(list_ds, dts)
         xr.testing.assert_allclose(ds_test, ds_expected)

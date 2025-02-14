@@ -23,11 +23,9 @@ import unittest
 
 from xcube.core.store import DataStoreError
 
-from xcube_stac._href_parse import (
-    assert_aws_s3_bucket,
-    assert_aws_s3_region_name,
-    decode_href,
-)
+from xcube_stac._href_parse import assert_aws_s3_bucket
+from xcube_stac._href_parse import assert_aws_s3_region_name
+from xcube_stac._href_parse import decode_href
 
 
 class HrefParseTest(unittest.TestCase):
