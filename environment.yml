@@ -18,8 +18,7 @@ dependencies:
   - shapely
   - xarray
   - xmltodict
-  - xcube >= 1.8.0
-  - zarr >=2.11,<3  # until we can ensure zarr 3 compatibility; see Issue xcube #1102
+  - xcube >= 1.8.1
   # for testing
   - black
   - flake8
