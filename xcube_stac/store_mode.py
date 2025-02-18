@@ -473,11 +473,11 @@ class StackStoreMode(SingleStoreMode):
             )
             return None
 
-        # delete items with wrong bbox in CDSE sentinel-2-l2a
-        print(len(items))
+        # delete items with wrong bbox in CDSE sentinel-2-l2a;
+        # catalog's bug has been reported.
         if CDSE_STAC_URL in self._url_mod and data_id == "sentinel-2-l2a":
             items = [item for item in items if item.bbox[2] - item.bbox[1] < 2]
-        print(len(items))
+
         # group items by date
         grouped_items = groupby_solar_day(items)
 
@@ -569,10 +569,6 @@ class StackStoreMode(SingleStoreMode):
         for tile_id in access_params.tile_id.values:
             list_ds_assets = []
             for asset_name in access_params.asset_name.values:
-                print(
-                    f"{datetime.datetime.now()}: "
-                    f"Tile ID: {tile_id}, asset name: {asset_name}"
-                )
                 list_ds_time = []
                 idx_remove_dt = []
                 for dt_idx, dt in enumerate(access_params.time.values):

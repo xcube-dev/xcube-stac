@@ -13,7 +13,7 @@ named `stac` to xcube. The data store is used to access data from the
 
 ## Table of contents
 1. [Setup](#setup)
-   1. [Installing the xcube-stac plugin from the repository](#install_source)
+   1. [Installing the xcube-stac plugin](#install_plugin)
 2. [Overview](#overview)
    1. [General structure of a STAC catalog](#stac_catalog)
    2. [General functionality of xcube-stac](#func_xcube_stac)
@@ -25,20 +25,60 @@ named `stac` to xcube. The data store is used to access data from the
 
 ## Setup <a name="setup"></a>
 
-### Installing the xcube-stac plugin from the repository <a name="install_source"></a>
+### Installing the xcube-stac plugin <a name="install_plugin"></a>
 
-Installing xcube-stac directly from the git repository, clone the repository,
-direct into `xcube-stac`, and follow the steps below:
+This section describes three alternative methods you can use to install the
+xcube-stac plugin.
+
+For installation of conda packages, we recommend
+[mamba](https://mamba.readthedocs.io/). It is also possible to use conda,
+but note that installation may be significantly slower with conda than with
+mamba. If using conda rather than mamba, replace the `mamba` command with
+`conda` in the installation commands given below.
+
+#### Installation into a new environment with mamba
+
+This method creates a new environment and installs the latest conda-forge
+release of xcube-stac, along with all its required dependencies, into the
+newly created environment.
+
+To do so, execute the following commands:
 
 ```bash
-conda env create -f environment.yml
-conda activate xcube-stac
-pip install .
+mamba create --name xcube-stac --channel conda-forge xcube-stac
+mamba activate xcube-stac
+```
+The name of the environment may be freely chosen.
+
+#### Installation into an existing environment with mamba
+
+This method assumes that you have an existing environment, and you want
+to install xcube-stac into it.
+
+With the existing environment activated, execute this command:
+
+```bash
+mamba install --channel conda-forge xcube-stac
 ```
 
-This installs all the dependencies of `xcube-stac` into a fresh conda
-environment, then installs xcube-stac into this environment from the
-repository.
+Once again, xcube and any other necessary dependencies will be installed
+automatically if they are not already installed.
+
+#### Installation into an existing environment from the repository
+
+If you want to install xcube-stac directly from the git repository (for example
+in order to use an unreleased version or to modify the code), you can
+do so as follows:
+
+```bash
+mamba create --name xcube-stac --channel conda-forge --only-deps xcube-stac
+mamba activate xcube-stac
+git clone https://github.com/xcube-dev/xcube-stac.git
+python -m pip install --no-deps --editable xcube-stac/
+```
+
+This installs all the dependencies of xcube-stac into a fresh conda environment,
+then installs xcube-stac into this environment from the repository.
 
 ## Overview <a name="overview"></a>
 
