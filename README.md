@@ -5,16 +5,16 @@
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![License](https://img.shields.io/github/license/dcs4cop/xcube-smos)](https://github.com/xcube-dev/xcube-stac/blob/main/LICENSE)
 
-`xcube-stac` is a Python package and an [xcube plugin](https://xcube.readthedocs.io/en/latest/plugins.html)
+`xcube-stac` is a Python package and a [xcube plugin](https://xcube.readthedocs.io/en/latest/plugins.html)
 that provides a [data store](https://xcube.readthedocs.io/en/latest/api.html#data-store-framework)
 for accessing data from [STAC (SpatioTemporal Asset Catalogs)](https://stacspec.org/en/).
 
 
 ## Table of contents
-2. [Overview](#overview)
+1. [Overview](#overview)
    1. [General structure of a STAC catalog](#stac_catalog)
    2. [General functionality of xcube-stac](#func_xcube_stac)
-1. [Setup](#setup)
+2[Setup](#setup)
    1. [Installing the xcube-stac plugin](#install_plugin)
    2. [Getting S3 credentials for CDSE data access ](#cdse_s3)
 3. [Introduction to xcube-stac](#intro_xcube_stac)
@@ -44,7 +44,7 @@ which can be slow for large STAC catalogs.
 
 ### General functionality of xcube-stac <a name="func_xcube_stac"></a>
 The xcube-stac plugin reads the data sources from the STAC catalog and opens the data
-in an analysis ready form following the [xcube dataset convetion](https://xcube.readthedocs.io/en/latest/cubespec.html).
+in an analysis ready form following the [xcube dataset convention](https://xcube.readthedocs.io/en/latest/cubespec.html).
 By default, a data ID represents one item, which is opened as a dataset, with each
 asset becoming a data variable within the dataset. 
 
@@ -63,7 +63,7 @@ blocking of the rasterio AWS environments.
 Comparing  [odc-stac](https://odc-stac.readthedocs.io/en/latest/) and
 [stackstac](https://stackstac.readthedocs.io/en/latest/), 
 the [benchmarking report](https://benchmark-odc-stac-vs-stackstac.netlify.app/) shows
-that ocd-stac outperforms stackstac. Furthermore, stackstac isbarely tested and  shows an 
+that ocd-stac outperforms stackstac. Furthermore, stackstac is barely tested and  shows an 
 [issue](https://github.com/gjoseph92/stackstac/issues/196) in making
 use of the overview levels of COGs files. Still, stackstac and odc-stack shows high 
 popularity in the community and might be supported in the future. 
@@ -174,7 +174,7 @@ The data ID `"collections/sentinel-2-l2a/items/S2B_32TNT_20200705_0_L2A"` points
 [STAC item's JSON](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md)
 and is specified by the segment of the URL that follows the catalog's URL. The optional
 keyword argument `data_type` can be set to `dataset` and `mldataset`, which returns a
-`xr.Dataset` and a [xcube multi-resoltuion dataset](https://xcube.readthedocs.io/en/latest/mldatasets.html),
+`xr.Dataset` and a [xcube multi-resolution dataset](https://xcube.readthedocs.io/en/latest/mldatasets.html),
 respectively. Note that in the above example, if `data_type` is not assigned,
 a `xarray.Dataset` will be returned.
 
