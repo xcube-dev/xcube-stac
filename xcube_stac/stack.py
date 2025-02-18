@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -19,15 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
 
 import dask.array as da
 import numpy as np
 import pystac
 import xarray as xr
 
-from ._utils import add_nominal_datetime
-from ._utils import get_spatial_dims
+from ._utils import add_nominal_datetime, get_spatial_dims
 from .constants import LOG
 
 

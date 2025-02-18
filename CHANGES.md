@@ -1,3 +1,3 @@
-## Changes in 0.1.0 (in development)
+## Changes in 0.1.0
 
-Initial version of STAC Data Store.
+* Initial version of STAC Data Store.

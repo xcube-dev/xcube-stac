@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -27,36 +27,39 @@ import pystac
 import pystac_client
 import requests
 import xarray as xr
-from xcube.util.jsonschema import JsonBooleanSchema
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
-from xcube.core.store import DatasetDescriptor
-from xcube.core.store import DataStore
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataType
-from xcube.core.store import DataTypeLike
-from xcube.core.store import MultiLevelDatasetDescriptor
-from xcube.util.jsonschema import JsonObjectSchema
-from ._utils import assert_valid_data_type
-from ._utils import assert_valid_opener_id
-from ._utils import get_attrs_from_pystac_object
-from ._utils import get_data_id_from_pystac_object
-from ._utils import is_valid_data_type
-from ._utils import is_valid_ml_data_type
-from ._utils import modify_catalog_url
-from ._utils import update_dict
-from .constants import CDSE_S3_ENDPOINT
-from .constants import CDSE_STAC_URL
-from .constants import DATA_OPENER_IDS
-from .constants import MAP_FILE_EXTENSION_FORMAT
-from .constants import PROTOCOLS
-from .constants import STAC_STORE_PARAMETERS
-from .helper import Helper
-from .helper import HelperCdse
-from .helper import HelperXcube
-from .store_mode import SingleStoreMode
-from .store_mode import StackStoreMode
+from xcube.core.store import (
+    DATASET_TYPE,
+    MULTI_LEVEL_DATASET_TYPE,
+    DatasetDescriptor,
+    DataStore,
+    DataStoreError,
+    DataType,
+    DataTypeLike,
+    MultiLevelDatasetDescriptor,
+)
+from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
+
+from ._utils import (
+    assert_valid_data_type,
+    assert_valid_opener_id,
+    get_attrs_from_pystac_object,
+    get_data_id_from_pystac_object,
+    is_valid_data_type,
+    is_valid_ml_data_type,
+    modify_catalog_url,
+    update_dict,
+)
+from .constants import (
+    CDSE_S3_ENDPOINT,
+    CDSE_STAC_URL,
+    DATA_OPENER_IDS,
+    MAP_FILE_EXTENSION_FORMAT,
+    PROTOCOLS,
+    STAC_STORE_PARAMETERS,
+)
+from .helper import Helper, HelperCdse, HelperXcube
+from .store_mode import SingleStoreMode, StackStoreMode
 
 
 class StacDataStore(DataStore):
@@ -130,12 +133,14 @@ class StacDataStore(DataStore):
             return (DATASET_TYPE.alias,)
 
     def get_data_ids(
-        self, data_type: DataTypeLike = None, include_attrs: Container[str] = None
+        self,
+        data_type: DataTypeLike = None,
+        include_attrs: Container[str] | bool = False,
     ) -> Iterator[str] | Iterator[tuple[str, dict[str, Any]]]:
         assert_valid_data_type(data_type)
         data_ids_obj = self._impl.get_data_ids(data_type=data_type)
         for data_id, pystac_obj in data_ids_obj:
-            if include_attrs is None:
+            if include_attrs is False or not include_attrs:
                 yield data_id
             else:
                 attrs = get_attrs_from_pystac_object(pystac_obj, include_attrs)
@@ -294,6 +299,7 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
+        self._creodias_vm = creodias_vm
         self._helper = HelperCdse(creodias_vm=creodias_vm)
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 

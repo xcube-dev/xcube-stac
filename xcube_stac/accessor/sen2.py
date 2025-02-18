@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -34,16 +34,15 @@ from xcube.core.chunk import chunk_dataset
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
 
-from .._href_parse import decode_href
-from .._utils import get_gridmapping
-from .._utils import get_spatial_dims
-from .._utils import is_valid_ml_data_type
-from .._utils import wrapper_resample_in_space
+from .._utils import (
+    get_gridmapping,
+    get_spatial_dims,
+    is_valid_ml_data_type,
+    wrapper_resample_in_space,
+)
 from ..constants import LOG
 from ..mldataset.jp2 import Jp2MultiLevelDataset
-from ..stack import mosaic_spatial_along_time_take_first
-from ..stack import mosaic_spatial_take_first
-
+from ..stack import mosaic_spatial_along_time_take_first, mosaic_spatial_take_first
 
 SENITNEL2_BANDS = [
     "B01",
@@ -341,7 +340,7 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
         np.full(
             (len(band_names), len(detector_ids), 2, len(x), len(y)),
             np.nan,
-            dtype=np.float64,
+            dtype=np.float32,
         ),
         dims=["band", "detector_id", "angle", "y", "x"],
         coords=dict(
@@ -383,7 +382,7 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
 
 def _get_angle_values(values_list: dict, angle: str) -> np.ndarray:
     values = values_list[angle]["Values_List"]["VALUES"]
-    array = np.array([row.split(" ") for row in values]).astype(float)
+    array = np.array([row.split(" ") for row in values]).astype(np.float32)
     return array
 
 

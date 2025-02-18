@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -36,17 +36,22 @@ import xarray as xr
 from shapely.geometry import box
 from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
+from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
 from xcube.core.resampling import resample_in_space
-from xcube.core.store import DATASET_TYPE
-from xcube.core.store import MULTI_LEVEL_DATASET_TYPE
-from xcube.core.store import DataStoreError
-from xcube.core.store import DataTypeLike
-from .constants import DATA_OPENER_IDS
-from .constants import MAP_FILE_EXTENSION_FORMAT
-from .constants import MAP_MIME_TYP_FORMAT
-from .constants import TILE_SIZE
-from .constants import FloatInt
+from xcube.core.store import (
+    DATASET_TYPE,
+    MULTI_LEVEL_DATASET_TYPE,
+    DataStoreError,
+    DataTypeLike,
+)
 
+from .constants import (
+    DATA_OPENER_IDS,
+    MAP_FILE_EXTENSION_FORMAT,
+    MAP_MIME_TYP_FORMAT,
+    TILE_SIZE,
+    FloatInt,
+)
 
 _CATALOG_JSON = "catalog.json"
 
@@ -152,7 +157,7 @@ def get_format_id(asset: pystac.Asset) -> str:
 
 
 def get_attrs_from_pystac_object(
-    pystac_obj: pystac.Item | pystac.Collection, include_attrs: Container[str]
+    pystac_obj: pystac.Item | pystac.Collection, include_attrs: Container[str] | bool
 ) -> dict[str, Any]:
     """Extracts the desired attributes from an item object.
 
@@ -183,7 +188,7 @@ def get_attrs_from_pystac_object(
         "assets",
     ]
     for key in supported_keys:
-        if key in include_attrs and hasattr(pystac_obj, key):
+        if hasattr(pystac_obj, key) and (include_attrs is True or key in include_attrs):
             attrs[key] = getattr(pystac_obj, key)
     return attrs
 
@@ -325,9 +330,9 @@ def normalize_grid_mapping(ds: xr.Dataset) -> xr.Dataset:
         return ds
     for var in ds.data_vars:
         ds[var].attrs["grid_mapping"] = "spatial_ref"
-    gm_var = ds[gm_name]
+    gm = new_grid_mapping_from_dataset(ds)
     ds = ds.drop_vars(gm_name)
-    ds = ds.assign_coords(spatial_ref=xr.DataArray(0, attrs=gm_var.attrs))
+    ds = ds.assign_coords(spatial_ref=xr.DataArray(0, attrs=gm.crs.to_cf()))
     return ds
 
 
@@ -365,7 +370,7 @@ def get_url_from_pystac_object(pystac_obj: pystac.Item | pystac.Collection) -> s
     links = [
         link
         for link in pystac_obj.links
-        if link.rel == "self" and link.href.startswith("https://")
+        if link.rel == "self" and link.href.startswith("http")
     ]
     assert len(links) == 1
     return links[0].href

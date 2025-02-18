@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -22,9 +22,7 @@
 from xcube.constants import EXTENSION_POINT_DATA_STORES
 from xcube.util import extension
 
-from .constants import DATA_STORE_ID
-from .constants import DATA_STORE_ID_CDSE
-from .constants import DATA_STORE_ID_XCUBE
+from .constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
 
 
 def init_plugin(ext_registry: extension.ExtensionRegistry):

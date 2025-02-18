@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -25,8 +25,7 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stack import groupby_solar_day
-from xcube_stac.stack import mosaic_spatial_along_time_take_first
+from xcube_stac.stack import groupby_solar_day, mosaic_spatial_along_time_take_first
 
 
 class UtilsTest(unittest.TestCase):

@@ -6,19 +6,18 @@ dependencies:
   - python>=3.10
   - boto3
   - dask
-  - numpy
   - libgdal-jp2openjpeg
-  - rasterio
-  - rioxarray
-  - requests
+  - numpy
   - pandas
-  - pystac
   - pyproj
+  - pystac
   - pystac-client
-  - shapely
+  - rasterio
+  - requests
+  - rioxarray
   - xarray
   - xmltodict
-  - xcube >= 1.8.1
+  - xcube >=1.8.1
   # for testing
   - black
   - flake8
