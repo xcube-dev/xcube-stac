@@ -14,7 +14,7 @@ for accessing data from [STAC (SpatioTemporal Asset Catalogs)](https://stacspec.
 1. [Overview](#overview)
    1. [General structure of a STAC catalog](#stac_catalog)
    2. [General functionality of xcube-stac](#func_xcube_stac)
-2[Setup](#setup)
+2. [Setup](#setup)
    1. [Installing the xcube-stac plugin](#install_plugin)
    2. [Getting S3 credentials for CDSE data access ](#cdse_s3)
 3. [Introduction to xcube-stac](#intro_xcube_stac)
