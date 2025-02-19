@@ -12,20 +12,20 @@ for accessing data from [STAC (SpatioTemporal Asset Catalogs)](https://stacspec.
 
 ## Table of contents
 1. [Overview](#overview)
-   1. [General structure of a STAC catalog](#stac_catalog)
-   2. [General functionality of xcube-stac](#func_xcube_stac)
+   1. [General structure of a STAC catalog](#general-structure-of-a-stac-catalog)
+   2. [General functionality of xcube-stac](#general-functionality-of-xcube-stac)
 2. [Setup](#setup)
-   1. [Installing the xcube-stac plugin](#install_plugin)
-   2. [Getting S3 credentials for CDSE data access ](#cdse_s3)
-3. [Introduction to xcube-stac](#intro_xcube_stac)
-   1. [Overview of Jupyter notebooks](#overview_notebooks)
-   2. [Getting started](#getting_started)
+   1. [Installing the xcube-stac plugin](#installing-the-xcube-stac-plugin)
+   2. [Getting S3 credentials for CDSE data access ](#getting-s3-credentials-for-cdse-data-access)
+3. [Introduction to xcube-stac](#introduction-to-xcube-stac)
+   1. [Overview of Jupyter notebooks](#overview-of-jupyter-notebooks)
+   2. [Getting started](#getting-started)
 4. [Testing](#testing)
-   1. [Some notes on the strategy of unit-testing](#unittest_strategy)
+   1. [Some notes on the strategy of unit-testing](#some-notes-on-the-strategy-of-unit-testing)
 
-## Overview <a name="overview"></a>
+## Overview
 
-### General structure of a STAC catalog <a name="stac_catalog"></a>
+### General structure of a STAC catalog
 A SpatioTemporal Asset Catalog (STAC) consists of three main components: catalog,
 collection, and item. Each item can contain multiple assets, each linked to a data
 source. Items are associated with a timestamp or temporal range and a bounding box,
@@ -42,7 +42,7 @@ conformance class, enabling server-side searches for items based on specific
 parameters. If this compliance is not met, only client-side searches are possible,
 which can be slow for large STAC catalogs.
 
-### General functionality of xcube-stac <a name="func_xcube_stac"></a>
+### General functionality of xcube-stac
 The xcube-stac plugin reads the data sources from the STAC catalog and opens the data
 in an analysis ready form following the [xcube dataset convention](https://xcube.readthedocs.io/en/latest/cubespec.html).
 By default, a data ID represents one item, which is opened as a dataset, with each
@@ -69,9 +69,9 @@ use of the overview levels of COGs files. Still, stackstac and odc-stack shows h
 popularity in the community and might be supported in the future. 
 
 
-## Setup <a name="setup"></a>
+## Setup
 
-### Installing the xcube-stac plugin <a name="install_plugin"></a>
+### Installing the xcube-stac plugin
 
 This section describes three alternative methods you can use to install the
 xcube-stac plugin.
@@ -126,7 +126,7 @@ python -m pip install --no-deps --editable xcube-stac/
 This installs all the dependencies of xcube-stac into a fresh conda environment,
 then installs xcube-stac into this environment from the repository.
 
-### Getting S3 credentials for CDSE data access <a name="cdse_s3"></a>
+### Getting S3 credentials for CDSE data access
 Note, this step is only needed, if the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?.language=en)
 wants to be used. In order to access [EO data via S3 from CDSE](https://documentation.dataspace.copernicus.eu/APIs/S3.html)
 one needs to [generate S3 credentials](https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets),
@@ -134,9 +134,9 @@ which are required to initiate a `"stac-cdse"` data store. So far, only Sentinel
 is supported. An example is shown in a [notebook](examples/notebooks/cdse_senitnel_2.ipynb).
 
 
-## Introduction to xcube-stac <a name="intro_xcube_stac"></a> 
+## Introduction to xcube-stac
 
-### Overview of Jupyter notebooks <a name="overview_notebooks"></a> 
+### Overview of Jupyter notebooks
 The following Jupyter notebooks provide some examples: 
 
 * `example/notebooks/cdse_sentinel_2.ipynb`:
@@ -156,7 +156,7 @@ The following Jupyter notebooks provide some examples:
   This notebook shows an example how to open data sources published by xcube server
   via the STAC API.
 
-### Getting started <a name="getting_started"></a> 
+### Getting started
 
 The xcube [data store framework](https://xcube.readthedocs.io/en/latest/dataaccess.html#data-store-framework)
 allows to access data in an analysis ready format, following the few lines of
@@ -206,7 +206,7 @@ of the data cube. The parameter `crs` and `spatial_res` are required as well and
 the coordinate reference system (CRS) and the spatial resolution, respectively. Note, that the bounding
 box and spatial resolution needs to be given in the respective CRS.
 
-## Testing <a name="testing"></a>
+## Testing
 
 To run the unit test suite:
 
@@ -227,7 +227,7 @@ To produce an HTML
 pytest --cov-report html --cov=xcube_stac
 ```
 
-### Some notes on the strategy of unit-testing <a name="unittest_strategy"></a>
+### Some notes on the strategy of unit-testing
 
 The unit test suite uses [pytest-recording](https://pypi.org/project/pytest-recording/)
 to mock STAC catalogs. During development an actual HTTP request is performed
