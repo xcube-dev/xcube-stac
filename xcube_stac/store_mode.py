@@ -289,8 +289,8 @@ class SingleStoreMode:
         else:
             raise DataStoreError(
                 f"Only 's3' and 'https' protocols are supported, not "
-                f"{params["protocol"]!r}. The asset {params["name"]!r} has a href "
-                f"{params["href"]!r}."
+                f"{params['protocol']!r}. The asset {params['name']!r} has a href "
+                f"{params['href']!r}."
             )
 
         # clip dataset by bounding box
@@ -326,7 +326,7 @@ class SingleStoreMode:
         elif not self._s3_accessor.root == access_params["root"]:
             LOG.debug(
                 f"The bucket {self._s3_accessor.root!r} of the "
-                f"S3 object storage changed to {access_params["root"]!r}. "
+                f"S3 object storage changed to {access_params['root']!r}. "
                 "A new s3 data opener will be initialized."
             )
             self._s3_accessor = self._helper.s3_accessor(
@@ -356,7 +356,7 @@ class SingleStoreMode:
         elif not self._https_accessor.root == access_params["root"]:
             LOG.debug(
                 f"The root {self._https_accessor.root!r} of the "
-                f"https data opener changed to {access_params["root"]!r}. "
+                f"https data opener changed to {access_params['root']!r}. "
                 "A new https data opener will be initialized."
             )
             self._https_accessor = HttpsDataAccessor(access_params["root"])
@@ -472,8 +472,8 @@ class StackStoreMode(SingleStoreMode):
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
                 f"parameters bbox {bbox_wgs84!r}, time_range "
-                f"{open_params["time_range"]!r} and "
-                f"query {open_params.get("query", "None")!r}."
+                f"{open_params['time_range']!r} and "
+                f"query {open_params.get('query', 'None')!r}."
             )
             return None
 
