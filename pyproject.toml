@@ -27,12 +27,11 @@ dependencies = [
     "pystac",
     "pystac-client",
     "rasterio",
-    "rioxarray",
     "requests",
-    "shapely",
-    "xmltodict",
+    "rioxarray",
     "xarray",
-    "xcube"
+    "xmltodict",
+    "xcube>=1.8.1"
 ]
 
 [tool.setuptools.dynamic]

@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -18,7 +18,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import json
 from collections.abc import Iterator
 
@@ -32,35 +31,41 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
-from ._utils import convert_datetime2str
-from ._utils import get_data_id_from_pystac_object
-from ._utils import get_gridmapping
-from ._utils import is_valid_ml_data_type
-from ._utils import merge_datasets
-from ._utils import normalize_grid_mapping
-from ._utils import rename_dataset
-from ._utils import reproject_bbox
-from ._utils import search_collections
-from ._utils import search_items
-from ._utils import update_dict
-from ._utils import wrapper_clip_dataset_by_geometry
+from ._utils import (
+    convert_datetime2str,
+    get_data_id_from_pystac_object,
+    get_gridmapping,
+    is_valid_ml_data_type,
+    merge_datasets,
+    normalize_grid_mapping,
+    rename_dataset,
+    reproject_bbox,
+    search_collections,
+    search_items,
+    update_dict,
+    wrapper_clip_dataset_by_geometry,
+)
 from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import S3Sentinel2DataAccessor
-from .constants import COLLECTION_PREFIX
-from .constants import LOG
-from .constants import STAC_OPEN_PARAMETERS
-from .constants import STAC_OPEN_PARAMETERS_STACK_MODE
-from .constants import STAC_SEARCH_PARAMETERS
-from .constants import STAC_SEARCH_PARAMETERS_STACK_MODE
-from .constants import TILE_SIZE
+from .constants import (
+    CDSE_STAC_URL,
+    COLLECTION_PREFIX,
+    LOG,
+    STAC_OPEN_PARAMETERS,
+    STAC_OPEN_PARAMETERS_STACK_MODE,
+    STAC_SEARCH_PARAMETERS,
+    STAC_SEARCH_PARAMETERS_STACK_MODE,
+    TILE_SIZE,
+)
 from .helper import Helper
 from .mldataset.single_item import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
-from .stack import groupby_solar_day
-from .stack import mosaic_spatial_along_time_take_first
-from .stack import mosaic_spatial_take_first
-
+from .stack import (
+    groupby_solar_day,
+    mosaic_spatial_along_time_take_first,
+    mosaic_spatial_take_first,
+)
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -284,8 +289,8 @@ class SingleStoreMode:
         else:
             raise DataStoreError(
                 f"Only 's3' and 'https' protocols are supported, not "
-                f"{params["protocol"]!r}. The asset {params["name"]!r} has a href "
-                f"{params["href"]!r}."
+                f"{params['protocol']!r}. The asset {params['name']!r} has a href "
+                f"{params['href']!r}."
             )
 
         # clip dataset by bounding box
@@ -321,7 +326,7 @@ class SingleStoreMode:
         elif not self._s3_accessor.root == access_params["root"]:
             LOG.debug(
                 f"The bucket {self._s3_accessor.root!r} of the "
-                f"S3 object storage changed to {access_params["root"]!r}. "
+                f"S3 object storage changed to {access_params['root']!r}. "
                 "A new s3 data opener will be initialized."
             )
             self._s3_accessor = self._helper.s3_accessor(
@@ -351,7 +356,7 @@ class SingleStoreMode:
         elif not self._https_accessor.root == access_params["root"]:
             LOG.debug(
                 f"The root {self._https_accessor.root!r} of the "
-                f"https data opener changed to {access_params["root"]!r}. "
+                f"https data opener changed to {access_params['root']!r}. "
                 "A new https data opener will be initialized."
             )
             self._https_accessor = HttpsDataAccessor(access_params["root"])
@@ -467,10 +472,15 @@ class StackStoreMode(SingleStoreMode):
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
                 f"parameters bbox {bbox_wgs84!r}, time_range "
-                f"{open_params["time_range"]!r} and "
-                f"query {open_params.get("query", "None")!r}."
+                f"{open_params['time_range']!r} and "
+                f"query {open_params.get('query', 'None')!r}."
             )
             return None
+
+        # delete items with wrong bbox in CDSE sentinel-2-l2a;
+        # catalog's bug has been reported.
+        if CDSE_STAC_URL in self._url_mod and data_id == "sentinel-2-l2a":
+            items = [item for item in items if item.bbox[2] - item.bbox[1] < 2]
 
         # group items by date
         grouped_items = groupby_solar_day(items)
@@ -609,9 +619,7 @@ class StackStoreMode(SingleStoreMode):
                 ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
             list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
-        ds_final = mosaic_spatial_along_time_take_first(
-            list_ds_tiles, access_params.time.values
-        )
+        ds_final = mosaic_spatial_along_time_take_first(list_ds_tiles)
         return ds_final
 
     def get_extent(self, data_id: str) -> dict:

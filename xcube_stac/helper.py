@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -26,14 +26,15 @@ import pystac
 from xcube.core.store import DataStoreError
 
 from ._href_parse import decode_href
-from ._utils import get_format_from_path
-from ._utils import get_format_id
-from ._utils import is_valid_ml_data_type
+from ._utils import get_format_from_path, get_format_id, is_valid_ml_data_type
 from .accessor.s3 import S3DataAccessor
-from .accessor.sen2 import SENITNEL2_L2A_BAND_RESOLUTIONS
-from .accessor.sen2 import SENITNEL2_L2A_BANDS
-from .accessor.sen2 import SENTINEL2_REGEX_ASSET_NAME
-from .accessor.sen2 import S3Sentinel2DataAccessor
+from .accessor.sen2 import (
+    SENITNEL2_L2A_BAND_RESOLUTIONS,
+    SENITNEL2_L2A_BANDS,
+    SENTINEL2_REGEX_ASSET_NAME,
+    FileSentinel2DataAccessor,
+    S3Sentinel2DataAccessor,
+)
 from .constants import MLDATASET_FORMATS
 
 
@@ -143,9 +144,12 @@ class HelperXcube(Helper):
 
 class HelperCdse(Helper):
 
-    def __init__(self):
+    def __init__(self, creodias_vm: bool = False):
         super().__init__()
-        self.s3_accessor = S3Sentinel2DataAccessor
+        if creodias_vm:
+            self.s3_accessor = FileSentinel2DataAccessor
+        else:
+            self.s3_accessor = S3Sentinel2DataAccessor
 
     def list_assets_from_item(
         self, item: pystac.Item, **open_params
@@ -165,3 +169,26 @@ class HelperCdse(Helper):
             asset.extra_fields["format_id"] = get_format_id(asset)
             assets_sel.append(asset)
         return assets_sel
+
+    def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
+        assets = self.list_assets_from_item(item, **open_params)
+        data_access_params = {}
+        for asset in assets:
+            protocol, remain = asset.href.split("://")
+            # some STAC items show hrefs with s3://DIAS/..., which does not exist;
+            # error has been reported.
+            root = "eodata"
+            fs_path = "/".join(remain.split("/")[1:])
+            format_id = get_format_id(asset)
+            data_access_params[asset.extra_fields["id"]] = dict(
+                name=asset.extra_fields["id"],
+                name_origin=asset.extra_fields["id_origin"],
+                protocol=protocol,
+                root=root,
+                fs_path=fs_path,
+                storage_options={},
+                format_id=format_id,
+                href=asset.href,
+                item=item,
+            )
+        return data_access_params

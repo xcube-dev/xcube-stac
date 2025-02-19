@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -28,19 +28,20 @@ import pytest
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import DatasetDescriptor
-from xcube.core.store import DataStoreError
-from xcube.core.store import MultiLevelDatasetDescriptor
-from xcube.core.store import new_data_store
+from xcube.core.store import (
+    DatasetDescriptor,
+    DataStoreError,
+    MultiLevelDatasetDescriptor,
+    new_data_store,
+)
 from xcube.util.jsonschema import JsonObjectSchema
 
 from xcube_stac._utils import reproject_bbox
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
-from xcube_stac.constants import DATA_STORE_ID
-from xcube_stac.constants import DATA_STORE_ID_CDSE
-from xcube_stac.constants import DATA_STORE_ID_XCUBE
+from xcube_stac.constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
+
 from .sampledata import sentinel_2_band_data
 
 SKIP_HELP = (
@@ -82,8 +83,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.url_netcdf = "https://geoservice.dlr.de/eoc/ogc/stac/v1"
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
-            "collections/sentinel-1-grd/items/"
-            "S1A_IW_GRDH_1SDH_20250204T101545_20250204T101559_057745_071E73"
+            "collections/sentinel-2-c1-l2a/items/S2B_T37WEU_20250218T090935_L2A"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -210,10 +210,15 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
-        include_attrs = ["id", "bbox", "geometry", "properties", "links", "assets"]
+        include_attrs = ["id", "bbox", "links"]
         data_id, attrs = next(store.get_data_ids(include_attrs=include_attrs))
         self.assertEqual(self.data_id_searchable, data_id)
         self.assertCountEqual(include_attrs, list(attrs.keys()))
+
+        data_id, attrs = next(store.get_data_ids(include_attrs=True))
+        self.assertEqual(self.data_id_searchable, data_id)
+        all_attrs = ["id", "bbox", "geometry", "properties", "links", "assets"]
+        self.assertCountEqual(all_attrs, list(attrs.keys()))
 
     @pytest.mark.vcr()
     def test_get_data_ids_optional_args_empty_args(self):
@@ -702,6 +707,42 @@ class StacDataStoreTest(unittest.TestCase):
                 ds.sizes["band"],
             ],
         )
+
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen2_creodias_vm(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data()
+
+        store = new_data_store(DATA_STORE_ID_CDSE, creodias_vm=True)
+
+        data_id = (
+            "collections/sentinel-2-l2a/items/S2A_MSIL2A_20200301T090901"
+            "_N0500_R050_T35UPU_20230630T033416"
+        )
+
+        # open data as dataset
+        ds = store.open_data(
+            data_id=data_id,
+            asset_names=["B02", "B03", "B04"],
+            apply_scaling=True,
+        )
+        self.assertEqual(3, mock_rioxarray_open.call_count)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["B02", "B03", "B04"], list(ds.data_vars))
+        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
+
+        # open data as multi-level dataset
+        mlds = store.open_data(
+            data_id=data_id,
+            data_type="mldataset",
+            asset_names=["B02", "B03", "B04"],
+            apply_scaling=True,
+        )
+        ds = mlds.get_dataset(0)
+        self.assertEqual(6, mock_rioxarray_open.call_count)
+        self.assertIsInstance(mlds, MultiLevelDataset)
+        self.assertCountEqual(["B02", "B03", "B04"], list(ds.data_vars))
+        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
 
     @pytest.mark.vcr()
     def test_open_data_stack_mode(self):

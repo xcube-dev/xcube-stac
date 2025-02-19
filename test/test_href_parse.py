@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,9 +23,11 @@ import unittest
 
 from xcube.core.store import DataStoreError
 
-from xcube_stac._href_parse import assert_aws_s3_bucket
-from xcube_stac._href_parse import assert_aws_s3_region_name
-from xcube_stac._href_parse import decode_href
+from xcube_stac._href_parse import (
+    assert_aws_s3_bucket,
+    assert_aws_s3_region_name,
+    decode_href,
+)
 
 
 class HrefParseTest(unittest.TestCase):

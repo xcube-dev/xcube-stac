@@ -1,5 +1,5 @@
 # The MIT License (MIT)
-# Copyright (c) 2024 by the xcube development team and contributors
+# Copyright (c) 2024-2025 by the xcube development team and contributors
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -52,6 +52,10 @@ def apply_offset_scaling(
     See Also:
         `get_stac_extension` for getting the version of raster stac extension.
     """
+    # do not apply any scaling for Sen2 L2A SCL
+    if "scl" in asset_name.lower():
+        return da
+
     if not raster_version:
         raster_version = _get_stac_extension(item)
         if not raster_version:
