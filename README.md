@@ -208,7 +208,9 @@ box and spatial resolution needs to be given in the respective CRS.
 
 ## Testing
 
-To run the unit test suite:
+The test suite uses [pytest-recording](https://pypi.org/project/pytest-recording/)
+to mock STAC catalogs. To run the test suite, `pytest` and `pytest-recording` need to
+be installed. Then, the test suite can be executed as usual by typing:
 
 ```bash
 pytest
