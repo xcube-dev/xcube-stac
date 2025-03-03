@@ -36,7 +36,7 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac._utils import reproject_bbox
+from xcube_stac.utils import reproject_bbox
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
@@ -341,19 +341,19 @@ class StacDataStoreTest(unittest.TestCase):
         # no optional arguments
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("open_params_dataset_netcdf", schema.properties)
-        self.assertIn("open_params_dataset_zarr", schema.properties)
-        self.assertIn("open_params_dataset_geotiff", schema.properties)
-        self.assertIn("open_params_mldataset_geotiff", schema.properties)
-        self.assertIn("open_params_dataset_levels", schema.properties)
-        self.assertIn("open_params_mldataset_levels", schema.properties)
+        self.assertIn("data_opener_open_params", schema.properties)
 
         # test opener_id argument
         schema = store.get_open_data_params_schema(opener_id="dataset:zarr:https")
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("open_params_dataset_zarr", schema.properties)
-        self.assertNotIn("open_params_dataset_netcdf", schema.properties)
+        self.assertIn("data_opener_open_params", schema.properties)
+        self.assertIn(
+            "dataset:zarr", schema.properties["data_opener_open_params"].properties
+        )
+        self.assertNotIn(
+            "dataset:netcdf", schema.properties["data_opener_open_params"].properties
+        )
         self.assertCountEqual(
             [
                 "log_access",
@@ -367,15 +367,24 @@ class StacDataStoreTest(unittest.TestCase):
                 "drop_variables",
                 "consolidated",
             ],
-            schema.properties["open_params_dataset_zarr"].properties.keys(),
+            schema.properties["data_opener_open_params"]
+            .properties["dataset:zarr"]
+            .properties.keys(),
         )
 
         # test data_id argument
         schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("open_params_dataset_geotiff", schema.properties)
-        self.assertIn("open_params_mldataset_geotiff", schema.properties)
-        self.assertNotIn("open_params_dataset_zarr", schema.properties)
+        self.assertIn("data_opener_open_params", schema.properties)
+        self.assertIn(
+            "dataset:geotiff", schema.properties["data_opener_open_params"].properties
+        )
+        self.assertIn(
+            "mldataset:geotiff", schema.properties["data_opener_open_params"].properties
+        )
+        self.assertNotIn(
+            "dataset:zarr", schema.properties["data_opener_open_params"].properties
+        )
 
         # CDSE STAC API Sentinel-2
         store = new_data_store(
@@ -387,8 +396,13 @@ class StacDataStoreTest(unittest.TestCase):
         schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen2)
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
-        self.assertIn("open_params_dataset_jp2", schema.properties)
-        self.assertIn("open_params_mldataset_jp2", schema.properties)
+        self.assertIn("data_opener_open_params", schema.properties)
+        self.assertIn(
+            "dataset:jp2", schema.properties["data_opener_open_params"].properties
+        )
+        self.assertIn(
+            "mldataset:jp2", schema.properties["data_opener_open_params"].properties
+        )
 
     @pytest.mark.vcr()
     def test_get_open_data_params_schema_stack_mode(self):
@@ -418,8 +432,13 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("crs", schema.properties)
         self.assertIn("spatial_res", schema.properties)
         self.assertIn("query", schema.properties)
-        self.assertIn("open_params_dataset_jp2", schema.properties)
-        self.assertIn("open_params_mldataset_jp2", schema.properties)
+        self.assertIn("data_opener_open_params", schema.properties)
+        self.assertIn(
+            "dataset:jp2", schema.properties["data_opener_open_params"].properties
+        )
+        self.assertIn(
+            "mldataset:jp2", schema.properties["data_opener_open_params"].properties
+        )
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -573,11 +592,13 @@ class StacDataStoreTest(unittest.TestCase):
             [1000, 2000, 5], [ds.sizes["lat"], ds.sizes["lon"], ds.sizes["time"]]
         )
         # open data in zarr format with open_params
-        open_params_dataset_zarr = dict(chunks={"time": 5, "lat": 128, "lon": 128})
         ds = store.open_data(
             "collections/datacubes/items/local_ts",
-            open_params_dataset_zarr=open_params_dataset_zarr,
+            data_opener_open_params={
+                "dataset:zarr": dict(chunks={"time": 5, "lat": 128, "lon": 128})
+            },
         )
+        print(ds)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
@@ -758,7 +779,7 @@ class StacDataStoreTest(unittest.TestCase):
             crs="EPSG:3035",
             asset_names=["red", "green", "blue"],
             apply_scaling=True,
-            open_params_dataset_geotiff=dict(tile_size=(512, 512)),
+            data_opener_open_params={"dataset:geotiff": dict(tile_size=(512, 512))},
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
@@ -787,7 +808,7 @@ class StacDataStoreTest(unittest.TestCase):
                 crs="EPSG:32635",
                 asset_names=["red", "green", "blue"],
                 apply_scaling=True,
-                open_params_dataset_geotiff=dict(tile_size=(512, 512)),
+                data_opener_open_params={"dataset:geotiff": dict(tile_size=(512, 512))},
             )
         self.assertIsNone(ds)
         self.assertEqual(1, len(cm.output))

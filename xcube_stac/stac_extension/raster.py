@@ -24,7 +24,7 @@ from typing import Any
 import pystac
 import xarray as xr
 
-from ..constants import LOG
+from xcube_stac.constants import LOG
 
 _RASTER_STAC_EXTENSION_VERSIONS = {
     "v1.0.0": "https://stac-extensions.github.io/raster/v1.0.0/schema.json",

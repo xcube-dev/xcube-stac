@@ -31,7 +31,7 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
-from ._utils import (
+from .utils import (
     convert_datetime2str,
     get_data_id_from_pystac_object,
     get_gridmapping,
@@ -69,28 +69,28 @@ from .stack import (
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
-    "open_params_dataset_netcdf": _HTTPS_STORE.get_open_data_params_schema(
+    "dataset:netcdf": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:netcdf:https"
     ),
-    "open_params_dataset_zarr": _HTTPS_STORE.get_open_data_params_schema(
+    "dataset:zarr": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:zarr:https"
     ),
-    "open_params_dataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
+    "dataset:geotiff": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:geotiff:https"
     ),
-    "open_params_mldataset_geotiff": _HTTPS_STORE.get_open_data_params_schema(
+    "mldataset:geotiff": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="mldataset:geotiff:https"
     ),
-    "open_params_dataset_jp2": _HTTPS_STORE.get_open_data_params_schema(
+    "dataset:jp2": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:geotiff:https"
     ),
-    "open_params_mldataset_jp2": _HTTPS_STORE.get_open_data_params_schema(
+    "mldataset:jp2": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="mldataset:geotiff:https"
     ),
-    "open_params_dataset_levels": _HTTPS_STORE.get_open_data_params_schema(
+    "dataset:levels": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="dataset:levels:https"
     ),
-    "open_params_mldataset_levels": _HTTPS_STORE.get_open_data_params_schema(
+    "mldataset:levels": _HTTPS_STORE.get_open_data_params_schema(
         opener_id="mldataset:levels:https"
     ),
 }
@@ -153,11 +153,18 @@ class SingleStoreMode:
         data_id: str = None,
         opener_id: str = None,
     ) -> JsonObjectSchema:
-        properties = self._get_open_params_data_opener(
-            data_id=data_id, opener_id=opener_id
+        data_opener_open_params = JsonObjectSchema(
+            properties=self._get_open_params_data_opener(
+                data_id=data_id, opener_id=opener_id
+            ),
+            required=[],
+            additional_properties=False,
         )
         return JsonObjectSchema(
-            properties=update_dict(STAC_OPEN_PARAMETERS, properties, inplace=False),
+            properties={
+                **STAC_OPEN_PARAMETERS,
+                "data_opener_open_params": data_opener_open_params,
+            },
             required=[],
             additional_properties=False,
         )
@@ -258,16 +265,12 @@ class SingleStoreMode:
         **open_params,
     ):
         if opener_id is not None:
-            key = "_".join(opener_id.split(":")[:2])
-            open_params_asset = open_params.get(f"open_params_{key}", {})
+            key = ":".join(opener_id.split(":")[:2])
         elif data_type is not None:
-            open_params_asset = open_params.get(
-                f"open_params_{data_type}_{params['format_id']}", {}
-            )
+            key = f"{data_type}:{params['format_id']}"
         else:
-            open_params_asset = open_params.get(
-                f"open_params_dataset_{params['format_id']}", {}
-            )
+            key = f"dataset:{params['format_id']}"
+        open_params_asset = open_params.get("data_opener_open_params", {}).get(key, {})
 
         # open data with respective xcube data opener
         if params["protocol"] == "https":
@@ -366,17 +369,16 @@ class SingleStoreMode:
         self,
         data_id: str = None,
         opener_id: str = None,
-    ):
+    ) -> dict:
         properties = {}
         if opener_id is not None:
-            key = "_".join(opener_id.split(":")[:2])
-            key = f"open_params_{key}"
+            key = ":".join(opener_id.split(":")[:2])
             properties[key] = _OPEN_DATA_PARAMETERS[key]
         if data_id is not None:
             item = self.access_item(data_id)
             for format_id in self._helper.list_format_ids(item):
                 for key in _OPEN_DATA_PARAMETERS.keys():
-                    if format_id == key.split("_")[-1]:
+                    if format_id == key.split(":")[-1]:
                         properties[key] = _OPEN_DATA_PARAMETERS[key]
         if not properties:
             properties = _OPEN_DATA_PARAMETERS
@@ -433,13 +435,18 @@ class StackStoreMode(SingleStoreMode):
         data_id: str = None,
         opener_id: str = None,
     ) -> JsonObjectSchema:
-        properties = self._get_open_params_data_opener(
-            data_id=data_id, opener_id=opener_id
+        data_opener_open_params = JsonObjectSchema(
+            properties=self._get_open_params_data_opener(
+                data_id=data_id, opener_id=opener_id
+            ),
+            required=[],
+            additional_properties=False,
         )
         return JsonObjectSchema(
-            properties=update_dict(
-                STAC_OPEN_PARAMETERS_STACK_MODE, properties, inplace=False
-            ),
+            properties={
+                **STAC_OPEN_PARAMETERS_STACK_MODE,
+                "data_opener_open_params": data_opener_open_params,
+            },
             required=["time_range", "bbox", "crs", "spatial_res"],
             additional_properties=False,
         )

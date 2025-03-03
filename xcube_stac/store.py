@@ -40,7 +40,7 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
 
-from ._utils import (
+from .utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
     get_attrs_from_pystac_object,
