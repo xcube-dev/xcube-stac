@@ -29,7 +29,7 @@ import pystac
 import xarray as xr
 from xcube.core.store import DataStoreError
 
-from xcube_stac._utils import (
+from xcube_stac.utils import (
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,

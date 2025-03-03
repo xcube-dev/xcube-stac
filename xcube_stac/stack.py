@@ -25,7 +25,7 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from ._utils import add_nominal_datetime, get_spatial_dims
+from .utils import add_nominal_datetime, get_spatial_dims
 from .constants import LOG
 
 

@@ -34,15 +34,18 @@ from xcube.core.chunk import chunk_dataset
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
 
-from .._utils import (
+from xcube_stac.utils import (
     get_gridmapping,
     get_spatial_dims,
     is_valid_ml_data_type,
     wrapper_resample_in_space,
 )
-from ..constants import LOG
-from ..mldataset.jp2 import Jp2MultiLevelDataset
-from ..stack import mosaic_spatial_along_time_take_first, mosaic_spatial_take_first
+from xcube_stac.constants import LOG
+from xcube_stac.mldataset.jp2 import Jp2MultiLevelDataset
+from xcube_stac.stack import (
+    mosaic_spatial_along_time_take_first,
+    mosaic_spatial_take_first,
+)
 
 SENITNEL2_BANDS = [
     "B01",
@@ -243,7 +246,7 @@ def _add_sen2_angles_stack(
     ds: xr.Dataset,
 ) -> xr.Dataset:
     # create target grid mapping, native resolution of 5000 is kept since the
-    # angles from the xml meta data, which needs to be done eager
+    # angles from the xml metadata, which needs to be done eager
     crs = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
     if crs.is_geographic:
         spatial_res = 5000 / 111320
@@ -302,8 +305,8 @@ def _add_sen2_angles_stack(
                 wrapper_resample_in_space(ds_tile, target_gm),
                 chunk_sizes={
                     "time": 1,
-                    "angle": -1,
                     "band": -1,
+                    "angle": -1,
                     target_gm.xy_dim_names[0]: -1,
                     target_gm.xy_dim_names[1]: -1,
                 },
@@ -338,15 +341,15 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
 
     da = xr.DataArray(
         np.full(
-            (len(band_names), len(detector_ids), 2, len(x), len(y)),
+            (2, len(band_names), len(detector_ids), len(x), len(y)),
             np.nan,
             dtype=np.float32,
         ),
-        dims=["band", "detector_id", "angle", "y", "x"],
+        dims=["angle", "band", "detector_id", "y", "x"],
         coords=dict(
+            angle=["Zenith", "Azimuth"],
             band=band_names,
             detector_id=detector_ids,
-            angle=["Zenith", "Azimuth"],
             x=x,
             y=y,
         ),
@@ -361,12 +364,12 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
             continue
         detector_id = int(detector_angles["@detectorId"])
         for angle in da.angle.values:
-            da.loc[band_name, detector_id, angle] = _get_angle_values(
+            da.loc[angle, band_name, detector_id] = _get_angle_values(
                 detector_angles, angle
             )
     # Do the same for the solar angles
     for angle in da.angle.values:
-        da.loc["solar", detector_ids[0], angle] = _get_angle_values(
+        da.loc[angle, "solar", detector_ids[0]] = _get_angle_values(
             angles["Sun_Angles_Grid"], angle
         )
     # Apply nanmean along detector ID axis
