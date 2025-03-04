@@ -475,6 +475,12 @@ class StackStoreMode(SingleStoreMode):
                 query=open_params.get("query"),
             )
         )
+
+        # delete items with wrong bbox in CDSE sentinel-2-l2a;
+        # catalog's bug has been reported.
+        if CDSE_STAC_URL in self._url_mod and data_id == "sentinel-2-l2a":
+            items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 2]
+
         if len(items) == 0:
             LOG.warn(
                 f"No items found in collection {data_id!r} for the "
@@ -483,11 +489,6 @@ class StackStoreMode(SingleStoreMode):
                 f"query {open_params.get('query', 'None')!r}."
             )
             return None
-
-        # delete items with wrong bbox in CDSE sentinel-2-l2a;
-        # catalog's bug has been reported.
-        if CDSE_STAC_URL in self._url_mod and data_id == "sentinel-2-l2a":
-            items = [item for item in items if item.bbox[2] - item.bbox[1] < 2]
 
         # group items by date
         grouped_items = groupby_solar_day(items)
