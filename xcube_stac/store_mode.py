@@ -499,7 +499,6 @@ class StackStoreMode(SingleStoreMode):
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
             ds = self.stack_items(grouped_items, **open_params)
-            ds = normalize_grid_mapping(ds)
             if open_params.get("angles_sentinel2", False):
                 ds = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds)
             ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
@@ -626,7 +625,9 @@ class StackStoreMode(SingleStoreMode):
                 ]
                 ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
                 list_ds_assets.append(ds)
-            list_ds_tiles.append(merge_datasets(list_ds_assets, target_gm=target_gm))
+            ds = merge_datasets(list_ds_assets, target_gm=target_gm)
+            ds = normalize_grid_mapping(ds)
+            list_ds_tiles.append(ds)
         ds_final = mosaic_spatial_along_time_take_first(list_ds_tiles)
         return ds_final
 
