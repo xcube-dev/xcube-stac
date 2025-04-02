@@ -37,7 +37,7 @@ from shapely.geometry import box
 from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
-from xcube.core.resampling import resample_in_space
+from xcube.core.resampling import resample_in_space, affine_transform_dataset
 from xcube.core.store import (
     DATASET_TYPE,
     MULTI_LEVEL_DATASET_TYPE,

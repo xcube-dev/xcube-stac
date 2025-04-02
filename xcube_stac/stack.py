@@ -23,10 +23,19 @@
 import dask.array as da
 import numpy as np
 import pystac
+import pyproj
 import xarray as xr
+from xcube.core.resampling import affine_transform_dataset
 
-from .utils import add_nominal_datetime, get_spatial_dims
-from .constants import LOG
+from .utils import (
+    add_nominal_datetime,
+    get_spatial_dims,
+    get_gridmapping,
+    clip_dataset_by_geometry,
+    wrapper_clip_dataset_by_geometry,
+    wrapper_resample_in_space,
+)
+from .constants import LOG, TILE_SIZE
 
 
 def groupby_solar_day(items: list[pystac.Item]) -> xr.DataArray:
@@ -104,6 +113,91 @@ def groupby_solar_day(items: list[pystac.Item]) -> xr.DataArray:
     grouped = grouped.assign_coords(time=dts)
 
     return grouped
+
+
+def get_bounding_box(
+    access_params: xr.DataArray,
+) -> tuple[list[float | int], list[list[float | int]]]:
+    xmin, ymin, xmax, ymax = np.inf, np.inf, -np.inf, -np.inf
+    bboxes = []
+    for tile_id in access_params.tile_id.values:
+        params = next(
+            value
+            for value in access_params.sel(tile_id=tile_id).values.flatten()
+            if value is not None
+        )
+        bbox = params["item"].assets[params["name"]].extra_fields["proj:bbox"]
+        bboxes.append(bbox)
+        if xmin > bbox[0]:
+            xmin = bbox[0]
+        if ymin > bbox[1]:
+            ymin = bbox[1]
+        if xmax < bbox[2]:
+            xmax = bbox[2]
+        if ymax < bbox[3]:
+            ymax = bbox[3]
+    return [xmin, ymin, xmax, ymax], bboxes
+
+
+def create_empty_dataset(
+    access_params: xr.DataArray, asset_name: str, bbox: list[float | int]
+) -> xr.Dataset:
+    params = next(
+        value
+        for value in access_params.sel(asset_name=asset_name).values.flatten()
+        if value is not None
+    )
+    spatial_res = params["item"].assets[params["name"]].extra_fields["gsd"]
+    crs = params["item"].assets[params["name"]].extra_fields["proj:code"]
+    half_res = spatial_res / 2
+    y = np.arange(bbox[3] - half_res, bbox[1], -spatial_res)
+    x = np.arange(bbox[0] + half_res, bbox[2], spatial_res)
+    empty_data = da.full(
+        (access_params.sizes["time"], len(y), len(x)),
+        np.nan,
+        chunks=(1, TILE_SIZE, TILE_SIZE),
+    )
+    ds = xr.Dataset(
+        {params["name_origin"]: (("time", "y", "x"), empty_data)},
+        coords={"x": x, "y": y, "time": access_params.time},
+    )
+    ds = ds.assign_coords(
+        spatial_ref=xr.DataArray(0, attrs=pyproj.CRS.from_string(crs).to_cf())
+    )
+    return ds
+
+
+def merge_utm_zones(list_ds: list[xr.Dataset], **open_params) -> xr.Dataset:
+    resampled_list_ds = []
+    for ds in list_ds:
+        resampled_list_ds.append(_resample_dataset_soft(ds, **open_params))
+    return mosaic_spatial_along_time_take_first(resampled_list_ds)
+
+
+def _resample_dataset_soft(ds: xr.Dataset, **open_params) -> xr.Dataset:
+    crs_final = pyproj.CRS.from_string(open_params["crs"])
+    crs_data = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
+    if crs_final == crs_data:
+        ds = clip_dataset_by_geometry(ds, geometry=open_params["bbox"])
+        if (
+            ds.x[1] - ds.x[0] != open_params["spatial_res"]
+            or ds.y[1] - ds.y[0] != -open_params["spatial_res"]
+        ):
+            target_gm = get_gridmapping(
+                [ds.x[0], ds.y[0], ds.x[-1], ds.y[-1]],
+                open_params["spatial_ref"],
+                crs_data,
+            )
+            ds = affine_transform_dataset(ds, target_gm=target_gm)
+    else:
+        ds = wrapper_clip_dataset_by_geometry(ds, **open_params)
+        target_gm = get_gridmapping(
+            open_params["bbox"],
+            open_params["spatial_ref"],
+            crs_final,
+        )
+        ds = wrapper_resample_in_space(ds, target_gm)
+    return ds
 
 
 def get_processing_version(item: pystac.Item) -> float:

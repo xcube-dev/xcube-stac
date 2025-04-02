@@ -1,5 +1,9 @@
-## Changes in 0.2.0
+## Changes in 0.3.0 (under development)
 
+*
+
+
+## Changes in 0.2.0
 
 * CDSE Sentinel-2 Viewing Angle Dataset: The dimension of the viewing angle dataset 
   has been updated to `(time, angle, band, angle_y, angle_x)`.  
@@ -14,7 +18,6 @@
   zones were handled inconsistently due to different naming of the CRS variable
   stemming from xcube, depending on whether reprojection or simple resampling was
   applied.
-
 
 
 ## Changes in 0.1.0

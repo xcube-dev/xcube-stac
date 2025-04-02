@@ -18,8 +18,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import datetime
 import json
 from collections.abc import Iterator
+from collections import defaultdict
 
 import numpy as np
 import pystac
@@ -34,7 +36,6 @@ from xcube.util.jsonschema import JsonObjectSchema
 from .utils import (
     convert_datetime2str,
     get_data_id_from_pystac_object,
-    get_gridmapping,
     is_valid_ml_data_type,
     merge_datasets,
     normalize_grid_mapping,
@@ -56,15 +57,20 @@ from .constants import (
     STAC_OPEN_PARAMETERS_STACK_MODE,
     STAC_SEARCH_PARAMETERS,
     STAC_SEARCH_PARAMETERS_STACK_MODE,
-    TILE_SIZE,
 )
 from .helper import Helper
 from .mldataset.single_item import SingleItemMultiLevelDataset
-from .stac_extension.raster import apply_offset_scaling
+from .stac_extension.raster import (
+    apply_offset_scaling,
+    apply_nodata,
+    apply_offset_scaling_stack_mode,
+)
 from .stack import (
     groupby_solar_day,
-    mosaic_spatial_along_time_take_first,
+    merge_utm_zones,
     mosaic_spatial_take_first,
+    create_empty_dataset,
+    get_bounding_box,
 )
 
 _HTTPS_STORE = new_data_store("https")
@@ -296,10 +302,6 @@ class SingleStoreMode:
                 f"{params['href']!r}."
             )
 
-        # clip dataset by bounding box
-        if isinstance(ds_asset, xr.Dataset):
-            ds_asset = wrapper_clip_dataset_by_geometry(ds_asset, **open_params)
-
         return ds_asset
 
     ##########################################################################
@@ -490,58 +492,75 @@ class StackStoreMode(SingleStoreMode):
             )
             return None
 
-        # group items by date
-        grouped_items = groupby_solar_day(items)
-
         if opener_id is None:
             opener_id = ""
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds = self.stack_items(grouped_items, **open_params)
-            if open_params.get("angles_sentinel2", False):
-                ds = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds)
-            ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-            # Gather all used STAC item IDs used  in the data cube for each time step
-            # and organize them in a dictionary. The dictionary keys are datetime
-            # strings, and the values are lists of corresponding item IDs.
-            ds.attrs["stac_item_ids"] = dict(
-                {
-                    dt.astype("datetime64[ms]")
-                    .astype("O")
-                    .isoformat(): [
-                        item.id
-                        for item in grouped_items.sel(time=dt).values.flatten()
-                        if item is not None
-                    ]
-                    for dt in grouped_items.time.values
-                }
-            )
+            ds = self.stack_items(items, **open_params)
         return ds
 
     def stack_items(
         self,
-        grouped_items: xr.DataArray,
+        items: list[pystac.Item],
+        **open_params,
+    ) -> xr.Dataset:
+        # group items by date
+        access_params, grouped_items, utm_tile_id = self._group_assets(
+            items, **open_params
+        )
+
+        list_ds_utm = []
+        for crs, tile_ids in utm_tile_id.items():
+            access_params_sel = access_params.sel(tile_id=tile_ids)
+            ds_utm = self._sort_in_utm(access_params_sel, **open_params)
+            list_ds_utm.append(ds_utm)
+
+        ds_final = merge_utm_zones(list_ds_utm, **open_params)
+        if open_params.get("apply_scaling", True):
+            ds_final = apply_offset_scaling_stack_mode(ds_final, access_params)
+
+        ds_final.attrs["stac_catalog_url"] = self._catalog.get_self_href()
+        # Gather all used STAC item IDs used  in the data cube for each time step
+        # and organize them in a dictionary. The dictionary keys are datetime
+        # strings, and the values are lists of corresponding item IDs.
+        ds_final.attrs["stac_item_ids"] = dict(
+            {
+                dt.astype("datetime64[ms]")
+                .astype("O")
+                .isoformat(): [
+                    item.id
+                    for item in grouped_items.sel(time=dt).values.flatten()
+                    if item is not None
+                ]
+                for dt in grouped_items.time.values
+            }
+        )
+        if open_params.get("angles_sentinel2", False):
+            ds_final = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds_final)
+        return ds_final
+
+    def _group_assets(
+        self,
+        items: list[pystac.Item],
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ) -> xr.Dataset:
-        target_gm = get_gridmapping(
-            open_params["bbox"],
-            open_params["spatial_res"],
-            open_params["crs"],
-            open_params.get("tile_size", TILE_SIZE),
-        )
-
+    ):
         asset_names = open_params.get("asset_names")
         if not asset_names:
-            first_item = next(
+            assets = self._helper.list_assets_from_item(items[0])
+            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
+        grouped_items = groupby_solar_day(items)
+        utm_tile_id = defaultdict(list)
+        for tile_id in grouped_items.tile_id.values:
+            item = next(
                 value
-                for value in grouped_items.isel(time=0, idx=0).values
+                for value in grouped_items.sel(tile_id=tile_id, idx=0).values
                 if value is not None
             )
-            assets = self._helper.list_assets_from_item(first_item)
-            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
+            crs = item.assets["AOT_10m"].extra_fields["proj:code"]
+            utm_tile_id[crs].append(tile_id)
 
         access_params = xr.DataArray(
             np.empty(
@@ -567,6 +586,7 @@ class StackStoreMode(SingleStoreMode):
                     item = grouped_items.sel(time=dt, tile_id=tile_id, idx=idx).item()
                     if item is None:
                         continue
+
                     item_access_params = self._helper.get_data_access_params(
                         item,
                         opener_id=opener_id,
@@ -576,16 +596,25 @@ class StackStoreMode(SingleStoreMode):
                     for key, val in item_access_params.items():
                         access_params.loc[tile_id, val["name_origin"], dt, idx] = val
 
-        list_ds_tiles = []
-        for tile_id in access_params.tile_id.values:
-            list_ds_assets = []
-            for asset_name in access_params.asset_name.values:
-                list_ds_time = []
-                idx_remove_dt = []
-                for dt_idx, dt in enumerate(access_params.time.values):
+        return access_params, grouped_items, utm_tile_id
+
+    def _sort_in_utm(
+        self,
+        access_params_sel: xr.DataArray,
+        opener_id: str = None,
+        data_type: DataTypeLike = None,
+        **open_params,
+    ) -> xr.Dataset:
+        bbox, bboxes = get_bounding_box(access_params_sel)
+        list_ds_asset = []
+        for asset_name in access_params_sel.asset_name.values:
+            print(datetime.datetime.now(), asset_name)
+            asset_ds = create_empty_dataset(access_params_sel, asset_name, bbox)
+            for dt_idx, dt in enumerate(access_params_sel.time.values):
+                for tile_id in access_params_sel.tile_id.values:
                     list_ds_idx = []
-                    for idx in access_params.idx.values:
-                        params = access_params.sel(
+                    for idx in access_params_sel.idx.values:
+                        params = access_params_sel.sel(
                             tile_id=tile_id, asset_name=asset_name, time=dt, idx=idx
                         ).item()
                         if not params:
@@ -603,33 +632,37 @@ class StackStoreMode(SingleStoreMode):
                                 f"with parameters {params}"
                             )
                             continue
-                        ds = rename_dataset(ds, params["name_origin"])
-                        if open_params.get("apply_scaling", False):
-                            ds[params["name_origin"]] = apply_offset_scaling(
-                                ds[params["name_origin"]],
-                                params["item"],
-                                params["name"],
-                            )
+                        ds["band_1"] = apply_nodata(
+                            ds["band_1"], params["item"], params["name"]
+                        )
                         list_ds_idx.append(ds)
                     if not list_ds_idx:
-                        idx_remove_dt.append(dt_idx)
                         continue
-                    else:
-                        ds = mosaic_spatial_take_first(list_ds_idx)
-                        list_ds_time.append(ds)
-                ds = xr.concat(list_ds_time, dim="time", join="exact")
-                np_datetimes_sel = [
-                    value
-                    for idx, value in enumerate(access_params.time.values)
-                    if idx not in idx_remove_dt
-                ]
-                ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
-                list_ds_assets.append(ds)
-            ds = merge_datasets(list_ds_assets, target_gm=target_gm)
-            ds = normalize_grid_mapping(ds)
-            list_ds_tiles.append(ds)
-        ds_final = mosaic_spatial_along_time_take_first(list_ds_tiles)
-        return ds_final
+                    ds = mosaic_spatial_take_first(list_ds_idx)
+                    asset_ds = self._sort_in(asset_ds, asset_name, ds, tile_id, dt_idx)
+
+            list_ds_asset.append(asset_ds)
+        ds = merge_datasets(list_ds_asset)
+        return normalize_grid_mapping(ds)
+
+    def _sort_in(self, asset_ds, asset_name, ds, tile_id, dt_idx):
+        xmin = asset_ds.indexes["x"].get_loc(ds.x[0].item())
+        xmax = asset_ds.indexes["x"].get_loc(ds.x[-1].item())
+        ymin = asset_ds.indexes["y"].get_loc(ds.y[0].item())
+        ymax = asset_ds.indexes["y"].get_loc(ds.y[-1].item())
+        asset_ds = self._wrapper_set(
+            asset_ds, asset_name, dt_idx, [xmin, ymin, xmax, ymax], ds
+        )
+        return asset_ds
+
+    def _wrapper_get_loc(self, asset_ds, ds, coord_name, idx):
+        return asset_ds.indexes[coord_name].get_loc(ds.coords[coord_name][idx].item())
+
+    def _wrapper_set(self, asset_ds, asset_name, dt_idx, bbox_ij, ds):
+        asset_ds[asset_name][
+            dt_idx, bbox_ij[1] : bbox_ij[3] + 1, bbox_ij[0] : bbox_ij[2] + 1
+        ] = ds["band_1"]
+        return asset_ds
 
     def get_extent(self, data_id: str) -> dict:
         collection = self.access_collection(data_id)
