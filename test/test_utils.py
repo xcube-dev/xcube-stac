@@ -42,7 +42,7 @@ from xcube_stac.utils import (
     normalize_crs,
     reproject_bbox,
     update_dict,
-    wrapper_clip_dataset_by_geometry,
+    clip_dataset_by_bbox,
 )
 
 
@@ -406,7 +406,7 @@ class UtilsTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    def test_wrapper_clip_dataset_by_geometry(self):
+    def test_clip_dataset_by_bbox(self):
 
         # Example data dimensions
         nx, ny = 11, 11
@@ -442,9 +442,7 @@ class UtilsTest(unittest.TestCase):
             },
         )
 
-        ds_clipped = wrapper_clip_dataset_by_geometry(
-            ds, crs="EPSG:4326", bbox=[179, 50, -179, 52]
-        )
+        ds_clipped = clip_dataset_by_bbox(ds, crs="EPSG:4326", bbox=[179, 50, -179, 52])
         self.assertEqual((4, 4), ds_clipped.temperature.shape)
         np.testing.assert_allclose(
             ds_clipped.x.values, np.array([200000.0, 250000.0, 300000.0, 350000.0])

@@ -23,19 +23,24 @@ import re
 
 import numpy as np
 import pystac
+import xarray as xr
 from xcube.core.store import DataStoreError
 
 from ._href_parse import decode_href
 from .utils import get_format_from_path, get_format_id, is_valid_ml_data_type
 from .accessor.s3 import S3DataAccessor
+from .accessor.https import HttpsDataAccessor
 from .accessor.sen2 import (
-    SENITNEL2_L2A_BAND_RESOLUTIONS,
+    SENTINEL2_BAND_RESOLUTIONS,
     SENITNEL2_L2A_BANDS,
     SENTINEL2_REGEX_ASSET_NAME,
     FileSentinel2DataAccessor,
     S3Sentinel2DataAccessor,
 )
 from .constants import MLDATASET_FORMATS
+
+
+Accessor = S3Sentinel2DataAccessor | FileSentinel2DataAccessor | HttpsDataAccessor
 
 
 class Helper:
@@ -87,6 +92,11 @@ class Helper:
                 item=item,
             )
         return data_access_params
+
+    def stack_items(
+        self, items: list[pystac.Item], accessor: Accessor, **open_params
+    ) -> xr.Dataset:
+        raise NotImplementedError("No stacking mode implemented.")
 
 
 class HelperXcube(Helper):
@@ -160,11 +170,15 @@ class HelperCdse(Helper):
         assets_sel = []
         for i, asset_name in enumerate(asset_names):
             if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                asset_name = (
-                    f"{asset_name}_{SENITNEL2_L2A_BAND_RESOLUTIONS[asset_name]}m"
+                res_diff = abs(
+                    open_params.get("spatial_res", 10) - SENTINEL2_BAND_RESOLUTIONS
                 )
-            asset = item.assets[asset_name]
-            asset.extra_fields["id"] = asset_name
+                for spatial_res in SENTINEL2_BAND_RESOLUTIONS[np.argsort(res_diff)]:
+                    asset_name_res = f"{asset_name}_{spatial_res}m"
+                    if asset_name_res in item.assets:
+                        break
+            asset = item.assets[asset_name_res]
+            asset.extra_fields["id"] = asset_name_res
             asset.extra_fields["id_origin"] = asset_names[i]
             asset.extra_fields["format_id"] = get_format_id(asset)
             assets_sel.append(asset)
@@ -192,3 +206,74 @@ class HelperCdse(Helper):
                 item=item,
             )
         return data_access_params
+
+    def stack_items(
+        self, items: list[pystac.Item], accessor: Accessor, **open_params
+    ) -> xr.Dataset:
+        # get STAC assets grouped by solar day
+        grouped_items = accessor.groupby_solar_day(items)
+
+        # extract access parameters from STAC assets
+        access_params = self._group_assets(grouped_items, **open_params)
+
+        # apply mosaicking and stacking
+        ds = accessor.generate_cube(access_params, **open_params)
+
+        # add attributes
+        # Gather all used STAC item IDs used  in the data cube for each time step
+        # and organize them in a dictionary. The dictionary keys are datetime
+        # strings, and the values are lists of corresponding item IDs.
+        ds.attrs["stac_item_ids"] = dict(
+            {
+                dt.astype("datetime64[ms]")
+                .astype("O")
+                .isoformat(): [
+                    item.id
+                    for item in grouped_items.sel(time=dt).values.flatten()
+                    if item is not None
+                ]
+                for dt in access_params.time.values
+            }
+        )
+
+        return ds
+
+    def _group_assets(self, grouped_items: xr.DataArray, **open_params) -> xr.DataArray:
+        asset_names = open_params.get("asset_names")
+        if not asset_names:
+            item = next(val for val in grouped_items.values.ravel() if val is not None)
+            assets = self.list_assets_from_item(item)
+            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
+
+        access_params = xr.DataArray(
+            np.empty(
+                (
+                    grouped_items.sizes["tile_id"],
+                    len(asset_names),
+                    grouped_items.sizes["time"],
+                    grouped_items.sizes["idx"],
+                ),
+                dtype=object,
+            ),
+            dims=("tile_id", "asset_name", "time", "idx"),
+            coords=dict(
+                tile_id=grouped_items["tile_id"],
+                asset_name=asset_names,
+                time=grouped_items["time"],
+                idx=grouped_items["idx"],
+            ),
+        )
+        for dt in grouped_items.time.values:
+            for tile_id in grouped_items.tile_id.values:
+                for idx in grouped_items.idx.values:
+                    item = grouped_items.sel(time=dt, tile_id=tile_id, idx=idx).item()
+                    if item is None:
+                        continue
+
+                    item_access_params = self.get_data_access_params(
+                        item, **open_params
+                    )
+                    for key, val in item_access_params.items():
+                        access_params.loc[tile_id, val["name_origin"], dt, idx] = val
+
+        return access_params

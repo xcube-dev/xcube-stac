@@ -18,12 +18,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-import datetime
+
 import json
 from collections.abc import Iterator
-from collections import defaultdict
 
-import numpy as np
 import pystac
 import pystac_client.client
 import requests
@@ -44,7 +42,6 @@ from .utils import (
     search_collections,
     search_items,
     update_dict,
-    wrapper_clip_dataset_by_geometry,
 )
 from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
@@ -60,18 +57,7 @@ from .constants import (
 )
 from .helper import Helper
 from .mldataset.single_item import SingleItemMultiLevelDataset
-from .stac_extension.raster import (
-    apply_offset_scaling,
-    apply_nodata,
-    apply_offset_scaling_stack_mode,
-)
-from .stack import (
-    groupby_solar_day,
-    merge_utm_zones,
-    mosaic_spatial_take_first,
-    create_empty_dataset,
-    get_bounding_box,
-)
+from .stac_extension.raster import apply_offset_scaling
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
@@ -497,172 +483,14 @@ class StackStoreMode(SingleStoreMode):
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds = self.stack_items(items, **open_params)
-        return ds
-
-    def stack_items(
-        self,
-        items: list[pystac.Item],
-        **open_params,
-    ) -> xr.Dataset:
-        # group items by date
-        access_params, grouped_items, utm_tile_id = self._group_assets(
-            items, **open_params
-        )
-
-        list_ds_utm = []
-        for crs, tile_ids in utm_tile_id.items():
-            access_params_sel = access_params.sel(tile_id=tile_ids)
-            ds_utm = self._sort_in_utm(access_params_sel, **open_params)
-            list_ds_utm.append(ds_utm)
-
-        ds_final = merge_utm_zones(list_ds_utm, **open_params)
-        if open_params.get("apply_scaling", True):
-            ds_final = apply_offset_scaling_stack_mode(ds_final, access_params)
-
-        ds_final.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-        # Gather all used STAC item IDs used  in the data cube for each time step
-        # and organize them in a dictionary. The dictionary keys are datetime
-        # strings, and the values are lists of corresponding item IDs.
-        ds_final.attrs["stac_item_ids"] = dict(
-            {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
-                    item.id
-                    for item in grouped_items.sel(time=dt).values.flatten()
-                    if item is not None
-                ]
-                for dt in grouped_items.time.values
-            }
-        )
-        if open_params.get("angles_sentinel2", False):
-            ds_final = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds_final)
-        return ds_final
-
-    def _group_assets(
-        self,
-        items: list[pystac.Item],
-        opener_id: str = None,
-        data_type: DataTypeLike = None,
-        **open_params,
-    ):
-        asset_names = open_params.get("asset_names")
-        if not asset_names:
-            assets = self._helper.list_assets_from_item(items[0])
-            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
-        grouped_items = groupby_solar_day(items)
-        utm_tile_id = defaultdict(list)
-        for tile_id in grouped_items.tile_id.values:
-            item = next(
-                value
-                for value in grouped_items.sel(tile_id=tile_id, idx=0).values
-                if value is not None
+            item_params = self._helper.get_data_access_params(
+                items[0], opener_id=opener_id, data_type=data_type, **open_params
             )
-            crs = item.assets["AOT_10m"].extra_fields["proj:code"]
-            utm_tile_id[crs].append(tile_id)
-
-        access_params = xr.DataArray(
-            np.empty(
-                (
-                    grouped_items.sizes["tile_id"],
-                    len(asset_names),
-                    grouped_items.sizes["time"],
-                    grouped_items.sizes["idx"],
-                ),
-                dtype=object,
-            ),
-            dims=("tile_id", "asset_name", "time", "idx"),
-            coords=dict(
-                tile_id=grouped_items["tile_id"],
-                asset_name=asset_names,
-                time=grouped_items["time"],
-                idx=grouped_items["idx"],
-            ),
-        )
-        for dt in grouped_items.time.values:
-            for tile_id in grouped_items.tile_id.values:
-                for idx in grouped_items.idx.values:
-                    item = grouped_items.sel(time=dt, tile_id=tile_id, idx=idx).item()
-                    if item is None:
-                        continue
-
-                    item_access_params = self._helper.get_data_access_params(
-                        item,
-                        opener_id=opener_id,
-                        data_type=data_type,
-                        **open_params,
-                    )
-                    for key, val in item_access_params.items():
-                        access_params.loc[tile_id, val["name_origin"], dt, idx] = val
-
-        return access_params, grouped_items, utm_tile_id
-
-    def _sort_in_utm(
-        self,
-        access_params_sel: xr.DataArray,
-        opener_id: str = None,
-        data_type: DataTypeLike = None,
-        **open_params,
-    ) -> xr.Dataset:
-        bbox, bboxes = get_bounding_box(access_params_sel)
-        list_ds_asset = []
-        for asset_name in access_params_sel.asset_name.values:
-            print(datetime.datetime.now(), asset_name)
-            asset_ds = create_empty_dataset(access_params_sel, asset_name, bbox)
-            for dt_idx, dt in enumerate(access_params_sel.time.values):
-                for tile_id in access_params_sel.tile_id.values:
-                    list_ds_idx = []
-                    for idx in access_params_sel.idx.values:
-                        params = access_params_sel.sel(
-                            tile_id=tile_id, asset_name=asset_name, time=dt, idx=idx
-                        ).item()
-                        if not params:
-                            continue
-                        try:
-                            ds = self.open_asset_dataset(
-                                params,
-                                opener_id,
-                                data_type,
-                                **open_params,
-                            )
-                        except Exception as e:
-                            LOG.error(
-                                f"An error occurred: {e}. Data could not be opened "
-                                f"with parameters {params}"
-                            )
-                            continue
-                        ds["band_1"] = apply_nodata(
-                            ds["band_1"], params["item"], params["name"]
-                        )
-                        list_ds_idx.append(ds)
-                    if not list_ds_idx:
-                        continue
-                    ds = mosaic_spatial_take_first(list_ds_idx)
-                    asset_ds = self._sort_in(asset_ds, asset_name, ds, tile_id, dt_idx)
-
-            list_ds_asset.append(asset_ds)
-        ds = merge_datasets(list_ds_asset)
-        return normalize_grid_mapping(ds)
-
-    def _sort_in(self, asset_ds, asset_name, ds, tile_id, dt_idx):
-        xmin = asset_ds.indexes["x"].get_loc(ds.x[0].item())
-        xmax = asset_ds.indexes["x"].get_loc(ds.x[-1].item())
-        ymin = asset_ds.indexes["y"].get_loc(ds.y[0].item())
-        ymax = asset_ds.indexes["y"].get_loc(ds.y[-1].item())
-        asset_ds = self._wrapper_set(
-            asset_ds, asset_name, dt_idx, [xmin, ymin, xmax, ymax], ds
-        )
-        return asset_ds
-
-    def _wrapper_get_loc(self, asset_ds, ds, coord_name, idx):
-        return asset_ds.indexes[coord_name].get_loc(ds.coords[coord_name][idx].item())
-
-    def _wrapper_set(self, asset_ds, asset_name, dt_idx, bbox_ij, ds):
-        asset_ds[asset_name][
-            dt_idx, bbox_ij[1] : bbox_ij[3] + 1, bbox_ij[0] : bbox_ij[2] + 1
-        ] = ds["band_1"]
-        return asset_ds
+            asset_params = next(iter(item_params.values()))
+            accessor = self._get_s3_accessor(asset_params)
+            ds = self._helper.stack_items(items, accessor, **open_params)
+            ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
+        return ds
 
     def get_extent(self, data_id: str) -> dict:
         collection = self.access_collection(data_id)
@@ -677,7 +505,7 @@ class StackStoreMode(SingleStoreMode):
             time_range=temp_extent_str,
         )
 
-    def search_data(self, **search_params) -> Iterator[pystac.Item]:
+    def search_data(self, **search_params) -> Iterator[pystac.Collection]:
         schema = self.get_search_params_schema()
         schema.validate_instance(search_params)
         return search_collections(self._catalog, **search_params)

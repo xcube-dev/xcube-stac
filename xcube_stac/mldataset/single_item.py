@@ -30,7 +30,7 @@ from xcube_stac.utils import (
     merge_datasets,
     normalize_grid_mapping,
     rename_dataset,
-    wrapper_clip_dataset_by_geometry,
+    clip_dataset_by_bbox,
 )
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import S3Sentinel2DataAccessor
@@ -79,7 +79,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         ):
             ds = ml_dataset.get_dataset(index)
             ds = normalize_grid_mapping(ds)
-            ds = wrapper_clip_dataset_by_geometry(ds, **self._open_params)
+            ds = clip_dataset_by_bbox(ds, **self._open_params)
             ds = rename_dataset(ds, params["name_origin"])
             if self._open_params.get("apply_scaling", False):
                 ds[params["name_origin"]] = apply_offset_scaling(

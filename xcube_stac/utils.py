@@ -27,6 +27,7 @@ import os
 from collections.abc import Container, Iterator
 from typing import Any
 
+import dask.array as da
 import numpy as np
 import pandas as pd
 import pyproj
@@ -34,10 +35,9 @@ import pystac
 import pystac_client
 import xarray as xr
 from shapely.geometry import box
-from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
-from xcube.core.resampling import resample_in_space, affine_transform_dataset
+from xcube.core.resampling import resample_in_space
 from xcube.core.store import (
     DATASET_TYPE,
     MULTI_LEVEL_DATASET_TYPE,
@@ -123,7 +123,7 @@ def search_nonsearchable_catalog(
 def search_collections(
     catalog: pystac.Catalog,
     **search_params,
-) -> Iterator[pystac.Item]:
+) -> Iterator[pystac.Collection]:
     """Get the collections of a catalog for given search parameters
 
     Args:
@@ -598,16 +598,9 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     return ds
 
 
-def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Dataset:
-    gm_name = get_grid_mapping_name(ds)
-    if gm_name is not None:
-        crs_asset = ds[gm_name].attrs["crs_wkt"]
-        if "bbox" in open_params and "crs" in open_params:
-            bbox = reproject_bbox(
-                open_params["bbox"], open_params["crs"], crs_asset, buffer=0.05
-            )
-            ds = clip_dataset_by_geometry(ds, geometry=bbox)
-    return ds
+def clip_dataset_by_bbox(ds: xr.Dataset, bbox: list[float | int]) -> xr.Dataset:
+    y, x = get_spatial_dims(ds)
+    return ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
 
 
 def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
@@ -635,4 +628,31 @@ def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Data
     for var_name in var_names:
         if var_name in ds:
             vars_sel.append(var_name)
-    return ds.drop_vars(vars_sel)
+    ds = ds.drop_vars(vars_sel)
+    return normalize_grid_mapping(ds)
+
+
+def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
+    if len(list_ds) == 1:
+        return list_ds[0]
+    dim = "dummy"
+    ds = xr.concat(list_ds, dim=dim)
+    y_coord, x_coord = get_spatial_dims(list_ds[0])
+
+    ds_mosaic = xr.Dataset()
+    for key in ds:
+        if ds[key].dims[-2:] == (y_coord, x_coord):
+            axis = ds[key].dims.index(dim)
+            da_arr = ds[key].data
+            nan_mask = da.isnan(da_arr)
+            first_non_nan_index = (~nan_mask).argmax(axis=axis)
+            da_arr_select = da.choose(first_non_nan_index, da_arr)
+            ds_mosaic[key] = xr.DataArray(
+                da_arr_select,
+                dims=ds[key].dims[1:],
+                coords=ds[key].coords,
+            )
+        else:
+            ds_mosaic[key] = ds[key]
+
+    return ds_mosaic

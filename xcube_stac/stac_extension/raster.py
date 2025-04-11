@@ -50,12 +50,17 @@ def apply_offset_scaling_stack_mode(
         if "scl" in str(asset_name).lower():
             continue
         offsets = xr.DataArray(
-            np.zeros(ds.sizes["time"]),
+            np.zeros(ds.sizes["time"], dtype=np.float32),
             dims="time",
             coords=dict(time=ds.time),
         )
         scales = xr.DataArray(
-            np.zeros(ds.sizes["time"]),
+            np.zeros(ds.sizes["time"], dtype=np.float32),
+            dims="time",
+            coords=dict(time=ds.time),
+        )
+        nodatas = xr.DataArray(
+            np.zeros(ds.sizes["time"], dtype=np.int16),
             dims="time",
             coords=dict(time=ds.time),
         )
@@ -67,8 +72,10 @@ def apply_offset_scaling_stack_mode(
             )
             if raster_version == "v1":
                 scale, offset = _get_scaling_v1(params["item"], params["name"])
+                nodata = _get_nodata_v1(params["item"], params["name"])
             elif raster_version == "v2":
                 scale, offset = _get_scaling_v2(params["item"], params["name"])
+                nodata = _get_nodata_v2(params["item"], params["name"])
             else:
                 LOG.warning(
                     f"Stac extension raster exists only for version 'v1' and 'v2', not "
@@ -77,7 +84,14 @@ def apply_offset_scaling_stack_mode(
                 return ds
             scales.loc[dt] = scale
             offsets.loc[dt] = offset
+            nodatas.loc[dt] = nodata
 
+        assert len(np.unique(nodatas.values)) == 1
+        nodata = nodatas[0].item()
+        if nodata is not None:
+            ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata)
+
+        print(scales)
         ds[asset_name] *= scales
         ds[asset_name] += offsets
     return ds
@@ -91,7 +105,7 @@ def apply_offset_scaling(
     L = scale * DN + offset.
 
      Args:
-         da: data array
+         da: data arrayif crs_final == crs_data:
          item: item object
          asset_name: name/key of asset
          raster_version: version of raster stac extension; on off [v1, v2].
@@ -117,38 +131,9 @@ def apply_offset_scaling(
 
     if raster_version == "v1":
         scale, offset = _get_scaling_v1(item, asset_name)
-    elif raster_version == "v2":
-        scale, offset = _get_scaling_v2(item, asset_name)
-    else:
-        LOG.warning(
-            f"Stac extension raster exists only for version 'v1' and 'v2', not "
-            f"for {raster_version!r}. No scaling is applied."
-        )
-        return da
-
-    da *= scale
-    da += offset
-    return da
-
-
-def apply_nodata(
-    da: xr.DataArray, item: pystac.Item, asset_name: str, raster_version: str = None
-) -> xr.DataArray:
-    # do not apply for Sen2 L2A SCL
-    if "scl" in asset_name.lower():
-        return da
-
-    if not raster_version:
-        raster_version = _get_stac_extension(item)
-        if not raster_version:
-            LOG.warning(
-                f"The item {item.id!r} is not conform to "
-                f"the stac-extension 'raster'. No nodata conversion is applied."
-            )
-            return da
-    if raster_version == "v1":
         nodata = _get_nodata_v1(item, asset_name)
     elif raster_version == "v2":
+        scale, offset = _get_scaling_v2(item, asset_name)
         nodata = _get_nodata_v2(item, asset_name)
     else:
         LOG.warning(
@@ -156,8 +141,12 @@ def apply_nodata(
             f"for {raster_version!r}. No scaling is applied."
         )
         return da
+
     if nodata is not None:
         da = da.where(da != nodata)
+
+    da *= scale
+    da += offset
     return da
 
 

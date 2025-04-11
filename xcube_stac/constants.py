@@ -46,8 +46,7 @@ DATA_STORE_ID_XCUBE = "stac-xcube"
 
 # other constants
 COLLECTION_PREFIX = "collections/"
-STAC_CRS = "EPSG:4326"
-TILE_SIZE = 1024
+TILE_SIZE = 2048
 LOG = logging.getLogger("xcube.stac")
 FloatInt = Union[float, int]
 
@@ -177,6 +176,7 @@ STAC_SEARCH_PARAMETERS = dict(
 )
 STAC_OPEN_PARAMETERS = dict(
     asset_names=SCHEMA_ASSET_NAMES,
+    spatial_res=SCHEMA_SPATIAL_RES,
     angles_sentinel2=SCHEMA_ANGLES_SENTINEL2,
     apply_scaling=SCHEMA_APPLY_SCALING,
 )
@@ -186,6 +186,5 @@ STAC_OPEN_PARAMETERS_STACK_MODE = dict(
     bbox=SCHEMA_BBOX,
     crs=SCHEMA_CRS,
     tile_size=SCHEMA_TILE_SIZE,
-    spatial_res=SCHEMA_SPATIAL_RES,
     query=SCHEMA_ADDITIONAL_QUERY,
 )
