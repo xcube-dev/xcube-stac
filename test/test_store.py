@@ -36,11 +36,11 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac.utils import reproject_bbox
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
 from xcube_stac.constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
+from xcube_stac.utils import reproject_bbox
 
 from .sampledata import sentinel_2_band_data
 
@@ -598,7 +598,6 @@ class StacDataStoreTest(unittest.TestCase):
                 "dataset:zarr": dict(chunks={"time": 5, "lat": 128, "lon": 128})
             },
         )
-        print(ds)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
@@ -728,42 +727,6 @@ class StacDataStoreTest(unittest.TestCase):
                 ds.sizes["band"],
             ],
         )
-
-    @pytest.mark.vcr()
-    @patch("rioxarray.open_rasterio")
-    def test_open_data_cdse_sen2_creodias_vm(self, mock_rioxarray_open):
-        mock_rioxarray_open.return_value = sentinel_2_band_data()
-
-        store = new_data_store(DATA_STORE_ID_CDSE, creodias_vm=True)
-
-        data_id = (
-            "collections/sentinel-2-l2a/items/S2A_MSIL2A_20200301T090901"
-            "_N0500_R050_T35UPU_20230630T033416"
-        )
-
-        # open data as dataset
-        ds = store.open_data(
-            data_id=data_id,
-            asset_names=["B02", "B03", "B04"],
-            apply_scaling=True,
-        )
-        self.assertEqual(3, mock_rioxarray_open.call_count)
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["B02", "B03", "B04"], list(ds.data_vars))
-        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
-
-        # open data as multi-level dataset
-        mlds = store.open_data(
-            data_id=data_id,
-            data_type="mldataset",
-            asset_names=["B02", "B03", "B04"],
-            apply_scaling=True,
-        )
-        ds = mlds.get_dataset(0)
-        self.assertEqual(6, mock_rioxarray_open.call_count)
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertCountEqual(["B02", "B03", "B04"], list(ds.data_vars))
-        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
 
     @pytest.mark.vcr()
     def test_open_data_stack_mode(self):

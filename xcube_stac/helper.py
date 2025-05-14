@@ -27,18 +27,17 @@ import xarray as xr
 from xcube.core.store import DataStoreError
 
 from ._href_parse import decode_href
-from .utils import get_format_from_path, get_format_id, is_valid_ml_data_type
-from .accessor.s3 import S3DataAccessor
 from .accessor.https import HttpsDataAccessor
+from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import (
-    SENTINEL2_BAND_RESOLUTIONS,
     SENITNEL2_L2A_BANDS,
+    SENTINEL2_BAND_RESOLUTIONS,
     SENTINEL2_REGEX_ASSET_NAME,
     FileSentinel2DataAccessor,
     S3Sentinel2DataAccessor,
 )
 from .constants import MLDATASET_FORMATS
-
+from .utils import get_format_from_path, get_format_id, is_valid_ml_data_type
 
 Accessor = S3Sentinel2DataAccessor | FileSentinel2DataAccessor | HttpsDataAccessor
 
@@ -154,12 +153,9 @@ class HelperXcube(Helper):
 
 class HelperCdse(Helper):
 
-    def __init__(self, creodias_vm: bool = False):
+    def __init__(self):
         super().__init__()
-        if creodias_vm:
-            self.s3_accessor = FileSentinel2DataAccessor
-        else:
-            self.s3_accessor = S3Sentinel2DataAccessor
+        self.s3_accessor = S3Sentinel2DataAccessor
 
     def list_assets_from_item(
         self, item: pystac.Item, **open_params

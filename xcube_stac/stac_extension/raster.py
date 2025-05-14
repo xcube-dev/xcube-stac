@@ -19,9 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import numpy as np
 import pystac
 import xarray as xr
-import numpy as np
 
 from xcube_stac.constants import LOG
 
@@ -91,7 +91,6 @@ def apply_offset_scaling_stack_mode(
         if nodata is not None:
             ds[asset_name] = ds[asset_name].where(ds[asset_name] != nodata)
 
-        print(scales)
         ds[asset_name] *= scales
         ds[asset_name] += offsets
     return ds

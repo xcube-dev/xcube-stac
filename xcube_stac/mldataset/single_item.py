@@ -26,15 +26,15 @@ import xarray as xr
 from xcube.core.gridmapping import GridMapping
 from xcube.core.mldataset import LazyMultiLevelDataset, MultiLevelDataset
 
-from xcube_stac.utils import (
-    merge_datasets,
-    normalize_grid_mapping,
-    rename_dataset,
-    clip_dataset_by_bbox,
-)
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import S3Sentinel2DataAccessor
 from xcube_stac.stac_extension.raster import apply_offset_scaling
+from xcube_stac.utils import (
+    clip_dataset_by_bbox,
+    merge_datasets,
+    normalize_grid_mapping,
+    rename_dataset,
+)
 
 
 class SingleItemMultiLevelDataset(LazyMultiLevelDataset):

@@ -30,6 +30,7 @@ import xarray as xr
 from xcube.core.store import DataStoreError
 
 from xcube_stac.utils import (
+    clip_dataset_by_bbox,
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,
@@ -42,7 +43,6 @@ from xcube_stac.utils import (
     normalize_crs,
     reproject_bbox,
     update_dict,
-    clip_dataset_by_bbox,
 )
 
 

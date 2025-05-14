@@ -1,9 +1,10 @@
-import psutil
-import time
-import zarr
-import numpy as np
-from pathlib import Path
 import os
+import time
+from pathlib import Path
+
+import numpy as np
+import psutil
+import zarr
 
 
 # Function to monitor CPU and IO usage

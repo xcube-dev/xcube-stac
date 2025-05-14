@@ -19,9 +19,9 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from typing import Callable
-from collections import defaultdict
 import datetime
+from collections import defaultdict
+from typing import Callable
 
 import boto3
 import dask
@@ -36,25 +36,22 @@ import xmltodict
 from xcube.core.chunk import chunk_dataset
 from xcube.core.gridmapping import GridMapping
 from xcube.core.mldataset import MultiLevelDataset
+from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataTypeLike
-from xcube.core.resampling import affine_transform_dataset
 
+from xcube_stac.constants import LOG, TILE_SIZE
+from xcube_stac.mldataset.jp2 import Jp2MultiLevelDataset
+from xcube_stac.stac_extension.raster import apply_offset_scaling_stack_mode
 from xcube_stac.utils import (
+    add_nominal_datetime,
+    clip_dataset_by_bbox,
     get_gridmapping,
     get_spatial_dims,
     is_valid_ml_data_type,
-    wrapper_resample_in_space,
-)
-from xcube_stac.constants import LOG, TILE_SIZE
-from xcube_stac.mldataset.jp2 import Jp2MultiLevelDataset
-from xcube_stac.utils import mosaic_spatial_take_first
-from xcube_stac.utils import (
-    add_nominal_datetime,
-    reproject_bbox,
-    clip_dataset_by_bbox,
     merge_datasets,
+    mosaic_spatial_take_first,
+    reproject_bbox,
 )
-from xcube_stac.stac_extension.raster import apply_offset_scaling_stack_mode
 
 SENITNEL2_BANDS = [
     "B01",
@@ -72,6 +69,7 @@ SENITNEL2_BANDS = [
     "B12",
 ]
 SENITNEL2_L2A_BANDS = SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
+SENTINEL2_FILL_VALUE = 0
 SENITNEL2_L2A_BANDS.remove("B10")
 SENTINEL2_BAND_RESOLUTIONS = np.array([10, 20, 60])
 SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
@@ -117,6 +115,12 @@ class S3Sentinel2DataAccessor:
     def __del__(self):
         self.close()
 
+    # def __del__(self):
+    #     try:
+    #         self.close()
+    #     except Exception:
+    #         pass
+
     @property
     def root(self) -> str:
         return self._root
@@ -141,26 +145,6 @@ class S3Sentinel2DataAccessor:
                 chunks=dict(),
                 band_as_variable=True,
             )
-
-    def add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
-        return _add_sen2_angles(self._read_meta_data, item, ds)
-
-    def add_sen2_angles_stack(
-        self, grouped_items: xr.DataArray, ds: xr.Dataset
-    ) -> xr.Dataset:
-        return _add_sen2_angles_stack(self._read_meta_data, grouped_items, ds)
-
-    def _read_meta_data(self, item: pystac.Item):
-        # read xml file and parse to dict
-        href = item.assets["granule_metadata"].href
-        protocol, remain = href.split("://")
-        # some STAC items show hrefs with s3://DIAS/..., which does not exist;
-        # error has been reported.
-        root = "eodata"
-        fs_path = "/".join(remain.split("/")[1:])
-        response = self.s3_boto.get_object(Bucket=root, Key=fs_path)
-        xml_content = response["Body"].read().decode("utf-8")
-        return xmltodict.parse(xml_content)
 
     def groupby_solar_day(self, items: list[pystac.Item]) -> xr.DataArray:
         items = add_nominal_datetime(items)
@@ -285,7 +269,6 @@ class S3Sentinel2DataAccessor:
 
         list_ds_asset = []
         for asset_name in access_params_sel.asset_name.values:
-            print(datetime.datetime.now(), asset_name)
             asset_ds = _create_empty_dataset(
                 access_params_sel, asset_name, items_bbox, final_bbox
             )
@@ -326,144 +309,101 @@ class S3Sentinel2DataAccessor:
         asset_ds[asset_name][dt_idx, ymin : ymax + 1, xmin : xmax + 1] = ds["band_1"]
         return asset_ds
 
-
-class FileSentinel2DataAccessor(S3Sentinel2DataAccessor):
-    """Implementation of the data accessor supporting
-    the jp2 format of Sentinel-2 data via the file protocol,
-    used on Creodias VMs.
-    """
-
-    def __init__(self, root: str, storage_options: dict):
-        self._root = root
-
-    @property
-    def root(self) -> str:
-        return self._root
-
-    def open_data(
-        self,
-        access_params: dict,
-        opener_id: str = None,
-        data_type: DataTypeLike = None,
-        **open_params,
-    ) -> xr.Dataset | MultiLevelDataset:
-        if opener_id is None:
-            opener_id = ""
-        if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
-            return Jp2MultiLevelDataset(access_params, **open_params)
-        else:
-            return rioxarray.open_rasterio(
-                f"/{access_params['root']}/{access_params['fs_path']}",
-                chunks=dict(x=1024, y=1024),
-                band_as_variable=True,
-            )
-
-    def _read_meta_data(self, item: pystac.Item):
+    def add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
         # read xml file and parse to dict
         href = item.assets["granule_metadata"].href
         protocol, remain = href.split("://")
-        # some STAC items show hrefs with s3://DIAS/..., which does not exist;
-        # error has been reported.
         root = "eodata"
         fs_path = "/".join(remain.split("/")[1:])
-        with open(f"/{root}/{fs_path}", "r", encoding="utf-8") as file:
-            xml_content = file.read()
-        return xmltodict.parse(xml_content)
+        response = self.s3_boto.get_object(Bucket=root, Key=fs_path)
+        xml_content = response["Body"].read().decode("utf-8")
+        xml_dict = xmltodict.parse(xml_content)
 
+        # read angles from xml file and add to dataset
+        band_names = _get_band_names_from_dataset(ds)
+        ds_angles = _get_sen2_angles(xml_dict, band_names)
+        ds_angles = _rename_spatial_axis(ds_angles)
+        for key in ["solar_angle", "viewing_angle"]:
+            ds[key] = ds_angles[key]
+        return ds
 
-def _add_sen2_angles(
-    read_meta_data: Callable[[pystac.Item], dict], item: pystac.Item, ds: xr.Dataset
-) -> xr.Dataset:
-    xml_dict = read_meta_data(item)
-
-    # read angles from xml file and add to dataset
-    band_names = _get_band_names_from_dataset(ds)
-    ds_angles = _get_sen2_angles(xml_dict, band_names)
-    ds_angles = _rename_spatial_axis(ds_angles)
-    for key in ["solar_angle", "viewing_angle"]:
-        ds[key] = ds_angles[key]
-    return ds
-
-
-def _add_sen2_angles_stack(
-    read_meta_data: Callable[[pystac.Item], dict],
-    grouped_items: xr.DataArray,
-    ds: xr.Dataset,
-) -> xr.Dataset:
-    # create target grid mapping, native resolution of 5000 is kept since the
-    # angles from the xml metadata, which needs to be done eager
-    crs = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
-    if crs.is_geographic:
-        spatial_res = 5000 / 111320
-    else:
-        spatial_res = 5000
-    y_coord, x_coord = get_spatial_dims(ds)
-    bbox = [
-        ds[x_coord][0].item(),
-        ds[y_coord][0].item(),
-        ds[x_coord][-1].item(),
-        ds[y_coord][-1].item(),
-    ]
-    if bbox[3] < bbox[1]:
-        y_min, y_max = bbox[3], bbox[1]
-        bbox[1], bbox[3] = y_min, y_max
-    target_gm = get_gridmapping(bbox, spatial_res, crs)
-
-    # read out angles from all items and mosaic and stack them
-    band_names = _get_band_names_from_dataset(ds)
-    list_ds_tiles = []
-    for tile_id in grouped_items.tile_id.values:
-        list_ds_time = []
-        idx_remove_dt = []
-        for dt_idx, dt in enumerate(grouped_items.time.values):
-            list_ds_idx = []
-            for idx in grouped_items.idx.values:
-                item = grouped_items.sel(tile_id=tile_id, time=dt, idx=idx).item()
-                if not item:
-                    continue
-                try:
-                    xml_dict = read_meta_data(item)
-                    ds_item = _get_sen2_angles(xml_dict, band_names)
-                except Exception as e:
-                    LOG.error(
-                        f"An error occurred: {e}. Meta data "
-                        f"{item.assets['granule_metadata'].href} "
-                        f"could not be opened."
-                    )
-                    continue
-                list_ds_idx.append(ds_item)
-            if not list_ds_idx:
-                idx_remove_dt.append(dt_idx)
-                continue
-            else:
-                ds_time = mosaic_spatial_take_first(list_ds_idx)
-                list_ds_time.append(ds_time)
-        ds_tile = xr.concat(list_ds_time, dim="time", join="exact")
-        np_datetimes_sel = [
-            value
-            for idx, value in enumerate(grouped_items.time.values)
-            if idx not in idx_remove_dt
+    def add_sen2_angles_stack(
+        self, grouped_items: xr.DataArray, ds: xr.Dataset
+    ) -> xr.Dataset:
+        # create target grid mapping, native resolution of 5000 is kept since the
+        # angles from the xml metadata, which needs to be done eager
+        crs = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
+        if crs.is_geographic:
+            spatial_res = 5000 / 111320
+        else:
+            spatial_res = 5000
+        y_coord, x_coord = get_spatial_dims(ds)
+        bbox = [
+            ds[x_coord][0].item(),
+            ds[y_coord][0].item(),
+            ds[x_coord][-1].item(),
+            ds[y_coord][-1].item(),
         ]
-        ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
-        list_ds_tiles.append(
-            chunk_dataset(
-                wrapper_resample_in_space(ds_tile, target_gm),
-                chunk_sizes={
-                    "time": 1,
-                    "band": -1,
-                    "angle": -1,
-                    target_gm.xy_dim_names[0]: -1,
-                    target_gm.xy_dim_names[1]: -1,
-                },
-            )
-        )
-    ds_angles = mosaic_spatial_take_first(list_ds_tiles)
+        if bbox[3] < bbox[1]:
+            y_min, y_max = bbox[3], bbox[1]
+            bbox[1], bbox[3] = y_min, y_max
+        target_gm = get_gridmapping(bbox, spatial_res, crs)
 
-    # add the angles to the datacube
-    ds_angles = _rename_spatial_axis(ds_angles)
-    for key in ["solar_angle", "viewing_angle"]:
-        ds[key] = ds_angles[key]
-    return ds
+        # read out angles from all items and mosaic and stack them
+        band_names = _get_band_names_from_dataset(ds)
+        list_ds_tiles = []
+        for tile_id in grouped_items.tile_id.values:
+            list_ds_time = []
+            idx_remove_dt = []
+            for dt_idx, dt in enumerate(grouped_items.time.values):
+                list_ds_idx = []
+                for idx in grouped_items.idx.values:
+                    item = grouped_items.sel(tile_id=tile_id, time=dt, idx=idx).item()
+                    if not item:
+                        continue
+                    try:
+                        xml_dict = self._read_meta_data(item)
+                        ds_item = _get_sen2_angles(xml_dict, band_names)
+                    except Exception as e:
+                        LOG.error(
+                            f"An error occurred: {e}. Meta data "
+                            f"{item.assets['granule_metadata'].href} "
+                            f"could not be opened."
+                        )
+                        continue
+                    list_ds_idx.append(ds_item)
+                if not list_ds_idx:
+                    idx_remove_dt.append(dt_idx)
+                    continue
+                else:
+                    ds_time = mosaic_spatial_take_first(list_ds_idx)
+                    list_ds_time.append(ds_time)
+            ds_tile = xr.concat(list_ds_time, dim="time", join="exact")
+            np_datetimes_sel = [
+                value
+                for idx, value in enumerate(grouped_items.time.values)
+                if idx not in idx_remove_dt
+            ]
+            ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
+            list_ds_tiles.append(
+                chunk_dataset(
+                    wrapper_resample_in_space(ds_tile, target_gm),
+                    chunk_sizes={
+                        "time": 1,
+                        "band": -1,
+                        "angle": -1,
+                        target_gm.xy_dim_names[0]: -1,
+                        target_gm.xy_dim_names[1]: -1,
+                    },
+                )
+            )
+        ds_angles = mosaic_spatial_take_first(list_ds_tiles)
+
+        # add the angles to the datacube
+        ds_angles = _rename_spatial_axis(ds_angles)
+        for key in ["solar_angle", "viewing_angle"]:
+            ds[key] = ds_angles[key]
+        return ds
 
 
 def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
@@ -570,20 +510,23 @@ def _resample_dataset_soft(
         ):
             if target_gm is None:
                 target_gm = get_gridmapping(
-                    [ds.x[0], ds.y[0], ds.x[-1], ds.y[-1]],
+                    [ds.x[0].item(), ds.y[-1].item(), ds.x[-1].item(), ds.y[0].item()],
                     open_params["spatial_res"],
                     crs_data,
-                    tile_site,
+                    open_params.get("tile_size", TILE_SIZE),
                 )
-                ds = affine_transform_dataset(ds, target_gm=target_gm)
+                ds = affine_transform_dataset(
+                    ds, target_gm=target_gm, gm_name="spatial_ref"
+                )
     else:
         if target_gm is None:
             target_gm = get_gridmapping(
                 open_params["bbox"],
                 open_params["spatial_res"],
                 crs_final,
+                open_params.get("tile_size", TILE_SIZE),
             )
-        ds = wrapper_resample_in_space(ds, target_gm)
+        ds = reproject_dataset(ds, target_gm=target_gm, fill_value=SENTINEL2_FILL_VALUE)
     return ds
 
 

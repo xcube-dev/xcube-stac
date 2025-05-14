@@ -1,6 +1,7 @@
+import matplotlib.pyplot as plt
 from xcube.core.store import new_data_store
-from xcube_stac.utils import reproject_bbox
 
+from xcube_stac.utils import reproject_bbox
 
 credentials = {
     "key": "O0M0CUQIDQO9TDZ4D8NR",
@@ -9,9 +10,10 @@ credentials = {
 store = new_data_store("stac-cdse", stack_mode=True, **credentials)
 
 bbox = [11.7, 53.0, 12.7, 53.6]
+# bbox = [9.7, 53.0, 10.7, 53.6]
 crs_target = "EPSG:32632"
 bbox_utm = reproject_bbox(bbox, "EPSG:4326", crs_target)
-time_range = ["2020-07-15", "2020-07-20"]
+time_range = ["2025-05-11", "2025-05-14"]
 ds = store.open_data(
     data_id="sentinel-2-l2a",
     bbox=bbox_utm,
@@ -22,5 +24,5 @@ ds = store.open_data(
     apply_scaling=True,
 )
 print(ds)
-print(ds.chunksizes)
-# ds.B02.isel(time=0).compute()
+# ds.B02.isel(time=1)[::5, ::5].plot(vmin=0., vmax=0.3)
+# plt.show()

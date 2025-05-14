@@ -23,8 +23,8 @@ import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike, new_data_store
 
-from xcube_stac.utils import is_valid_ml_data_type
 from xcube_stac.constants import LOG
+from xcube_stac.utils import is_valid_ml_data_type
 
 
 class HttpsDataAccessor:

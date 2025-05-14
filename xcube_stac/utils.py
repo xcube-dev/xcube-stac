@@ -37,7 +37,7 @@ import xarray as xr
 from shapely.geometry import box
 from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
-from xcube.core.resampling import resample_in_space
+from xcube.core.resampling import affine_transform_dataset
 from xcube.core.store import (
     DATASET_TYPE,
     MULTI_LEVEL_DATASET_TYPE,
@@ -576,7 +576,9 @@ def merge_datasets(
                 )
         datasets_resampled = []
         for ds in datasets_grouped:
-            datasets_resampled.append(wrapper_resample_in_space(ds, target_gm))
+            datasets_resampled.append(
+                affine_transform_dataset(ds, target_gm=target_gm, encode_cf=False)
+            )
         ds = _update_datasets(datasets_resampled)
     return ds
 
@@ -600,36 +602,11 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 def clip_dataset_by_bbox(ds: xr.Dataset, bbox: list[float | int]) -> xr.Dataset:
     y, x = get_spatial_dims(ds)
-    return ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
-
-
-def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    # Extra care needs to be taken for the grid_mapping variable. This is needed
-    # until the issue https://github.com/xcube-dev/xcube/issues/1013
-    # is addressed. More details are given in the above-mentioned issue.
-    source_gm = GridMapping.from_dataset(ds)
-    if source_gm.crs == target_gm.crs:
-        ds = resample_in_space(
-            ds, source_gm=source_gm, target_gm=target_gm, encode_cf=False
-        )
+    if ds.y[-1] - y[0] < 0:
+        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
     else:
-        ds = resample_in_space(
-            ds, source_gm=source_gm, target_gm=target_gm, gm_name="crs", encode_cf=True
-        )
-    var_names = [
-        "x_bnds",
-        "y_bnds",
-        "lon_bnds",
-        "lat_bnds",
-        "transformed_x",
-        "transformed_y",
-    ]
-    vars_sel = []
-    for var_name in var_names:
-        if var_name in ds:
-            vars_sel.append(var_name)
-    ds = ds.drop_vars(vars_sel)
-    return normalize_grid_mapping(ds)
+        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[1], bbox[3])})
+    return ds
 
 
 def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:

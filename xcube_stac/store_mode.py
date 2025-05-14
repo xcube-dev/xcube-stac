@@ -31,18 +31,6 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
-from .utils import (
-    convert_datetime2str,
-    get_data_id_from_pystac_object,
-    is_valid_ml_data_type,
-    merge_datasets,
-    normalize_grid_mapping,
-    rename_dataset,
-    reproject_bbox,
-    search_collections,
-    search_items,
-    update_dict,
-)
 from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import S3Sentinel2DataAccessor
@@ -58,6 +46,18 @@ from .constants import (
 from .helper import Helper
 from .mldataset.single_item import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
+from .utils import (
+    convert_datetime2str,
+    get_data_id_from_pystac_object,
+    is_valid_ml_data_type,
+    merge_datasets,
+    normalize_grid_mapping,
+    rename_dataset,
+    reproject_bbox,
+    search_collections,
+    search_items,
+    update_dict,
+)
 
 _HTTPS_STORE = new_data_store("https")
 _OPEN_DATA_PARAMETERS = {
