@@ -38,7 +38,7 @@ from xcube.core.store import (
     DataTypeLike,
     MultiLevelDatasetDescriptor,
 )
-from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
+from xcube.util.jsonschema import JsonObjectSchema
 
 from .constants import (
     CDSE_S3_ENDPOINT,

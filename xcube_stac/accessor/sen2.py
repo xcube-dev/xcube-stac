@@ -19,9 +19,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import datetime
 from collections import defaultdict
-from typing import Callable
 
 import boto3
 import dask
@@ -33,7 +31,6 @@ import rasterio.session
 import rioxarray
 import xarray as xr
 import xmltodict
-from xcube.core.chunk import chunk_dataset
 from xcube.core.gridmapping import GridMapping
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
@@ -46,7 +43,6 @@ from xcube_stac.utils import (
     add_nominal_datetime,
     clip_dataset_by_bbox,
     get_gridmapping,
-    get_spatial_dims,
     is_valid_ml_data_type,
     merge_datasets,
     mosaic_spatial_take_first,
@@ -115,12 +111,6 @@ class S3Sentinel2DataAccessor:
     def __del__(self):
         self.close()
 
-    # def __del__(self):
-    #     try:
-    #         self.close()
-    #     except Exception:
-    #         pass
-
     @property
     def root(self) -> str:
         return self._root
@@ -142,7 +132,7 @@ class S3Sentinel2DataAccessor:
                     f"{access_params['protocol']}://{access_params['root']}/"
                     f"{access_params['fs_path']}"
                 ),
-                chunks=dict(),
+                chunks={},
                 band_as_variable=True,
             )
 
@@ -252,7 +242,9 @@ class S3Sentinel2DataAccessor:
         if open_params.get("apply_scaling", True):
             ds_final = apply_offset_scaling_stack_mode(ds_final, access_params)
         if open_params.get("angles_sentinel2", False):
-            ds_final = self.add_sen2_angles_stack(access_params, ds_final)
+            ds_final = self.add_sen2_angles_stack(
+                ds_final, access_params, utm_tile_id, **open_params
+            )
 
         return ds_final
 
@@ -292,6 +284,8 @@ class S3Sentinel2DataAccessor:
                             )
                             continue
                         ds = clip_dataset_by_bbox(ds, final_bbox)
+                        if any(size == 0 for size in ds.sizes.values()):
+                            continue
                         list_ds_idx.append(ds)
                     if not list_ds_idx:
                         continue
@@ -309,7 +303,7 @@ class S3Sentinel2DataAccessor:
         asset_ds[asset_name][dt_idx, ymin : ymax + 1, xmin : xmax + 1] = ds["band_1"]
         return asset_ds
 
-    def add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
+    def get_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
         # read xml file and parse to dict
         href = item.assets["granule_metadata"].href
         protocol, remain = href.split("://")
@@ -322,56 +316,62 @@ class S3Sentinel2DataAccessor:
         # read angles from xml file and add to dataset
         band_names = _get_band_names_from_dataset(ds)
         ds_angles = _get_sen2_angles(xml_dict, band_names)
-        ds_angles = _rename_spatial_axis(ds_angles)
-        for key in ["solar_angle", "viewing_angle"]:
-            ds[key] = ds_angles[key]
+
+        return ds_angles
+
+    def add_sen2_angles(
+        self, item: pystac.Item, ds: xr.Dataset, **open_params
+    ) -> xr.Dataset:
+        target_gm = GridMapping.from_dataset(ds)
+        ds_angles = self.get_sen2_angles(item, ds)
+        ds_angles = _resample_dataset_soft(
+            ds_angles,
+            target_gm,
+            fill_value=np.nan,
+            interpolation="bilinear",
+            **open_params,
+        )
+        ds = _add_angles(ds, ds_angles)
         return ds
 
     def add_sen2_angles_stack(
-        self, grouped_items: xr.DataArray, ds: xr.Dataset
+        self,
+        ds_final: xr.Dataset,
+        access_params: xr.DataArray,
+        utm_tile_id: dict,
+        **open_params,
     ) -> xr.Dataset:
-        # create target grid mapping, native resolution of 5000 is kept since the
-        # angles from the xml metadata, which needs to be done eager
-        crs = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
-        if crs.is_geographic:
-            spatial_res = 5000 / 111320
-        else:
-            spatial_res = 5000
-        y_coord, x_coord = get_spatial_dims(ds)
-        bbox = [
-            ds[x_coord][0].item(),
-            ds[y_coord][0].item(),
-            ds[x_coord][-1].item(),
-            ds[y_coord][-1].item(),
-        ]
-        if bbox[3] < bbox[1]:
-            y_min, y_max = bbox[3], bbox[1]
-            bbox[1], bbox[3] = y_min, y_max
-        target_gm = get_gridmapping(bbox, spatial_res, crs)
+        target_gm = GridMapping.from_dataset(ds_final)
 
-        # read out angles from all items and mosaic and stack them
-        band_names = _get_band_names_from_dataset(ds)
         list_ds_tiles = []
-        for tile_id in grouped_items.tile_id.values:
+        for tile_id in access_params.tile_id.values:
             list_ds_time = []
             idx_remove_dt = []
-            for dt_idx, dt in enumerate(grouped_items.time.values):
+            for dt_idx, dt in enumerate(access_params.time.values):
                 list_ds_idx = []
-                for idx in grouped_items.idx.values:
-                    item = grouped_items.sel(tile_id=tile_id, time=dt, idx=idx).item()
-                    if not item:
+                for idx in access_params.idx.values:
+                    params = next(
+                        (
+                            value
+                            for value in access_params.sel(
+                                tile_id=tile_id, time=dt, idx=idx
+                            ).values.flatten()
+                            if value is not None
+                        ),
+                        None,
+                    )
+                    if not params:
                         continue
                     try:
-                        xml_dict = self._read_meta_data(item)
-                        ds_item = _get_sen2_angles(xml_dict, band_names)
+                        ds = self.get_sen2_angles(params["item"], ds_final)
                     except Exception as e:
                         LOG.error(
                             f"An error occurred: {e}. Meta data "
-                            f"{item.assets['granule_metadata'].href} "
+                            f"{params['item'].assets['granule_metadata'].href} "
                             f"could not be opened."
                         )
                         continue
-                    list_ds_idx.append(ds_item)
+                    list_ds_idx.append(ds)
                 if not list_ds_idx:
                     idx_remove_dt.append(dt_idx)
                     continue
@@ -381,38 +381,31 @@ class S3Sentinel2DataAccessor:
             ds_tile = xr.concat(list_ds_time, dim="time", join="exact")
             np_datetimes_sel = [
                 value
-                for idx, value in enumerate(grouped_items.time.values)
+                for idx, value in enumerate(access_params.time.values)
                 if idx not in idx_remove_dt
             ]
             ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
             list_ds_tiles.append(
-                chunk_dataset(
-                    wrapper_resample_in_space(ds_tile, target_gm),
-                    chunk_sizes={
-                        "time": 1,
-                        "band": -1,
-                        "angle": -1,
-                        target_gm.xy_dim_names[0]: -1,
-                        target_gm.xy_dim_names[1]: -1,
-                    },
+                _resample_dataset_soft(
+                    ds_tile,
+                    target_gm,
+                    fill_value=np.nan,
+                    interpolation="bilinear",
+                    **open_params,
                 )
             )
         ds_angles = mosaic_spatial_take_first(list_ds_tiles)
-
-        # add the angles to the datacube
-        ds_angles = _rename_spatial_axis(ds_angles)
-        for key in ["solar_angle", "viewing_angle"]:
-            ds[key] = ds_angles[key]
-        return ds
+        ds_final = _add_angles(ds_final, ds_angles)
+        return ds_final
 
 
 def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
     # read out solar and viewing angles
     geocode = xml_dict["n1:Level-2A_Tile_ID"]["n1:Geometric_Info"]["Tile_Geocoding"]
-    ULX = float(geocode["Geoposition"][0]["ULX"])
-    ULY = float(geocode["Geoposition"][0]["ULY"])
-    y = np.arange(ULY, ULY - 5000 * 23, -5000) - 2500
-    x = np.arange(ULX, ULX + 5000 * 23, 5000) + 2500
+    ulx = float(geocode["Geoposition"][0]["ULX"])
+    uly = float(geocode["Geoposition"][0]["ULY"])
+    x = ulx + 5000 * np.arange(23)
+    y = uly - 5000 * np.arange(23)
 
     angles = xml_dict["n1:Level-2A_Tile_ID"]["n1:Geometric_Info"]["Tile_Angles"]
     map_bandid_name = {idx: name for idx, name in enumerate(SENITNEL2_BANDS)}
@@ -460,10 +453,43 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
     # Apply nanmean along detector ID axis
     da = da.mean(dim="detector_id", skipna=True)
     ds = xr.Dataset()
-    ds["solar_angle"] = da.sel(band="solar").drop_vars("band")
-    ds["viewing_angle"] = da.isel(band=slice(None, -1))
+    for angle in da.angle.values:
+        ds[f"solar_angle_{angle.lower()}"] = da.sel(
+            band="solar", angle=angle
+        ).drop_vars(["band", "angle"])
+    for band in da.band.values[:-1]:
+        for angle in da.angle.values:
+            ds[f"viewing_angle_{angle.lower()}_{band}"] = da.sel(
+                band=band, angle=angle
+            ).drop_vars(["band", "angle"])
     crs = pyproj.CRS.from_epsg(geocode["HORIZONTAL_CS_CODE"].replace("EPSG:", ""))
     ds = ds.assign_coords(dict(spatial_ref=xr.DataArray(0, attrs=crs.to_cf())))
+    ds = ds.chunk()
+
+    return ds
+
+
+def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
+    ds["solar_angle"] = (
+        ds_angles[["solar_angle_zenith", "solar_angle_azimuth"]]
+        .to_dataarray(dim="angle")
+        .assign_coords(angle=["zenith", "azimuth"])
+    )
+    ds_temp = xr.Dataset()
+    bands = [
+        str(k).replace("viewing_angle_zenith_", "")
+        for k in ds_angles.keys()
+        if "viewing_angle_zenith" in k
+    ]
+    keys = [k for k in ds_angles.keys() if "viewing_angle_zenith" in k]
+    ds_temp["zenith"] = (
+        ds_angles[keys].to_dataarray(dim="band").assign_coords(band=bands)
+    )
+    keys = [k for k in ds_angles.keys() if "viewing_angle_azimuth" in k]
+    ds_temp["azimuth"] = (
+        ds_angles[keys].to_dataarray(dim="band").assign_coords(band=bands)
+    )
+    ds["viewing_angle"] = ds_temp[["zenith", "azimuth"]].to_dataarray(dim="angle")
 
     return ds
 
@@ -481,14 +507,10 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
     return [name for name in SENITNEL2_BANDS if name in band_names]
 
 
-def _rename_spatial_axis(ds: xr.Dataset) -> xr.Dataset:
-    x_coord, y_coord = get_spatial_dims(ds)
-    return ds.rename({y_coord: f"angle_{y_coord}", x_coord: f"angle_{x_coord}"})
-
-
-def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
+def _merge_utm_zones(
+    list_ds_utm: list[xr.Dataset], target_gm: GridMapping = None, **open_params
+) -> xr.Dataset:
     resampled_list_ds = []
-    target_gm = None
     for ds in list_ds_utm:
         resampled_list_ds.append(
             _resample_dataset_soft(ds, target_gm=target_gm, **open_params)
@@ -499,25 +521,32 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
 
 
 def _resample_dataset_soft(
-    ds: xr.Dataset, target_gm: GridMapping, **open_params
+    ds: xr.Dataset,
+    target_gm: GridMapping,
+    fill_value: float | int = None,
+    interpolation: str = "nearest",
+    **open_params,
 ) -> xr.Dataset:
-    crs_final = pyproj.CRS.from_string(open_params["crs"])
+    if target_gm is not None:
+        crs_final = target_gm.crs
+        spatial_res = target_gm.x_res
+    else:
+        crs_final = pyproj.CRS.from_string(open_params["crs"])
+        spatial_res = open_params["spatial_res"]
     crs_data = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
+
     if crs_final == crs_data:
-        if (
-            ds.x[1] - ds.x[0] != open_params["spatial_res"]
-            or ds.y[1] - ds.y[0] != -open_params["spatial_res"]
-        ):
+        if ds.x[1] - ds.x[0] != spatial_res or ds.y[1] - ds.y[0] != -spatial_res:
             if target_gm is None:
                 target_gm = get_gridmapping(
                     [ds.x[0].item(), ds.y[-1].item(), ds.x[-1].item(), ds.y[0].item()],
-                    open_params["spatial_res"],
+                    spatial_res,
                     crs_data,
                     open_params.get("tile_size", TILE_SIZE),
                 )
-                ds = affine_transform_dataset(
-                    ds, target_gm=target_gm, gm_name="spatial_ref"
-                )
+            ds = affine_transform_dataset(
+                ds, target_gm=target_gm, gm_name="spatial_ref"
+            )
     else:
         if target_gm is None:
             target_gm = get_gridmapping(
@@ -526,7 +555,11 @@ def _resample_dataset_soft(
                 crs_final,
                 open_params.get("tile_size", TILE_SIZE),
             )
-        ds = reproject_dataset(ds, target_gm=target_gm, fill_value=SENTINEL2_FILL_VALUE)
+        if fill_value is None:
+            fill_value = SENTINEL2_FILL_VALUE
+        ds = reproject_dataset(
+            ds, target_gm=target_gm, fill_value=fill_value, interpolation=interpolation
+        )
     return ds
 
 
@@ -555,13 +588,15 @@ def _create_empty_dataset(
     asset_name: str,
     items_bbox: list[float | int],
     final_bbox: list[float | int],
+    spatial_res: int | float = None,
 ) -> xr.Dataset:
     params = next(
         value
         for value in access_params.sel(asset_name=asset_name).values.flatten()
         if value is not None
     )
-    spatial_res = params["item"].assets[params["name"]].extra_fields["gsd"]
+    if spatial_res is None:
+        spatial_res = params["item"].assets[params["name"]].extra_fields["gsd"]
     crs = params["item"].assets[params["name"]].extra_fields["proj:code"]
     half_res = spatial_res / 2
 

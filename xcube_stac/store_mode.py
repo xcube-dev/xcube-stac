@@ -245,7 +245,7 @@ class SingleStoreMode:
         else:
             ds = merge_datasets(list_ds_asset, target_gm=target_gm)
             if open_params.get("angles_sentinel2", False):
-                ds = self._s3_accessor.add_sen2_angles(item, ds)
+                ds = self._s3_accessor.add_sen2_angles(item, ds, **open_params)
             ds.attrs = attrs
         return ds
 

@@ -602,7 +602,7 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 def clip_dataset_by_bbox(ds: xr.Dataset, bbox: list[float | int]) -> xr.Dataset:
     y, x = get_spatial_dims(ds)
-    if ds.y[-1] - y[0] < 0:
+    if ds.y[-1] - ds.y[0] < 0:
         ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
     else:
         ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[1], bbox[3])})

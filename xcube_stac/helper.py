@@ -33,13 +33,12 @@ from .accessor.sen2 import (
     SENITNEL2_L2A_BANDS,
     SENTINEL2_BAND_RESOLUTIONS,
     SENTINEL2_REGEX_ASSET_NAME,
-    FileSentinel2DataAccessor,
     S3Sentinel2DataAccessor,
 )
 from .constants import MLDATASET_FORMATS
 from .utils import get_format_from_path, get_format_id, is_valid_ml_data_type
 
-Accessor = S3Sentinel2DataAccessor | FileSentinel2DataAccessor | HttpsDataAccessor
+Accessor = S3Sentinel2DataAccessor | HttpsDataAccessor
 
 
 class Helper:

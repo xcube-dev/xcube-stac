@@ -77,8 +77,8 @@ def sentinel_2_band_data():
         },
     )
     coords = {
-        "x": np.arange(600005.0, 709796.0, 10.0),
-        "y": np.arange(5900035.0, 5790244.0, -10.0),
+        "x": np.arange(600000.0, 709791.0, 10.0),
+        "y": np.arange(5900030.0, 5790239.0, -10.0),
         "spatial_ref": spatial_ref,
     }
     return xr.Dataset(mock_data, coords=coords)

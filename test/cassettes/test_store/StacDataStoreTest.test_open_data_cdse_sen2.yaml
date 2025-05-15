@@ -14,33 +14,32 @@ interactions:
     uri: https://stac.dataspace.copernicus.eu/v1
   response:
     body:
-      string: '{"type":"Catalog","id":"Copernicus Data Space Ecosystem (CDSE) asset-level
-        STAC catalogue","title":"cdse-stac","description":"A comprehensive and searchable
+      string: '{"type":"Catalog","id":"cdse-stac","title":"Copernicus Data Space Ecosystem
+        (CDSE) asset-level STAC catalogue","description":"A comprehensive and searchable
         catalog of Earth observation and scientific datasets that is actively maintained
         and updated by the Copernicus Data Space Ecosystem. The integrated STAC (SpatioTemporal
         Asset Catalog) API, which follows the open STAC specification, enables users
         to access detailed asset-level metadata, including spatial information, temporal
         coverage, and data specifications. This standardized interface facilitates
         efficient data discovery and retrieval across the extensive collection of
-        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["https://api.stacspec.org/v1.0.0/collections/extensions/transaction","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort","https://api.stacspec.org/v1.0.0/item-search","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","https://api.stacspec.org/v1.0.0/item-search#query","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","https://api.stacspec.org/v1.0.0-rc.1/collection-search#query","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction","http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/ogcapi-features","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"],"links":[{"rel":"self","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
+        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/collections/extensions/transaction","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/ogcapi-features#fields","https://api.stacspec.org/v1.0.0/ogcapi-features#query","https://api.stacspec.org/v1.0.0/ogcapi-features#sort","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction"],"links":[{"rel":"self","type":"application/json","title":"This
+        document","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","title":"Root","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","title":"Collections
+        available for this Catalog","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
         conformance classes implemented by this server","href":"https://stac.dataspace.copernicus.eu/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"child","type":"application/json","title":"Sentinel-1
-        Ground Range Detected (GRD)","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-1-grd"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Global Mosaics","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-global-mosaics"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Level-1C","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l1c"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Level-2A","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
+        search [GET]","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search [POST]","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        available for this Catalog","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
         service description","href":"https://stac.dataspace.copernicus.eu/v1/api"},{"rel":"service-doc","type":"text/html","title":"OpenAPI
         service documentation","href":"https://stac.dataspace.copernicus.eu/v1/api.html"}],"stac_extensions":[]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '1038'
+      - '929'
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 12:07:01 GMT
+      - Thu, 15 May 2025 14:16:30 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -132,7 +131,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 04 Feb 2025 12:07:01 GMT
+      - Thu, 15 May 2025 14:16:31 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -224,7 +223,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 04 Feb 2025 12:07:01 GMT
+      - Thu, 15 May 2025 14:16:31 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -239,26 +238,26 @@ interactions:
     headers:
       Authorization:
       - !!binary |
-        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU9YOTRKS0NGRUYxUExOVk5BVTJKLzIwMjUwMjA0
+        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU8wTTBDVVFJRFFPOVREWjREOE5SLzIwMjUwNTE1
         L2RlZmF1bHQvczMvYXdzNF9yZXF1ZXN0LCBTaWduZWRIZWFkZXJzPWhvc3Q7eC1hbXotY2hlY2tz
-        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9M2JkZTIz
-        N2IyNDk0YjZhMDJlYTkyZTQ5ODAyYWRjZDc5MzgyOTQ1ZjgxMzM5NDkxOGE5MWI5YmVkOWExMDRk
-        ZA==
+        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9ZTI0ZGI5
+        YzliMzdmOGJiNjhlOTkxZDE3ZTFmMWZkZDEzZDcyYjBjY2ZlYWUxY2UwZTdlMzBmM2UxMDJiMWM1
+        OQ==
       User-Agent:
       - !!binary |
-        Qm90bzMvMS4zNi4zIG1kL0JvdG9jb3JlIzEuMzYuMyB1YS8yLjAgb3MvbGludXgjNi44LjAtNTIt
-        Z2VuZXJpYyBtZC9hcmNoI3g4Nl82NCBsYW5nL3B5dGhvbiMzLjEyLjggbWQvcHlpbXBsI0NQeXRo
-        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzYuMw==
+        Qm90bzMvMS4zNy4xIG1kL0JvdG9jb3JlIzEuMzcuMSB1YS8yLjAgb3MvbGludXgjNi44LjAtNTkt
+        Z2VuZXJpYyBtZC9hcmNoI3g4Nl82NCBsYW5nL3B5dGhvbiMzLjEyLjkgbWQvcHlpbXBsI0NQeXRo
+        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzcuMQ==
       X-Amz-Content-SHA256:
       - !!binary |
         ZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3
         ODUyYjg1NQ==
       X-Amz-Date:
       - !!binary |
-        MjAyNTAyMDRUMTIwNzAyWg==
+        MjAyNTA1MTVUMTQxNjMxWg==
       amz-sdk-invocation-id:
       - !!binary |
-        OTA4YWI3ZjgtOTk4MS00NjM0LWIzYTYtZmNiYzA3NTBmNjJj
+        ZGMzMTQwODAtMDMxZS00Y2NjLTg4MjAtMDlhN2E4ZGM4MDRh
       amz-sdk-request:
       - !!binary |
         YXR0ZW1wdD0x
@@ -8265,7 +8264,7 @@ interactions:
       content-type:
       - binary/octet-stream
       date:
-      - Tue, 04 Feb 2025 12:07:02 GMT
+      - Thu, 15 May 2025 14:16:32 GMT
       etag:
       - '"7c37cd6524551dc6bc230d61fe44ecfe-1"'
       expires:
@@ -8281,15 +8280,15 @@ interactions:
       server:
       - envoy
       x-amz-request-id:
-      - tx00000000000008111a2f6-0067a202e6-8ebc88ae-default
+      - tx000000000000038462296-006825f740-a1ee0359-default
       x-envoy-upstream-service-time:
-      - '45'
+      - '46'
       x-ratelimit-limit:
       - 2000, 2000;w=60
       x-ratelimit-remaining:
-      - '1999'
+      - '1787'
       x-ratelimit-reset:
-      - '58'
+      - '28'
       x-rgw-object-type:
       - Normal
     status:
@@ -8377,7 +8376,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 04 Feb 2025 12:07:02 GMT
+      - Thu, 15 May 2025 14:16:33 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -8469,7 +8468,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Tue, 04 Feb 2025 12:07:03 GMT
+      - Thu, 15 May 2025 14:16:34 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -8484,26 +8483,26 @@ interactions:
     headers:
       Authorization:
       - !!binary |
-        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU9YOTRKS0NGRUYxUExOVk5BVTJKLzIwMjUwMjA0
+        QVdTNC1ITUFDLVNIQTI1NiBDcmVkZW50aWFsPU8wTTBDVVFJRFFPOVREWjREOE5SLzIwMjUwNTE1
         L2RlZmF1bHQvczMvYXdzNF9yZXF1ZXN0LCBTaWduZWRIZWFkZXJzPWhvc3Q7eC1hbXotY2hlY2tz
-        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9YjJlNWQ4
-        Y2IyNTExY2VlZjU0ZjA3NTQ0MDk0Mzg1MDVlZTJlNjllOGNhYWUzNmU5MzhlNWE0OTBjZmNiYjI4
-        Mg==
+        dW0tbW9kZTt4LWFtei1jb250ZW50LXNoYTI1Njt4LWFtei1kYXRlLCBTaWduYXR1cmU9YWU5MTFl
+        YmZlMTJiMjAwYmY2OWJiNGJlMGU5NjYwZGVhNWU1MTA1NDI2ZTA1OGZmYzQ2YTU2ODY2ZGVhZjg2
+        Yw==
       User-Agent:
       - !!binary |
-        Qm90bzMvMS4zNi4zIG1kL0JvdG9jb3JlIzEuMzYuMyB1YS8yLjAgb3MvbGludXgjNi44LjAtNTIt
-        Z2VuZXJpYyBtZC9hcmNoI3g4Nl82NCBsYW5nL3B5dGhvbiMzLjEyLjggbWQvcHlpbXBsI0NQeXRo
-        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzYuMw==
+        Qm90bzMvMS4zNy4xIG1kL0JvdG9jb3JlIzEuMzcuMSB1YS8yLjAgb3MvbGludXgjNi44LjAtNTkt
+        Z2VuZXJpYyBtZC9hcmNoI3g4Nl82NCBsYW5nL3B5dGhvbiMzLjEyLjkgbWQvcHlpbXBsI0NQeXRo
+        b24gY2ZnL3JldHJ5LW1vZGUjbGVnYWN5IEJvdG9jb3JlLzEuMzcuMQ==
       X-Amz-Content-SHA256:
       - !!binary |
         ZTNiMGM0NDI5OGZjMWMxNDlhZmJmNGM4OTk2ZmI5MjQyN2FlNDFlNDY0OWI5MzRjYTQ5NTk5MWI3
         ODUyYjg1NQ==
       X-Amz-Date:
       - !!binary |
-        MjAyNTAyMDRUMTIwNzAzWg==
+        MjAyNTA1MTVUMTQxNjM0Wg==
       amz-sdk-invocation-id:
       - !!binary |
-        MWY0MTljNDQtYjkwNi00ZWFiLWI5MzktYWM3NDE3OGUzYWQx
+        YWM4NGZkOTItNzFhNi00NjA1LWE0NWYtNGZhNzEyYjExNGNh
       amz-sdk-request:
       - !!binary |
         YXR0ZW1wdD0x
@@ -16510,7 +16509,7 @@ interactions:
       content-type:
       - binary/octet-stream
       date:
-      - Tue, 04 Feb 2025 12:07:03 GMT
+      - Thu, 15 May 2025 14:16:34 GMT
       etag:
       - '"7c37cd6524551dc6bc230d61fe44ecfe-1"'
       expires:
@@ -16526,15 +16525,15 @@ interactions:
       server:
       - envoy
       x-amz-request-id:
-      - tx00000000000007a633d83-0067a202e7-8ebc8cd2-default
+      - tx000000000000037f8d442-006825f742-a1ee034f-default
       x-envoy-upstream-service-time:
-      - '18'
+      - '12'
       x-ratelimit-limit:
       - 2000, 2000;w=60
       x-ratelimit-remaining:
-      - '1998'
+      - '1746'
       x-ratelimit-reset:
-      - '57'
+      - '26'
       x-rgw-object-type:
       - Normal
     status:

@@ -366,6 +366,7 @@ class StacDataStoreTest(unittest.TestCase):
                 "decode_coords",
                 "drop_variables",
                 "consolidated",
+                "engine",
             ],
             schema.properties["data_opener_open_params"]
             .properties["dataset:zarr"]
@@ -691,12 +692,10 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 23, 23, 2, 12],
+            [10980, 10980, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
-                ds.sizes["angle_y"],
-                ds.sizes["angle_x"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
@@ -717,43 +716,28 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 23, 23, 2, 3],
+            [10980, 10980, 2, 3],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
-                ds.sizes["angle_y"],
-                ds.sizes["angle_x"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
         )
 
-    @pytest.mark.vcr()
     def test_open_data_stack_mode(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
-
-        # open data as dataset
-        bbox_utm = [5599905, 3511735, 5600064, 3511894]
-        ds = store.open_data(
-            data_id="sentinel-2-l2a",
-            bbox=bbox_utm,
-            time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=10,
-            crs="EPSG:3035",
-            asset_names=["red", "green", "blue"],
-            apply_scaling=True,
-            data_opener_open_params={"dataset:geotiff": dict(tile_size=(512, 512))},
-        )
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
-        self.assertCountEqual(
-            [4, 16, 16],
-            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
-        )
-        self.assertCountEqual(
-            [1, 16, 16],
-            [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
-        )
+        with pytest.raises(NotImplementedError, match="No stacking mode implemented."):
+            bbox_utm = [5599905, 3511735, 5600064, 3511894]
+            ds = store.open_data(
+                data_id="sentinel-2-l2a",
+                bbox=bbox_utm,
+                time_range=["2023-11-01", "2023-11-10"],
+                spatial_res=10,
+                crs="EPSG:3035",
+                asset_names=["red", "green", "blue"],
+                apply_scaling=True,
+            )
 
     @pytest.mark.vcr()
     def test_open_data_stack_mode_no_items_found(self):
@@ -784,10 +768,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(msg, str(cm.output[-1]))
 
     @pytest.mark.vcr()
-    @patch("rioxarray.open_rasterio")
-    def test_open_data_stack_mode_cdse_sen2(self, mock_rioxarray_open):
-        mock_rioxarray_open.return_value = sentinel_2_band_data()
-
+    def test_open_data_stack_mode_cdse_sen2(self):
         store = new_data_store(
             DATA_STORE_ID_CDSE,
             key=CDSE_CREDENTIALS["key"],
@@ -812,26 +793,22 @@ class StacDataStoreTest(unittest.TestCase):
             SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
-        self.assertCountEqual(
-            [4, 501, 501, 3, 3, 2, 12],
+        self.assertEqual(
+            [4, 500, 500, 2, 12],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
                 ds.sizes["x"],
-                ds.sizes["angle_y"],
-                ds.sizes["angle_x"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
         )
-        self.assertCountEqual(
-            [1, 501, 501, 3, 3, 2, 12],
+        self.assertEqual(
+            [1, 500, 500, 1, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
                 ds.chunksizes["x"][0],
-                ds.chunksizes["angle_y"][0],
-                ds.chunksizes["angle_x"][0],
                 ds.chunksizes["angle"][0],
                 ds.chunksizes["band"][0],
             ],
@@ -856,25 +833,21 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [4, 512, 837, 3, 4, 2, 3],
+            [4, 512, 837, 2, 3],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
                 ds.sizes["lon"],
-                ds.sizes["angle_lat"],
-                ds.sizes["angle_lon"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
         )
         self.assertCountEqual(
-            [1, 512, 837, 3, 4, 2, 3],
+            [1, 512, 837, 1, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
                 ds.chunksizes["lon"][0],
-                ds.chunksizes["angle_lat"][0],
-                ds.chunksizes["angle_lon"][0],
                 ds.chunksizes["angle"][0],
                 ds.chunksizes["band"][0],
             ],

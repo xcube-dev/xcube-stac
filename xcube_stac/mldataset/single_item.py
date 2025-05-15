@@ -79,7 +79,6 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         ):
             ds = ml_dataset.get_dataset(index)
             ds = normalize_grid_mapping(ds)
-            ds = clip_dataset_by_bbox(ds, **self._open_params)
             ds = rename_dataset(ds, params["name_origin"])
             if self._open_params.get("apply_scaling", False):
                 ds[params["name_origin"]] = apply_offset_scaling(
@@ -89,7 +88,7 @@ class SingleItemMultiLevelDataset(LazyMultiLevelDataset):
         combined_dataset = merge_datasets(datasets, target_gm=self._target_gm)
         if self._open_params.get("angles_sentinel2", False):
             combined_dataset = self._s3_accessor.add_sen2_angles(
-                self._item, combined_dataset
+                self._item, combined_dataset, **self._open_params
             )
         combined_dataset.attrs = self._attrs
         return combined_dataset
