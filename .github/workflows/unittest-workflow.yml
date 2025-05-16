@@ -14,6 +14,7 @@ jobs:
         with:
           repository: xcube-dev/xcube
           path: xcube
+          ref: konstntokas-xxx-add_reprojection
 
       - name: checkout xcube-stac
         uses: actions/checkout@v4
@@ -30,6 +31,7 @@ jobs:
         run: |
           cd /home/runner/work/xcube-stac/xcube-stac/xcube
           ls
+          pip install -e .
           xcube serve -c examples/serve/demo/config.yml &
 
       - name: Run unit tests
