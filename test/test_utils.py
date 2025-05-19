@@ -457,8 +457,7 @@ class UtilsTest(unittest.TestCase):
             "lon": [100.0, 110.0, 120.0],
         }
         da = xr.DataArray(data, dims=dims, coords=coords)
-        crs = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
-        list_ds.append(xr.Dataset({"B01": da, "crs": crs}))
+        list_ds.append(xr.Dataset({"B01": da}))
         # second tile
         data = np.array(
             [
@@ -471,14 +470,13 @@ class UtilsTest(unittest.TestCase):
         dims = ("time", "lat", "lon")
         coords = {
             "time": np.array(
-                ["2025-01-01", "2025-01-02", "2025-01-04"], dtype="datetime64"
+                ["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64"
             ),
             "lat": [10.0, 20.0, 30.0],
             "lon": [100.0, 110.0, 120.0],
         }
         da = xr.DataArray(data, dims=dims, coords=coords)
-        crs = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
-        list_ds.append(xr.Dataset({"B01": da, "crs": crs}))
+        list_ds.append(xr.Dataset({"B01": da}))
 
         # test only one tile
         ds_test = mosaic_spatial_take_first(list_ds[:1])
@@ -490,15 +488,14 @@ class UtilsTest(unittest.TestCase):
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
                 [[10, 11, 12], [13, 14, 115], [116, 117, 118]],
-                [[19, 20, 21], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]],
-                [[np.nan, np.nan, 120], [121, 122, 123], [124, 125, 126]],
+                [[19, 20, 21], [121, 122, 123], [124, 125, 126]],
             ],
             dtype=float,
         )
         dims = ("time", "lat", "lon")
         coords = {
             "time": np.array(
-                ["2025-01-01", "2025-01-02", "2025-01-03", "2025-01-04"],
+                ["2025-01-01", "2025-01-02", "2025-01-03"],
                 dtype="datetime64",
             ),
             "lat": [10.0, 20.0, 30.0],
@@ -506,12 +503,11 @@ class UtilsTest(unittest.TestCase):
         }
         da = xr.DataArray(data, dims=dims, coords=coords)
         ds_expected = xr.Dataset({"B01": da})
-        xr.testing.assert_allclose(ds_test.drop_vars("crs"), ds_expected)
+        xr.testing.assert_allclose(ds_test, ds_expected)
 
         # test two tiles, where spatial ref is given in spatial_ref coord
         spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
         for i, ds in enumerate(list_ds):
-            ds = ds.drop_vars("crs")
             ds.coords["spatial_ref"] = spatial_ref
             list_ds[i] = ds
         ds_expected = xr.Dataset({"B01": da})

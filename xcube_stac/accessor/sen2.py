@@ -243,7 +243,7 @@ class S3Sentinel2DataAccessor:
             ds_final = apply_offset_scaling_stack_mode(ds_final, access_params)
         if open_params.get("angles_sentinel2", False):
             ds_final = self.add_sen2_angles_stack(
-                ds_final, access_params, utm_tile_id, **open_params
+                ds_final, access_params, **open_params
             )
 
         return ds_final
@@ -338,7 +338,6 @@ class S3Sentinel2DataAccessor:
         self,
         ds_final: xr.Dataset,
         access_params: xr.DataArray,
-        utm_tile_id: dict,
         **open_params,
     ) -> xr.Dataset:
         target_gm = GridMapping.from_dataset(ds_final)
@@ -385,18 +384,49 @@ class S3Sentinel2DataAccessor:
                 if idx not in idx_remove_dt
             ]
             ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
-            list_ds_tiles.append(
-                _resample_dataset_soft(
-                    ds_tile,
-                    target_gm,
-                    fill_value=np.nan,
-                    interpolation="bilinear",
-                    **open_params,
-                )
+            ds_tile = _resample_dataset_soft(
+                ds_tile,
+                target_gm,
+                fill_value=np.nan,
+                interpolation="bilinear",
+                **open_params,
             )
+            if len(idx_remove_dt) > 0:
+                ds_tile = _fill_nan_slices(
+                    ds_tile, access_params.time.values, idx_remove_dt
+                )
+            list_ds_tiles.append(ds_tile)
+
         ds_angles = mosaic_spatial_take_first(list_ds_tiles)
         ds_final = _add_angles(ds_final, ds_angles)
         return ds_final
+
+
+def _fill_nan_slices(ds: xr.Dataset, times: np.array, idx_nan: list[int]) -> xr.Dataset:
+    ds_nan = _create_nan_slice(ds)
+    list_ds = []
+    if idx_nan[0] > 0:
+        list_ds.append(ds.isel(time=slice(None, idx_nan[0])))
+    for i, idx in enumerate(idx_nan):
+        list_ds.append(ds_nan.assign_coords(coords=dict(time=[times[idx]])))
+        if i < len(idx_nan) - 1:
+            list_ds.append(ds.isel(time=slice(idx - i, idx_nan[i + 1] - i - 1)))
+    if idx_nan[-1] < len(times) - 1:
+        list_ds.append(ds.isel(time=slice(idx_nan[-1] - (len(idx_nan) - 1), None)))
+    return xr.concat(list_ds, dim="time", join="exact")
+
+
+def _create_nan_slice(ds: xr.Dataset) -> xr.Dataset:
+    nan_ds = xr.Dataset()
+    for var_name, array in ds.data_vars.items():
+        array = array.isel(time=slice(0, 1))
+        nan_data = da.full(
+            array.shape, np.nan, dtype=array.dtype, chunks=array.data.chunksize
+        )
+        nan_ds[var_name] = xr.DataArray(
+            nan_data, dims=array.dims, coords=array.coords, attrs=array.attrs
+        )
+    return nan_ds
 
 
 def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
@@ -417,7 +447,7 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
         ]
     )
 
-    da = xr.DataArray(
+    array = xr.DataArray(
         np.full(
             (2, len(band_names), len(detector_ids), len(x), len(y)),
             np.nan,
@@ -441,25 +471,25 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
         if band_name not in band_names:
             continue
         detector_id = int(detector_angles["@detectorId"])
-        for angle in da.angle.values:
-            da.loc[angle, band_name, detector_id] = _get_angle_values(
+        for angle in array.angle.values:
+            array.loc[angle, band_name, detector_id] = _get_angle_values(
                 detector_angles, angle
             )
     # Do the same for the solar angles
-    for angle in da.angle.values:
-        da.loc[angle, "solar", detector_ids[0]] = _get_angle_values(
+    for angle in array.angle.values:
+        array.loc[angle, "solar", detector_ids[0]] = _get_angle_values(
             angles["Sun_Angles_Grid"], angle
         )
     # Apply nanmean along detector ID axis
-    da = da.mean(dim="detector_id", skipna=True)
+    array = array.mean(dim="detector_id", skipna=True)
     ds = xr.Dataset()
-    for angle in da.angle.values:
-        ds[f"solar_angle_{angle.lower()}"] = da.sel(
+    for angle in array.angle.values:
+        ds[f"solar_angle_{angle.lower()}"] = array.sel(
             band="solar", angle=angle
         ).drop_vars(["band", "angle"])
-    for band in da.band.values[:-1]:
-        for angle in da.angle.values:
-            ds[f"viewing_angle_{angle.lower()}_{band}"] = da.sel(
+    for band in array.band.values[:-1]:
+        for angle in array.angle.values:
+            ds[f"viewing_angle_{angle.lower()}_{band}"] = array.sel(
                 band=band, angle=angle
             ).drop_vars(["band", "angle"])
     crs = pyproj.CRS.from_epsg(geocode["HORIZONTAL_CS_CODE"].replace("EPSG:", ""))

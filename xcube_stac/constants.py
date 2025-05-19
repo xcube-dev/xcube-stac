@@ -49,6 +49,7 @@ COLLECTION_PREFIX = "collections/"
 TILE_SIZE = 2048
 LOG = logging.getLogger("xcube.stac")
 FloatInt = Union[float, int]
+CONVERSION_FACTOR_DEG_METER = 111320
 
 # constants for data access
 PROTOCOLS = ["https", "s3"]

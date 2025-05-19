@@ -35,8 +35,13 @@ from .accessor.sen2 import (
     SENTINEL2_REGEX_ASSET_NAME,
     S3Sentinel2DataAccessor,
 )
-from .constants import MLDATASET_FORMATS
-from .utils import get_format_from_path, get_format_id, is_valid_ml_data_type
+from .constants import MLDATASET_FORMATS, CONVERSION_FACTOR_DEG_METER
+from .utils import (
+    get_format_from_path,
+    get_format_id,
+    is_valid_ml_data_type,
+    normalize_crs,
+)
 
 Accessor = S3Sentinel2DataAccessor | HttpsDataAccessor
 
@@ -162,12 +167,20 @@ class HelperCdse(Helper):
         asset_names = open_params.get("asset_names")
         if not asset_names:
             asset_names = SENITNEL2_L2A_BANDS
+
+        if "crs" in open_params:
+            crs = normalize_crs(open_params["crs"])
+            if crs.is_geographic:
+                spatial_res = open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
+            else:
+                spatial_res = open_params["spatial_res"]
+        else:
+            spatial_res = open_params.get("spatial_res", 10)
+
         assets_sel = []
         for i, asset_name in enumerate(asset_names):
             if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                res_diff = abs(
-                    open_params.get("spatial_res", 10) - SENTINEL2_BAND_RESOLUTIONS
-                )
+                res_diff = abs(spatial_res - SENTINEL2_BAND_RESOLUTIONS)
                 for spatial_res in SENTINEL2_BAND_RESOLUTIONS[np.argsort(res_diff)]:
                     asset_name_res = f"{asset_name}_{spatial_res}m"
                     if asset_name_res in item.assets:

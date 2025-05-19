@@ -612,24 +612,19 @@ def clip_dataset_by_bbox(ds: xr.Dataset, bbox: list[float | int]) -> xr.Dataset:
 def mosaic_spatial_take_first(list_ds: list[xr.Dataset]) -> xr.Dataset:
     if len(list_ds) == 1:
         return list_ds[0]
-    dim = "dummy"
-    ds = xr.concat(list_ds, dim=dim)
-    y_coord, x_coord = get_spatial_dims(list_ds[0])
 
+    y_coord, x_coord = get_spatial_dims(list_ds[0])
     ds_mosaic = xr.Dataset()
-    for key in ds:
-        if ds[key].dims[-2:] == (y_coord, x_coord):
-            axis = ds[key].dims.index(dim)
-            da_arr = ds[key].data
+    for key in list_ds[0]:
+        if list_ds[0][key].dims[-2:] == (y_coord, x_coord):
+            da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
             nan_mask = da.isnan(da_arr)
-            first_non_nan_index = (~nan_mask).argmax(axis=axis)
+            first_non_nan_index = (~nan_mask).argmax(axis=0)
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
                 da_arr_select,
-                dims=ds[key].dims[1:],
-                coords=ds[key].coords,
+                dims=list_ds[0][key].dims,
+                coords=list_ds[0][key].coords,
             )
-        else:
-            ds_mosaic[key] = ds[key]
 
     return ds_mosaic

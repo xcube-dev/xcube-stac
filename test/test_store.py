@@ -42,7 +42,7 @@ from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
 from xcube_stac.constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
 from xcube_stac.utils import reproject_bbox
 
-from .sampledata import sentinel_2_band_data
+from .sampledata import sentinel_2_band_data_10m, sentinel_2_band_data_60m
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -51,8 +51,8 @@ SKIP_HELP = (
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
 CDSE_CREDENTIALS = {
-    "key": "xxx",
-    "secret": "xxx",
+    "key": "",
+    "secret": "",
 }
 
 
@@ -664,10 +664,10 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    @pytest.mark.vcr()
+    # @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen2(self, mock_rioxarray_open):
-        mock_rioxarray_open.return_value = sentinel_2_band_data()
+        mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
 
         store = new_data_store(
             DATA_STORE_ID_CDSE,
@@ -705,18 +705,17 @@ class StacDataStoreTest(unittest.TestCase):
         mlds = store.open_data(
             data_id=data_id,
             data_type="mldataset",
-            asset_names=["B01", "B02", "B03"],
             apply_scaling=True,
             angles_sentinel2=True,
         )
         ds = mlds.get_dataset(0)
         self.assertIsInstance(mlds, MultiLevelDataset)
         self.assertCountEqual(
-            ["B01", "B02", "B03", "solar_angle", "viewing_angle"],
+            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 2, 3],
+            [10980, 10980, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
@@ -768,7 +767,9 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(msg, str(cm.output[-1]))
 
     @pytest.mark.vcr()
-    def test_open_data_stack_mode_cdse_sen2(self):
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_stack_mode_cdse_sen2(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data_60m()
         store = new_data_store(
             DATA_STORE_ID_CDSE,
             key=CDSE_CREDENTIALS["key"],
@@ -777,24 +778,27 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data in UTM crs
-        bbox_utm = [620000, 5800000, 630000, 5810000]
+        bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
+        crs_target = "EPSG:32632"
+        bbox_utm = reproject_bbox(bbox_wgs84, "EPSG:4326", crs_target)
         ds = store.open_data(
             data_id="sentinel-2-l2a",
             bbox=bbox_utm,
-            time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=20,
-            crs="EPSG:32635",
+            time_range=["2020-08-29", "2020-09-03"],
+            spatial_res=60,
+            crs=crs_target,
+            asset_names=["B04"],
             apply_scaling=True,
             angles_sentinel2=True,
         )
         self.assertIsInstance(ds, xr.Dataset)
 
         self.assertCountEqual(
-            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
+            ["B04", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 500, 500, 2, 12],
+            [4, 759, 903, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -804,7 +808,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 500, 500, 1, 1],
+            [1, 759, 903, 1, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -815,13 +819,12 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open dataset in WGS84
-        bbox_wgs84 = reproject_bbox(bbox_utm, "EPSG:32635", "EPSG:4326")
         ds = store.open_data(
             data_id="sentinel-2-l2a",
-            asset_names=["B01", "B02", "B03"],
+            asset_names=["B04"],
             bbox=bbox_wgs84,
-            time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=0.00018,
+            time_range=["2020-07-26", "2020-08-01"],
+            spatial_res=0.00054,
             crs="EPSG:4326",
             apply_scaling=True,
             angles_sentinel2=True,
@@ -829,11 +832,11 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
 
         self.assertCountEqual(
-            ["B01", "B02", "B03", "solar_angle", "viewing_angle"],
+            ["B04", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [4, 512, 837, 2, 3],
+            [4, 741, 1482, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -843,7 +846,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertCountEqual(
-            [1, 512, 837, 1, 1],
+            [1, 741, 1482, 1, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
