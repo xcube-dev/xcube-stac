@@ -1,7 +1,9 @@
 ## Changes in 0.3.0 (under development)
 
-*
-
+* Sentinel-2 pixels are now first sorted into common native UTM grids per zone, 
+  instead of being reprojected individually to the user grid. After sorting,
+  resampling and reprojection are applied as needed using xcube’s new, faster
+  `reproject_dataset()` method (https://github.com/xcube-dev/xcube/pull/1152).
 
 ## Changes in 0.2.0
 
