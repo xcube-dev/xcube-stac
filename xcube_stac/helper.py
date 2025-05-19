@@ -35,7 +35,7 @@ from .accessor.sen2 import (
     SENTINEL2_REGEX_ASSET_NAME,
     S3Sentinel2DataAccessor,
 )
-from .constants import MLDATASET_FORMATS, CONVERSION_FACTOR_DEG_METER
+from .constants import CONVERSION_FACTOR_DEG_METER, MLDATASET_FORMATS
 from .utils import (
     get_format_from_path,
     get_format_id,

@@ -728,7 +728,7 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
         with pytest.raises(NotImplementedError, match="No stacking mode implemented."):
             bbox_utm = [5599905, 3511735, 5600064, 3511894]
-            ds = store.open_data(
+            _ = store.open_data(
                 data_id="sentinel-2-l2a",
                 bbox=bbox_utm,
                 time_range=["2023-11-01", "2023-11-10"],
