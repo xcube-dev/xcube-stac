@@ -51,8 +51,8 @@ SKIP_HELP = (
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
 CDSE_CREDENTIALS = {
-    "key": "",
-    "secret": "",
+    "key": "xxx",
+    "secret": "xxx",
 }
 
 
