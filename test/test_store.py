@@ -664,7 +664,7 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen2(self, mock_rioxarray_open):
         mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
