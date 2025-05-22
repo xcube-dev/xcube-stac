@@ -692,10 +692,12 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 2, 12],
+            [10980, 10980, 23, 23, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
@@ -715,10 +717,12 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 2, 12],
+            [10980, 10980, 23, 23, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
@@ -798,21 +802,25 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 2, 1],
+            [4, 759, 903, 11, 12, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
                 ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 1, 1],
+            [1, 759, 903, 11, 12, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
                 ds.chunksizes["x"][0],
+                ds.chunksizes["angle_y"][0],
+                ds.chunksizes["angle_x"][0],
                 ds.chunksizes["angle"][0],
                 ds.chunksizes["band"][0],
             ],
@@ -835,22 +843,26 @@ class StacDataStoreTest(unittest.TestCase):
             ["B04", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
-        self.assertCountEqual(
-            [4, 741, 1482, 2, 1],
+        self.assertEqual(
+            [4, 742, 1483, 10, 19, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
                 ds.sizes["lon"],
+                ds.sizes["angle_lat"],
+                ds.sizes["angle_lon"],
                 ds.sizes["angle"],
                 ds.sizes["band"],
             ],
         )
-        self.assertCountEqual(
-            [1, 741, 1482, 1, 1],
+        self.assertEqual(
+            [1, 742, 1483, 10, 19, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
                 ds.chunksizes["lon"][0],
+                ds.chunksizes["angle_lat"][0],
+                ds.chunksizes["angle_lon"][0],
                 ds.chunksizes["angle"][0],
                 ds.chunksizes["band"][0],
             ],

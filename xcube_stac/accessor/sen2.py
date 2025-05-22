@@ -386,6 +386,7 @@ class S3Sentinel2DataAccessor:
                 fill_value=np.nan,
                 interpolation="bilinear",
             )
+            ds_tile = ds_tile.chunk(dict(time=1))
             if len(idx_remove_dt) > 0:
                 ds_tile = _fill_nan_slices(
                     ds_tile, access_params.time.values, idx_remove_dt
@@ -542,6 +543,7 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
         ds_angles[keys].to_dataarray(dim="band").assign_coords(band=bands)
     )
     ds["viewing_angle"] = ds_temp[["zenith", "azimuth"]].to_dataarray(dim="angle")
+    ds = ds.chunk(dict(angle=-1, band=-1))
 
     return ds
 
