@@ -43,6 +43,7 @@ from xcube_stac.utils import (
     add_nominal_datetime,
     clip_dataset_by_bbox,
     get_gridmapping,
+    get_spatial_dims,
     is_valid_ml_data_type,
     merge_datasets,
     mosaic_spatial_take_first,
@@ -242,9 +243,7 @@ class S3Sentinel2DataAccessor:
         if open_params.get("apply_scaling", True):
             ds_final = apply_offset_scaling_stack_mode(ds_final, access_params)
         if open_params.get("angles_sentinel2", False):
-            ds_final = self.add_sen2_angles_stack(
-                ds_final, access_params, **open_params
-            )
+            ds_final = self.add_sen2_angles_stack(ds_final, access_params)
 
         return ds_final
 
@@ -322,14 +321,13 @@ class S3Sentinel2DataAccessor:
     def add_sen2_angles(
         self, item: pystac.Item, ds: xr.Dataset, **open_params
     ) -> xr.Dataset:
-        target_gm = GridMapping.from_dataset(ds)
+        target_gm = get_angle_target_gm(ds)
         ds_angles = self.get_sen2_angles(item, ds)
         ds_angles = _resample_dataset_soft(
             ds_angles,
             target_gm,
             fill_value=np.nan,
             interpolation="bilinear",
-            **open_params,
         )
         ds = _add_angles(ds, ds_angles)
         return ds
@@ -338,10 +336,8 @@ class S3Sentinel2DataAccessor:
         self,
         ds_final: xr.Dataset,
         access_params: xr.DataArray,
-        **open_params,
     ) -> xr.Dataset:
-        target_gm = GridMapping.from_dataset(ds_final)
-
+        target_gm = get_angle_target_gm(ds_final)
         list_ds_tiles = []
         for tile_id in access_params.tile_id.values:
             list_ds_time = []
@@ -377,20 +373,26 @@ class S3Sentinel2DataAccessor:
                 else:
                     ds_time = mosaic_spatial_take_first(list_ds_idx)
                     list_ds_time.append(ds_time)
-            ds_tile = xr.concat(list_ds_time, dim="time", join="exact")
+            ds_tile = xr.concat(list_ds_time, dim="time", join="exact").chunk(-1)
             np_datetimes_sel = [
                 value
                 for idx, value in enumerate(access_params.time.values)
                 if idx not in idx_remove_dt
             ]
             ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
+            import matplotlib.pyplot as plt
+
+            ds_tile.viewing_angle_zenith_B04.isel(time=-1).plot()
+            plt.show()
+
             ds_tile = _resample_dataset_soft(
                 ds_tile,
                 target_gm,
                 fill_value=np.nan,
                 interpolation="bilinear",
-                **open_params,
             )
+            ds_tile.viewing_angle_zenith_B04.isel(time=-1).plot()
+            plt.show()
             if len(idx_remove_dt) > 0:
                 ds_tile = _fill_nan_slices(
                     ds_tile, access_params.time.values, idx_remove_dt
@@ -400,6 +402,29 @@ class S3Sentinel2DataAccessor:
         ds_angles = mosaic_spatial_take_first(list_ds_tiles)
         ds_final = _add_angles(ds_final, ds_angles)
         return ds_final
+
+
+def get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
+    crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
+    y_coord, x_coord = get_spatial_dims(ds_final)
+    if crs.is_geographic:
+        y_res = 5000 / 111320
+        y_center = (ds_final[x_coord][0].item() + ds_final[x_coord][-1].item()) / 2
+        x_res = 5000 / (111320 * np.cos(np.radians(y_center)))
+    else:
+        y_res = 5000
+        x_res = 5000
+
+    bbox = [
+        ds_final[x_coord][0].item(),
+        ds_final[y_coord][0].item(),
+        ds_final[x_coord][-1].item(),
+        ds_final[y_coord][-1].item(),
+    ]
+    if bbox[3] < bbox[1]:
+        y_min, y_max = bbox[3], bbox[1]
+        bbox[1], bbox[3] = y_min, y_max
+    return get_gridmapping(bbox, (x_res, y_res), crs)
 
 
 def _fill_nan_slices(ds: xr.Dataset, times: np.array, idx_nan: list[int]) -> xr.Dataset:
@@ -500,6 +525,10 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
 
 
 def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
+    x_coord, y_coord = get_spatial_dims(ds_angles)
+    ds_angles = ds_angles.rename(
+        {y_coord: f"angle_{y_coord}", x_coord: f"angle_{x_coord}"}
+    )
     ds["solar_angle"] = (
         ds_angles[["solar_angle_zenith", "solar_angle_azimuth"]]
         .to_dataarray(dim="angle")
@@ -537,16 +566,26 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
     return [name for name in SENITNEL2_BANDS if name in band_names]
 
 
-def _merge_utm_zones(
-    list_ds_utm: list[xr.Dataset], target_gm: GridMapping = None, **open_params
-) -> xr.Dataset:
+def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
     resampled_list_ds = []
-    for ds in list_ds_utm:
-        resampled_list_ds.append(
-            _resample_dataset_soft(ds, target_gm=target_gm, **open_params)
+    ds = list_ds_utm[0]
+    target_gm = GridMapping.from_dataset(ds)
+    spatial_res = open_params["spatial_res"]
+    if not isinstance(spatial_res, tuple):
+        spatial_res = (spatial_res, spatial_res)
+    diff_crs = pyproj.CRS.from_string(open_params["crs"]) != target_gm.crs
+    diff_res = (
+        ds.x[1] - ds.x[0] != spatial_res[0] or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
+    )
+    if diff_crs or diff_res:
+        target_gm = get_gridmapping(
+            open_params["bbox"],
+            open_params["spatial_res"],
+            open_params["crs"],
+            open_params.get("tile_size", TILE_SIZE),
         )
-        if target_gm is None:
-            target_gm = GridMapping.from_dataset(resampled_list_ds[0])
+    for ds in list_ds_utm:
+        resampled_list_ds.append(_resample_dataset_soft(ds, target_gm))
     return mosaic_spatial_take_first(resampled_list_ds)
 
 
@@ -555,36 +594,18 @@ def _resample_dataset_soft(
     target_gm: GridMapping,
     fill_value: float | int = None,
     interpolation: str = "nearest",
-    **open_params,
 ) -> xr.Dataset:
-    if target_gm is not None:
-        crs_final = target_gm.crs
-        spatial_res = target_gm.x_res
+    source_gm = GridMapping.from_dataset(ds)
+    if source_gm.is_close(target_gm):
+        return ds
+    if target_gm.crs == source_gm.crs:
+        var_configs = {}
+        for var in ds.data_vars:
+            var_configs[var] = dict(recover_nan=True)
+        ds = affine_transform_dataset(
+            ds, target_gm=target_gm, gm_name="spatial_ref", var_configs=var_configs
+        )
     else:
-        crs_final = pyproj.CRS.from_string(open_params["crs"])
-        spatial_res = open_params["spatial_res"]
-    crs_data = pyproj.CRS.from_cf(ds.spatial_ref.attrs)
-
-    if crs_final == crs_data:
-        if ds.x[1] - ds.x[0] != spatial_res or ds.y[1] - ds.y[0] != -spatial_res:
-            if target_gm is None:
-                target_gm = get_gridmapping(
-                    [ds.x[0].item(), ds.y[-1].item(), ds.x[-1].item(), ds.y[0].item()],
-                    spatial_res,
-                    crs_data,
-                    open_params.get("tile_size", TILE_SIZE),
-                )
-            ds = affine_transform_dataset(
-                ds, target_gm=target_gm, gm_name="spatial_ref"
-            )
-    else:
-        if target_gm is None:
-            target_gm = get_gridmapping(
-                open_params["bbox"],
-                open_params["spatial_res"],
-                crs_final,
-                open_params.get("tile_size", TILE_SIZE),
-            )
         if fill_value is None:
             fill_value = SENTINEL2_FILL_VALUE
         ds = reproject_dataset(
