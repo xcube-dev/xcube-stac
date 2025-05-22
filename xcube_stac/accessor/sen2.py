@@ -380,19 +380,12 @@ class S3Sentinel2DataAccessor:
                 if idx not in idx_remove_dt
             ]
             ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
-            import matplotlib.pyplot as plt
-
-            ds_tile.viewing_angle_zenith_B04.isel(time=-1).plot()
-            plt.show()
-
             ds_tile = _resample_dataset_soft(
                 ds_tile,
                 target_gm,
                 fill_value=np.nan,
                 interpolation="bilinear",
             )
-            ds_tile.viewing_angle_zenith_B04.isel(time=-1).plot()
-            plt.show()
             if len(idx_remove_dt) > 0:
                 ds_tile = _fill_nan_slices(
                     ds_tile, access_params.time.values, idx_remove_dt
