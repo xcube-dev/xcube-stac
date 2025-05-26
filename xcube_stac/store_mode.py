@@ -458,16 +458,20 @@ class StackStoreMode(SingleStoreMode):
                 self._catalog,
                 self._searchable,
                 collections=[data_id],
+                collections=[data_id],
                 bbox=bbox_wgs84,
                 time_range=open_params["time_range"],
                 query=open_params.get("query"),
             )
         )
 
-        # delete items with wrong bbox in CDSE sentinel-2-l2a;
+        # delete items with wrong bbox in CDSE sentinel-2-l2a,
+        # concerning mainly tiles exceeding the antimeridian;
         # catalog's bug has been reported.
+        # ONe Sentinel-2 tile is 110km and highest latitude is 83° north, which
+        # corresponds to about a  bbox of 8° width.
         if CDSE_STAC_URL in self._url_mod and data_id == "sentinel-2-l2a":
-            items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 2]
+            items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 20]
 
         if len(items) == 0:
             LOG.warn(
