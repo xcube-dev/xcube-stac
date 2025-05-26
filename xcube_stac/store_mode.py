@@ -458,7 +458,6 @@ class StackStoreMode(SingleStoreMode):
                 self._catalog,
                 self._searchable,
                 collections=[data_id],
-                collections=[data_id],
                 bbox=bbox_wgs84,
                 time_range=open_params["time_range"],
                 query=open_params.get("query"),
