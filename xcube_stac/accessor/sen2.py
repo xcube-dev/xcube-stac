@@ -288,7 +288,9 @@ class S3Sentinel2DataAccessor:
                         list_ds_idx.append(ds)
                     if not list_ds_idx:
                         continue
-                    ds = mosaic_spatial_take_first(list_ds_idx)
+                    ds = mosaic_spatial_take_first(
+                        list_ds_idx, fill_value=SENTINEL2_FILL_VALUE
+                    )
                     asset_ds = self._sort_in(asset_ds, asset_name, ds, dt_idx)
             list_ds_asset.append(asset_ds)
 
@@ -562,26 +564,39 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
 
 
 def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
-    resampled_list_ds = []
-    ds = list_ds_utm[0]
-    target_gm = GridMapping.from_dataset(ds)
-    spatial_res = open_params["spatial_res"]
-    if not isinstance(spatial_res, tuple):
-        spatial_res = (spatial_res, spatial_res)
-    diff_crs = pyproj.CRS.from_string(open_params["crs"]) != target_gm.crs
-    diff_res = (
-        ds.x[1] - ds.x[0] != spatial_res[0] or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
-    )
-    if diff_crs or diff_res:
+    # get correct target gridmapping
+    crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
+    target_crs = pyproj.CRS.from_string(open_params["crs"])
+    crss_equal = [target_crs == crs for crs in crss]
+    if any(crss_equal):
+        true_index = crss_equal.index(True)
+        ds = list_ds_utm[true_index]
+        target_gm = GridMapping.from_dataset(ds)
+        spatial_res = open_params["spatial_res"]
+        if not isinstance(spatial_res, tuple):
+            spatial_res = (spatial_res, spatial_res)
+        if (
+            ds.x[1] - ds.x[0] != spatial_res[0]
+            or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
+        ):
+            target_gm = get_gridmapping(
+                open_params["bbox"],
+                open_params["spatial_res"],
+                open_params["crs"],
+                open_params.get("tile_size", TILE_SIZE),
+            )
+    else:
         target_gm = get_gridmapping(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
             open_params.get("tile_size", TILE_SIZE),
         )
+
+    resampled_list_ds = []
     for ds in list_ds_utm:
         resampled_list_ds.append(_resample_dataset_soft(ds, target_gm))
-    return mosaic_spatial_take_first(resampled_list_ds)
+    return mosaic_spatial_take_first(resampled_list_ds, fill_value=SENTINEL2_FILL_VALUE)
 
 
 def _resample_dataset_soft(
