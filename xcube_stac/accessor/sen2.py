@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 from collections import defaultdict
+import re
 
 import boto3
 import dask
@@ -36,7 +37,7 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataTypeLike
 
-from xcube_stac.constants import LOG, TILE_SIZE
+from xcube_stac.constants import LOG, TILE_SIZE, CONVERSION_FACTOR_DEG_METER
 from xcube_stac.mldataset.jp2 import Jp2MultiLevelDataset
 from xcube_stac.stac_extension.raster import apply_offset_scaling_stack_mode
 from xcube_stac.utils import (
@@ -44,10 +45,12 @@ from xcube_stac.utils import (
     clip_dataset_by_bbox,
     get_gridmapping,
     get_spatial_dims,
-    is_valid_ml_data_type,
     merge_datasets,
     mosaic_spatial_take_first,
     reproject_bbox,
+    get_format_id,
+    is_valid_ml_data_type,
+    normalize_crs,
 )
 
 SENITNEL2_BANDS = [
@@ -1081,3 +1084,33 @@ def _create_empty_dataset(
         spatial_ref=xr.DataArray(0, attrs=pyproj.CRS.from_string(crs).to_cf())
     )
     return ds
+
+
+def list_assets_from_sen2_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
+    asset_names = open_params.get("asset_names")
+    if not asset_names:
+        asset_names = SENITNEL2_L2A_BANDS
+
+    if "crs" in open_params:
+        crs = normalize_crs(open_params["crs"])
+        if crs.is_geographic:
+            spatial_res = open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
+        else:
+            spatial_res = open_params["spatial_res"]
+    else:
+        spatial_res = open_params.get("spatial_res", 10)
+
+    assets_sel = []
+    for i, asset_name in enumerate(asset_names):
+        if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
+            res_diff = abs(spatial_res - SENTINEL2_BAND_RESOLUTIONS)
+            for spatial_res in SENTINEL2_BAND_RESOLUTIONS[np.argsort(res_diff)]:
+                asset_name_res = f"{asset_name}_{spatial_res}m"
+                if asset_name_res in item.assets:
+                    break
+        asset = item.assets[asset_name_res]
+        asset.extra_fields["id"] = asset_name_res
+        asset.extra_fields["id_origin"] = asset_names[i]
+        asset.extra_fields["format_id"] = get_format_id(asset)
+        assets_sel.append(asset)
+    return assets_sel

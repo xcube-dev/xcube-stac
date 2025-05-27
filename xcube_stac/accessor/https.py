@@ -47,19 +47,9 @@ class HttpsDataAccessor:
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
-        if access_params["format_id"] == "netcdf":
-            if is_valid_ml_data_type(data_type):
-                LOG.warn(
-                    f"No data opener found for format {access_params['format_id']!r} "
-                    f"and data type {data_type!r}. Data type is changed to the default "
-                    f"data type 'dataset'."
-                )
-            fs_path = f"https://{self._root}/{access_params['fs_path']}#mode=bytes"
-            return xr.open_dataset(fs_path, chunks={})
-        else:
-            return self._https_accessor.open_data(
-                data_id=access_params["fs_path"],
-                opener_id=opener_id,
-                data_type=data_type,
-                **open_params,
-            )
+        return self._https_accessor.open_data(
+            data_id=access_params["fs_path"],
+            opener_id=opener_id,
+            data_type=data_type,
+            **open_params,
+        )

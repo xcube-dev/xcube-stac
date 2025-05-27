@@ -298,6 +298,19 @@ def do_bboxes_intersect(
     return box(*bbox_test).intersects(box(*open_params["bbox"]))
 
 
+def _list_assets_from_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
+    asset_names = open_params.get("asset_names")
+    assets = []
+    for key, asset in item.assets.items():
+        format_id = get_format_id(asset)
+        if (asset_names is None or key in asset_names) and format_id is not None:
+            asset.extra_fields["id"] = key
+            asset.extra_fields["id_origin"] = key
+            asset.extra_fields["format_id"] = format_id
+            assets.append(asset)
+    return assets
+
+
 def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
     """Adds the nominal (solar) time to each STAC item's properties under the key
     "datetime_nominal", based on the item's original UTC datetime.

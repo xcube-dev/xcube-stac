@@ -19,8 +19,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import re
-
 import numpy as np
 import pystac
 import xarray as xr
@@ -29,21 +27,17 @@ from xcube.core.store import DataStoreError
 from ._href_parse import decode_href
 from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
-from .accessor.sen2 import (
-    SENITNEL2_L2A_BANDS,
-    SENTINEL2_BAND_RESOLUTIONS,
-    SENTINEL2_REGEX_ASSET_NAME,
-    S3Sentinel2DataAccessor,
-)
-from .constants import CONVERSION_FACTOR_DEG_METER, MLDATASET_FORMATS
+from .accessor.sen2 import S3Sentinel2DataAccessor, list_assets_from_sen2_item
+from .accessor.sen3 import S3Sentinel3DataAccessor
+from .constants import MLDATASET_FORMATS, LOG
 from .utils import (
     get_format_from_path,
     get_format_id,
     is_valid_ml_data_type,
-    normalize_crs,
+    _list_assets_from_item,
 )
 
-Accessor = S3Sentinel2DataAccessor | HttpsDataAccessor
+Accessor = S3Sentinel2DataAccessor | S3Sentinel3DataAccessor | HttpsDataAccessor
 
 
 class Helper:
@@ -54,34 +48,7 @@ class Helper:
     def list_assets_from_item(
         self, item: pystac.Item, **open_params
     ) -> list[pystac.Asset]:
-        """Retrieve a filtered list of assets from a given STAC item.
-
-        Args:
-            item: A STAC item object containing assets to be filtered.
-            **open_params: Optional parameters that may include:
-                - asset_names (list[str] or None): If provided, only assets
-                  with keys in this list will be included.
-
-        Returns:
-            A list of STAC asset objects from the item that match the filter criteria.
-            Each returned asset will have extra fields set:
-            - 'id': the asset key within the item
-            - 'id_origin': same as 'id'; this key is needed for the subclass HelperCdse
-            - 'format_id': format identifier extracted from the asset
-
-        Notes:
-            Assets without a recognizable format_id are excluded.
-        """
-        asset_names = open_params.get("asset_names")
-        assets = []
-        for key, asset in item.assets.items():
-            format_id = get_format_id(asset)
-            if (asset_names is None or key in asset_names) and format_id is not None:
-                asset.extra_fields["id"] = key
-                asset.extra_fields["id_origin"] = key
-                asset.extra_fields["format_id"] = format_id
-                assets.append(asset)
-        return assets
+        return _list_assets_from_item(item, **open_params)
 
     def list_format_ids(self, item: pystac.Item, **open_params) -> list[str]:
         assets = self.list_assets_from_item(item, **open_params)
@@ -243,68 +210,24 @@ class HelperCdse(Helper):
 
     def __init__(self):
         super().__init__()
-        self.s3_accessor = S3Sentinel2DataAccessor
+        self.s3_accessor = {
+            "sentinel-2-l2a": S3Sentinel2DataAccessor,
+            "sentinel-3-syn-2-syn-ntc": S3Sentinel3DataAccessor,
+        }
 
     def list_assets_from_item(
         self, item: pystac.Item, **open_params
     ) -> list[pystac.Asset]:
-        """Select and return a list of assets from a STAC item based on specified
-        asset names and spatial resolution.
-
-        If no asset names are provided, a default set is used. The method attempts to
-        match asset names exactly; if an exact match is not found, it tries to append
-        a spatial resolution suffix (e.g., "_10m") based on the closest available
-        resolution to the requested spatial resolution.
-
-        Args:
-            item: The STAC item containing the assets to filter.
-            **open_params: Optional parameters to control asset selection:
-                - asset_names (list[str], optional): List of desired asset keys.
-                    Defaults to SENITNEL2_L2A_BANDS.
-                - crs (str or CRS-like, optional): Coordinate reference system of
-                  the query area.
-                - spatial_res (float, optional): Desired spatial resolution in meters
-                  or degrees, depending on the request CRS. Defaults to 10 if not
-                  provided.
-
-        Returns:
-            Filtered list of assets matching the requested names and spatial resolution.
-            Each asset's extra_fields is augmented with:
-                - 'id': the selected asset name (including spatial resolution
-                    suffix if applied).
-                - 'id_origin': the original requested asset name.
-                - 'format_id': the asset's format identifier extracted from the
-                    asset metadata.
-        """
-        asset_names = open_params.get("asset_names")
-        if not asset_names:
-            asset_names = SENITNEL2_L2A_BANDS
-
-        if "crs" in open_params:
-            crs = normalize_crs(open_params["crs"])
-            if crs.is_geographic:
-                spatial_res_final = (
-                    open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
-                )
-            else:
-                spatial_res_final = open_params["spatial_res"]
+        if "_MSIL2A_" in item.id:
+            assets_sel = list_assets_from_sen2_item(item, **open_params)
+        elif "_SY_2_SYN_" in item.id:
+            assets_sel = _list_assets_from_item(item, **open_params)
         else:
-            spatial_res_final = open_params.get("spatial_res", 10)
-
-        assets_sel = []
-        for i, asset_name in enumerate(asset_names):
-            asset_name_res = asset_name
-            if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                res_diff = abs(spatial_res_final - SENTINEL2_BAND_RESOLUTIONS)
-                for spatial_res in SENTINEL2_BAND_RESOLUTIONS[np.argsort(res_diff)]:
-                    asset_name_res = f"{asset_name}_{spatial_res}m"
-                    if asset_name_res in item.assets:
-                        break
-            asset = item.assets[asset_name_res]
-            asset.extra_fields["id"] = asset_name_res
-            asset.extra_fields["id_origin"] = asset_names[i]
-            asset.extra_fields["format_id"] = get_format_id(asset)
-            assets_sel.append(asset)
+            LOG.warning(
+                f"Collection could not be derived from item ID {item.id!r}. "
+                f"Item is disregarded."
+            )
+            assets_sel = []
         return assets_sel
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
@@ -388,7 +311,7 @@ class HelperCdse(Helper):
         ds = accessor.generate_cube(access_params, **open_params)
 
         # add attributes
-        # Gather all used STAC item IDs used  in the data cube for each time step
+        # Gather all used STAC item IDs used in the data cube for each time step
         # and organize them in a dictionary. The dictionary keys are datetime
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(

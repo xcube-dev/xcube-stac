@@ -34,6 +34,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import S3Sentinel2DataAccessor
+from .accessor.sen3 import S3Sentinel3DataAccessor
 from .constants import (
     CDSE_STAC_URL,
     COLLECTION_PREFIX,
@@ -87,6 +88,8 @@ _OPEN_DATA_PARAMETERS = {
     ),
 }
 
+_S3_Accessor = S3Sentinel2DataAccessor | S3Sentinel3DataAccessor | S3DataAccessor
+
 
 class SingleStoreMode:
     """Implementations to access single STAC items"""
@@ -104,7 +107,7 @@ class SingleStoreMode:
         self._searchable = searchable
         self._storage_options_s3 = storage_options_s3
         self._https_accessor: HttpsDataAccessor | None = None
-        self._s3_accessor: S3Sentinel2DataAccessor | S3DataAccessor | None = None
+        self._s3_accessor: _S3_Accessor | None = None
         self._helper = helper
 
     def access_item(self, data_id: str) -> pystac.Item:
@@ -379,8 +382,15 @@ class SingleStoreMode:
             S3 data opener
         """
 
+        def _select_accessor(access_params: dict):
+            if isinstance(self._helper.s3_accessor, dict):
+                accessor = self._helper.s3_accessor[access_params["item"].collection_id]
+            else:
+                accessor = self._helper.s3_accessor
+            return accessor
+
         if self._s3_accessor is None:
-            self._s3_accessor = self._helper.s3_accessor(
+            self._s3_accessor = _select_accessor(access_params)(
                 access_params["root"],
                 storage_options=update_dict(
                     self._storage_options_s3,
@@ -394,7 +404,7 @@ class SingleStoreMode:
                 f"S3 object storage changed to {access_params['root']!r}. "
                 "A new s3 data opener will be initialized."
             )
-            self._s3_accessor = self._helper.s3_accessor(
+            self._s3_accessor = _select_accessor(access_params)(
                 access_params["root"],
                 storage_options=update_dict(
                     self._storage_options_s3,
