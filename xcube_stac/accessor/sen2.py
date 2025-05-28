@@ -613,13 +613,21 @@ def _resample_dataset_soft(
         for var in ds.data_vars:
             var_configs[var] = dict(recover_nan=True)
         ds = affine_transform_dataset(
-            ds, target_gm=target_gm, gm_name="spatial_ref", var_configs=var_configs
+            ds,
+            source_gm=source_gm,
+            target_gm=target_gm,
+            gm_name="spatial_ref",
+            var_configs=var_configs,
         )
     else:
         if fill_value is None:
             fill_value = SENTINEL2_FILL_VALUE
         ds = reproject_dataset(
-            ds, target_gm=target_gm, fill_value=fill_value, interpolation=interpolation
+            ds,
+            source_gm=source_gm,
+            target_gm=target_gm,
+            fill_value=fill_value,
+            interpolation=interpolation,
         )
     return ds
 

@@ -622,7 +622,10 @@ def mosaic_spatial_take_first(
     for key in list_ds[0]:
         if list_ds[0][key].dims[-2:] == (y_coord, x_coord):
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            nonnan_mask = da_arr != fill_value
+            if np.isnan(fill_value):
+                nonnan_mask = ~da.isnan(da_arr)
+            else:
+                nonnan_mask = da_arr != fill_value
             first_non_nan_index = nonnan_mask.argmax(axis=0)
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
