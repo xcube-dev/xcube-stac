@@ -123,6 +123,33 @@ class S3Sentinel2DataAccessor:
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
+        """Open Sentinel-2 tiles (stored in jp2 fomrat) as a dataset or multilevel
+        dataset using the specified access parameters.
+
+        This method supports opening single-resolution datasets with `rioxarray`
+        or multi-resolution datasets using a custom `Jp2MultiLevelDataset` class,
+        depending on the specified data type or opener ID.
+
+        Args:
+            access_params: Dictionary containing the necessary information to locate
+                and open the dataset, including keys such as 'protocol', 'root',
+                and 'fs_path'.
+            opener_id: Optional string identifier indicating the opener type. If not
+                provided, defaults to an empty string. Used to determine if a
+                multi-resolution dataset should be returned.
+            data_type: Optional data type indicator used to infer whether a
+                `MultiLevelDataset` is expected.
+            **open_params: Additional opening parameters forwarded to the dataset
+                opener.
+
+        Returns:
+            A data or multilevel dataset, depending on the input parameters.
+
+        Notes:
+            - If `data_type` is a valid multi-level dataset type or `opener_id`
+              starts with `"mldataset"`, a `Jp2MultiLevelDataset` is returned.
+            - Otherwise, the dataset is opened using `rioxarray.open_rasterio`.
+        """
         if opener_id is None:
             opener_id = ""
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
@@ -138,6 +165,35 @@ class S3Sentinel2DataAccessor:
             )
 
     def groupby_solar_day(self, items: list[pystac.Item]) -> xr.DataArray:
+        """Group STAC items by solar day, tile ID, and processing version.
+
+        This method organizes a list of Sentinel-2 STAC items into an `xarray.DataArray`
+        with dimensions `(time, tile_id, idx)`, where:
+        - `time` corresponds to the solar acquisition date (ignoring time of day),
+        - `tile_id` is the Sentinel-2 MGRS tile code,
+        - `idx` accounts for up to two acquisitions per tile (e.g., due to multiple
+          observations for the same tile),
+        - The most recent processing version is selected if multiple exist.
+
+        Args:
+            items: List of STAC items to group. Each item must have:
+                - `properties["datetime_nominal"]`: Nominal acquisition datetime.
+                - `properties["grid:code"]`: Tile ID (MGRS grid).
+                - A processing version recognizable by `_get_processing_version`.
+
+        Returns:
+            A 3D DataArray of shape (time, tile_id, idx) containing STAC items.
+            Time coordinate values are actual datetimes (not just dates), derived
+            from the nominal acquisition datetime of the first item per date/tile
+            combination.
+
+        Notes:
+            - Only up to two items per (date, tile_id) and processing version
+              are considered.
+            - If more than two items exist for the same (date, tile_id, proc_version),
+              a warning is logged and only the first two are used.
+            - Among multiple processing versions, only the latest is retained.
+        """
         items = add_nominal_datetime(items)
 
         # get dates and tile IDs of the items
@@ -198,7 +254,7 @@ class S3Sentinel2DataAccessor:
             coords=dict(time=dates, tile_id=tile_ids, idx=[0, 1]),
         )
 
-        # replace date by datetime form first item
+        # replace date by datetime from first item
         dts = []
         for date in grouped.time.values:
             next_item = next(
@@ -216,6 +272,18 @@ class S3Sentinel2DataAccessor:
         return grouped
 
     def _get_processing_version(self, item: pystac.Item) -> float:
+        """Extract the processing version from a STAC item.
+
+        This method attempts to retrieve the processing version of a Sentinel-2 item
+        from either the `processing:version` field or, if absent, falls back to
+        `s2:processing_baseline`. If both are missing, a default of "1.0" is used.
+
+        Args:
+            item: A STAC item containing metadata about a Sentinel-2 observation.
+
+        Returns:
+            The processing version of the item.
+        """
         return float(
             item.properties.get(
                 "processing:version",
@@ -224,6 +292,28 @@ class S3Sentinel2DataAccessor:
         )
 
     def generate_cube(self, access_params: xr.DataArray, **open_params) -> xr.Dataset:
+        """Generate a spatiotemporal data cube from access parameters.
+
+        This function takes grouped access parameters and generates a unified xarray
+        dataset, mosaicking and stacking the data across spatial tiles and time.
+        Optionally, scaling is applied and solar and viewing angle are calculated.
+
+        Args:
+            access_params: A 4D data array indexed by tile_id, asset_name, time,
+                and idx, where each element contains data access metadata.
+            **open_params: Optional keyword arguments for data opening and processing:
+                - apply_scaling (bool): Whether to apply radiometric scaling.
+                    Default is True.
+                - angles_sentinel2 (bool): Whether to include Sentinel-2 solar angles.
+                    Default is False.
+                - bbox (list): Bounding box used for spatial subsetting.
+                - crs (str): Coordinate reference system of the bounding box.
+                - opener_id, data_type, etc.: Passed to the data-opening function.
+
+        Returns:
+            A dataset representing the spatiotemporal cube.
+        """
+        # Group the tile IDs by UTM zones
         utm_tile_id = defaultdict(list)
         for tile_id in access_params.tile_id.values:
             item = next(
@@ -234,12 +324,20 @@ class S3Sentinel2DataAccessor:
             crs = item.assets["AOT_10m"].extra_fields["proj:code"]
             utm_tile_id[crs].append(tile_id)
 
+        # Insert the tile data per UTM zone
         list_ds_utm = []
         for crs, tile_ids in utm_tile_id.items():
             access_params_sel = access_params.sel(tile_id=tile_ids)
-            list_ds_utm.append(self._sort_in_utm(access_params_sel, crs, **open_params))
+            list_ds_utm.append(
+                self._insert_tile_data_in_utm_zone(
+                    access_params_sel, crs, **open_params
+                )
+            )
 
+        # Reproject datasets from different UTM zones to a common grid reference system
+        # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
+
         if open_params.get("apply_scaling", True):
             ds_final = apply_offset_scaling_stack_mode(ds_final, access_params)
         if open_params.get("angles_sentinel2", False):
@@ -247,7 +345,7 @@ class S3Sentinel2DataAccessor:
 
         return ds_final
 
-    def _sort_in_utm(
+    def _insert_tile_data_in_utm_zone(
         self,
         access_params_sel: xr.DataArray,
         crs_utm: str,
@@ -255,6 +353,27 @@ class S3Sentinel2DataAccessor:
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset:
+        """Load and insert tile data for a specific UTM zone into a unified dataset.
+
+        This method processes the assets from selected STAC items within a particular
+        UTM zone. It opens the data for each asset and time step, clips it to the
+        target bounding box (reprojected to the UTM CRS), mosaics overlapping spatial
+        datasets by taking the first valid pixel, and inserts the processed data into
+        an aggregated dataset for that UTM zone.
+
+        Args:
+            access_params: An xarray DataArray containing access information for assets,
+                indexed by tile_id, asset_name, time, and idx.
+            crs_utm: The target UTM coordinate reference system identifier.
+            opener_id: Optional string identifier to specify the data opener to use.
+            data_type: Optional data type hint for the data opening function.
+            **open_params: Additional parameters to control data opening and processing,
+                including 'bbox' (bounding box) and 'crs' (coordinate reference system).
+
+        Returns:
+            A dataset containing mosaicked and stacked 3d datacubes
+            (time, spatial_y, spatial_x) for all assets within the specified UTM zone.
+        """
         items_bbox = _get_bounding_box(access_params_sel)
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
 
@@ -291,12 +410,30 @@ class S3Sentinel2DataAccessor:
                     ds = mosaic_spatial_take_first(
                         list_ds_idx, fill_value=SENTINEL2_FILL_VALUE
                     )
-                    asset_ds = self._sort_in(asset_ds, asset_name, ds, dt_idx)
+                    asset_ds = self._insert_tile_data(asset_ds, asset_name, ds, dt_idx)
             list_ds_asset.append(asset_ds)
 
         return merge_datasets(list_ds_asset)
 
-    def _sort_in(self, asset_ds, asset_name, ds, dt_idx):
+    def _insert_tile_data(self, asset_ds, asset_name, ds, dt_idx):
+        """Insert spatial data from a smaller dataset into a larger asset dataset at
+        the correct spatial indices.
+
+        This method locates the spatial coordinates of the input dataset `ds` within
+        the larger `asset_ds` along the 'x' and 'y' dimensions, then copies the data
+        from `ds["band_1"]` into the corresponding slice of `asset_ds` for the
+        specified time index `dt_idx`.
+
+        Args:
+            asset_ds: The larger dataset representing the aggregated asset data.
+            asset_name: The name of variable within `asset_ds` to insert data into.
+            ds: The smaller xarray Dataset containing data to be inserted.
+            dt_idx: The time index in `asset_ds` at which to insert the data.
+
+        Returns:
+            The updated `asset_ds` with data from `ds` inserted at the appropriate
+            spatial location.
+        """
         xmin = asset_ds.indexes["x"].get_loc(ds.x[0].item())
         xmax = asset_ds.indexes["x"].get_loc(ds.x[-1].item())
         ymin = asset_ds.indexes["y"].get_loc(ds.y[0].item())
@@ -323,6 +460,23 @@ class S3Sentinel2DataAccessor:
     def add_sen2_angles(
         self, item: pystac.Item, ds: xr.Dataset, **open_params
     ) -> xr.Dataset:
+        """Extract Sentinel-2 solar and viewing angle information from the granule
+        metadata and add it to the dataset `ds`.
+
+        This method downloads and parses the granule metadata XML file associated with
+        the given STAC item, then extracts solar and viewing angle information for
+        the relevant bands.
+
+        Args:
+            item: A STAC item containing a 'granule_metadata' asset with the
+                XML metadata.
+            ds: A dataset containing Sentinel-2 data bands, used to determine which
+                bands' angles to extract.
+
+        Returns:
+            An updated version of `ds`, with solar and viewing angle data added
+            corresponding to the bands.
+        """
         target_gm = get_angle_target_gm(ds)
         ds_angles = self.get_sen2_angles(item, ds)
         ds_angles = _resample_dataset_soft(
@@ -339,6 +493,23 @@ class S3Sentinel2DataAccessor:
         ds_final: xr.Dataset,
         access_params: xr.DataArray,
     ) -> xr.Dataset:
+        """Add Sentinel-2 solar and viewing angle information from multiple STAC items
+        as a mosaicked and stacked dataset.
+
+        This method processes angle metadata for each tile from the provided
+        `access_params`. It retrieves angle datasets for each tile,
+        mosaics them spatially, resamples to match the target grid mapping, and
+        finally adds the combined angle data to the input dataset `ds_final`.
+
+        Args:
+            ds_final: The main dataset containing Sentinel-2 data to which angle data
+                will be added.
+            access_params: A DataArray containing access parameters for STAC items.
+
+        Returns:
+            An updated `ds_final` which includes solar and viewing angle information
+            stacked and mosaicked, so that it aligns with the Sentinel-2 spectral data.
+        """
         target_gm = get_angle_target_gm(ds_final)
         list_ds_tiles = []
         for tile_id in access_params.tile_id.values:
@@ -401,6 +572,26 @@ class S3Sentinel2DataAccessor:
 
 
 def get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
+    """Determine the target grid mapping for angle datasets based on the input dataset.
+
+    This function computes an appropriate bounding box and spatial resolution
+    for resampling angle data to align with the spatial reference of the given
+    Sentinel-2 dataset. It handles both geographic (latitude/longitude) and
+    projected coordinate reference systems, adjusting resolution accordingly.
+
+    Args:
+        ds_final: The dataset whose spatial reference and coordinates define the
+            target grid mapping.
+
+    Returns:
+        A GridMapping object representing the bounding box, resolution, and CRS
+        suitable for resampling angle data to match `ds_final`.
+
+    Notes:
+        The native resolution of solar and viewing angle data in Sentinel-2 products
+        is 5000 meters. This resolution is preserved in the resulting target grid
+        mapping used during datacube generation.
+    """
     crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
     y_coord, x_coord = get_spatial_dims(ds_final)
     if crs.is_geographic:

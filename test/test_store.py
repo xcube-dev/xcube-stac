@@ -292,7 +292,10 @@ class StacDataStoreTest(unittest.TestCase):
         with self.assertRaises(DataStoreError) as cm:
             store.get_data_opener_ids(data_id="wrong_data_id")
         self.assertEqual(
-            "Data resource 'wrong_data_id' is not available.",
+            "Failed to access item at https://raw.githubusercontent.com/"
+            "stac-extensions/label/main/examples/multidataset/wrong_data_id: "
+            "404 Client Error: Not Found for url: https://raw.githubusercontent.com/"
+            "stac-extensions/label/main/examples/multidataset/wrong_data_id",
             f"{cm.exception}",
         )
         with self.assertRaises(DataStoreError) as cm:
@@ -1154,9 +1157,15 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_access_item_failed(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(requests.exceptions.HTTPError) as cm:
+        with self.assertRaises(DataStoreError) as cm:
             store._impl.access_item(self.data_id_nonsearchable.replace("z", "s"))
-        self.assertIn("404 Client Error: Not Found for url", f"{cm.exception}")
+        self.assertIn(
+            "Failed to access item at https://raw.githubusercontent.com/stac-extensions"
+            "/label/main/examples/multidataset/sansibar/sns001.json: 404 Client Error: "
+            "Not Found for url: https://raw.githubusercontent.com/stac-extensions/"
+            "label/main/examples/multidataset/sansibar/sns001.json",
+            f"{cm.exception}",
+        )
 
     @pytest.mark.vcr()
     def test_get_s3_accessor(self):

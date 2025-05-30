@@ -136,11 +136,11 @@ class StacDataStore(DataStore):
         self,
         data_type: DataTypeLike = None,
         include_attrs: Container[str] | bool = False,
-    ) -> Iterator[str] | Iterator[tuple[str, dict[str, Any]]]:
+    ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
         assert_valid_data_type(data_type)
         data_ids_obj = self._impl.get_data_ids(data_type=data_type)
         for data_id, pystac_obj in data_ids_obj:
-            if include_attrs is False or not include_attrs:
+            if not include_attrs:
                 yield data_id
             else:
                 attrs = get_attrs_from_pystac_object(pystac_obj, include_attrs)
@@ -227,8 +227,8 @@ class StacDataStore(DataStore):
     ) -> JsonObjectSchema:
         return self._impl.get_search_params_schema()
 
+    @staticmethod
     def _select_opener_id(
-        self,
         protocols: list[str],
         format_ids: list[str],
         data_type: DataTypeLike = None,

@@ -35,6 +35,31 @@ _RASTER_STAC_EXTENSION_VERSIONS = {
 def apply_offset_scaling_stack_mode(
     ds: xr.Dataset, access_params: xr.DataArray
 ) -> xr.Dataset:
+    """Apply offset and scale factors to variables in a dataset per timestep
+    using STAC raster extension metadata.
+
+    This function extracts scaling and offset metadata for each asset from the
+    corresponding STAC item. It supports both raster extension versions "v1" and "v2".
+    Assets containing "scl" (scene classification layers in Sentinel-2 L2A product)
+    are skipped. If the STAC item does not conform to the raster extension, no scaling
+    is applied and a warning is logged.
+
+    Args:
+        ds: The input datasett with time-varying data variables to scale.
+        access_params: A 4D DataArray containing access metadata, including the
+            STAC item and asset name, indexed by time.
+
+    Returns:
+        A dataset with variables scaled and offset applied where metadata
+        is available. Nodata values are masked before scaling if nodata metadata
+        is present and consistent across time steps.
+
+    Notes:
+        - If multiple nodata values are detected for a single variable across time,
+          an assertion will fail.
+        - This function assumes that `access_params` contains at least on non-None
+          value for each time step.
+    """
     params = next(
         value for value in access_params.values.flatten() if value is not None
     )
