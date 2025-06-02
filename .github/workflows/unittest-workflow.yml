@@ -14,7 +14,6 @@ jobs:
         with:
           repository: xcube-dev/xcube
           path: xcube
-          ref: konstntokas-xxx-add_reprojection
 
       - name: checkout xcube-stac
         uses: actions/checkout@v4
