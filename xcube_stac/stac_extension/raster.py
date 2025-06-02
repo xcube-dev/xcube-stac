@@ -57,12 +57,10 @@ def apply_offset_scaling_stack_mode(
     Notes:
         - If multiple nodata values are detected for a single variable across time,
           an assertion will fail.
-        - This function assumes that `access_params` contains at least on non-None
+        - This function assumes that `access_params` contains at least one non-None
           value for each time step.
     """
-    params = next(
-        value for value in access_params.values.flatten() if value is not None
-    )
+    params = next(value for value in access_params.values.ravel() if value is not None)
     raster_version = _get_stac_extension(params["item"])
     if not raster_version:
         LOG.warning(
@@ -92,7 +90,7 @@ def apply_offset_scaling_stack_mode(
         for dt in ds.time.values:
             params = next(
                 value
-                for value in access_params.sel(time=dt).values.flatten()
+                for value in access_params.sel(time=dt).values.ravel()
                 if value is not None
             )
             if raster_version == "v1":

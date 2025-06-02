@@ -407,15 +407,19 @@ class S3Sentinel2DataAccessor:
                         list_ds_idx.append(ds)
                     if not list_ds_idx:
                         continue
-                    ds = mosaic_spatial_take_first(
+                    mosaicked_ds = mosaic_spatial_take_first(
                         list_ds_idx, fill_value=SENTINEL2_FILL_VALUE
                     )
-                    asset_ds = self._insert_tile_data(asset_ds, asset_name, ds, dt_idx)
+                    asset_ds = self._insert_tile_data(
+                        asset_ds, asset_name, mosaicked_ds, dt_idx
+                    )
             list_ds_asset.append(asset_ds)
 
         return merge_datasets(list_ds_asset)
 
-    def _insert_tile_data(self, asset_ds, asset_name, ds, dt_idx):
+    def _insert_tile_data(
+        self, asset_ds: xr.Dataset, asset_name: str, ds: xr.Dataset, dt_idx: int
+    ) -> xr.Dataset:
         """Insert spatial data from a smaller dataset into a larger asset dataset at
         the correct spatial indices.
 
@@ -797,7 +801,7 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
         ds_angles[["solar_angle_zenith", "solar_angle_azimuth"]]
         .to_dataarray(dim="angle")
         .assign_coords(angle=["zenith", "azimuth"])
-    )
+    ).astype(np.float32)
     ds_temp = xr.Dataset()
     bands = [
         str(k).replace("viewing_angle_zenith_", "")
@@ -812,7 +816,9 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
     ds_temp["azimuth"] = (
         ds_angles[keys].to_dataarray(dim="band").assign_coords(band=bands)
     )
-    ds["viewing_angle"] = ds_temp[["zenith", "azimuth"]].to_dataarray(dim="angle")
+    ds["viewing_angle"] = (
+        ds_temp[["zenith", "azimuth"]].to_dataarray(dim="angle").astype(np.float32)
+    )
     ds = ds.chunk(dict(angle=-1, band=-1))
 
     return ds

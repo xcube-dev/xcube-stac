@@ -395,7 +395,7 @@ class HelperCdse(Helper):
                 .astype("O")
                 .isoformat(): [
                     item.id
-                    for item in grouped_items.sel(time=dt).values.flatten()
+                    for item in grouped_items.sel(time=dt).values.ravel()
                     if item is not None
                 ]
                 for dt in access_params.time.values
