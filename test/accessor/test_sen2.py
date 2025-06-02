@@ -146,7 +146,7 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
         msg = (
             "WARNING:xcube.stac:More that two items found for datetime and tile ID: "
             "[example-item0, example-item1, example-item2]. Only the first "
-            "tow items are considered."
+            "two items are considered."
         )
         self.assertEqual(msg, str(cm.output[-1]))
         self.assertEqual((1, 1, 2), grouped.shape)
