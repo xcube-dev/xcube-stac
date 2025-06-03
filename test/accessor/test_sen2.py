@@ -19,11 +19,13 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import datetime
 import unittest
 from unittest.mock import MagicMock, patch
 
 import dask
 import dask.array as da
+import pystac
 import rasterio
 import rasterio.session
 import xarray as xr
@@ -80,7 +82,7 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
         ds = self.accessor.open_data(access_params)
         mock_rioxarray_open.assert_called_once_with(
             "s3://eodata/test.tif",
-            chunks=dict(x=1024, y=1024),
+            chunks={},
             band_as_variable=True,
         )
         self.assertTrue("band_1" in ds)
@@ -97,7 +99,7 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
         mock_rioxarray_open.assert_called_with(
             "s3://eodata/test.tif",
             overview_level=None,
-            chunks=dict(x=1024, y=1024),
+            chunks={},
             band_as_variable=True,
         )
         self.assertTrue("band_1" in ds)
@@ -105,3 +107,46 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
         self.assertCountEqual(
             [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
+
+    def test_groupby_solar_day(self):
+        bbox = [-10.0, -10.0, 10.0, 10.0]
+        datetime_value = datetime.datetime(2023, 1, 1, 12, 0, 0)
+        grid_code = "MGRS-31TCK"
+        processing_version = "5.11"
+
+        # Create the Item
+        items = []
+        for i in range(3):
+            items.append(
+                pystac.Item(
+                    id=f"example-item{i}",
+                    geometry={
+                        "type": "Polygon",
+                        "coordinates": [
+                            [
+                                [bbox[0], bbox[1]],
+                                [bbox[2], bbox[1]],
+                                [bbox[2], bbox[3]],
+                                [bbox[0], bbox[3]],
+                                [bbox[0], bbox[1]],
+                            ]
+                        ],
+                    },
+                    bbox=bbox,
+                    datetime=datetime_value,
+                    properties={
+                        "grid:code": grid_code,
+                        "processing:version": processing_version,
+                    },
+                )
+            )
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            grouped = self.accessor.groupby_solar_day(items)
+        self.assertEqual(1, len(cm.output))
+        msg = (
+            "WARNING:xcube.stac:More that two items found for datetime and tile ID: "
+            "[example-item0, example-item1, example-item2]. Only the first "
+            "two items are considered."
+        )
+        self.assertEqual(msg, str(cm.output[-1]))
+        self.assertEqual((1, 1, 2), grouped.shape)

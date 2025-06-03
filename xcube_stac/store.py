@@ -38,18 +38,8 @@ from xcube.core.store import (
     DataTypeLike,
     MultiLevelDatasetDescriptor,
 )
-from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
+from xcube.util.jsonschema import JsonObjectSchema
 
-from .utils import (
-    assert_valid_data_type,
-    assert_valid_opener_id,
-    get_attrs_from_pystac_object,
-    get_data_id_from_pystac_object,
-    is_valid_data_type,
-    is_valid_ml_data_type,
-    modify_catalog_url,
-    update_dict,
-)
 from .constants import (
     CDSE_S3_ENDPOINT,
     CDSE_STAC_URL,
@@ -60,6 +50,16 @@ from .constants import (
 )
 from .helper import Helper, HelperCdse, HelperXcube
 from .store_mode import SingleStoreMode, StackStoreMode
+from .utils import (
+    assert_valid_data_type,
+    assert_valid_opener_id,
+    get_attrs_from_pystac_object,
+    get_data_id_from_pystac_object,
+    is_valid_data_type,
+    is_valid_ml_data_type,
+    modify_catalog_url,
+    update_dict,
+)
 
 
 class StacDataStore(DataStore):
@@ -136,11 +136,11 @@ class StacDataStore(DataStore):
         self,
         data_type: DataTypeLike = None,
         include_attrs: Container[str] | bool = False,
-    ) -> Iterator[str] | Iterator[tuple[str, dict[str, Any]]]:
+    ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
         assert_valid_data_type(data_type)
         data_ids_obj = self._impl.get_data_ids(data_type=data_type)
         for data_id, pystac_obj in data_ids_obj:
-            if include_attrs is False or not include_attrs:
+            if not include_attrs:
                 yield data_id
             else:
                 attrs = get_attrs_from_pystac_object(pystac_obj, include_attrs)
@@ -227,8 +227,8 @@ class StacDataStore(DataStore):
     ) -> JsonObjectSchema:
         return self._impl.get_search_params_schema()
 
+    @staticmethod
     def _select_opener_id(
-        self,
         protocols: list[str],
         format_ids: list[str],
         data_type: DataTypeLike = None,
@@ -289,7 +289,6 @@ class StacCdseDataStore(StacDataStore):
     def __init__(
         self,
         stack_mode: bool | str = False,
-        creodias_vm: bool = False,
         **storage_options_s3,
     ):
         storage_options_s3 = update_dict(
@@ -299,18 +298,13 @@ class StacCdseDataStore(StacDataStore):
                 client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
             ),
         )
-        self._creodias_vm = creodias_vm
-        self._helper = HelperCdse(creodias_vm=creodias_vm)
+        self._helper = HelperCdse()
         super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         stac_params = STAC_STORE_PARAMETERS.copy()
         del stac_params["url"]
-        stac_params["creodias_vm"] = JsonBooleanSchema(
-            title="Decide if xcube-stac is used on a Creodias VM.",
-            default=False,
-        )
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,

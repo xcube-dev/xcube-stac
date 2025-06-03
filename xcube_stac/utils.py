@@ -27,6 +27,7 @@ import os
 from collections.abc import Container, Iterator
 from typing import Any
 
+import dask.array as da
 import numpy as np
 import pandas as pd
 import pyproj
@@ -34,10 +35,9 @@ import pystac
 import pystac_client
 import xarray as xr
 from shapely.geometry import box
-from xcube.core.geom import clip_dataset_by_geometry
 from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
-from xcube.core.resampling import resample_in_space
+from xcube.core.resampling import affine_transform_dataset
 from xcube.core.store import (
     DATASET_TYPE,
     MULTI_LEVEL_DATASET_TYPE,
@@ -123,7 +123,7 @@ def search_nonsearchable_catalog(
 def search_collections(
     catalog: pystac.Catalog,
     **search_params,
-) -> Iterator[pystac.Item]:
+) -> Iterator[pystac.Collection]:
     """Get the collections of a catalog for given search parameters
 
     Args:
@@ -299,6 +299,17 @@ def do_bboxes_intersect(
 
 
 def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
+    """Adds the nominal (solar) time to each STAC item's properties under the key
+    "datetime_nominal", based on the item's original UTC datetime.
+
+    Args:
+        items: A list of STAC item objects.
+
+    Returns:
+        A list of STAC item objects with the "datetime_nominal" field added to their
+        properties.
+    """
+
     for item in items:
         item.properties["center_point"] = get_center_from_bbox(item.bbox)
         item.properties["datetime_nominal"] = convert_to_solar_time(
@@ -308,6 +319,21 @@ def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
 
 
 def get_grid_mapping_name(ds: xr.Dataset) -> str | None:
+    """Extracts the name of the grid mapping variable from an xarray Dataset.
+
+    The function searches through the dataset's data variables for the "grid_mapping"
+    attribute, as well as for commonly used coordinate variables like "crs" and
+    "spatial_ref". It ensures that at most one unique grid mapping name is present.
+
+    Args:
+        ds: A dataset to inspect for grid mapping information.
+
+    Returns:
+        The name of the grid mapping variable if found, otherwise None.
+
+    Raises:
+        AssertionError: If more than one unique grid mapping name is detected.
+    """
     gm_names = []
     for var in ds.data_vars:
         if "grid_mapping" in ds[var].attrs:
@@ -325,6 +351,21 @@ def get_grid_mapping_name(ds: xr.Dataset) -> str | None:
 
 
 def normalize_grid_mapping(ds: xr.Dataset) -> xr.Dataset:
+    """Normalizes the grid mapping in a dataset to use a standard "spatial_ref"
+    coordinate.
+
+    This function replaces any existing grid mapping references in the dataset with a
+    unified "spatial_ref" coordinate. It updates the "grid_mapping" attribute of all
+    data variables to reference "spatial_ref", removes the original grid mapping
+    variable (if present), and adds a new "spatial_ref" coordinate with CF-compliant
+    CRS attributes.
+
+    Args:
+        ds: A dataset containing geospatial data with grid mapping metadata.
+
+    Returns:
+        A dataset with a standardized "spatial_ref" coordinate used for grid mapping.
+    """
     gm_name = get_grid_mapping_name(ds)
     if gm_name is None:
         return ds
@@ -377,6 +418,15 @@ def get_url_from_pystac_object(pystac_obj: pystac.Item | pystac.Collection) -> s
 
 
 def get_format_from_path(path: str) -> str:
+    """Returns the data format corresponding to a file's extension derived from a path.
+
+    Args:
+        path: The file path from which to extract the format.
+
+    Returns:
+        A string representing the data format associated with the file extension.
+        Returns None if the extension is not found in the mapping.
+    """
     _, file_extension = os.path.splitext(path)
     return MAP_FILE_EXTENSION_FORMAT.get(file_extension)
 
@@ -398,7 +448,7 @@ def is_valid_data_type(data_type: DataTypeLike) -> bool:
     )
 
 
-def assert_valid_data_type(data_type: DataTypeLike):
+def assert_valid_data_type(data_type: DataTypeLike) -> None:
     """Auxiliary function to assert if data type is supported
     by the store.
 
@@ -429,7 +479,7 @@ def is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
 
 
-def assert_valid_opener_id(opener_id: str):
+def assert_valid_opener_id(opener_id: str) -> None:
     """Auxiliary function to assert if data opener identified by
     *opener_id* is supported by the store.
 
@@ -464,6 +514,15 @@ def get_data_id_from_pystac_object(
 
 
 def modify_catalog_url(url: str) -> str:
+    """Normalizes a STAC catalog URL by removing a trailing 'catalog.json' (if present)
+    and ensuring it ends with a forward slash.
+
+    Args:
+        url: The original STAC catalog URL.
+
+    Returns:
+        A normalized URL string without 'catalog.json' and with a trailing slash.
+    """
     url_mod = url
     if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
         url_mod = url_mod[:-12]
@@ -473,11 +532,31 @@ def modify_catalog_url(url: str) -> str:
 
 
 def reproject_bbox(
-    source_bbox: list[int] | list[float],
+    source_bbox: tuple[int] | tuple[float] | list[int] | list[float],
     source_crs: pyproj.CRS | str,
     target_crs: pyproj.CRS | str,
     buffer: float = 0.0,
-):
+) -> tuple[int] | tuple[float]:
+    """Reprojects a bounding box from a source CRS to a target CRS, with optional
+    buffering.
+
+    The function transforms a bounding box defined in the source coordinate reference
+    system (CRS) to the target CRS using `pyproj`. If the source and target CRS are
+    the same, no transformation is performed. An optional buffer (as a fraction of
+    width/height) can be applied to expand the resulting bounding box.
+
+    Args:
+        source_bbox: The bounding box to reproject, in the form
+            (min_x, min_y, max_x, max_y).
+        source_crs: The source CRS, as a `pyproj.CRS` or string.
+        target_crs: The target CRS, as a `pyproj.CRS` or string.
+        buffer: Optional buffer to apply to the transformed bounding box, expressed as
+                a fraction (e.g., 0.1 for 10% padding). Default is 0.0 (no buffer).
+
+    Returns:
+        A tuple representing the reprojected (and optionally buffered) bounding box:
+        (min_x, min_y, max_x, max_y).
+    """
     source_crs = normalize_crs(source_crs)
     target_crs = normalize_crs(target_crs)
     if source_crs != target_crs:
@@ -505,24 +584,73 @@ def reproject_bbox(
 def convert_to_solar_time(
     utc: datetime.datetime, longitude: float
 ) -> datetime.datetime:
-    # offset_seconds snapped to 1 hour increments
-    # 1/15 == 24/360 (hours per degree of longitude)
+    """Converts a UTC datetime to an approximate solar time based on longitude.
+
+    The conversion assumes that each 15 degrees of longitude corresponds to a 1-hour
+    offset from UTC, effectively snapping the time offset to whole-hour increments.
+    This provides a simplified approximation of local solar time.
+
+    Args:
+        utc: The datetime in UTC.
+        longitude: The longitude in degrees, where positive values are east of
+        the meridian.
+
+    Returns:
+        A datetime object representing the approximate solar time.
+    """
     offset_seconds = int(longitude / 15) * 3600
     return utc + datetime.timedelta(seconds=offset_seconds)
 
 
 def normalize_crs(crs: str | pyproj.CRS) -> pyproj.CRS:
+    """Normalizes a CRS input by converting it to a pyproj.CRS object.
+
+    If the input is already a `pyproj.CRS` instance, it is returned unchanged.
+    If the input is a string (e.g., an EPSG code or PROJ string), it is converted
+    to a `pyproj.CRS` object using `CRS.from_string`.
+
+    Args:
+        crs: A CRS specified as a string or a `pyproj.CRS` object.
+
+    Returns:
+        A `pyproj.CRS` object representing the normalized CRS.
+    """
     if isinstance(crs, pyproj.CRS):
         return crs
     else:
         return pyproj.CRS.from_string(crs)
 
 
-def get_center_from_bbox(bbox: list[float]) -> tuple[float, float]:
+def get_center_from_bbox(
+    bbox: tuple[float] | tuple[int] | list[float] | list[int],
+) -> tuple[float, float]:
+    """Calculates the center point of a bounding box.
+
+    Args:
+        bbox: The bounding box, in the form (min_x, min_y, max_x, max_y).
+
+    Returns:
+        A tuple (center_x, center_y) representing the center coordinates of the
+        bounding box.
+    """
     return (bbox[0] + bbox[2]) / 2, (bbox[1] + bbox[3]) / 2
 
 
 def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
+    """Renames the data variables in a dataset based on the provided asset name.
+
+    If the dataset contains only one data variable, it is renamed to the STAC item's
+    asset name. If there are multiple data variables, each is renamed using the pattern
+    "{asset}_{original_variable_name}".
+
+    Args:
+        ds: The input dataset whose data variables are to be renamed.
+        asset: STAC asset name used as the prefix (or full name) for renaming the
+            variables.
+
+    Returns:
+        A modified dataset with renamed data variables.
+    """
     if len(list(ds.keys())) == 1:
         name_dict = {var_name: f"{asset}" for var_name in ds.data_vars.keys()}
     else:
@@ -533,16 +661,33 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
 
 
 def get_gridmapping(
-    bbox: list[float],
-    spatial_res: float,
+    bbox: tuple[float] | tuple[int] | list[float] | list[int],
+    spatial_res: float | int | tuple[float | int, float | int],
     crs: str | pyproj.crs.CRS,
     tile_size: int | tuple[int, int] = TILE_SIZE,
 ) -> GridMapping:
-    x_size = int((bbox[2] - bbox[0]) / spatial_res) + 1
-    y_size = int(abs(bbox[3] - bbox[1]) / spatial_res) + 1
+    """Creates a regular GridMapping object based on a bounding box, spatial resolution,
+    and CRS.
+
+    Args:
+        bbox: The bounding box in the form (min_x, min_y, max_x, max_y).
+        spatial_res: Spatial resolution as a single value or a (x_res, y_res) tuple.
+        crs: Coordinate reference system as a `pyproj.CRS` or a string
+            (e.g., "EPSG:4326").
+        tile_size: Optional tile size as a single integer or a (width, height) tuple.
+            Defaults to `TILE_SIZE`.
+
+    Returns:
+        A xcube `GridMapping` object representing the regular grid layout defined
+        by the input parameters.
+    """
+    if not isinstance(spatial_res, tuple):
+        spatial_res = (spatial_res, spatial_res)
+    x_size = np.ceil((bbox[2] - bbox[0]) / spatial_res[0]) + 1
+    y_size = np.ceil(abs(bbox[3] - bbox[1]) / spatial_res[1]) + 1
     return GridMapping.regular(
         size=(x_size, y_size),
-        xy_min=(bbox[0] - spatial_res / 2, bbox[1] - spatial_res / 2),
+        xy_min=(bbox[0] - spatial_res[0] / 2, bbox[1] - spatial_res[1] / 2),
         xy_res=spatial_res,
         crs=crs,
         tile_size=tile_size,
@@ -552,6 +697,23 @@ def get_gridmapping(
 def merge_datasets(
     datasets: list[xr.Dataset], target_gm: GridMapping = None
 ) -> xr.Dataset:
+    """Merges a list of datasets into a single dataset, optionally resampling
+    to a target grid mapping.
+
+    If all datasets share the same spatial resolution and no `target_gm` is provided,
+    they are merged directly. Otherwise, the datasets are grouped by resolution,
+    merged within each group, resampled to the target grid mapping, and then combined.
+
+    Args:
+        datasets: A list of datasets to be merged.
+        target_gm: Optional `GridMapping` to which all datasets will be resampled.
+                   If not provided, the grid mapping from the dataset with the
+                   highest resolution (smallest x spacing) is used.
+
+    Returns:
+        A single dataset resulting from merging all input datasets,
+        resampled to a common grid if necessary.
+    """
     y_coord, x_coord = get_spatial_dims(datasets[0])
     x_ress = [abs(float(ds[x_coord][1] - ds[x_coord][0])) for ds in datasets]
     y_ress = [abs(float(ds[y_coord][1] - ds[y_coord][0])) for ds in datasets]
@@ -576,12 +738,28 @@ def merge_datasets(
                 )
         datasets_resampled = []
         for ds in datasets_grouped:
-            datasets_resampled.append(wrapper_resample_in_space(ds, target_gm))
+            datasets_resampled.append(
+                affine_transform_dataset(ds, target_gm=target_gm, encode_cf=False)
+            )
         ds = _update_datasets(datasets_resampled)
     return ds
 
 
 def get_spatial_dims(ds: xr.Dataset) -> (str, str):
+    """Identifies the spatial coordinate names in a dataset.
+
+    The function checks for common spatial dimension naming conventions: ("lat", "lon")
+    or ("y", "x"). If neither pair is found, it raises a DataStoreError.
+
+    Args:
+        ds: The dataset to inspect.
+
+    Returns:
+        A tuple of strings representing the names of the spatial dimensions.
+
+    Raises:
+        DataStoreError: If no recognizable spatial dimensions are found.
+    """
     if "lat" in ds and "lon" in ds:
         y_coord, x_coord = "lat", "lon"
     elif "y" in ds and "x" in ds:
@@ -598,41 +776,67 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     return ds
 
 
-def wrapper_clip_dataset_by_geometry(ds: xr.Dataset, **open_params) -> xr.Dataset:
-    gm_name = get_grid_mapping_name(ds)
-    if gm_name is not None:
-        crs_asset = ds[gm_name].attrs["crs_wkt"]
-        if "bbox" in open_params and "crs" in open_params:
-            bbox = reproject_bbox(
-                open_params["bbox"], open_params["crs"], crs_asset, buffer=0.05
-            )
-            ds = clip_dataset_by_geometry(ds, geometry=bbox)
+def clip_dataset_by_bbox(
+    ds: xr.Dataset, bbox: tuple[float | int] | list[float | int]
+) -> xr.Dataset:
+    """Clips a dataset to a given bounding box.
+
+    The function selects a spatial subset of the dataset based on the provided
+    bounding box. It automatically handles datasets with increasing or decreasing
+    y-axis orientation.
+
+    Args:
+        ds: The input dataset to be clipped.
+        bbox: The bounding box in the form (min_x, min_y, max_x, max_y).
+
+    Returns:
+        A new xarray.Dataset spatially subset to the given bounding box.
+    """
+    y, x = get_spatial_dims(ds)
+    if ds.y[-1] - ds.y[0] < 0:
+        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
+    else:
+        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[1], bbox[3])})
     return ds
 
 
-def wrapper_resample_in_space(ds: xr.Dataset, target_gm: GridMapping) -> xr.Dataset:
-    # Extra care needs to be taken for the grid_mapping variable. This is needed
-    # until the issue https://github.com/xcube-dev/xcube/issues/1013
-    # is addressed. More details are given in the above-mentioned issue.
-    source_gm = GridMapping.from_dataset(ds)
-    if source_gm.crs == target_gm.crs:
-        ds = resample_in_space(
-            ds, source_gm=source_gm, target_gm=target_gm, encode_cf=False
-        )
-    else:
-        ds = resample_in_space(
-            ds, source_gm=source_gm, target_gm=target_gm, gm_name="crs", encode_cf=True
-        )
-    var_names = [
-        "x_bnds",
-        "y_bnds",
-        "lon_bnds",
-        "lat_bnds",
-        "transformed_x",
-        "transformed_y",
-    ]
-    vars_sel = []
-    for var_name in var_names:
-        if var_name in ds:
-            vars_sel.append(var_name)
-    return ds.drop_vars(vars_sel)
+def mosaic_spatial_take_first(
+    list_ds: list[xr.Dataset], fill_value: int | float = np.nan
+) -> xr.Dataset:
+    """Creates a spatial mosaic from a list of datasets by taking the first
+    non-fill value encountered across datasets at each pixel location.
+
+    The function assumes all datasets share the same spatial dimensions and coordinate
+    system. Only variables with 2D spatial dimensions (y, x) are processed. At each
+    spatial location, the first non-fill (or non-NaN) value across the dataset stack
+    is selected.
+
+    Args:
+        list_ds: A list of datasets to be mosaicked.
+        fill_value: The value considered as missing data. Defaults to NaN.
+
+    Returns:
+        A new dataset representing the mosaicked result, using the first valid
+        value encountered across the input datasets for each spatial position.
+    """
+    if len(list_ds) == 1:
+        return list_ds[0]
+
+    y_coord, x_coord = get_spatial_dims(list_ds[0])
+    ds_mosaic = xr.Dataset()
+    for key in list_ds[0]:
+        if list_ds[0][key].dims[-2:] == (y_coord, x_coord):
+            da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
+            if np.isnan(fill_value):
+                nonnan_mask = ~da.isnan(da_arr)
+            else:
+                nonnan_mask = da_arr != fill_value
+            first_non_nan_index = nonnan_mask.argmax(axis=0)
+            da_arr_select = da.choose(first_non_nan_index, da_arr)
+            ds_mosaic[key] = xr.DataArray(
+                da_arr_select,
+                dims=list_ds[0][key].dims,
+                coords=list_ds[0][key].coords,
+            )
+
+    return ds_mosaic

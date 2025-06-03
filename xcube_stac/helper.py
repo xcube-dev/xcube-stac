@@ -23,19 +23,27 @@ import re
 
 import numpy as np
 import pystac
+import xarray as xr
 from xcube.core.store import DataStoreError
 
 from ._href_parse import decode_href
-from .utils import get_format_from_path, get_format_id, is_valid_ml_data_type
+from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import (
-    SENITNEL2_L2A_BAND_RESOLUTIONS,
     SENITNEL2_L2A_BANDS,
+    SENTINEL2_BAND_RESOLUTIONS,
     SENTINEL2_REGEX_ASSET_NAME,
-    FileSentinel2DataAccessor,
     S3Sentinel2DataAccessor,
 )
-from .constants import MLDATASET_FORMATS
+from .constants import CONVERSION_FACTOR_DEG_METER, MLDATASET_FORMATS
+from .utils import (
+    get_format_from_path,
+    get_format_id,
+    is_valid_ml_data_type,
+    normalize_crs,
+)
+
+Accessor = S3Sentinel2DataAccessor | HttpsDataAccessor
 
 
 class Helper:
@@ -46,6 +54,24 @@ class Helper:
     def list_assets_from_item(
         self, item: pystac.Item, **open_params
     ) -> list[pystac.Asset]:
+        """Retrieve a filtered list of assets from a given STAC item.
+
+        Args:
+            item: A STAC item object containing assets to be filtered.
+            **open_params: Optional parameters that may include:
+                - asset_names (list[str] or None): If provided, only assets
+                  with keys in this list will be included.
+
+        Returns:
+            A list of STAC asset objects from the item that match the filter criteria.
+            Each returned asset will have extra fields set:
+            - 'id': the asset key within the item
+            - 'id_origin': same as 'id'; this key is needed for the subclass HelperCdse
+            - 'format_id': format identifier extracted from the asset
+
+        Notes:
+            Assets without a recognizable format_id are excluded.
+        """
         asset_names = open_params.get("asset_names")
         assets = []
         for key, asset in item.assets.items():
@@ -70,6 +96,29 @@ class Helper:
         return list(np.unique([params[key]["protocol"] for key in params]))
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
+        """Generate a dictionary of data access parameters for all relevant assets in
+        a STAC item.
+
+        Args:
+            item: The STAC item to process.
+            **open_params: Optional parameters passed to filter or modify asset
+                selection.
+
+        Returns:
+            dict: A mapping from asset IDs to dictionaries containing access
+                parameters, including:
+                - name: Asset ID used internally
+                - name_origin: Original asset ID (may differ in subclasses)
+                - protocol: Protocol derived from the asset's href (e.g. 'https', 's3')
+                - root: Root path or URL for the storage location
+                - fs_path: Filesystem path within the storage
+                - storage_options: Additional storage options (e.g.,
+                    credentials or config)
+                - format_id: Identifier of the asset format
+                - href: The asset's full href URL or path
+                - item: The original pystac.Item the asset belongs to
+        """
+
         assets = self.list_assets_from_item(item, **open_params)
         data_access_params = {}
         for asset in assets:
@@ -88,10 +137,58 @@ class Helper:
             )
         return data_access_params
 
+    def stack_items(
+        self, items: list[pystac.Item], accessor: Accessor, **open_params
+    ) -> xr.Dataset:
+        """Stack multiple STAC items into a single xarray.Dataset.
+
+        This method is intended to be overridden in subclasses, such as HelperCDSE,
+        where the actual stacking logic is implemented for the CDSE STAC catalog.
+
+        Args:
+            items: A list of STAC items objects to be stacked.
+            accessor: An Accessor instance used to access the underlying data.
+            **open_params: Additional opening parameters.
+
+        Raises:
+            NotImplementedError: Always raised in this base implementation.
+
+        Returns:
+            A single stacked dataset combining all input items
+            (in subclass implementations).
+        """
+        raise NotImplementedError("No stacking mode implemented.")
+
 
 class HelperXcube(Helper):
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
+        """Generate a dictionary of data access parameters for selected assets
+        in a STAC item.
+
+        This method filters and processes the assets of the provided STAC item
+        according to specified opening parameters, extracting the necessary
+        connection and format details to enable data access.
+
+        Args:
+            item: The STAC item containing assets to be accessed.
+            **open_params: Optional parameters influencing asset selection
+                and processing:
+                - asset_names (list[str], optional): List of asset keys to include.
+                    If None, default asset selection rules apply.
+                - opener_id (str, optional): Identifier influencing asset
+                    filtering by data type.
+                - data_type (DataTypeLike, optional): Data type used to filter assets.
+
+        Raises:
+            DataStoreError: If mutually exclusive asset names 'analytic' and
+            'analytic_multires' are both selected, which is not supported.
+
+        Returns:
+            A mapping from asset IDs to dictionaries containing data access
+            parameters, including protocol, storage root, file system path,
+            storage options, format ID, the asset href, and the original STAC item.
+        """
         asset_names = open_params.get("asset_names")
         assets = self.list_assets_from_item(item, **open_params)
         opener_id_data_type = open_params.get("opener_id")
@@ -144,33 +241,99 @@ class HelperXcube(Helper):
 
 class HelperCdse(Helper):
 
-    def __init__(self, creodias_vm: bool = False):
+    def __init__(self):
         super().__init__()
-        if creodias_vm:
-            self.s3_accessor = FileSentinel2DataAccessor
-        else:
-            self.s3_accessor = S3Sentinel2DataAccessor
+        self.s3_accessor = S3Sentinel2DataAccessor
 
     def list_assets_from_item(
         self, item: pystac.Item, **open_params
     ) -> list[pystac.Asset]:
+        """Select and return a list of assets from a STAC item based on specified
+        asset names and spatial resolution.
+
+        If no asset names are provided, a default set is used. The method attempts to
+        match asset names exactly; if an exact match is not found, it tries to append
+        a spatial resolution suffix (e.g., "_10m") based on the closest available
+        resolution to the requested spatial resolution.
+
+        Args:
+            item: The STAC item containing the assets to filter.
+            **open_params: Optional parameters to control asset selection:
+                - asset_names (list[str], optional): List of desired asset keys.
+                    Defaults to SENITNEL2_L2A_BANDS.
+                - crs (str or CRS-like, optional): Coordinate reference system of
+                  the query area.
+                - spatial_res (float, optional): Desired spatial resolution in meters
+                  or degrees, depending on the request CRS. Defaults to 10 if not
+                  provided.
+
+        Returns:
+            Filtered list of assets matching the requested names and spatial resolution.
+            Each asset's extra_fields is augmented with:
+                - 'id': the selected asset name (including spatial resolution
+                    suffix if applied).
+                - 'id_origin': the original requested asset name.
+                - 'format_id': the asset's format identifier extracted from the
+                    asset metadata.
+        """
         asset_names = open_params.get("asset_names")
         if not asset_names:
             asset_names = SENITNEL2_L2A_BANDS
+
+        if "crs" in open_params:
+            crs = normalize_crs(open_params["crs"])
+            if crs.is_geographic:
+                spatial_res = open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
+            else:
+                spatial_res = open_params["spatial_res"]
+        else:
+            spatial_res = open_params.get("spatial_res", 10)
+
         assets_sel = []
         for i, asset_name in enumerate(asset_names):
+            asset_name_res = asset_name
             if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                asset_name = (
-                    f"{asset_name}_{SENITNEL2_L2A_BAND_RESOLUTIONS[asset_name]}m"
-                )
-            asset = item.assets[asset_name]
-            asset.extra_fields["id"] = asset_name
+                res_diff = abs(spatial_res - SENTINEL2_BAND_RESOLUTIONS)
+                for spatial_res in SENTINEL2_BAND_RESOLUTIONS[np.argsort(res_diff)]:
+                    asset_name_res = f"{asset_name}_{spatial_res}m"
+                    if asset_name_res in item.assets:
+                        break
+            asset = item.assets[asset_name_res]
+            asset.extra_fields["id"] = asset_name_res
             asset.extra_fields["id_origin"] = asset_names[i]
             asset.extra_fields["format_id"] = get_format_id(asset)
             assets_sel.append(asset)
         return assets_sel
 
     def get_data_access_params(self, item: pystac.Item, **open_params) -> dict:
+        """Extract data access parameters for assets within a given STAC item.
+
+        This method collects relevant information needed to access the asset data,
+        including protocol, storage root, file system path, format identifier, and
+        other metadata. It processes the asset href to determine the protocol and
+        path components. Note that some STAC items may contain hrefs with prefixes
+        like 's3://DIAS/' which are known issues and handled by setting a default root.
+
+        Args:
+            item: The STAC item from which to extract assets and access parameters.
+            **open_params: Additional optional opening parameters that control
+                asset filtering.
+
+        Returns:
+            A dictionary mapping asset IDs to their respective data access
+            parameters. Each value is a dict containing:
+                - 'name' (str): Asset ID.
+                - 'name_origin' (str): Original requested asset name.
+                - 'protocol' (str): Access protocol (e.g., 's3', 'https').
+                - 'root' (str): Storage root or bucket name; here hardcoded as 'eodata'
+                  due to known href issues.
+                - 'fs_path' (str): Path to the data within the storage root.
+                - 'storage_options' (dict): Additional options for storage access,
+                  empty by default.
+                - 'format_id' (str | None): Format identifier extracted from the asset.
+                - 'href' (str): Original asset href.
+                - 'item' (pystac.Item): Reference to the original STAC item.
+        """
         assets = self.list_assets_from_item(item, **open_params)
         data_access_params = {}
         for asset in assets:
@@ -192,3 +355,111 @@ class HelperCdse(Helper):
                 item=item,
             )
         return data_access_params
+
+    def stack_items(
+        self, items: list[pystac.Item], accessor: Accessor, **open_params
+    ) -> xr.Dataset:
+        """Create a stacked xarray Dataset (data cube) from a list of STAC items.
+
+        This method groups STAC items by their solar day, extracts the necessary
+        access parameters, and then applies mosaicking and stacking to produce
+        a spatiotemporal data cube. It also annotates the resulting dataset with
+        metadata about the STAC items used for each time step.
+
+        Args:
+            items: List of STAC items to be stacked and mosaicked.
+            accessor: An accessor object responsible for grouping,
+                mosaicking, and generating the data cube.
+            **open_params: Additional opening parameters controlling data processing
+                passed down to the accessor methods.
+
+        Returns:
+            A dataset representing the stacked data cube.
+        """
+        # get STAC assets grouped by solar day
+        grouped_items = accessor.groupby_solar_day(items)
+
+        # extract access parameters from STAC assets
+        access_params = self._group_assets(grouped_items, **open_params)
+
+        # apply mosaicking and stacking
+        ds = accessor.generate_cube(access_params, **open_params)
+
+        # add attributes
+        # Gather all used STAC item IDs used  in the data cube for each time step
+        # and organize them in a dictionary. The dictionary keys are datetime
+        # strings, and the values are lists of corresponding item IDs.
+        ds.attrs["stac_item_ids"] = dict(
+            {
+                dt.astype("datetime64[ms]")
+                .astype("O")
+                .isoformat(): [
+                    item.id
+                    for item in grouped_items.sel(time=dt).values.ravel()
+                    if item is not None
+                ]
+                for dt in access_params.time.values
+            }
+        )
+
+        return ds
+
+    def _group_assets(self, grouped_items: xr.DataArray, **open_params) -> xr.DataArray:
+        """Organize STAC item assets into a structured array of access parameters.
+
+        This method iterates over an array of STAC items grouped by dimensions such
+        as time, tile_id, and idx. It extracts data access parameters from each
+        item’s assets and organizes them into a new array. The idx dimension is
+        necessary because the Sentinel-2 L2A collection can contain multiple STAC
+        items (observations) for the same tile_id and time.
+
+        Args:
+            grouped_items: An array containing STAC items grouped by spatial and
+                temporal dimensions (e.g., time, tile_id, idx).
+            **open_params: Additional opening parameters passed to
+                `get_data_access_params`, used for asset filtering.
+
+        Returns:
+            A 4-dimensional DataArray indexed by ("tile_id", "asset_name", "time",
+            "idx"), where each element is a dictionary of data access parameters for
+            the corresponding asset.
+        """
+
+        asset_names = open_params.get("asset_names")
+        if not asset_names:
+            item = next(val for val in grouped_items.values.ravel() if val is not None)
+            assets = self.list_assets_from_item(item)
+            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
+
+        access_params = xr.DataArray(
+            np.empty(
+                (
+                    grouped_items.sizes["tile_id"],
+                    len(asset_names),
+                    grouped_items.sizes["time"],
+                    grouped_items.sizes["idx"],
+                ),
+                dtype=object,
+            ),
+            dims=("tile_id", "asset_name", "time", "idx"),
+            coords=dict(
+                tile_id=grouped_items["tile_id"],
+                asset_name=asset_names,
+                time=grouped_items["time"],
+                idx=grouped_items["idx"],
+            ),
+        )
+        for dt in grouped_items.time.values:
+            for tile_id in grouped_items.tile_id.values:
+                for idx in grouped_items.idx.values:
+                    item = grouped_items.sel(time=dt, tile_id=tile_id, idx=idx).item()
+                    if item is None:
+                        continue
+
+                    item_access_params = self.get_data_access_params(
+                        item, **open_params
+                    )
+                    for key, val in item_access_params.items():
+                        access_params.loc[tile_id, val["name_origin"], dt, idx] = val
+
+        return access_params

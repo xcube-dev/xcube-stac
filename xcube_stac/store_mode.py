@@ -18,10 +18,10 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 import json
 from collections.abc import Iterator
 
-import numpy as np
 import pystac
 import pystac_client.client
 import requests
@@ -31,20 +31,6 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataStoreError, DataTypeLike, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 
-from .utils import (
-    convert_datetime2str,
-    get_data_id_from_pystac_object,
-    get_gridmapping,
-    is_valid_ml_data_type,
-    merge_datasets,
-    normalize_grid_mapping,
-    rename_dataset,
-    reproject_bbox,
-    search_collections,
-    search_items,
-    update_dict,
-    wrapper_clip_dataset_by_geometry,
-)
 from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import S3Sentinel2DataAccessor
@@ -56,15 +42,21 @@ from .constants import (
     STAC_OPEN_PARAMETERS_STACK_MODE,
     STAC_SEARCH_PARAMETERS,
     STAC_SEARCH_PARAMETERS_STACK_MODE,
-    TILE_SIZE,
 )
 from .helper import Helper
 from .mldataset.single_item import SingleItemMultiLevelDataset
 from .stac_extension.raster import apply_offset_scaling
-from .stack import (
-    groupby_solar_day,
-    mosaic_spatial_along_time_take_first,
-    mosaic_spatial_take_first,
+from .utils import (
+    convert_datetime2str,
+    get_data_id_from_pystac_object,
+    is_valid_ml_data_type,
+    merge_datasets,
+    normalize_grid_mapping,
+    rename_dataset,
+    reproject_bbox,
+    search_collections,
+    search_items,
+    update_dict,
 )
 
 _HTTPS_STORE = new_data_store("https")
@@ -116,31 +108,52 @@ class SingleStoreMode:
         self._helper = helper
 
     def access_item(self, data_id: str) -> pystac.Item:
-        """Access item for a given data ID.
+        """Retrieves and parses a STAC item associated with the given data ID.
 
         Args:
-            data_id: An identifier of data that is provided by this store.
+            data_id: The identifier of the data item provided by this store.
 
         Returns:
-            item object
+            A `pystac.Item` object representing the STAC item.
 
         Raises:
-            DataStoreError: Error, if the item json cannot be accessed.
+            DataStoreError: If the item cannot be retrieved from the catalog or
+            if the response cannot be parsed into a valid STAC item.
         """
-        response = requests.request(method="GET", url=f"{self._url_mod}{data_id}")
-        if response.ok:
+        url = f"{self._url_mod}{data_id}"
+        try:
+            response = requests.get(url)
+            response.raise_for_status()
+        except requests.RequestException as e:
+            raise DataStoreError(f"Failed to access item at {url}: {e}")
+
+        try:
             return pystac.Item.from_dict(
                 json.loads(response.text),
-                href=f"{self._url_mod}{data_id}",
+                href=url,
                 root=self._catalog,
                 preserve_dict=False,
             )
-        else:
-            raise DataStoreError(response.raise_for_status())
+        except Exception as e:
+            raise DataStoreError(f"Failed to parse item JSON at {url}: {e}")
 
     def get_data_ids(
         self, data_type: DataTypeLike = None
     ) -> Iterator[tuple[str, pystac.Item]]:
+        """Yields tuples of data identifiers and corresponding STAC items from the
+        catalog.
+
+        Iterates over all items in the catalog recursively. If a specific data type
+        is provided, it filters items based on dataset availability.
+
+        Args:
+            data_type: Optional data type to filter items.
+
+        Yields:
+            Tuples of (data_id, pystac.Item) where:
+                - data_id: A string uniquely identifying the data item.
+                - pystac.Item: The corresponding STAC item object.
+        """
         for item in self._catalog.get_items(recursive=True):
             if is_valid_ml_data_type(data_type):
                 if not self._helper.is_mldataset_available(item):
@@ -176,6 +189,22 @@ class SingleStoreMode:
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
+        """Opens a dataset corresponding to the given data identifier corresponding to
+        a single STAC item.
+
+        Args:
+            data_id: The unique identifier for the data to open.
+            opener_id: Optional identifier specifying which data opener to use.
+            data_type: Optional data type to influence how the dataset is opened.
+            **open_params: Additional opening parameters.
+
+        Returns:
+            An xarray.Dataset or MultiLevelDataset constructed from the STAC item.
+
+        Raises:
+            ValidationError: If the open parameters do not conform to the schema.
+            DataStoreError: If the data_id is invalid or the dataset cannot be opened.
+        """
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
         item = self.access_item(data_id)
@@ -218,7 +247,22 @@ class SingleStoreMode:
         data_type: DataTypeLike = None,
         target_gm: GridMapping = None,
         **open_params,
-    ) -> xr.Dataset | list[xr.Dataset] | MultiLevelDataset:
+    ) -> xr.Dataset | MultiLevelDataset:
+        """Builds one dataset from a given STAC item, handling asset opening,
+        normalization, optional scaling, and merging.
+
+        Args:
+            item: The STAC item representing multiple datasets to be opened via
+                their assets.
+            opener_id: Optional identifier specifying which data opener to use.
+            data_type: Optional data type to influence the returned dataset type.
+            target_gm: Optional target GridMapping used for merging or aligning
+                datasets.
+            **open_params: Additional opening parameters.
+
+        Returns:
+            An xarray.Dataset or a MultiLevelDataset constructed from the STAC item.
+        """
         access_params = self._helper.get_data_access_params(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
@@ -253,7 +297,7 @@ class SingleStoreMode:
         else:
             ds = merge_datasets(list_ds_asset, target_gm=target_gm)
             if open_params.get("angles_sentinel2", False):
-                ds = self._s3_accessor.add_sen2_angles(item, ds)
+                ds = self._s3_accessor.add_sen2_angles(item, ds, **open_params)
             ds.attrs = attrs
         return ds
 
@@ -263,7 +307,29 @@ class SingleStoreMode:
         opener_id: str = None,
         data_type: DataTypeLike = None,
         **open_params,
-    ):
+    ) -> xr.Dataset | MultiLevelDataset:
+        """pens a dataset associated with a STAC asset.
+
+        This method determines the appropriate data opener (based on `opener_id`,
+        `data_type`, or asset format) and delegates to either an HTTPS or S3 accessor
+        to open the dataset.
+
+        Args:
+            params: A dictionary containing access parameters for the asset. Expected
+                to include keys like 'protocol', 'href', 'format_id', and 'name'.
+            opener_id: Optional identifier for a specific data opener.
+            data_type: Optional data type, used to determine the return type of
+                the dataset.
+            **open_params: Additional opening parameters passed to the underlying
+                data opener.
+
+        Returns:
+            A dataset or a multi-level dataset.
+
+        Raises:
+            DataStoreError: If the protocol is not supported or an error occurs
+            during dataset opening.
+        """
         if opener_id is not None:
             key = ":".join(opener_id.split(":")[:2])
         elif data_type is not None:
@@ -295,10 +361,6 @@ class SingleStoreMode:
                 f"{params['protocol']!r}. The asset {params['name']!r} has a href "
                 f"{params['href']!r}."
             )
-
-        # clip dataset by bounding box
-        if isinstance(ds_asset, xr.Dataset):
-            ds_asset = wrapper_clip_dataset_by_geometry(ds_asset, **open_params)
 
         return ds_asset
 
@@ -370,6 +432,25 @@ class SingleStoreMode:
         data_id: str = None,
         opener_id: str = None,
     ) -> dict:
+        """Retrieves applicable open parameters for data openers based on the given
+        `opener_id` and/or `data_id`.
+
+        The method returns a dictionary of data opener parameters relevant to a
+        specific data type and format id. It prioritizes parameters for a specific
+        opener if `opener_id` is provided, then attempts to match format IDs from the
+        STAC item if `data_id` is provided. If neither match is found, it returns
+        all known open parameters.
+
+        Args:
+            data_id: Optional identifier for a STAC item whose format(s) will be used
+                to look up applicable open parameters.
+            opener_id: Optional opener ID used to directly look up specific parameters.
+
+        Returns:
+            A dictionary of open parameters filtered according to `opener_id` and/or
+            the formats present in the STAC item referenced by `data_id`.
+
+        """
         properties = {}
         if opener_id is not None:
             key = ":".join(opener_id.split(":")[:2])
@@ -386,7 +467,10 @@ class SingleStoreMode:
 
 
 class StackStoreMode(SingleStoreMode):
-    """Implementations to access stacked STAC items within one collection"""
+    """Provides functionality to access and combine stacked STAC items within a single
+    collection. Multiple items are harmonized into a single dataset using mosaicking
+    and stacking techniques.
+    """
 
     def access_collection(self, data_id: str) -> pystac.Collection:
         """Access collection for a given data ID.
@@ -423,6 +507,15 @@ class StackStoreMode(SingleStoreMode):
     def get_data_ids(
         self, data_type: DataTypeLike = None
     ) -> Iterator[tuple[str, pystac.Collection]]:
+        """Yields data identifiers and their corresponding STAC collections.
+
+        Args:
+            data_type: Optional data type used to filter collections.
+
+        Yields:
+            Tuples containing the data ID (collection ID) and the corresponding STAC
+            Collection object.
+        """
         for collection in self._catalog.get_collections():
             if is_valid_ml_data_type(data_type):
                 item = next(collection.get_items())
@@ -458,6 +551,38 @@ class StackStoreMode(SingleStoreMode):
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset | None:
+        """Open and return a dataset by searching, and harmonizing multiple STAC items
+        from a specified collection.
+
+        This method searches for STAC items in the given collection filtered by
+        bounding box, time range, and query. The resulting items are then mosaicked and
+        stacked into a single 3D dataset.
+
+        Args:
+            data_id (str): Identifier of the data collection.
+            opener_id (str, optional): Identifier for the data opener to use.
+                Defaults to None.
+            data_type (DataTypeLike, optional): Data type hint influencing dataset handling.
+                Defaults to None. "mldataset" is not implemented yet and raises a
+                NotImplementedError.
+            **open_params: Additional parameters for opening data. Must include at least:
+                - bbox: bounding box coordinates in the specified CRS,
+                - crs: coordinate reference system of the bbox,
+                - time_range: temporal range filter,
+                - query: optional additional query parameters.
+
+        Returns:
+            xr.Dataset or None: The combined dataset from matched STAC items,
+            or None if no items were found.
+
+        Raises:
+            NotImplementedError: If `data_type` indicates a multilevel dataset (mldataset),
+                                 which is not supported in stacking mode.
+
+        Notes:
+            - Bounding boxes of Sentinel-2 tiles crossing the antimeridian in the CDSE
+              catalog are filtered out to exclude known catalog bugs.
+        """
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
 
@@ -476,10 +601,14 @@ class StackStoreMode(SingleStoreMode):
             )
         )
 
-        # delete items with wrong bbox in CDSE sentinel-2-l2a;
-        # catalog's bug has been reported.
+        # Remove items with incorrect bounding boxes in the CDSE Sentinel-2 L2A catalog.
+        # This issue primarily affects tiles that cross the antimeridian and has been
+        # reported as a catalog bug. A single Sentinel-2 tile spans approximately
+        # 110 km in width. Near the poles (up to 83°N), this corresponds to a bounding
+        # box width of about 8°. To account for inaccuracies, we use a conservative
+        # threshold of 20° to detect and exclude faulty items.
         if CDSE_STAC_URL in self._url_mod and data_id == "sentinel-2-l2a":
-            items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 2]
+            items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 20]
 
         if len(items) == 0:
             LOG.warn(
@@ -490,146 +619,19 @@ class StackStoreMode(SingleStoreMode):
             )
             return None
 
-        # group items by date
-        grouped_items = groupby_solar_day(items)
-
         if opener_id is None:
             opener_id = ""
         if is_valid_ml_data_type(data_type) or opener_id.split(":")[0] == "mldataset":
             raise NotImplementedError("mldataset not supported in stacking mode")
         else:
-            ds = self.stack_items(grouped_items, **open_params)
-            if open_params.get("angles_sentinel2", False):
-                ds = self._s3_accessor.add_sen2_angles_stack(grouped_items, ds)
+            item_params = self._helper.get_data_access_params(
+                items[0], opener_id=opener_id, data_type=data_type, **open_params
+            )
+            asset_params = next(iter(item_params.values()))
+            accessor = self._get_s3_accessor(asset_params)
+            ds = self._helper.stack_items(items, accessor, **open_params)
             ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-            # Gather all used STAC item IDs used  in the data cube for each time step
-            # and organize them in a dictionary. The dictionary keys are datetime
-            # strings, and the values are lists of corresponding item IDs.
-            ds.attrs["stac_item_ids"] = dict(
-                {
-                    dt.astype("datetime64[ms]")
-                    .astype("O")
-                    .isoformat(): [
-                        item.id
-                        for item in grouped_items.sel(time=dt).values.flatten()
-                        if item is not None
-                    ]
-                    for dt in grouped_items.time.values
-                }
-            )
         return ds
-
-    def stack_items(
-        self,
-        grouped_items: xr.DataArray,
-        opener_id: str = None,
-        data_type: DataTypeLike = None,
-        **open_params,
-    ) -> xr.Dataset:
-        target_gm = get_gridmapping(
-            open_params["bbox"],
-            open_params["spatial_res"],
-            open_params["crs"],
-            open_params.get("tile_size", TILE_SIZE),
-        )
-
-        asset_names = open_params.get("asset_names")
-        if not asset_names:
-            first_item = next(
-                value
-                for value in grouped_items.isel(time=0, idx=0).values
-                if value is not None
-            )
-            assets = self._helper.list_assets_from_item(first_item)
-            asset_names = [asset.extra_fields["id_origin"] for asset in assets]
-
-        access_params = xr.DataArray(
-            np.empty(
-                (
-                    grouped_items.sizes["tile_id"],
-                    len(asset_names),
-                    grouped_items.sizes["time"],
-                    grouped_items.sizes["idx"],
-                ),
-                dtype=object,
-            ),
-            dims=("tile_id", "asset_name", "time", "idx"),
-            coords=dict(
-                tile_id=grouped_items["tile_id"],
-                asset_name=asset_names,
-                time=grouped_items["time"],
-                idx=grouped_items["idx"],
-            ),
-        )
-        for dt in grouped_items.time.values:
-            for tile_id in grouped_items.tile_id.values:
-                for idx in grouped_items.idx.values:
-                    item = grouped_items.sel(time=dt, tile_id=tile_id, idx=idx).item()
-                    if item is None:
-                        continue
-                    item_access_params = self._helper.get_data_access_params(
-                        item,
-                        opener_id=opener_id,
-                        data_type=data_type,
-                        **open_params,
-                    )
-                    for key, val in item_access_params.items():
-                        access_params.loc[tile_id, val["name_origin"], dt, idx] = val
-
-        list_ds_tiles = []
-        for tile_id in access_params.tile_id.values:
-            list_ds_assets = []
-            for asset_name in access_params.asset_name.values:
-                list_ds_time = []
-                idx_remove_dt = []
-                for dt_idx, dt in enumerate(access_params.time.values):
-                    list_ds_idx = []
-                    for idx in access_params.idx.values:
-                        params = access_params.sel(
-                            tile_id=tile_id, asset_name=asset_name, time=dt, idx=idx
-                        ).item()
-                        if not params:
-                            continue
-                        try:
-                            ds = self.open_asset_dataset(
-                                params,
-                                opener_id,
-                                data_type,
-                                **open_params,
-                            )
-                        except Exception as e:
-                            LOG.error(
-                                f"An error occurred: {e}. Data could not be opened "
-                                f"with parameters {params}"
-                            )
-                            continue
-                        ds = rename_dataset(ds, params["name_origin"])
-                        if open_params.get("apply_scaling", False):
-                            ds[params["name_origin"]] = apply_offset_scaling(
-                                ds[params["name_origin"]],
-                                params["item"],
-                                params["name"],
-                            )
-                        list_ds_idx.append(ds)
-                    if not list_ds_idx:
-                        idx_remove_dt.append(dt_idx)
-                        continue
-                    else:
-                        ds = mosaic_spatial_take_first(list_ds_idx)
-                        list_ds_time.append(ds)
-                ds = xr.concat(list_ds_time, dim="time", join="exact")
-                np_datetimes_sel = [
-                    value
-                    for idx, value in enumerate(access_params.time.values)
-                    if idx not in idx_remove_dt
-                ]
-                ds = ds.assign_coords(coords=dict(time=np_datetimes_sel))
-                list_ds_assets.append(ds)
-            ds = merge_datasets(list_ds_assets, target_gm=target_gm)
-            ds = normalize_grid_mapping(ds)
-            list_ds_tiles.append(ds)
-        ds_final = mosaic_spatial_along_time_take_first(list_ds_tiles)
-        return ds_final
 
     def get_extent(self, data_id: str) -> dict:
         collection = self.access_collection(data_id)
@@ -644,7 +646,7 @@ class StackStoreMode(SingleStoreMode):
             time_range=temp_extent_str,
         )
 
-    def search_data(self, **search_params) -> Iterator[pystac.Item]:
+    def search_data(self, **search_params) -> Iterator[pystac.Collection]:
         schema = self.get_search_params_schema()
         schema.validate_instance(search_params)
         return search_collections(self._catalog, **search_params)

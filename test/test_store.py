@@ -36,13 +36,13 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac.utils import reproject_bbox
 from xcube_stac.accessor.https import HttpsDataAccessor
 from xcube_stac.accessor.s3 import S3DataAccessor
 from xcube_stac.accessor.sen2 import SENITNEL2_L2A_BANDS
 from xcube_stac.constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
+from xcube_stac.utils import reproject_bbox
 
-from .sampledata import sentinel_2_band_data
+from .sampledata import sentinel_2_band_data_10m, sentinel_2_band_data_60m
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -292,7 +292,10 @@ class StacDataStoreTest(unittest.TestCase):
         with self.assertRaises(DataStoreError) as cm:
             store.get_data_opener_ids(data_id="wrong_data_id")
         self.assertEqual(
-            "Data resource 'wrong_data_id' is not available.",
+            "Failed to access item at https://raw.githubusercontent.com/"
+            "stac-extensions/label/main/examples/multidataset/wrong_data_id: "
+            "404 Client Error: Not Found for url: https://raw.githubusercontent.com/"
+            "stac-extensions/label/main/examples/multidataset/wrong_data_id",
             f"{cm.exception}",
         )
         with self.assertRaises(DataStoreError) as cm:
@@ -366,6 +369,7 @@ class StacDataStoreTest(unittest.TestCase):
                 "decode_coords",
                 "drop_variables",
                 "consolidated",
+                "engine",
             ],
             schema.properties["data_opener_open_params"]
             .properties["dataset:zarr"]
@@ -598,7 +602,6 @@ class StacDataStoreTest(unittest.TestCase):
                 "dataset:zarr": dict(chunks={"time": 5, "lat": 128, "lon": 128})
             },
         )
-        print(ds)
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
             [
@@ -667,7 +670,7 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen2(self, mock_rioxarray_open):
-        mock_rioxarray_open.return_value = sentinel_2_band_data()
+        mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
 
         store = new_data_store(
             DATA_STORE_ID_CDSE,
@@ -707,18 +710,17 @@ class StacDataStoreTest(unittest.TestCase):
         mlds = store.open_data(
             data_id=data_id,
             data_type="mldataset",
-            asset_names=["B01", "B02", "B03"],
             apply_scaling=True,
             angles_sentinel2=True,
         )
         ds = mlds.get_dataset(0)
         self.assertIsInstance(mlds, MultiLevelDataset)
         self.assertCountEqual(
-            ["B01", "B02", "B03", "solar_angle", "viewing_angle"],
+            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 23, 23, 2, 3],
+            [10980, 10980, 23, 23, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
@@ -729,68 +731,19 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
-    @pytest.mark.vcr()
-    @patch("rioxarray.open_rasterio")
-    def test_open_data_cdse_sen2_creodias_vm(self, mock_rioxarray_open):
-        mock_rioxarray_open.return_value = sentinel_2_band_data()
-
-        store = new_data_store(DATA_STORE_ID_CDSE, creodias_vm=True)
-
-        data_id = (
-            "collections/sentinel-2-l2a/items/S2A_MSIL2A_20200301T090901"
-            "_N0500_R050_T35UPU_20230630T033416"
-        )
-
-        # open data as dataset
-        ds = store.open_data(
-            data_id=data_id,
-            asset_names=["B02", "B03", "B04"],
-            apply_scaling=True,
-        )
-        self.assertEqual(3, mock_rioxarray_open.call_count)
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["B02", "B03", "B04"], list(ds.data_vars))
-        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
-
-        # open data as multi-level dataset
-        mlds = store.open_data(
-            data_id=data_id,
-            data_type="mldataset",
-            asset_names=["B02", "B03", "B04"],
-            apply_scaling=True,
-        )
-        ds = mlds.get_dataset(0)
-        self.assertEqual(6, mock_rioxarray_open.call_count)
-        self.assertIsInstance(mlds, MultiLevelDataset)
-        self.assertCountEqual(["B02", "B03", "B04"], list(ds.data_vars))
-        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
-
-    @pytest.mark.vcr()
     def test_open_data_stack_mode(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable, stack_mode=True)
-
-        # open data as dataset
-        bbox_utm = [5599905, 3511735, 5600064, 3511894]
-        ds = store.open_data(
-            data_id="sentinel-2-l2a",
-            bbox=bbox_utm,
-            time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=10,
-            crs="EPSG:3035",
-            asset_names=["red", "green", "blue"],
-            apply_scaling=True,
-            data_opener_open_params={"dataset:geotiff": dict(tile_size=(512, 512))},
-        )
-        self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["red", "green", "blue"], list(ds.data_vars))
-        self.assertCountEqual(
-            [4, 16, 16],
-            [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
-        )
-        self.assertCountEqual(
-            [1, 16, 16],
-            [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
-        )
+        with pytest.raises(NotImplementedError, match="No stacking mode implemented."):
+            bbox_utm = [5599905, 3511735, 5600064, 3511894]
+            _ = store.open_data(
+                data_id="sentinel-2-l2a",
+                bbox=bbox_utm,
+                time_range=["2023-11-01", "2023-11-10"],
+                spatial_res=10,
+                crs="EPSG:3035",
+                asset_names=["red", "green", "blue"],
+                apply_scaling=True,
+            )
 
     @pytest.mark.vcr()
     def test_open_data_stack_mode_no_items_found(self):
@@ -823,8 +776,7 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_stack_mode_cdse_sen2(self, mock_rioxarray_open):
-        mock_rioxarray_open.return_value = sentinel_2_band_data()
-
+        mock_rioxarray_open.return_value = sentinel_2_band_data_60m()
         store = new_data_store(
             DATA_STORE_ID_CDSE,
             key=CDSE_CREDENTIALS["key"],
@@ -833,24 +785,27 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data in UTM crs
-        bbox_utm = [620000, 5800000, 630000, 5810000]
+        bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
+        crs_target = "EPSG:32632"
+        bbox_utm = reproject_bbox(bbox_wgs84, "EPSG:4326", crs_target)
         ds = store.open_data(
             data_id="sentinel-2-l2a",
             bbox=bbox_utm,
-            time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=20,
-            crs="EPSG:32635",
+            time_range=["2020-08-29", "2020-09-03"],
+            spatial_res=60,
+            crs=crs_target,
+            asset_names=["B04"],
             apply_scaling=True,
             angles_sentinel2=True,
         )
         self.assertIsInstance(ds, xr.Dataset)
 
         self.assertCountEqual(
-            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
+            ["B04", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
-        self.assertCountEqual(
-            [4, 501, 501, 3, 3, 2, 12],
+        self.assertEqual(
+            [4, 759, 903, 11, 12, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -861,8 +816,8 @@ class StacDataStoreTest(unittest.TestCase):
                 ds.sizes["band"],
             ],
         )
-        self.assertCountEqual(
-            [1, 501, 501, 3, 3, 2, 12],
+        self.assertEqual(
+            [1, 759, 903, 11, 12, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -875,13 +830,12 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open dataset in WGS84
-        bbox_wgs84 = reproject_bbox(bbox_utm, "EPSG:32635", "EPSG:4326")
         ds = store.open_data(
             data_id="sentinel-2-l2a",
-            asset_names=["B01", "B02", "B03"],
+            asset_names=["B04"],
             bbox=bbox_wgs84,
-            time_range=["2023-11-01", "2023-11-10"],
-            spatial_res=0.00018,
+            time_range=["2020-07-26", "2020-08-01"],
+            spatial_res=0.00054,
             crs="EPSG:4326",
             apply_scaling=True,
             angles_sentinel2=True,
@@ -889,11 +843,11 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
 
         self.assertCountEqual(
-            ["B01", "B02", "B03", "solar_angle", "viewing_angle"],
+            ["B04", "solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
-        self.assertCountEqual(
-            [4, 512, 837, 3, 4, 2, 3],
+        self.assertEqual(
+            [4, 742, 1483, 10, 19, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -904,8 +858,8 @@ class StacDataStoreTest(unittest.TestCase):
                 ds.sizes["band"],
             ],
         )
-        self.assertCountEqual(
-            [1, 512, 837, 3, 4, 2, 3],
+        self.assertEqual(
+            [1, 742, 1483, 10, 19, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -1203,9 +1157,15 @@ class StacDataStoreTest(unittest.TestCase):
     @pytest.mark.vcr()
     def test_access_item_failed(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
-        with self.assertRaises(requests.exceptions.HTTPError) as cm:
+        with self.assertRaises(DataStoreError) as cm:
             store._impl.access_item(self.data_id_nonsearchable.replace("z", "s"))
-        self.assertIn("404 Client Error: Not Found for url", f"{cm.exception}")
+        self.assertIn(
+            "Failed to access item at https://raw.githubusercontent.com/stac-extensions"
+            "/label/main/examples/multidataset/sansibar/sns001.json: 404 Client Error: "
+            "Not Found for url: https://raw.githubusercontent.com/stac-extensions/"
+            "label/main/examples/multidataset/sansibar/sns001.json",
+            f"{cm.exception}",
+        )
 
     @pytest.mark.vcr()
     def test_get_s3_accessor(self):

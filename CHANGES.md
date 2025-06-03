@@ -1,5 +1,13 @@
-## Changes in 0.2.0
+## Changes in 0.3.0 (under development)
 
+* For the xcube-cdse data store, Sentinel-2 pixel data are now first sorted into 
+  common native UTM grids per zone, instead of being reprojected individually to the
+  user defined target grid. After sorting, resampling and reprojection are applied 
+  as needed.
+* xcube’s new, faster `reproject_dataset()` method (https://github.com/xcube-dev/xcube/pull/1152)
+  is used when reprojection to a different CRS is required.
+
+## Changes in 0.2.0
 
 * CDSE Sentinel-2 Viewing Angle Dataset: The dimension of the viewing angle dataset 
   has been updated to `(time, angle, band, angle_y, angle_x)`.  
@@ -14,7 +22,6 @@
   zones were handled inconsistently due to different naming of the CRS variable
   stemming from xcube, depending on whether reprojection or simple resampling was
   applied.
-
 
 
 ## Changes in 0.1.0

@@ -30,6 +30,7 @@ import xarray as xr
 from xcube.core.store import DataStoreError
 
 from xcube_stac.utils import (
+    clip_dataset_by_bbox,
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,
@@ -39,10 +40,10 @@ from xcube_stac.utils import (
     is_collection_in_time_range,
     is_item_in_time_range,
     merge_datasets,
+    mosaic_spatial_take_first,
     normalize_crs,
     reproject_bbox,
     update_dict,
-    wrapper_clip_dataset_by_geometry,
 )
 
 
@@ -406,49 +407,110 @@ class UtilsTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    def test_wrapper_clip_dataset_by_geometry(self):
+    def test_clip_dataset_by_bbox(self):
 
-        # Example data dimensions
         nx, ny = 11, 11
-        x = np.linspace(0, 500000, nx)
-        y = np.linspace(5000000, 6000000, ny)
+        x = np.linspace(0, 10, nx)
+        y = np.linspace(50, 40, ny)
         data = np.arange(nx * ny).reshape((ny, nx))
-
-        # Define dataset with CF-compliant CRS variable
         ds = xr.Dataset(
-            {
-                "temperature": (("y", "x"), data),
-            },
-            coords={
-                "x": ("x", x, {"units": "meters", "long_name": "x coordinate"}),
-                "y": ("y", y, {"units": "meters", "long_name": "y coordinate"}),
-            },
-        )
-        crs_wkt = pyproj.CRS.from_epsg(32601).to_wkt()
-        ds["crs"] = xr.DataArray(
-            data=0,
-            attrs={
-                "grid_mapping_name": "transverse_mercator",
-                "semi_major_axis": 6378137.0,
-                "inverse_flattening": 298.257223563,
-                "latitude_of_projection_origin": 0.0,
-                "longitude_of_central_meridian": -177.0,
-                "scale_factor_at_central_meridian": 0.9996,
-                "false_easting": 500000.0,
-                "false_northing": 0.0,
-                "unit": "meters",
-                "spatial_ref": "EPSG:32601",
-                "crs_wkt": crs_wkt,
-            },
+            dict(temperature=(("y", "x"), data)),
+            coords=dict(x=x, y=y),
         )
 
-        ds_clipped = wrapper_clip_dataset_by_geometry(
-            ds, crs="EPSG:4326", bbox=[179, 50, -179, 52]
+        ds_clipped = clip_dataset_by_bbox(ds, [4.5, 45.5, 6.5, 47.5])
+        self.assertEqual((2, 2), ds_clipped.temperature.shape)
+        np.testing.assert_allclose(ds_clipped.x.values, np.array([5.0, 6.0]))
+        np.testing.assert_allclose(ds_clipped.y.values, np.array([47.0, 46.0]))
+
+        nx, ny = 11, 11
+        x = np.linspace(0, 10, nx)
+        y = np.linspace(40, 50, ny)
+        data = np.arange(nx * ny).reshape((ny, nx))
+        ds = xr.Dataset(
+            dict(temperature=(("y", "x"), data)),
+            coords=dict(x=x, y=y),
         )
-        self.assertEqual((4, 4), ds_clipped.temperature.shape)
-        np.testing.assert_allclose(
-            ds_clipped.x.values, np.array([200000.0, 250000.0, 300000.0, 350000.0])
+
+        ds_clipped = clip_dataset_by_bbox(ds, [4.5, 45.5, 6.5, 47.5])
+        self.assertEqual((2, 2), ds_clipped.temperature.shape)
+        np.testing.assert_allclose(ds_clipped.x.values, np.array([5.0, 6.0]))
+        np.testing.assert_allclose(ds_clipped.y.values, np.array([46.0, 47.0]))
+
+    def test_mosaic_spatial_take_first(self):
+        list_ds = []
+        # first tile
+        data = np.array(
+            [
+                [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                [[10, 11, 12], [13, 14, np.nan], [np.nan, np.nan, np.nan]],
+                [[19, 20, 21], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]],
+            ],
+            dtype=float,
         )
-        np.testing.assert_allclose(
-            ds_clipped.y.values, np.array([5500000.0, 5600000.0, 5700000.0, 5800000.0])
+        dims = ("time", "lat", "lon")
+        coords = {
+            "time": np.array(
+                ["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64"
+            ),
+            "lat": [10.0, 20.0, 30.0],
+            "lon": [100.0, 110.0, 120.0],
+        }
+        da = xr.DataArray(data, dims=dims, coords=coords)
+        list_ds.append(xr.Dataset({"B01": da}))
+        # second tile
+        data = np.array(
+            [
+                [[np.nan, np.nan, np.nan], [np.nan, np.nan, 106], [107, 108, 109]],
+                [[np.nan, np.nan, np.nan], [113, 114, 115], [116, 117, 118]],
+                [[np.nan, np.nan, 120], [121, 122, 123], [124, 125, 126]],
+            ],
+            dtype=float,
         )
+        dims = ("time", "lat", "lon")
+        coords = {
+            "time": np.array(
+                ["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64"
+            ),
+            "lat": [10.0, 20.0, 30.0],
+            "lon": [100.0, 110.0, 120.0],
+        }
+        da = xr.DataArray(data, dims=dims, coords=coords)
+        list_ds.append(xr.Dataset({"B01": da}))
+
+        # test only one tile
+        ds_test = mosaic_spatial_take_first(list_ds[:1])
+        xr.testing.assert_allclose(ds_test, list_ds[0])
+
+        # test two tiles
+        ds_test = mosaic_spatial_take_first(list_ds)
+        data = np.array(
+            [
+                [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
+                [[10, 11, 12], [13, 14, 115], [116, 117, 118]],
+                [[19, 20, 21], [121, 122, 123], [124, 125, 126]],
+            ],
+            dtype=float,
+        )
+        dims = ("time", "lat", "lon")
+        coords = {
+            "time": np.array(
+                ["2025-01-01", "2025-01-02", "2025-01-03"],
+                dtype="datetime64",
+            ),
+            "lat": [10.0, 20.0, 30.0],
+            "lon": [100.0, 110.0, 120.0],
+        }
+        da = xr.DataArray(data, dims=dims, coords=coords)
+        ds_expected = xr.Dataset({"B01": da})
+        xr.testing.assert_allclose(ds_test, ds_expected)
+
+        # test two tiles, where spatial ref is given in spatial_ref coord
+        spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
+        for i, ds in enumerate(list_ds):
+            ds.coords["spatial_ref"] = spatial_ref
+            list_ds[i] = ds
+        ds_expected = xr.Dataset({"B01": da})
+        ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
+        ds_test = mosaic_spatial_take_first(list_ds)
+        xr.testing.assert_allclose(ds_test, ds_expected)
