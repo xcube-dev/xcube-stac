@@ -1,12 +1,26 @@
-name: xcube-stac2
+name: xcube-stac
 channels:
   - conda-forge
 dependencies:
   # Required
   - python >=3.10
   - boto3
+  - dask
   - libgdal-jp2openjpeg
+  - numpy
+  - pandas
+  - pyproj
   - pystac
   - pystac-client
+  - rasterio
+  - requests
+  - rioxarray
+  - xarray
   - xmltodict
-  - xcube >= 1.9
+  - xcube >=1.8.1
+  # for testing
+  - black
+  - flake8
+  - pytest
+  - pytest-cov
+  - pytest-recording
