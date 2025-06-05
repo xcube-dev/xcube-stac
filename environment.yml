@@ -17,7 +17,7 @@ dependencies:
   - rioxarray
   - xarray
   - xmltodict
-  - xcube >=1.8.1
+  - xcube >=1.11.0
   # for testing
   - black
   - flake8
