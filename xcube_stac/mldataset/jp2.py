@@ -60,6 +60,6 @@ class Jp2MultiLevelDataset(LazyMultiLevelDataset):
         return rioxarray.open_rasterio(
             self._file_path,
             overview_level=index - 1 if index > 0 else None,
-            chunks={},
+            chunks=dict(x=256, y=256),
             band_as_variable=True,
         )

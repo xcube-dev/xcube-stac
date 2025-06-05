@@ -1,4 +1,4 @@
-## Changes in 0.3.0 (under development)
+## Changes in 0.3.0
 
 * For the xcube-cdse data store, Sentinel-2 pixel data are now first sorted into 
   common native UTM grids per zone, instead of being reprojected individually to the

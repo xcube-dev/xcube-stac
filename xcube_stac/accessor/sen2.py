@@ -160,7 +160,7 @@ class S3Sentinel2DataAccessor:
                     f"{access_params['protocol']}://{access_params['root']}/"
                     f"{access_params['fs_path']}"
                 ),
-                chunks={},
+                chunks=dict(x=256, y=256),
                 band_as_variable=True,
             )
 
