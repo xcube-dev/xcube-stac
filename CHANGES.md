@@ -1,3 +1,6 @@
+## Changes in 0.3.1 (under development)
+
+
 ## Changes in 0.3.0
 
 * For the xcube-cdse data store, Sentinel-2 pixel data are now first sorted into 
