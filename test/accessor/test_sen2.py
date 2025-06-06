@@ -82,7 +82,7 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
         ds = self.accessor.open_data(access_params)
         mock_rioxarray_open.assert_called_once_with(
             "s3://eodata/test.tif",
-            chunks={},
+            chunks=dict(y=256, x=256),
             band_as_variable=True,
         )
         self.assertTrue("band_1" in ds)
@@ -99,7 +99,7 @@ class TestS3Sentinel2DataAccessor(unittest.TestCase):
         mock_rioxarray_open.assert_called_with(
             "s3://eodata/test.tif",
             overview_level=None,
-            chunks={},
+            chunks=dict(y=256, x=256),
             band_as_variable=True,
         )
         self.assertTrue("band_1" in ds)
