@@ -4,7 +4,7 @@ channels:
 dependencies:
   # Required
   - python >=3.10
-  - boto3
+  - boto3 ==1.37.3
   - dask
   - libgdal-jp2openjpeg
   - numpy
@@ -17,7 +17,7 @@ dependencies:
   - rioxarray
   - xarray
   - xmltodict
-  - xcube >=1.8.1
+  - xcube >=1.11.0
   # for testing
   - black
   - flake8

@@ -91,14 +91,7 @@ DATA_OPENER_IDS = (
 MLDATASET_FORMATS = ["levels", "geotiff", "jp2"]
 
 # parameter schemas
-STAC_STORE_PARAMETERS = dict(
-    url=JsonStringSchema(title="URL to STAC catalog"),
-    stack_mode=JsonBooleanSchema(
-        title="Decide if stacking of STAC items is applied",
-        description="If True, 'odc-stac' is used as a default backend.",
-        default=False,
-    ),
-)
+STAC_STORE_PARAMETERS = dict(url=JsonStringSchema(title="URL to STAC catalog"))
 STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)
 SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,

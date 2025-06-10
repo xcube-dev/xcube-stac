@@ -38,7 +38,7 @@ from xcube.core.store import (
     DataTypeLike,
     MultiLevelDatasetDescriptor,
 )
-from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonObjectSchema, JsonBooleanSchema
 
 from .constants import (
     CDSE_S3_ENDPOINT,
@@ -305,6 +305,13 @@ class StacCdseDataStore(StacDataStore):
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         stac_params = STAC_STORE_PARAMETERS.copy()
         del stac_params["url"]
+        stac_params["stack_mode"] = JsonBooleanSchema(
+            title=(
+                "Decide if stacking of STAC items is applied "
+                "(only available for 'sentinel-2-l2a')"
+            ),
+            default=False,
+        )
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-csde'.",
             properties=stac_params,
