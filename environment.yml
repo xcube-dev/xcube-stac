@@ -4,7 +4,7 @@ channels:
 dependencies:
   # Required
   - python >=3.10
-  - boto3
+  - boto3 ==1.37.3
   - dask
   - libgdal-jp2openjpeg
   - numpy
