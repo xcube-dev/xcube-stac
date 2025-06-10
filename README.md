@@ -160,18 +160,25 @@ The following Jupyter notebooks provide some examples:
 
 The xcube [data store framework](https://xcube.readthedocs.io/en/latest/dataaccess.html#data-store-framework)
 allows to access data in an analysis ready format, following the few lines of
-code below. 
+code below. In the following examples [S3 credentials](#getting-s3-credentials-for-cdse-data-access)
+for CDSE data access is needed
 
 ```python
 from xcube.core.store import new_data_store
 
-store = new_data_store("stac", url="https://earth-search.aws.element84.com/v1")
+credentials = {
+    "key": "xxx",
+    "secret": "xxx",
+}
+
+store = new_data_store("stac-cdse", **credentials)
 ds = store.open_data(
-    "collections/sentinel-2-l2a/items/S2B_32TNT_20200705_0_L2A", data_type="dataset"
+    "collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912"
 )
+ds
 ```
-The data ID `"collections/sentinel-2-l2a/items/S2B_32TNT_20200705_0_L2A"` points to the
-[STAC item's JSON](https://github.com/radiantearth/stac-spec/blob/master/item-spec/item-spec.md)
+The data ID `"collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912"` points to the
+[CDSE STAC item's JSON](https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912)
 and is specified by the segment of the URL that follows the catalog's URL. The optional
 keyword argument `data_type` can be set to `dataset` and `mldataset`, which returns a
 `xr.Dataset` and a [xcube multi-resolution dataset](https://xcube.readthedocs.io/en/latest/mldatasets.html),
@@ -183,19 +190,19 @@ To use the stac-mode, initiate a stac store with the argument `stack_mode=True`.
 ```python
 from xcube.core.store import new_data_store
 
-store = new_data_store(
-    "stac",
-    url="https://earth-search.aws.element84.com/v1",
-    stack_mode=True
-)
+credentials = {
+    "key": "xxx",
+    "secret": "xxx",
+}
+
+store = new_data_store("stac-cdse", **credentials)
 ds = store.open_data(
     data_id="sentinel-2-l2a",
-    bbox=[506700, 5883400, 611416, 5984840],
+    bbox=[9.1, 53.1, 10.7, 54],
     time_range=["2020-07-15", "2020-08-01"],
-    crs="EPSG:32632",
-    spatial_res=20,
-    asset_names=["red", "green", "blue"],
-    apply_scaling=True,
+    spatial_res=10 / 111320, # meter in degree (approx.)
+    crs="EPSG:4326",
+    asset_names=["B02", "B03", "B04", "SCL"],
 )
 ```
 
@@ -203,8 +210,8 @@ In the stacking mode, the data IDs are the collection IDs within the STAC catalo
 get Sentinel-2 L2A data, we assign `data_id` to `"sentinel-2-l2a"` in the above example.
 The bounding box and time range are assigned to define the temporal and spatial extent
 of the data cube. The parameter `crs` and `spatial_res` are required as well and define
-the coordinate reference system (CRS) and the spatial resolution, respectively. Note, that the bounding
-box and spatial resolution needs to be given in the respective CRS.
+the coordinate reference system (CRS) and the spatial resolution, respectively. Note, 
+that the bounding box and spatial resolution needs to be given in the respective CRS.
 
 ## Testing
 
