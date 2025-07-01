@@ -283,17 +283,19 @@ class HelperCdse(Helper):
         if "crs" in open_params:
             crs = normalize_crs(open_params["crs"])
             if crs.is_geographic:
-                spatial_res = open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
+                spatial_res_final = (
+                    open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
+                )
             else:
-                spatial_res = open_params["spatial_res"]
+                spatial_res_final = open_params["spatial_res"]
         else:
-            spatial_res = open_params.get("spatial_res", 10)
+            spatial_res_final = open_params.get("spatial_res", 10)
 
         assets_sel = []
         for i, asset_name in enumerate(asset_names):
             asset_name_res = asset_name
             if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                res_diff = abs(spatial_res - SENTINEL2_BAND_RESOLUTIONS)
+                res_diff = abs(spatial_res_final - SENTINEL2_BAND_RESOLUTIONS)
                 for spatial_res in SENTINEL2_BAND_RESOLUTIONS[np.argsort(res_diff)]:
                     asset_name_res = f"{asset_name}_{spatial_res}m"
                     if asset_name_res in item.assets:
