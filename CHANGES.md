@@ -1,3 +1,5 @@
+## Changes in 0.4.1 (under development)
+
 ## Changes in 0.4.0
 
 * Fixed a bug in `stac-cdse` where assigning the nearest resolution of the spectral 
