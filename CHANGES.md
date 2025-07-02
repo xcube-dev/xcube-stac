@@ -1,3 +1,8 @@
+## Changes in 0.4.0
+
+* Fixed a bug in `stac-cdse` where assigning the nearest resolution of the spectral 
+  band to the requested resolution was not working correctly.
+
 ## Changes in 0.3.0
 
 * For the xcube-cdse data store, Sentinel-2 pixel data are now first sorted into 
