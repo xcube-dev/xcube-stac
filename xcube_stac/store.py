@@ -37,6 +37,7 @@ from xcube.core.store import (
     DataType,
     DataTypeLike,
     MultiLevelDatasetDescriptor,
+    new_data_store,
 )
 from xcube.util.jsonschema import JsonObjectSchema, JsonBooleanSchema
 
@@ -46,10 +47,17 @@ from .constants import (
     DATA_OPENER_IDS,
     MAP_FILE_EXTENSION_FORMAT,
     PROTOCOLS,
-    STAC_STORE_PARAMETERS,
+    SCHEMA_URL,
+    SCHEMA_S3_STORE,
+    SCHEMA_ASSET_NAMES,
+    SCHEMA_TIME_RANGE,
+    SCHEMA_BBOX,
+    SCHEMA_COLLECTIONS,
+    SCHEMA_ADDITIONAL_QUERY,
+    SCHEMA_APPLY_SCALING,
+    SCHEMA_SPATIAL_RES,
+    LOG,
 )
-from .helper import Helper, HelperCdse, HelperXcube
-from .store_mode import SingleStoreMode, StackStoreMode
 from .utils import (
     assert_valid_data_type,
     assert_valid_opener_id,
@@ -59,7 +67,15 @@ from .utils import (
     is_valid_ml_data_type,
     modify_catalog_url,
     update_dict,
+    access_item,
+    is_mldataset_available,
+    list_format_ids,
+    list_protocols,
+    search_items,
 )
+from .accessors.base import BaseStacItemAccessor
+from .accessors.sen2 import Sen2CdseStacItemAccessor
+from modes import StackMode
 
 
 class StacDataStore(DataStore):
@@ -67,16 +83,14 @@ class StacDataStore(DataStore):
 
     Args:
         url: URL to STAC catalog
-        stack_mode: if True, items will be stacked along the time axis;
-            defaults to False.
         storage_options_s3: storage option for 's3' data store
     """
 
-    def __init__(self, url: str, stack_mode: bool = False, **storage_options_s3):
-        self._url = url
-        self._url_mod = modify_catalog_url(url)
-        self._stack_mode = stack_mode
+    def __init__(self, url: str, **storage_options_s3):
+        self._url = modify_catalog_url(url)
         self._storage_options_s3 = storage_options_s3
+        if not hasattr(self, "_accessor"):
+            self._accessor = BaseStacItemAccessor(**storage_options_s3)
 
         # if STAC catalog is not searchable, pystac_client
         # falls back to pystac; to prevent warnings from pystac_client
@@ -89,36 +103,13 @@ class StacDataStore(DataStore):
             self._searchable = False
         self._catalog = catalog
 
-        if not hasattr(self, "_helper"):
-            self._helper = Helper()
-
-        self._protocols = PROTOCOLS
-        self._format_ids = list(np.unique(list(MAP_FILE_EXTENSION_FORMAT.values())))
-
-        if stack_mode is False:
-            self._impl = SingleStoreMode(
-                self._catalog,
-                self._url_mod,
-                self._searchable,
-                self._storage_options_s3,
-                self._helper,
-            )
-        elif stack_mode is True:
-            self._impl = StackStoreMode(
-                self._catalog,
-                self._url_mod,
-                self._searchable,
-                self._storage_options_s3,
-                self._helper,
-            )
-
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac'.",
-            properties=STAC_STORE_PARAMETERS,
+            properties=dict(url=SCHEMA_URL, **SCHEMA_S3_STORE),
             required=["url"],
-            additional_properties=True,
+            additional_properties=False,
         )
 
     @classmethod
@@ -126,8 +117,9 @@ class StacDataStore(DataStore):
         return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
 
     def get_data_types_for_data(self, data_id: str) -> tuple[str, ...]:
-        item = self._impl.access_item(data_id)
-        if self._helper.is_mldataset_available(item):
+        url = f"{self._url}/{data_id}"
+        item = access_item(url, self._catalog)
+        if self._is_mldataset_available(item):
             return DATASET_TYPE.alias, MULTI_LEVEL_DATASET_TYPE.alias
         else:
             return (DATASET_TYPE.alias,)
@@ -138,22 +130,26 @@ class StacDataStore(DataStore):
         include_attrs: Container[str] | bool = False,
     ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
         assert_valid_data_type(data_type)
-        data_ids_obj = self._impl.get_data_ids(data_type=data_type)
-        for data_id, pystac_obj in data_ids_obj:
+        for item in self._catalog.get_items(recursive=True):
+            if is_valid_ml_data_type(data_type):
+                if not self._is_mldataset_available(item):
+                    continue
+            data_id = get_data_id_from_pystac_object(item, catalog_url=self._url)
             if not include_attrs:
                 yield data_id
             else:
-                attrs = get_attrs_from_pystac_object(pystac_obj, include_attrs)
+                attrs = get_attrs_from_pystac_object(item, include_attrs)
                 yield data_id, attrs
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         if is_valid_data_type(data_type):
             try:
-                item = self._impl.access_item(data_id)
+                url = f"{self._url}/{data_id}"
+                item = access_item(url, self._catalog)
             except requests.exceptions.HTTPError:
                 return False
             if is_valid_ml_data_type(data_type):
-                return self._helper.is_mldataset_available(item)
+                return self._is_mldataset_available(item)
             return True
         return False
 
@@ -165,12 +161,13 @@ class StacDataStore(DataStore):
         if data_id is not None:
             if not self.has_data(data_id, data_type=data_type):
                 raise DataStoreError(f"Data resource {data_id!r} is not available.")
-            item = self._impl.access_item(data_id)
-            protocols = self._helper.get_protocols(item)
-            format_ids = self._helper.list_format_ids(item)
+            url = f"{self._url}/{data_id}"
+            item = access_item(url, self._catalog)
+            protocols = list_protocols(item)
+            format_ids = list_format_ids(item)
         else:
-            protocols = self._protocols
-            format_ids = self._format_ids
+            protocols = PROTOCOLS
+            format_ids = list(np.unique(list(MAP_FILE_EXTENSION_FORMAT.values())))
 
         return self._select_opener_id(protocols, format_ids, data_type=data_type)
 
@@ -178,8 +175,26 @@ class StacDataStore(DataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         assert_valid_opener_id(opener_id)
-        return self._impl.get_open_data_params_schema(
-            data_id=data_id, opener_id=opener_id
+        if data_id is not None and opener_id is None:
+            opener_id = self.get_data_opener_ids(data_id=data_id)[0]
+
+        if opener_id is not None:
+            store = new_data_store("https")
+            params_schema = store.get_open_data_params_schema(opener_id=opener_id)
+            params_properties = params_schema.properties
+            params_required = params_schema.required
+        else:
+            params_properties = {}
+            params_required = []
+
+        return JsonObjectSchema(
+            properties=dict(
+                asset_names=SCHEMA_ASSET_NAMES,
+                apply_scaling=SCHEMA_APPLY_SCALING,
+                **params_properties,
+            ),
+            required=[] + params_required,
+            additional_properties=False,
         )
 
     def open_data(
@@ -189,10 +204,17 @@ class StacDataStore(DataStore):
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
+        # check input parameter
         assert_valid_data_type(data_type)
         assert_valid_opener_id(opener_id)
-        return self._impl.open_data(
-            data_id,
+        schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
+        schema.validate_instance(open_params)
+
+        # access item and open with accessor
+        url = f"{self._url}/{data_id}"
+        item = access_item(url, self._catalog)
+        return self._accessor.open_item(
+            item,
             opener_id=opener_id,
             data_type=data_type,
             **open_params,
@@ -202,30 +224,52 @@ class StacDataStore(DataStore):
         self, data_id: str, data_type: DataTypeLike = None
     ) -> DatasetDescriptor | MultiLevelDatasetDescriptor:
         assert_valid_data_type(data_type)
-        metadata = self._impl.get_extent(data_id)
+
+        # get extent from item
+        url = f"{self._url}/{data_id}"
+        item = access_item(url, self._catalog)
+        time_range = (None, None)
+        if "start_datetime" in item.properties and "end_datetime" in item.properties:
+            time_range = (
+                item.properties["start_datetime"],
+                item.properties["end_datetime"],
+            )
+        elif "datetime" in item.properties:
+            time_range = (item.properties["datetime"], None)
 
         if is_valid_ml_data_type(data_type):
             mlds = self.open_data(data_id, data_type="mldataset")
-            return MultiLevelDatasetDescriptor(data_id, mlds.num_levels, **metadata)
+            return MultiLevelDatasetDescriptor(
+                data_id, mlds.num_levels, bbox=item.bbox, time_range=time_range
+            )
         else:
-            return DatasetDescriptor(data_id, **metadata)
+            return DatasetDescriptor(data_id, bbox=item.bbox, time_range=time_range)
 
     def search_data(
         self, data_type: DataTypeLike = None, **search_params
     ) -> Iterator[DatasetDescriptor | MultiLevelDatasetDescriptor]:
         assert_valid_data_type(data_type)
-        pystac_objs = self._impl.search_data(**search_params)
+        schema = self.get_search_params_schema()
+        schema.validate_instance(search_params)
+        items = search_items(self._catalog, self._searchable, **search_params)
 
-        for pystac_obj in pystac_objs:
-            data_id = get_data_id_from_pystac_object(
-                pystac_obj, catalog_url=self._url_mod
-            )
+        for item in items:
+            data_id = get_data_id_from_pystac_object(item, catalog_url=self._url)
             yield self.describe_data(data_id, data_type=data_type)
 
     def get_search_params_schema(
         self, data_type: DataTypeLike = None
     ) -> JsonObjectSchema:
-        return self._impl.get_search_params_schema()
+        return JsonObjectSchema(
+            properties=dict(
+                time_range=SCHEMA_TIME_RANGE,
+                bbox=SCHEMA_BBOX,
+                collections=SCHEMA_COLLECTIONS,
+                query=SCHEMA_ADDITIONAL_QUERY,
+            ),
+            required=[],
+            additional_properties=False,
+        )
 
     @staticmethod
     def _select_opener_id(
@@ -250,70 +294,126 @@ class StacDataStore(DataStore):
                 and opener_id.split(":")[2] in protocols
             )
 
+    @staticmethod
+    def _is_mldataset_available(item: pystac.Item) -> bool:
+        return is_mldataset_available(item)
+
 
 class StacXcubeDataStore(StacDataStore):
-    """STAC implementation of the data store for xcube STAC API.
-
-    Args:
-        stack_mode: if True, items will be stacked along the time axis;
-            defaults to False.
-        storage_options_s3: storage option of the S3 data store;
-    """
-
-    def __init__(
-        self,
-        url: str,
-        stack_mode: bool | str = False,
-        **storage_options_s3,
-    ):
-        self._helper = HelperXcube()
-        super().__init__(url=url, stack_mode=stack_mode, **storage_options_s3)
-        self._protocols = ["s3"]
-        self._format_ids = ["zarr", "levels"]
-
-
-class StacCdseDataStore(StacDataStore):
-    """STAC implementation of the data store for CDSE STAC API.
-
-    Args:
-        stack_mode: if True, items will be stacked along the time axis;
-            defaults to False.
-        storage_options_s3: storage option of the S3 data store; the key and secret
-            are required for data access. see Note.
-
-    Note:
-        Credentials for the authentication can be obtained following the
-        documentation https://documentation.dataspace.copernicus.eu/APIs/S3.html.
-    """
-
-    def __init__(
-        self,
-        stack_mode: bool | str = False,
-        **storage_options_s3,
-    ):
-        storage_options_s3 = update_dict(
-            storage_options_s3,
-            dict(
-                anon=False,
-                client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT),
-            ),
-        )
-        self._helper = HelperCdse()
-        super().__init__(url=CDSE_STAC_URL, stack_mode=stack_mode, **storage_options_s3)
+    """STAC implementation of the data store for xcube STAC API."""
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
-        stac_params = STAC_STORE_PARAMETERS.copy()
-        del stac_params["url"]
-        stac_params["stack_mode"] = JsonBooleanSchema(
-            title=(
-                "Decide if stacking of STAC items is applied "
-                "(only available for 'sentinel-2-l2a')"
-            ),
-            default=False,
-        )
         return JsonObjectSchema(
-            description="Describes the parameters of the xcube data store 'stac-csde'.",
-            properties=stac_params,
+            description="Describes the parameters of the xcube data store 'stac-xcube'.",
+            properties=dict(url=SCHEMA_URL, **SCHEMA_S3_STORE),
+            required=["url"],
             additional_properties=False,
         )
+
+    def get_data_opener_ids(
+        self, data_id: str = None, data_type: DataTypeLike = None
+    ) -> tuple[str, ...]:
+        assert_valid_data_type(data_type)
+        protocols = ["s3"]
+        format_ids = ["zarr", "levels"]
+
+        return self._select_opener_id(protocols, format_ids, data_type=data_type)
+
+    def open_data(
+        self,
+        data_id: str,
+        opener_id: str = None,
+        data_type: DataTypeLike = None,
+        **open_params,
+    ) -> xr.Dataset | MultiLevelDataset:
+        # check input parameter
+        assert_valid_data_type(data_type)
+        assert_valid_opener_id(opener_id)
+        schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
+        schema.validate_instance(open_params)
+
+        # access item and open with accessor
+        url = f"{self._url}/{data_id}"
+        item = access_item(url, self._catalog)
+
+        # decide between levels and zarr
+        asset_names = open_params.pop("asset_names", None)
+        opener_id_data_type = open_params.get("opener_id")
+        if opener_id_data_type is not None:
+            opener_id_data_type = opener_id_data_type.split(":")[0]
+        if asset_names is None:
+            if is_valid_ml_data_type(data_type):
+                asset_names = ["analytic_multires"]
+            elif is_valid_ml_data_type(opener_id_data_type):
+                asset_names = ["analytic_multires"]
+            else:
+                asset_names = ["analytic"]
+        elif "analytic_multires" in asset_names and "analytic" in asset_names:
+            raise DataStoreError(
+                "Xcube server publishes data resources as 'dataset' and "
+                "'mldataset' under the asset names 'analytic' and "
+                "'analytic_multires'. Please select only one asset in "
+                "<asset_names> when opening the data."
+            )
+        return self._accessor.open_item(
+            item,
+            opener_id=opener_id,
+            data_type=data_type,
+            assert_names=asset_names,
+            **open_params,
+        )
+
+    @staticmethod
+    def _is_mldataset_available(item: pystac.Item) -> bool:
+        return True
+
+
+class StacCdseDataStore(StacDataStore):
+    """STAC implementation of the data store for CDSE STAC API."""
+
+    def __init__(self, **storage_options_s3):
+        storage_options_s3 = update_dict(
+            storage_options_s3,
+            dict(anon=False, client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT)),
+        )
+        self._accessor = Sen2CdseStacItemAccessor(**storage_options_s3)
+        super().__init__(url=CDSE_STAC_URL, **storage_options_s3)
+
+    @classmethod
+    def get_data_store_params_schema(cls) -> JsonObjectSchema:
+        return JsonObjectSchema(
+            description="Describes the parameters of the xcube data store 'stac-cdse'.",
+            properties=dict(**SCHEMA_S3_STORE),
+            required=[],
+            additional_properties=False,
+        )
+
+    def get_data_opener_ids(
+        self, data_id: str = None, data_type: DataTypeLike = None
+    ) -> tuple[str, ...]:
+        LOG.info(
+            "In the 'stac-cdse' data store, data openers are specific to each "
+            "Sentinel mission. Returning a generic opener ID."
+        )
+        # We return a generic opener ID here. In this data store, specific data
+        # accessors are delegated based on the data ID to handle different
+        # Sentinel missions transparently.
+        return ("dataset:format:stac-cdse",)
+
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        return JsonObjectSchema(
+            properties=dict(
+                asset_names=SCHEMA_ASSET_NAMES,
+                spatial_res=SCHEMA_SPATIAL_RES,
+                apply_scaling=SCHEMA_APPLY_SCALING,
+            ),
+            required=[],
+            additional_properties=False,
+        )
+
+    @staticmethod
+    def _is_mldataset_available(item: pystac.Item) -> bool:
+        return False

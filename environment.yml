@@ -6,6 +6,7 @@ dependencies:
   - python >=3.10
   - boto3 ==1.37.3
   - dask
+  - h5netcdf
   - libgdal-jp2openjpeg
   - numpy
   - pandas

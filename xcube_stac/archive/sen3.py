@@ -77,19 +77,18 @@ class S3Sentinel3DataAccessor:
             return NotImplementedError(
                 "Multi-level dataset not implemented for Sen3 product stored as netcdf."
             )
-        else:
-            ds = xr.open_dataset(
-                (
-                    f"{access_params['protocol']}://{access_params['root']}/"
-                    f"{access_params['fs_path']}"
-                ),
-                chunks={},
-                engine="h5netcdf",
-                backend_kwargs={"file_obj": {"s3": self._storage_options}},
-            )
-            if open_params.get("rectify_dataset", None):
-                ds = rectify_dataset(ds)
-            return ds
+        ds = xr.open_dataset(
+            (
+                f"{access_params['protocol']}://{access_params['root']}/"
+                f"{access_params['fs_path']}"
+            ),
+            chunks={},
+            engine="h5netcdf",
+            backend_kwargs={"file_obj": {"s3": self._storage_options}},
+        )
+        if open_params.get("rectify_dataset", None):
+            ds = rectify_dataset(ds)
+        return ds
 
     def groupby_solar_day(self, items: list[pystac.Item]) -> xr.DataArray:
         items = add_nominal_datetime(items)

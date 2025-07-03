@@ -32,6 +32,27 @@ _RASTER_STAC_EXTENSION_VERSIONS = {
 }
 
 
+def get_stac_extension(item: pystac.Item) -> str:
+    """Determine the version of the stac extension 'raster'.
+
+    Args:
+        item: stac item object
+
+    Returns:
+        found_version: version of raster stac extension
+
+    Note:
+        reference of raster stac extension: https://github.com/stac-extensions/raster
+
+    """
+    found_version = None
+    for version, extension_url in _RASTER_STAC_EXTENSION_VERSIONS.items():
+        if extension_url in item.stac_extensions:
+            found_version = version.split(".")[0]
+            break
+    return found_version
+
+
 def apply_offset_scaling_stack_mode(
     ds: xr.Dataset, access_params: xr.DataArray
 ) -> xr.Dataset:
@@ -120,100 +141,61 @@ def apply_offset_scaling_stack_mode(
 
 
 def apply_offset_scaling(
-    da: xr.DataArray, item: pystac.Item, asset_name: str, raster_version: str = None
+    ds: xr.Dataset, asset: pystac.Asset, raster_version: str
 ) -> xr.DataArray:
     """This function applies offset and scale to the data and fills no-data pixel
     with np.nan. The digital numbers DN are converted into radiance values by
     L = scale * DN + offset.
 
      Args:
-         da: data arrayif crs_final == crs_data:
-         item: item object
-         asset_name: name/key of asset
+         ds: data arrayif crs_final == crs_data:
+         asset: asset object
          raster_version: version of raster stac extension; on off [v1, v2].
 
      Returns:
-         Data array where offset, scale, and filling nodata values are applied.
+         Dataset where offset, scale, and filling nodata values are applied.
 
     See Also:
         `get_stac_extension` for getting the version of raster stac extension.
     """
-    # do not apply any scaling for Sen2 L2A SCL
-    if "scl" in asset_name.lower():
-        return da
-
-    if not raster_version:
-        raster_version = _get_stac_extension(item)
-        if not raster_version:
-            LOG.warning(
-                f"The item {item.id!r} is not conform to "
-                f"the stac-extension 'raster'. No scaling is applied."
-            )
-            return da
-
     if raster_version == "v1":
-        scale, offset = _get_scaling_v1(item, asset_name)
-        nodata = _get_nodata_v1(item, asset_name)
+        scale, offset = _get_scaling_v1(asset)
+        nodata = _get_nodata_v1(asset)
     elif raster_version == "v2":
-        scale, offset = _get_scaling_v2(item, asset_name)
-        nodata = _get_nodata_v2(item, asset_name)
+        scale, offset = _get_scaling_v2(asset)
+        nodata = _get_nodata_v2(asset)
     else:
         LOG.warning(
             f"Stac extension raster exists only for version 'v1' and 'v2', not "
             f"for {raster_version!r}. No scaling is applied."
         )
-        return da
+        return ds
 
     if nodata is not None:
-        da = da.where(da != nodata)
+        ds = ds.where(ds != nodata)
 
-    da *= scale
-    da += offset
-    return da
-
-
-def _get_stac_extension(item: pystac.Item) -> str:
-    """Determine the version of the stac extension 'raster'.
-
-    Args:
-        item: stac item object
-
-    Returns:
-        found_version: version of raster stac extension
-
-    Note:
-        reference of raster stac extension: https://github.com/stac-extensions/raster
-
-    """
-    found_version = None
-    for version, extension_url in _RASTER_STAC_EXTENSION_VERSIONS.items():
-        if extension_url in item.stac_extensions:
-            found_version = version.split(".")[0]
-            break
-    return found_version
+    ds *= scale
+    ds += offset
+    return ds
 
 
-def _get_scaling_v1(
-    item: pystac.Item, asset_name: str
-) -> tuple[int | float, int | float]:
-    raster_bands = item.assets[asset_name].extra_fields.get("raster:bands")
+def _get_scaling_v1(asset: pystac.Asset) -> tuple[int | float, int | float]:
+    raster_bands = asset.extra_fields.get("raster:bands")
     scale = raster_bands[0].get("scale", 1)
     offset = raster_bands[0].get("offset", 0)
     return scale, offset
 
 
-def _get_nodata_v1(item: pystac.Item, asset_name: str) -> None | int | float:
-    raster_bands = item.assets[asset_name].extra_fields.get("raster:bands")
+def _get_nodata_v1(asset: pystac.Asset) -> None | int | float:
+    raster_bands = asset.extra_fields.get("raster:bands")
     return raster_bands[0].get("nodata", None)
 
 
-def _get_scaling_v2(
-    item: pystac.Item, asset_name: str
-) -> tuple[int | float, int | float]:
-    scale = item.assets[asset_name].extra_fields.get("raster:scale", 1)
-    offset = item.assets[asset_name].extra_fields.get("raster:offset", 0)
+def _get_scaling_v2(asset: pystac.Asset) -> tuple[int | float, int | float]:
+    scale = asset.extra_fields.get("raster:scale", 1)
+    offset = asset.extra_fields.get("raster:offset", 0)
     return scale, offset
 
 
-def _get_nodata_v2(item: pystac.Item, asset_name: str) -> None | int | float:
-    return item.assets[asset_name].extra_fields.get("nodata", None)
+def _get_nodata_v2(asset: pystac.Asset) -> None | int | float:
+    return asset.extra_fields.get("nodata", None)

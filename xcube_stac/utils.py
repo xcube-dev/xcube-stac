@@ -25,7 +25,8 @@ import datetime
 import itertools
 import os
 from collections.abc import Container, Iterator
-from typing import Any
+from typing import Any, Sequence
+import json
 
 import dask.array as da
 import numpy as np
@@ -33,6 +34,7 @@ import pandas as pd
 import pyproj
 import pystac
 import pystac_client
+import requests
 import xarray as xr
 from shapely.geometry import box
 from xcube.core.gridmapping import GridMapping
@@ -51,7 +53,9 @@ from .constants import (
     MAP_MIME_TYP_FORMAT,
     TILE_SIZE,
     FloatInt,
+    MLDATASET_FORMATS,
 )
+from _href_parse import decode_href
 
 _CATALOG_JSON = "catalog.json"
 
@@ -86,7 +90,7 @@ def search_nonsearchable_catalog(
             a flat STAC catalog hierarchy is assumed, consisting only of items.
 
     Yields:
-        An iterator over the items matching the **open_params.
+        An iterator over the items matching the **search_params.
     """
 
     if pystac_object.extra_fields[
@@ -130,7 +134,7 @@ def search_collections(
         catalog: pystac catalog object
 
     Yields:
-        An iterator over the items matching the **open_params.
+        An iterator over the items matching the **search_params.
     """
 
     for collection in catalog.get_collections():
@@ -149,9 +153,8 @@ def search_collections(
 
 
 def get_format_id(asset: pystac.Asset) -> str:
-    if asset.media_type is None:
-        format_id = get_format_from_path(asset.href)
-    else:
+    format_id = get_format_from_path(asset.href)
+    if format_id is None:
         format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
     return format_id
 
@@ -176,6 +179,7 @@ def get_attrs_from_pystac_object(
     attrs = {}
     supported_keys = [
         "id",
+        "type",
         "title",
         "description",
         "keywords",
@@ -186,6 +190,9 @@ def get_attrs_from_pystac_object(
         "properties",
         "links",
         "assets",
+        "stac_version",
+        "stac_extensions",
+        "collection",
     ]
     for key in supported_keys:
         if hasattr(pystac_obj, key) and (include_attrs is True or key in include_attrs):
@@ -298,15 +305,15 @@ def do_bboxes_intersect(
     return box(*bbox_test).intersects(box(*open_params["bbox"]))
 
 
-def _list_assets_from_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
-    asset_names = open_params.get("asset_names")
+def list_assets_from_item(
+    item: pystac.Item, asset_names: Sequence[str] = None
+) -> list[pystac.Asset]:
     assets = []
     for key, asset in item.assets.items():
         format_id = get_format_id(asset)
         if (asset_names is None or key in asset_names) and format_id is not None:
-            asset.extra_fields["id"] = key
-            asset.extra_fields["id_origin"] = key
-            asset.extra_fields["format_id"] = format_id
+            asset.extra_fields["xcube:asset_id"] = key
+            asset.extra_fields["xcube:format_id"] = format_id
             assets.append(asset)
     return assets
 
@@ -523,25 +530,73 @@ def get_data_id_from_pystac_object(
         data ID consisting the URL section of an item
         following the catalog URL.
     """
-    return get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
+    return get_url_from_pystac_object(pystac_obj).replace(f"{catalog_url}/", "")
 
 
 def modify_catalog_url(url: str) -> str:
-    """Normalizes a STAC catalog URL by removing a trailing 'catalog.json' (if present)
-    and ensuring it ends with a forward slash.
+    """Normalizes a STAC catalog URL by removing a trailing 'catalog.json' if present.
 
     Args:
         url: The original STAC catalog URL.
 
     Returns:
-        A normalized URL string without 'catalog.json' and with a trailing slash.
+        A normalized URL string without 'catalog.json'.
     """
-    url_mod = url
-    if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
-        url_mod = url_mod[:-12]
-    if url_mod[-1] != "/":
-        url_mod += "/"
-    return url_mod
+    if url.endswith(_CATALOG_JSON):
+        url = url.replace(_CATALOG_JSON, "")
+    return url
+
+
+def access_item(url: str, catalog: pystac.Catalog) -> pystac.Item:
+    """Retrieves and parses a STAC item associated with the given data ID.
+
+    Args:
+        url: url to STAC item
+        catalog: pystac catalog object
+
+    Returns:
+        A `pystac.Item` object representing the STAC item.
+
+    Raises:
+        DataStoreError: If the item cannot be retrieved from the catalog or
+        if the response cannot be parsed into a valid STAC item.
+    """
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        raise DataStoreError(f"Failed to access item at {url}: {e}")
+
+    try:
+        return pystac.Item.from_dict(
+            json.loads(response.text),
+            href=url,
+            root=catalog,
+            preserve_dict=False,
+        )
+    except Exception as e:
+        raise DataStoreError(f"Failed to parse item JSON at {url}: {e}")
+
+
+def is_mldataset_available(
+    item: pystac.Item, asset_names: Sequence[int] = None
+) -> bool:
+    format_ids = list_format_ids(item, asset_names=asset_names)
+    return all(format_id in MLDATASET_FORMATS for format_id in format_ids)
+
+
+def list_format_ids(item: pystac.Item, asset_names: Sequence[str] = None) -> list[str]:
+    assets = list_assets_from_item(item, asset_names=asset_names)
+    return list(np.unique([asset.extra_fields["xcube:format_id"] for asset in assets]))
+
+
+def list_protocols(item: pystac.Item, asset_names: Sequence[str] = None) -> list[str]:
+    assets = list_assets_from_item(item, asset_names=asset_names)
+    protocols = []
+    for asset in assets:
+        protocol, _, _, _ = decode_href(asset.href)
+        protocols.append(protocol)
+    return list(np.unique(protocols))
 
 
 def reproject_bbox(

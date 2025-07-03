@@ -59,7 +59,6 @@ MAP_MIME_TYP_FORMAT = {
     "application/vnd+zarr": "zarr",
     "application/zarr": "zarr",
     "image/tiff": "geotiff",
-    "image/jp2": "jp2",
 }
 MAP_FILE_EXTENSION_FORMAT = {
     ".nc": "netcdf",
@@ -68,31 +67,31 @@ MAP_FILE_EXTENSION_FORMAT = {
     ".tiff": "geotiff",
     ".geotiff": "geotiff",
     ".levels": "levels",
-    ".jp2": "jp2",
 }
 DATA_OPENER_IDS = (
     "dataset:netcdf:https",
     "dataset:zarr:https",
-    "dataset:jp2:https",
-    "mldataset:jp2:https",
     "dataset:geotiff:https",
     "mldataset:geotiff:https",
     "dataset:levels:https",
     "mldataset:levels:https",
     "dataset:netcdf:s3",
     "dataset:zarr:s3",
-    "dataset:jp2:s3",
-    "mldataset:jp2:s3",
     "dataset:geotiff:s3",
     "mldataset:geotiff:s3",
     "dataset:levels:s3",
     "mldataset:levels:s3",
+    "dataset:format:stac-cdse",
 )
-MLDATASET_FORMATS = ["levels", "geotiff", "jp2"]
+MLDATASET_FORMATS = ["levels", "geotiff"]
 
 # parameter schemas
-STAC_STORE_PARAMETERS = dict(url=JsonStringSchema(title="URL to STAC catalog"))
-STAC_STORE_PARAMETERS.update(S3FsAccessor.get_storage_options_schema().properties)
+SCHEMA_URL = JsonStringSchema(title="URL to STAC catalog")
+SCHEMA_S3_STORE = S3FsAccessor.get_storage_options_schema().properties
+SCHEMA_STACK_MODE = JsonBooleanSchema(
+    title="Decide if stacking of STAC items is applied.",
+    default=False,
+)
 SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,
     title="Additional query options used during item search of STAC API.",
@@ -145,7 +144,7 @@ SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
     default=False,
 )
 SCHEMA_APPLY_SCALING = JsonBooleanSchema(
-    title="Apply scaling, offset, and no-data values to data."
+    title="Apply scaling, offset, and no-data values to data.", default=False
 )
 SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
 SCHEMA_CRS = JsonStringSchema(title="Coordinate reference system", default="EPSG:4326")
@@ -159,6 +158,8 @@ SCHEMA_TILE_SIZE = JsonArraySchema(
     items=[JsonIntegerSchema(minimum=1), JsonIntegerSchema(minimum=1)],
     default=(1024, 1024),
 )
+
+
 STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
     time_range=SCHEMA_TIME_RANGE,
     bbox=SCHEMA_BBOX,

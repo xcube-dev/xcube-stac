@@ -20,6 +20,7 @@ requires-python = ">=3.10"
 dependencies = [
     "boto3==1.37.3",
     "dask",
+    "h5netcdf",
     "libgdal-jp2openjpeg",
     "numpy",
     "pandas",

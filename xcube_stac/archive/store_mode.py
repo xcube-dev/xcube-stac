@@ -110,36 +110,6 @@ class SingleStoreMode:
         self._s3_accessor: _S3_Accessor | None = None
         self._helper = helper
 
-    def access_item(self, data_id: str) -> pystac.Item:
-        """Retrieves and parses a STAC item associated with the given data ID.
-
-        Args:
-            data_id: The identifier of the data item provided by this store.
-
-        Returns:
-            A `pystac.Item` object representing the STAC item.
-
-        Raises:
-            DataStoreError: If the item cannot be retrieved from the catalog or
-            if the response cannot be parsed into a valid STAC item.
-        """
-        url = f"{self._url_mod}{data_id}"
-        try:
-            response = requests.get(url)
-            response.raise_for_status()
-        except requests.RequestException as e:
-            raise DataStoreError(f"Failed to access item at {url}: {e}")
-
-        try:
-            return pystac.Item.from_dict(
-                json.loads(response.text),
-                href=url,
-                root=self._catalog,
-                preserve_dict=False,
-            )
-        except Exception as e:
-            raise DataStoreError(f"Failed to parse item JSON at {url}: {e}")
-
     def get_data_ids(
         self, data_type: DataTypeLike = None
     ) -> Iterator[tuple[str, pystac.Item]]:
