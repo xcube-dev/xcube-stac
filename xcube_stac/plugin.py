@@ -22,7 +22,12 @@
 from xcube.constants import EXTENSION_POINT_DATA_STORES
 from xcube.util import extension
 
-from .constants import DATA_STORE_ID, DATA_STORE_ID_CDSE, DATA_STORE_ID_XCUBE
+from .constants import (
+    DATA_STORE_ID,
+    DATA_STORE_ID_CDSE,
+    DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_XCUBE,
+)
 
 
 def init_plugin(ext_registry: extension.ExtensionRegistry):
@@ -31,7 +36,7 @@ def init_plugin(ext_registry: extension.ExtensionRegistry):
         loader=extension.import_component("xcube_stac.store:StacDataStore"),
         point=EXTENSION_POINT_DATA_STORES,
         name=DATA_STORE_ID,
-        description="STAC DataStore",
+        description="'stac' data store",
     )
 
     # xcube DataStore extensions for CDSE STAC API
@@ -39,7 +44,15 @@ def init_plugin(ext_registry: extension.ExtensionRegistry):
         loader=extension.import_component("xcube_stac.store:StacCdseDataStore"),
         point=EXTENSION_POINT_DATA_STORES,
         name=DATA_STORE_ID_CDSE,
-        description="STAC-CDSE DataStore",
+        description="'stac-cdse' data store",
+    )
+
+    # xcube DataStore extensions for CDSE STAC API ARDC (analysis-ready data cubes)
+    ext_registry.add_extension(
+        loader=extension.import_component("xcube_stac.store:ArdcStacCdseDataStore"),
+        point=EXTENSION_POINT_DATA_STORES,
+        name=DATA_STORE_ID_CDSE_ARDC,
+        description="'stac-cdse-ardc' data store",
     )
 
     # xcube DataStore extensions for xcube STAC API
@@ -47,5 +60,5 @@ def init_plugin(ext_registry: extension.ExtensionRegistry):
         loader=extension.import_component("xcube_stac.store:StacXcubeDataStore"),
         point=EXTENSION_POINT_DATA_STORES,
         name=DATA_STORE_ID_XCUBE,
-        description="STAC-XCUBE DataStore",
+        description="'stac-xcube' data store",
     )

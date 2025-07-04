@@ -23,10 +23,10 @@ import collections
 import copy
 import datetime
 import itertools
+import json
 import os
 from collections.abc import Container, Iterator
 from typing import Any, Sequence
-import json
 
 import dask.array as da
 import numpy as np
@@ -41,7 +41,6 @@ from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
 from xcube.core.resampling import affine_transform_dataset
 from xcube.core.store import (
-    DATASET_TYPE,
     MULTI_LEVEL_DATASET_TYPE,
     DataStoreError,
     DataTypeLike,
@@ -51,11 +50,11 @@ from .constants import (
     DATA_OPENER_IDS,
     MAP_FILE_EXTENSION_FORMAT,
     MAP_MIME_TYP_FORMAT,
+    MLDATASET_FORMATS,
     TILE_SIZE,
     FloatInt,
-    MLDATASET_FORMATS,
 )
-from _href_parse import decode_href
+from .href_parse import decode_href
 
 _CATALOG_JSON = "catalog.json"
 
@@ -155,7 +154,8 @@ def search_collections(
 def get_format_id(asset: pystac.Asset) -> str:
     format_id = get_format_from_path(asset.href)
     if format_id is None:
-        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+        if isinstance(asset.media_type, str):
+            format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
     return format_id
 
 
@@ -451,41 +451,6 @@ def get_format_from_path(path: str) -> str:
     return MAP_FILE_EXTENSION_FORMAT.get(file_extension)
 
 
-def is_valid_data_type(data_type: DataTypeLike) -> bool:
-    """Auxiliary function to check if data type is supported
-    by the store.
-
-    Args:
-        data_type: Data type that is to be checked.
-
-    Returns:
-        True if *data_type* is supported by the store, otherwise False
-    """
-    return (
-        data_type is None
-        or DATASET_TYPE.is_super_type_of(data_type)
-        or MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
-    )
-
-
-def assert_valid_data_type(data_type: DataTypeLike) -> None:
-    """Auxiliary function to assert if data type is supported
-    by the store.
-
-    Args:
-        data_type: Data type that is to be checked.
-
-    Raises:
-        DataStoreError: Error, if *data_type* is not
-            supported by the store.
-    """
-    if not is_valid_data_type(data_type):
-        raise DataStoreError(
-            f"Data type must be {DATASET_TYPE.alias!r} or "
-            f"{MULTI_LEVEL_DATASET_TYPE.alias!r}, but got {data_type!r}."
-        )
-
-
 def is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     """Auxiliary function to check if data type is a multi-level
     dataset type.
@@ -497,24 +462,6 @@ def is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
         True if *data_type* is a multi-level dataset type, otherwise False
     """
     return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
-
-
-def assert_valid_opener_id(opener_id: str) -> None:
-    """Auxiliary function to assert if data opener identified by
-    *opener_id* is supported by the store.
-
-    Args:
-        opener_id: Data opener identifier
-
-    Raises:
-        DataStoreError: Error, if *opener_id* is not
-            supported by the store.
-    """
-    if opener_id is not None and opener_id not in DATA_OPENER_IDS:
-        raise DataStoreError(
-            f"Data opener identifier must be one of "
-            f"{DATA_OPENER_IDS}, but got {opener_id!r}."
-        )
 
 
 def get_data_id_from_pystac_object(
@@ -544,6 +491,8 @@ def modify_catalog_url(url: str) -> str:
     """
     if url.endswith(_CATALOG_JSON):
         url = url.replace(_CATALOG_JSON, "")
+    if url[-1] == "/":
+        url = url[:-1]
     return url
 
 
@@ -565,7 +514,7 @@ def access_item(url: str, catalog: pystac.Catalog) -> pystac.Item:
         response = requests.get(url)
         response.raise_for_status()
     except requests.RequestException as e:
-        raise DataStoreError(f"Failed to access item at {url}: {e}")
+        raise DataStoreError(f"Failed to access STAC item at {url}: {e}")
 
     try:
         return pystac.Item.from_dict(
@@ -575,7 +524,38 @@ def access_item(url: str, catalog: pystac.Catalog) -> pystac.Item:
             preserve_dict=False,
         )
     except Exception as e:
-        raise DataStoreError(f"Failed to parse item JSON at {url}: {e}")
+        raise DataStoreError(f"Failed to parse STAC item JSON at {url}: {e}")
+
+
+def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
+    """Retrieves and parses a STAC collection associated with the given data ID.
+
+    Args:
+        url: url to STAC collection
+        catalog: pystac catalog object
+
+    Returns:
+        A `pystac.Collection` object representing the STAC collection.
+
+    Raises:
+        DataStoreError: If the collection cannot be retrieved from the catalog or
+        if the response cannot be parsed into a valid STAC collection.
+    """
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        raise DataStoreError(f"Failed to access STAC collection at {url}: {e}")
+
+    try:
+        return pystac.Collection.from_dict(
+            json.loads(response.text),
+            href=url,
+            root=catalog,
+            preserve_dict=False,
+        )
+    except Exception as e:
+        raise DataStoreError(f"Failed to parse SATC collection JSON at {url}: {e}")
 
 
 def is_mldataset_available(
@@ -841,30 +821,6 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     ds = datasets[0].copy()
     for ds_asset in datasets[1:]:
         ds.update(ds_asset)
-    return ds
-
-
-def clip_dataset_by_bbox(
-    ds: xr.Dataset, bbox: tuple[float | int] | list[float | int]
-) -> xr.Dataset:
-    """Clips a dataset to a given bounding box.
-
-    The function selects a spatial subset of the dataset based on the provided
-    bounding box. It automatically handles datasets with increasing or decreasing
-    y-axis orientation.
-
-    Args:
-        ds: The input dataset to be clipped.
-        bbox: The bounding box in the form (min_x, min_y, max_x, max_y).
-
-    Returns:
-        A new xarray.Dataset spatially subset to the given bounding box.
-    """
-    y, x = get_spatial_dims(ds)
-    if ds.y[-1] - ds.y[0] < 0:
-        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
-    else:
-        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[1], bbox[3])})
     return ds
 
 

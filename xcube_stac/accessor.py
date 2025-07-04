@@ -26,6 +26,7 @@ import pystac
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.store import DataTypeLike
+from xcube.util.jsonschema import JsonObjectSchema
 
 
 class StacItemAccessor(ABC):
@@ -52,8 +53,14 @@ class StacItemAccessor(ABC):
     ) -> xr.Dataset | MultiLevelDataset:
         """Open and return the dataset corresponding to a STAC item."""
 
+    @abstractmethod
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        """Return schema for open parameters."""
 
-class StacARDCAccessor(ABC):
+
+class StacArdcAccessor(StacItemAccessor):
     """Provides methods for access multiple STAC Items and build an analysis ready
     data cube."""
 

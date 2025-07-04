@@ -18,3 +18,31 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
+
+from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
+
+from .base import BaseStacItemAccessor, XcubeStacItemAccessor
+from .sen2 import Sen2CdseStacArdcAccessor, Sen2CdseStacItemAccessor
+
+ITEM_ACCESSOR_MAPPING = {
+    "sentinel-2-l2a": Sen2CdseStacItemAccessor,
+    "xcube": XcubeStacItemAccessor,
+}
+ARDC_ACCESSOR_MAPPING = {"sentinel-2-l2a": Sen2CdseStacArdcAccessor}
+
+
+def guess_item_accessor(data_id: str = None) -> StacItemAccessor:
+    if data_id is not None:
+        for key in ITEM_ACCESSOR_MAPPING.keys():
+            if key in data_id:
+                return ITEM_ACCESSOR_MAPPING[key]
+    return BaseStacItemAccessor
+
+
+def guess_ardc_accessor(data_id: str) -> StacArdcAccessor:
+    accesor = ARDC_ACCESSOR_MAPPING.get(data_id)
+    if accesor is None:
+        raise NotImplementedError(
+            f"No ARDC accessor implemented for data_id {data_id!r}."
+        )
+    return accesor

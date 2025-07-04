@@ -19,8 +19,8 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import defaultdict
 import re
+from collections import defaultdict
 
 import boto3
 import dask
@@ -37,20 +37,20 @@ from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataTypeLike
 
-from xcube_stac.constants import LOG, TILE_SIZE, CONVERSION_FACTOR_DEG_METER
+from xcube_stac.constants import CONVERSION_FACTOR_DEG_METER, LOG, TILE_SIZE
 from xcube_stac.mldataset.jp2 import Jp2MultiLevelDataset
 from xcube_stac.stac_extension.raster import apply_offset_scaling_stack_mode
 from xcube_stac.utils import (
     add_nominal_datetime,
     clip_dataset_by_bbox,
+    get_format_id,
     get_gridmapping,
     get_spatial_dims,
+    is_valid_ml_data_type,
     merge_datasets,
     mosaic_spatial_take_first,
-    reproject_bbox,
-    get_format_id,
-    is_valid_ml_data_type,
     normalize_crs,
+    reproject_bbox,
 )
 
 SENITNEL2_BANDS = [

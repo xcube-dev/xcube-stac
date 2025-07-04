@@ -29,12 +29,12 @@ from .accessor.https import HttpsDataAccessor
 from .accessor.s3 import S3DataAccessor
 from .accessor.sen2 import S3Sentinel2DataAccessor, list_assets_from_sen2_item
 from .accessor.sen3 import S3Sentinel3DataAccessor
-from .constants import MLDATASET_FORMATS, LOG
+from .constants import LOG, MLDATASET_FORMATS
 from .utils import (
+    _list_assets_from_item,
     get_format_from_path,
     get_format_id,
     is_valid_ml_data_type,
-    _list_assets_from_item,
 )
 
 Accessor = S3Sentinel2DataAccessor | S3Sentinel3DataAccessor | HttpsDataAccessor

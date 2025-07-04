@@ -30,8 +30,8 @@ from xcube.core.gridmapping import GridMapping
 from xcube.core.mldataset import MultiLevelDataset
 from xcube.core.resampling import (
     affine_transform_dataset,
-    reproject_dataset,
     rectify_dataset,
+    reproject_dataset,
 )
 from xcube.core.store import DataTypeLike
 
@@ -40,14 +40,15 @@ from xcube_stac.stac_extension.raster import apply_offset_scaling_stack_mode
 from xcube_stac.utils import (
     add_nominal_datetime,
     clip_dataset_by_bbox,
+    get_format_id,
     get_gridmapping,
     get_spatial_dims,
     is_valid_ml_data_type,
     merge_datasets,
     mosaic_spatial_take_first,
     reproject_bbox,
-    get_format_id,
 )
+
 from .sen2 import SENTINEL2_FILL_VALUE
 
 

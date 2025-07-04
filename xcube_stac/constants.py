@@ -20,14 +20,12 @@
 # SOFTWARE.
 
 import logging
-from typing import Union
 
 from xcube.core.store.fs.impl.fs import S3FsAccessor
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonBooleanSchema,
     JsonDateSchema,
-    JsonIntegerSchema,
     JsonNumberSchema,
     JsonObjectSchema,
     JsonStringSchema,
@@ -38,6 +36,7 @@ DATA_STORE_ID = "stac"
 
 # cdse specific constants
 DATA_STORE_ID_CDSE = "stac-cdse"
+DATA_STORE_ID_CDSE_ARDC = "stac-cdse-ardc"
 CDSE_STAC_URL = "https://stac.dataspace.copernicus.eu/v1"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
 
@@ -45,10 +44,9 @@ CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
 DATA_STORE_ID_XCUBE = "stac-xcube"
 
 # other constants
-COLLECTION_PREFIX = "collections/"
 TILE_SIZE = 2048
 LOG = logging.getLogger("xcube.stac")
-FloatInt = Union[float, int]
+FloatInt = float | int
 CONVERSION_FACTOR_DEG_METER = 111320
 
 # constants for data access
@@ -88,10 +86,6 @@ MLDATASET_FORMATS = ["levels", "geotiff"]
 # parameter schemas
 SCHEMA_URL = JsonStringSchema(title="URL to STAC catalog")
 SCHEMA_S3_STORE = S3FsAccessor.get_storage_options_schema().properties
-SCHEMA_STACK_MODE = JsonBooleanSchema(
-    title="Decide if stacking of STAC items is applied.",
-    default=False,
-)
 SCHEMA_ADDITIONAL_QUERY = JsonObjectSchema(
     additional_properties=True,
     title="Additional query options used during item search of STAC API.",
@@ -135,51 +129,9 @@ SCHEMA_ASSET_NAMES = JsonArraySchema(
     title="Names of assets",
     description="Names of assets which will be included in the data cube.",
 )
-SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
-    title="Add viewing and solar angles from Sentinel2 metadata.",
-    description=(
-        "Viewing and solar angles will be extracted for all spectral "
-        "bands defined in keyword `asset_name`."
-    ),
-    default=False,
-)
+
 SCHEMA_APPLY_SCALING = JsonBooleanSchema(
     title="Apply scaling, offset, and no-data values to data.", default=False
 )
 SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
 SCHEMA_CRS = JsonStringSchema(title="Coordinate reference system", default="EPSG:4326")
-SCHEMA_TILE_SIZE = JsonArraySchema(
-    nullable=True,
-    title="Tile size of returned dataset",
-    description=(
-        "Tile size in y and x (or lat and lon if crs is geographic) "
-        "of returned dataset"
-    ),
-    items=[JsonIntegerSchema(minimum=1), JsonIntegerSchema(minimum=1)],
-    default=(1024, 1024),
-)
-
-
-STAC_SEARCH_PARAMETERS_STACK_MODE = dict(
-    time_range=SCHEMA_TIME_RANGE,
-    bbox=SCHEMA_BBOX,
-)
-STAC_SEARCH_PARAMETERS = dict(
-    **STAC_SEARCH_PARAMETERS_STACK_MODE,
-    collections=SCHEMA_COLLECTIONS,
-    query=SCHEMA_ADDITIONAL_QUERY,
-)
-STAC_OPEN_PARAMETERS = dict(
-    asset_names=SCHEMA_ASSET_NAMES,
-    spatial_res=SCHEMA_SPATIAL_RES,
-    angles_sentinel2=SCHEMA_ANGLES_SENTINEL2,
-    apply_scaling=SCHEMA_APPLY_SCALING,
-)
-STAC_OPEN_PARAMETERS_STACK_MODE = dict(
-    **STAC_OPEN_PARAMETERS,
-    time_range=SCHEMA_TIME_RANGE,
-    bbox=SCHEMA_BBOX,
-    crs=SCHEMA_CRS,
-    tile_size=SCHEMA_TILE_SIZE,
-    query=SCHEMA_ADDITIONAL_QUERY,
-)

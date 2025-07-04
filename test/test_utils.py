@@ -30,7 +30,6 @@ import xarray as xr
 from xcube.core.store import DataStoreError
 
 from xcube_stac.utils import (
-    clip_dataset_by_bbox,
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,
@@ -407,36 +406,6 @@ class UtilsTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    def test_clip_dataset_by_bbox(self):
-
-        nx, ny = 11, 11
-        x = np.linspace(0, 10, nx)
-        y = np.linspace(50, 40, ny)
-        data = np.arange(nx * ny).reshape((ny, nx))
-        ds = xr.Dataset(
-            dict(temperature=(("y", "x"), data)),
-            coords=dict(x=x, y=y),
-        )
-
-        ds_clipped = clip_dataset_by_bbox(ds, [4.5, 45.5, 6.5, 47.5])
-        self.assertEqual((2, 2), ds_clipped.temperature.shape)
-        np.testing.assert_allclose(ds_clipped.x.values, np.array([5.0, 6.0]))
-        np.testing.assert_allclose(ds_clipped.y.values, np.array([47.0, 46.0]))
-
-        nx, ny = 11, 11
-        x = np.linspace(0, 10, nx)
-        y = np.linspace(40, 50, ny)
-        data = np.arange(nx * ny).reshape((ny, nx))
-        ds = xr.Dataset(
-            dict(temperature=(("y", "x"), data)),
-            coords=dict(x=x, y=y),
-        )
-
-        ds_clipped = clip_dataset_by_bbox(ds, [4.5, 45.5, 6.5, 47.5])
-        self.assertEqual((2, 2), ds_clipped.temperature.shape)
-        np.testing.assert_allclose(ds_clipped.x.values, np.array([5.0, 6.0]))
-        np.testing.assert_allclose(ds_clipped.y.values, np.array([46.0, 47.0]))
-
     def test_mosaic_spatial_take_first(self):
         list_ds = []
         # first tile
@@ -456,8 +425,8 @@ class UtilsTest(unittest.TestCase):
             "lat": [10.0, 20.0, 30.0],
             "lon": [100.0, 110.0, 120.0],
         }
-        da = xr.DataArray(data, dims=dims, coords=coords)
-        list_ds.append(xr.Dataset({"B01": da}))
+        data_array = xr.DataArray(data, dims=dims, coords=coords)
+        list_ds.append(xr.Dataset({"B01": data_array}))
         # second tile
         data = np.array(
             [
@@ -475,8 +444,8 @@ class UtilsTest(unittest.TestCase):
             "lat": [10.0, 20.0, 30.0],
             "lon": [100.0, 110.0, 120.0],
         }
-        da = xr.DataArray(data, dims=dims, coords=coords)
-        list_ds.append(xr.Dataset({"B01": da}))
+        data_array = xr.DataArray(data, dims=dims, coords=coords)
+        list_ds.append(xr.Dataset({"B01": data_array}))
 
         # test only one tile
         ds_test = mosaic_spatial_take_first(list_ds[:1])
@@ -501,8 +470,8 @@ class UtilsTest(unittest.TestCase):
             "lat": [10.0, 20.0, 30.0],
             "lon": [100.0, 110.0, 120.0],
         }
-        da = xr.DataArray(data, dims=dims, coords=coords)
-        ds_expected = xr.Dataset({"B01": da})
+        data_array = xr.DataArray(data, dims=dims, coords=coords)
+        ds_expected = xr.Dataset({"B01": data_array})
         xr.testing.assert_allclose(ds_test, ds_expected)
 
         # test two tiles, where spatial ref is given in spatial_ref coord
@@ -510,7 +479,7 @@ class UtilsTest(unittest.TestCase):
         for i, ds in enumerate(list_ds):
             ds.coords["spatial_ref"] = spatial_ref
             list_ds[i] = ds
-        ds_expected = xr.Dataset({"B01": da})
+        ds_expected = xr.Dataset({"B01": data_array})
         ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
         ds_test = mosaic_spatial_take_first(list_ds)
         xr.testing.assert_allclose(ds_test, ds_expected)
