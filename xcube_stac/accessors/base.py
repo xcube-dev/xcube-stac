@@ -23,7 +23,11 @@ from typing import Sequence
 
 import pystac
 import xarray as xr
-from xcube.core.mldataset import CombinedMultiLevelDataset, MultiLevelDataset
+from xcube.core.mldataset import (
+    CombinedMultiLevelDataset,
+    MultiLevelDataset,
+    BaseMultiLevelDataset,
+)
 from xcube.core.store import DataStore, DataStoreError, new_data_store
 from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.utils import (
@@ -83,7 +87,9 @@ class BaseStacItemAccessor(StacItemAccessor):
             )
         else:
             if len(dss) == 1:
-                dss = dss + [None]
+                # TODO: no scaling applied. Maybe insert make mldataset and use
+                # TODO: combined cut of in combiner function.
+                return dss[0]
             return CombinedMultiLevelDataset(
                 dss,
                 combiner_function=self._combiner_function,
@@ -142,8 +148,6 @@ class BaseStacItemAccessor(StacItemAccessor):
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = False,
     ) -> xr.Dataset:
-        if len(dss) == 2 and dss[1] is None:
-            dss = dss[:1]
         if len(dss) > 1:
             dss = [
                 rename_dataset(ds, asset.extra_fields["xcube:asset_id"])

@@ -1,0 +1,52 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.4
+    method: GET
+    uri: https://stac.dataspace.copernicus.eu/v1
+  response:
+    body:
+      string: '{"type":"Catalog","id":"cdse-stac","title":"Copernicus Data Space Ecosystem
+        (CDSE) asset-level STAC catalogue","description":"A comprehensive and searchable
+        catalog of Earth observation and scientific datasets that is actively maintained
+        and updated by the Copernicus Data Space Ecosystem. The integrated STAC (SpatioTemporal
+        Asset Catalog) API, which follows the open STAC specification, enables users
+        to access detailed asset-level metadata, including spatial information, temporal
+        coverage, and data specifications. This standardized interface facilitates
+        efficient data discovery and retrieval across the extensive collection of
+        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/collections/extensions/transaction","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/ogcapi-features#fields","https://api.stacspec.org/v1.0.0/ogcapi-features#query","https://api.stacspec.org/v1.0.0/ogcapi-features#sort","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction"],"links":[{"rel":"self","type":"application/json","title":"This
+        document","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","title":"Root","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","title":"Collections
+        available for this Catalog","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
+        conformance classes implemented by this server","href":"https://stac.dataspace.copernicus.eu/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search [GET]","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search [POST]","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        available for this Catalog","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
+        service description","href":"https://stac.dataspace.copernicus.eu/v1/api"},{"rel":"service-doc","type":"text/html","title":"OpenAPI
+        service documentation","href":"https://stac.dataspace.copernicus.eu/v1/api.html"}],"stac_extensions":[]}'
+    headers:
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '929'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 07 Jul 2025 12:43:18 GMT
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
+    status:
+      code: 200
+      message: OK
+version: 1

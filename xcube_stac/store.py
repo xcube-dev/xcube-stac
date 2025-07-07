@@ -375,9 +375,10 @@ class StacXcubeDataStore(StacDataStore):
 
         # decide between levels and zarr
         asset_names = open_params.pop("asset_names", None)
-        opener_id_data_type = open_params.get("opener_id")
-        if opener_id_data_type is not None:
-            opener_id_data_type = opener_id_data_type.split(":")[0]
+        if opener_id is not None:
+            opener_id_data_type = opener_id.split(":")[0]
+        else:
+            opener_id_data_type = None
         if asset_names is None:
             if is_valid_ml_data_type(data_type):
                 asset_names = ["analytic_multires"]
@@ -501,7 +502,9 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
                 "Please assign the *data_id* in the 'stac-cdse-ardc' data store to "
                 "retrieve the open_params for a specific data collection."
             )
-        accessor = guess_ardc_accessor(data_id)(**self._storage_options_s3)
+        accessor = guess_ardc_accessor(data_id)(
+            self._catalog, **self._storage_options_s3
+        )
         return accessor.get_open_data_params_schema(
             data_id=data_id, opener_id=opener_id
         )
@@ -543,7 +546,9 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             )
             return None
 
-        accessor = guess_ardc_accessor(data_id)(**self._storage_options_s3)
+        accessor = guess_ardc_accessor(data_id)(
+            self._catalog, **self._storage_options_s3
+        )
         ds = accessor.open_ardc(
             items,
             opener_id=opener_id,

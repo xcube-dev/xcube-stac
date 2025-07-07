@@ -53,8 +53,8 @@ SKIP_HELP = (
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
 CDSE_CREDENTIALS = {
-    "key": "xxx",
-    "secret": "xxx",
+    "key": "",
+    "secret": "",
 }
 
 
@@ -85,8 +85,8 @@ class StacDataStoreTest(unittest.TestCase):
         self.url_netcdf = "https://geoservice.dlr.de/eoc/ogc/stac/v1"
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
-            "collections/sentinel-1-grd/items/S1C_EW_GRDM_1SSH_20250704T123658"
-            "_20250704T123814_003070_0063DC"
+            "collections/sentinel-1-grd/items/S1C_EW_GRDM_1SSH_20250707T112159_"
+            "20250707T112235_003113_006511"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -101,7 +101,7 @@ class StacDataStoreTest(unittest.TestCase):
             "S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948"
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_store_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         schema = store.get_data_store_params_schema()
@@ -112,7 +112,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("secret", schema.properties)
         self.assertIn("url", schema.required)
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_types(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         self.assertEqual(("dataset", "mldataset"), store.get_data_types())
@@ -124,7 +124,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertEqual(("dataset",), store.get_data_types())
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_types_for_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         self.assertEqual(
@@ -155,7 +155,7 @@ class StacDataStoreTest(unittest.TestCase):
             store.get_data_types_for_data("collections/datacubes/items/local_ts"),
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         data_ids = store.get_data_ids()
@@ -168,7 +168,7 @@ class StacDataStoreTest(unittest.TestCase):
         ]
         self.assertCountEqual(data_ids_expected, data_ids)
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_ids_data_type(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
         data_ids = store.get_data_ids(data_type="mldataset")
@@ -176,19 +176,19 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, len(data_ids))
         self.assertEqual(
             [
-                "collections/ENMAP_HSI_L2A/items/ENMAP01-____L2A-DT0000139761_2025"
-                "0703T115428Z_003_V010502_20250704T061536Z?f=application%2Fgeo%2Bjson"
+                "collections/ENMAP_HSI_L0_QL/items/ENMAP01-_____L0-DT0000139897_202507"
+                "06T113221Z_001_V010502_20250707T010946Z?f=application%2Fgeo%2Bjson"
             ],
             data_ids,
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_ids_cdse_ardc(self):
         store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         data_ids = store.list_data_ids()
         self.assertCountEqual(["sentinel-2-l2a"], data_ids)
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         include_attrs = ["id", "bbox", "links"]
@@ -209,14 +209,14 @@ class StacDataStoreTest(unittest.TestCase):
         ]
         self.assertCountEqual(all_attrs, list(attrs.keys()))
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_ids_optional_args_empty_args(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         data_id, attrs = next(store.get_data_ids(include_attrs=["dtype"]))
         self.assertEqual("zanzibar/znz001.json", data_id)
         self.assertFalse(attrs)
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_has_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
         data_id = (
@@ -227,7 +227,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertFalse(store.has_data(data_id, data_type=str))
         self.assertTrue(store.has_data(data_id, data_type="mldataset"))
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_opener_ids(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         opener_ids = (
@@ -269,7 +269,7 @@ class StacDataStoreTest(unittest.TestCase):
             ),
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_data_opener_ids_optional_args(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         with self.assertRaises(DataStoreError) as cm:
@@ -299,7 +299,7 @@ class StacDataStoreTest(unittest.TestCase):
             store.get_data_opener_ids("collections/datacubes/items/local_ts"),
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         schema = store.get_open_data_params_schema()
@@ -353,7 +353,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("spatial_res", schema.properties)
         self.assertIn("query", schema.properties)
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_open_data_tiff(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_time_range)
 
@@ -395,7 +395,7 @@ class StacDataStoreTest(unittest.TestCase):
             [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_open_data_netcdf(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
 
@@ -413,7 +413,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual([1800, 3600], [ds.sizes["lat"], ds.sizes["lon"]])
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_open_data_failed(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         with self.assertRaises(DataStoreError) as cm:
@@ -429,7 +429,7 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_open_data_abfs(self):
         store = new_data_store(
             DATA_STORE_ID, url="https://planetarycomputer.microsoft.com/api/stac/v1"
@@ -538,7 +538,7 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen2(self, mock_rioxarray_open):
         mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
@@ -577,7 +577,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_open_data_cdse_ardc_no_items_found(self):
         store = new_data_store(
             DATA_STORE_ID_CDSE_ARDC,
@@ -608,7 +608,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertEqual(msg, str(cm.output[-1]))
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen2_ardc(self, mock_rioxarray_open):
         mock_rioxarray_open.return_value = sentinel_2_band_data_60m()
@@ -706,7 +706,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # catch NotImplementedError for multi-level dataset
-        with self.assertRaises(NotImplementedError) as context:
+        with self.assertRaises(DataStoreError) as cm:
             _ = store.open_data(
                 data_id="sentinel-2-l2a",
                 data_type="mldataset",
@@ -719,10 +719,11 @@ class StacDataStoreTest(unittest.TestCase):
                 add_angles=True,
             )
         self.assertEqual(
-            str(context.exception), "mldataset not supported in stacking mode"
+            ("Data type must be one of ('dataset',), but got 'mldataset'."),
+            f"{cm.exception}",
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
         self.maxDiff = None
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
@@ -737,7 +738,7 @@ class StacDataStoreTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_search_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         descriptors = list(
@@ -765,7 +766,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(descriptors[0], DatasetDescriptor)
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_search_data_searchable_catalog(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         descriptors = list(
@@ -816,7 +817,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_search_data_cdse_sentinel_2(self):
         store = new_data_store(
             DATA_STORE_ID_CDSE,
@@ -856,7 +857,7 @@ class StacDataStoreTest(unittest.TestCase):
         ][0]
         self.assertEqual(expected_descriptor, selected_descriptor.to_dict())
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_search_data_cdse_ardc(self):
         store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         descriptors = list(
@@ -875,7 +876,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_describe_data(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
         data_id = (
@@ -915,7 +916,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_search_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         schema = store.get_search_params_schema()
@@ -925,7 +926,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("query", schema.properties)
         self.assertIn("collections", schema.properties)
 
-    # @pytest.mark.vcr()
+    @pytest.mark.vcr()
     def test_get_search_params_schema_cdse_ardc(self):
         store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         schema = store.get_search_params_schema()

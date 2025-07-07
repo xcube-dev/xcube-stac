@@ -79,7 +79,6 @@ SENITNEL2_BANDS = [
     "B12",
 ]
 SENITNEL2_L2A_BANDS = SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
-SENTINEL2_FILL_VALUE = 0
 SENITNEL2_L2A_BANDS.remove("B10")
 SEN2_SPATIAL_RES = np.array([10, 20, 60])
 SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
@@ -93,10 +92,13 @@ SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
 )
 SCHEMA_APPLY_SCALING_SENTINEL2 = SCHEMA_APPLY_SCALING
 SCHEMA_APPLY_SCALING_SENTINEL2.default = True
+SCHEMA_SPATIAL_RES_SEN2_ITEM = JsonNumberSchema(
+    title=SCHEMA_SPATIAL_RES.title, enum=[10, 20, 60], default=10
+)
 
 
 class Sen2CdseStacItemAccessor(StacItemAccessor):
-    """Provides methods for accessing the data of one general STAC Item"""
+    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item"""
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
@@ -153,14 +155,11 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
-        schema_spatial_res = JsonNumberSchema(
-            title=SCHEMA_SPATIAL_RES.title, enum=[10, 20, 60], default=10
-        )
         return JsonObjectSchema(
             properties=dict(
                 asset_names=SCHEMA_ASSET_NAMES,
                 apply_scaling=SCHEMA_APPLY_SCALING_SENTINEL2,
-                spatial_res=schema_spatial_res,
+                spatial_res=SCHEMA_SPATIAL_RES_SEN2_ITEM,
                 add_angles=SCHEMA_ANGLES_SENTINEL2,
             ),
             required=[],
@@ -182,20 +181,16 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             **open_params: Optional parameters to control asset selection:
                 - asset_names (list[str], optional): List of desired asset keys.
                     Defaults to SENITNEL2_L2A_BANDS.
-                - crs (str or CRS-like, optional): Coordinate reference system of
-                  the query area.
-                - spatial_res (float, optional): Desired spatial resolution in meters
-                  or degrees, depending on the request CRS. Defaults to 10 if not
-                  provided.
+                - spatial_res (int, optional): Desired spatial resolution in meters
+                  defining the asset selection. *spatial_res* must be one of
+                  [10, 20, 60]. Defaults to 10.
 
         Returns:
             Filtered list of assets matching the requested names and spatial resolution.
             Each asset's extra_fields is augmented with:
-                - 'id': the selected asset name (including spatial resolution
+                - 'xcube:asset_id': the selected asset name (including spatial resolution
                     suffix if applied).
-                - 'id_origin': the original requested asset name.
-                - 'format_id': the asset's format identifier extracted from the
-                    asset metadata.
+                - 'xcube:asset_id_origin': the original requested asset name.
         """
         asset_names = open_params.get("asset_names")
         if not asset_names:
@@ -240,7 +235,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         """Extract Sentinel-2 solar and viewing angle information from the granule
         metadata and add it to the dataset `ds`.
 
-        This method downloads and parses the granule metadata XML file associated with
+        This method parses the granule metadata XML file associated with
         the given STAC item, then extracts solar and viewing angle information for
         the relevant bands.
 
@@ -259,7 +254,6 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         ds_angles = _resample_dataset_soft(
             ds_angles,
             target_gm,
-            fill_value=np.nan,
             interpolation="bilinear",
         )
         ds = _add_angles(ds, ds_angles)
@@ -283,7 +277,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
 
 
 class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
-    """Provides methods for access multiple Sentinel-2 STAC Items from the
+    """Provides methods to access multiple Sentinel-2 STAC Items from the
     CDSE STAC API and build an analysis ready data cube."""
 
     def open_ardc(
@@ -315,9 +309,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
                 dt.astype("datetime64[ms]")
                 .astype("O")
                 .isoformat(): [
-                    item.id
-                    for item in grouped_items.sel(time=dt).values.ravel()
-                    if item is not None
+                    item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values
             }
@@ -344,26 +336,19 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         )
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
-        """Generate a spatiotemporal data cube from access parameters.
+        """Generate a spatiotemporal data cube from multiple items.
 
-        This function takes grouped access parameters and generates a unified xarray
-        dataset, mosaicking and stacking the data across spatial tiles and time.
-        Optionally, scaling is applied and solar and viewing angle are calculated.
+         This function takes grouped items parameters and generates a unified xarray
+         dataset, mosaicking and stacking the data across spatial tiles and time.
+         Optionally, scaling is applied and solar and viewing angle are calculated.
 
-        Args:
-            access_params: A 4D data array indexed by tile_id, asset_name, time,
-                and idx, where each element contains data access metadata.
-            **open_params: Optional keyword arguments for data opening and processing:
-                - apply_scaling (bool): Whether to apply radiometric scaling.
-                    Default is True.
-                - angles_sentinel2 (bool): Whether to include Sentinel-2 solar angles.
-                    Default is False.
-                - bbox (list): Bounding box used for spatial subsetting.
-                - crs (str): Coordinate reference system of the bounding box.
-                - opener_id, data_type, etc.: Passed to the data-opening function.
+         Args:
+             grouped_items: A 2D data array indexed by tile_id and time contianing STAC
+                 items.
+             **open_params: Optional keyword arguments for data opening and processing.
 
         Returns:
-            A dataset representing the spatiotemporal cube.
+             A dataset representing the spatiotemporal cube.
         """
         # Group the tile IDs by UTM zones
         utm_tile_id = defaultdict(list)
@@ -384,7 +369,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
 
-        if open_params.get("angles_sentinel2", False):
+        if open_params.get("add_angles", False):
             ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
 
         return ds_final
@@ -404,15 +389,15 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         an aggregated dataset for that UTM zone.
 
         Args:
-            grouped_items: An xarray DataArray containing access information for assets,
-                indexed by tile_id, time, and idx.
+            grouped_items: An xarray DataArray containing STAC items, indexed by
+            tile_id and time.
             crs_utm: The target UTM coordinate reference system identifier.
             **open_params: Additional parameters to control data opening and processing,
                 including 'bbox' (bounding box) and 'crs' (coordinate reference system).
 
         Returns:
             A dataset containing mosaicked and stacked 3d datacubes
-            (time, spatial_y, spatial_x) for all assets within the specified UTM zone.
+            (time, y, x) for all assets within the specified UTM zone.
         """
         items_bbox = _get_bounding_box(grouped_items)
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
@@ -464,7 +449,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         Args:
             ds_final: The main dataset containing Sentinel-2 data to which angle data
                 will be added.
-            grouped_items: A DataArray containing access parameters for STAC items.
+            grouped_items: A DataArray containing STAC items.
 
         Returns:
             An updated `ds_final` which includes solar and viewing angle information
@@ -497,7 +482,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
             ds_tile = _resample_dataset_soft(
                 ds_tile,
                 target_gm,
-                fill_value=np.nan,
                 interpolation="bilinear",
             )
             ds_tile = ds_tile.chunk(dict(time=1))
@@ -741,35 +725,25 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def group_items(items: list[pystac.Item]) -> xr.DataArray:
-    """Group STAC items by solar day, tile ID, and processing version.
+def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
+    """Group STAC items by solar day, tile ID.
 
     This method organizes a list of Sentinel-2 STAC items into an `xarray.DataArray`
-    with dimensions `(time, tile_id, idx)`, where:
+    with dimensions `(time, tile_id)`, where:
     - `time` corresponds to the solar acquisition date (ignoring time of day),
     - `tile_id` is the Sentinel-2 MGRS tile code,
-    - `idx` accounts for up to two acquisitions per tile (e.g., due to multiple
-      observations for the same tile),
     - The most recent processing version is selected if multiple exist.
 
     Args:
         items: List of STAC items to group. Each item must have:
             - `properties["datetime_nominal"]`: Nominal acquisition datetime.
             - `properties["grid:code"]`: Tile ID (MGRS grid).
-            - A processing version recognizable by `_get_processing_version`.
+            - `properties["processing:version"]`: processing version
 
     Returns:
-        A 3D DataArray of shape (time, tile_id, idx) containing STAC items.
-        Time coordinate values are actual datetimes (not just dates), derived
-        from the nominal acquisition datetime of the first item per date/tile
-        combination.
-
-    Notes:
-        - Only up to two items per (date, tile_id) and processing version
-          are considered.
-        - If more than two items exist for the same (date, tile_id, proc_version),
-          a warning is logged and only the first two are used.
-        - Among multiple processing versions, only the latest is retained.
+        A 2D DataArray of shape (time, tile_id) containing STAC items.
+        Time coordinate values are datetimes, derived from the UTC datetime of the
+        first item per date.
     """
     items = add_nominal_datetime(items)
 
@@ -787,7 +761,7 @@ def group_items(items: list[pystac.Item]) -> xr.DataArray:
 
     # sort items by date and tile ID into a data array
     grouped_items = np.full(
-        (len(dates), len(tile_ids), len(proc_versions)), [], dtype=object
+        (len(dates), len(tile_ids), len(proc_versions)), None, dtype=object
     )
     for idx, item in enumerate(items):
         date = item.properties["datetime_nominal"].date()
@@ -802,11 +776,15 @@ def group_items(items: list[pystac.Item]) -> xr.DataArray:
             grouped_items[idx_date, idx_tile_id, idx_proc_version].append(item)
 
     # take the latest processing version
-    mask = grouped_items != []
+    mask = grouped_items != None
     proc_version_idx = np.argmax(mask, axis=-1)
     grouped_items = np.take_along_axis(
         grouped_items, proc_version_idx[..., np.newaxis], axis=-1
     )[..., 0]
+    for idx_date in range(grouped_items.shape[0]):
+        for idx_tile_id in range(grouped_items.shape[1]):
+            if grouped_items[idx_date, idx_tile_id] is None:
+                grouped_items[idx_date, idx_tile_id] = []
     grouped_items = xr.DataArray(
         grouped_items,
         dims=("time", "tile_id"),
@@ -818,9 +796,7 @@ def group_items(items: list[pystac.Item]) -> xr.DataArray:
     for date in grouped_items.time.values:
         item = np.sum(grouped_items.sel(time=date).values)[0]
         dts.append(
-            np.datetime64(
-                item.properties["datetime_nominal"].replace(tzinfo=None)
-            ).astype("datetime64[ns]")
+            np.datetime64(item.datetime.replace(tzinfo=None)).astype("datetime64[ns]")
         )
     grouped_items = grouped_items.assign_coords(time=dts)
 
@@ -836,8 +812,8 @@ def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
     tiles.
 
     Parameters:
-        items: An array containing tile metadata, with coordinates
-            including 'tile_id'.
+        items: An array containing STAC items from which the native UTM bounding box
+            can be derived.
 
     Returns:
         A list with four elements [xmin, ymin, xmax, ymax] representing the
@@ -845,12 +821,8 @@ def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
     """
     xmin, ymin, xmax, ymax = np.inf, np.inf, -np.inf, -np.inf
     for tile_id in items.tile_id.values:
-        params = next(
-            value
-            for value in items.sel(tile_id=tile_id).values.ravel()
-            if value is not None
-        )
-        bbox = params["item"].assets["AOT_10m"].extra_fields["proj:bbox"]
+        item = np.sum(items.sel(tile_id=tile_id).values)[0]
+        bbox = item.assets["AOT_10m"].extra_fields["proj:bbox"]
         if xmin > bbox[0]:
             xmin = bbox[0]
         if ymin > bbox[1]:
@@ -896,7 +868,7 @@ def _get_spatial_res(open_params: dict) -> int:
 def _resample_dataset_soft(
     ds: xr.Dataset,
     target_gm: GridMapping,
-    fill_value: float | int = None,
+    fill_value: float | int = np.nan,
     interpolation: str = "nearest",
 ) -> xr.Dataset:
     """Resample a dataset to a target grid mapping, using either affine transform
@@ -911,7 +883,7 @@ def _resample_dataset_soft(
         ds: The source xarray Dataset to be resampled.
         target_gm: The target grid mapping
         fill_value: Value to fill in areas without data during reprojection.
-            Defaults to 0 (no-data value in the Sentinel-2 product).
+            Defaults to np.nan.
         interpolation: Interpolation method to use during reprojection
             (see reproject_dataset function in xcube).
 
@@ -933,8 +905,6 @@ def _resample_dataset_soft(
             var_configs=var_configs,
         )
     else:
-        if fill_value is None:
-            fill_value = SENTINEL2_FILL_VALUE
         ds = reproject_dataset(
             ds,
             source_gm=source_gm,
@@ -1052,7 +1022,6 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
             - crs: Target coordinate reference system (string or EPSG code).
             - spatial_res: Spatial resolution as a single value or tuple (x_res, y_res).
             - bbox: Bounding box for the output grid (minx, miny, maxx, maxy).
-            - tile_size (optional): Tile size for the target grid.
 
     Returns:
         A single xarray Dataset reprojected to the target CRS and resolution,
@@ -1094,7 +1063,7 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
 
     resampled_list_ds = []
     for ds in list_ds_utm:
-        resampled_list_ds.append(_resample_dataset_soft(ds, target_gm, **open_params))
+        resampled_list_ds.append(_resample_dataset_soft(ds, target_gm))
     return mosaic_spatial_take_first(resampled_list_ds)
 
 
