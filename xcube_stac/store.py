@@ -40,7 +40,12 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
-from .accessors import guess_ardc_accessor, guess_item_accessor, CDSE_ARDC_DATA_IDS
+from .accessors import (
+    guess_ardc_accessor,
+    guess_item_accessor,
+    CDSE_ARDC_DATA_IDS,
+    XcubeStacItemAccessor,
+)
 from .constants import (
     CDSE_S3_ENDPOINT,
     CDSE_STAC_URL,
@@ -168,7 +173,7 @@ class StacDataStore(DataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         self._assert_valid_opener_id(opener_id)
-        accessor = guess_item_accessor(data_id)(
+        accessor = guess_item_accessor(self._catalog.get_self_href(), data_id)(
             self._catalog, **self._storage_options_s3
         )
         if data_id is not None and opener_id is None:
@@ -197,7 +202,7 @@ class StacDataStore(DataStore):
         # access item and open with accessor
         url = f"{self._url}/{data_id}"
         item = access_item(url, self._catalog)
-        accessor = guess_item_accessor(data_id)(
+        accessor = guess_item_accessor(self._catalog.get_self_href(), data_id)(
             self._catalog, **self._storage_options_s3
         )
         return accessor.open_item(
@@ -393,9 +398,7 @@ class StacXcubeDataStore(StacDataStore):
                 "'analytic_multires'. Please select only one asset in "
                 "<asset_names> when opening the data."
             )
-        accessor = guess_item_accessor("xcube")(
-            self._catalog, **self._storage_options_s3
-        )
+        accessor = XcubeStacItemAccessor(self._catalog, **self._storage_options_s3)
         ds = accessor.open_item(
             item,
             opener_id=opener_id,
@@ -516,7 +519,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
                 "Please assign the *data_id* in the 'stac-cdse-ardc' data store to "
                 "retrieve the open_params for a specific data collection."
             )
-        accessor = guess_ardc_accessor(data_id)(
+        accessor = guess_ardc_accessor(self._catalog.get_self_href(), data_id)(
             self._catalog, **self._storage_options_s3
         )
         return accessor.get_open_data_params_schema(
@@ -560,7 +563,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             )
             return None
 
-        accessor = guess_ardc_accessor(data_id)(
+        accessor = guess_ardc_accessor(self._catalog.get_self_href(), data_id)(
             self._catalog, **self._storage_options_s3
         )
         ds = accessor.open_ardc(

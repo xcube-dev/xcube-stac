@@ -216,7 +216,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         dss: Sequence[xr.Dataset],
         item: pystac.Item = None,
         assets: Sequence[pystac.Asset] = None,
-        apply_scaling: bool = False,
+        apply_scaling: bool = True,
     ) -> xr.Dataset:
         dss = [
             rename_dataset(ds, asset.extra_fields["xcube:asset_id_origin"])
@@ -405,7 +405,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         open_item_open_params = dict(
             asset_names=open_params.get("asset_names"),
             spatial_res=spatial_res,
-            apply_scaling=open_params.get("apply_scaling"),
+            apply_scaling=open_params.get("apply_scaling", True),
             add_angles=False,
         )
         final_ds = None
@@ -868,7 +868,6 @@ def _get_spatial_res(open_params: dict) -> int:
 def _resample_dataset_soft(
     ds: xr.Dataset,
     target_gm: GridMapping,
-    fill_value: float | int = np.nan,
     interpolation: str = "nearest",
 ) -> xr.Dataset:
     """Resample a dataset to a target grid mapping, using either affine transform
@@ -882,8 +881,6 @@ def _resample_dataset_soft(
     Parameters:
         ds: The source xarray Dataset to be resampled.
         target_gm: The target grid mapping
-        fill_value: Value to fill in areas without data during reprojection.
-            Defaults to np.nan.
         interpolation: Interpolation method to use during reprojection
             (see reproject_dataset function in xcube).
 
@@ -909,7 +906,6 @@ def _resample_dataset_soft(
             ds,
             source_gm=source_gm,
             target_gm=target_gm,
-            fill_value=fill_value,
             interpolation=interpolation,
         )
     return ds

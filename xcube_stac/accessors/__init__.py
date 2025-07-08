@@ -18,37 +18,41 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-
+import pystac
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
+from xcube_stac.constants import CDSE_STAC_URL
 
 from .base import BaseStacItemAccessor, XcubeStacItemAccessor
 from .sen2 import Sen2CdseStacArdcAccessor, Sen2CdseStacItemAccessor
 from .sen3 import Sen3CdseStacItemAccessor, Sen3CdseStacArdcAccessor
 
-ITEM_ACCESSOR_MAPPING = {
+CDSE_ITEM_ACCESSOR_MAPPING = {
     "sentinel-2-l2a": Sen2CdseStacItemAccessor,
     "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
-    "xcube": XcubeStacItemAccessor,
 }
-ARDC_ACCESSOR_MAPPING = {
+CDSE_ARDC_ACCESSOR_MAPPING = {
     "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
     "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
 }
-CDSE_ARDC_DATA_IDS = list(ARDC_ACCESSOR_MAPPING.keys())
+CDSE_ARDC_DATA_IDS = list(CDSE_ARDC_ACCESSOR_MAPPING.keys())
 
 
-def guess_item_accessor(data_id: str = None) -> StacItemAccessor:
-    if data_id is not None:
-        for key in ITEM_ACCESSOR_MAPPING.keys():
-            if key in data_id:
-                return ITEM_ACCESSOR_MAPPING[key]
+def guess_item_accessor(url_catalog: str, data_id: str = None) -> StacItemAccessor:
+    if url_catalog == CDSE_STAC_URL:
+        if data_id is not None:
+            for key in CDSE_ITEM_ACCESSOR_MAPPING.keys():
+                if key in data_id:
+                    return CDSE_ITEM_ACCESSOR_MAPPING[key]
     return BaseStacItemAccessor
 
 
-def guess_ardc_accessor(data_id: str) -> StacArdcAccessor:
-    accesor = ARDC_ACCESSOR_MAPPING.get(data_id)
+def guess_ardc_accessor(url_catalog: str, data_id: str = None) -> StacArdcAccessor:
+    accesor = None
+    if url_catalog == CDSE_STAC_URL:
+        accesor = CDSE_ARDC_ACCESSOR_MAPPING.get(data_id)
     if accesor is None:
         raise NotImplementedError(
-            f"No ARDC accessor implemented for data_id {data_id!r}."
+            f"No ARDC accessor implemented for data_id {data_id!r} and "
+            f"cataog url {url_catalog!r}."
         )
     return accesor
