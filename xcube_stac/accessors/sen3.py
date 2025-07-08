@@ -58,6 +58,7 @@ from xcube_stac.utils import (
     normalize_grid_mapping,
     rename_dataset,
     reproject_bbox,
+    list_assets_from_item,
 )
 
 SCHEMA_APPLY_RECTIFICATION = JsonBooleanSchema(
@@ -65,6 +66,38 @@ SCHEMA_APPLY_RECTIFICATION = JsonBooleanSchema(
     description=("If True, data is presented on a regular grid."),
     default=True,
 )
+SENITNEL3_ASSETS = [
+    "flags",
+    "syn_amin",
+    "syn_aot550",
+    "syn_angstrom_exp550",
+    "syn_S1N_reflectance",
+    "syn_S1O_reflectance",
+    "syn_S2N_reflectance",
+    "syn_S2O_reflectance",
+    "syn_S3N_reflectance",
+    "syn_S3O_reflectance",
+    "syn_S5N_reflectance",
+    "syn_S5O_reflectance",
+    "syn_S6N_reflectance",
+    "syn_S6O_reflectance",
+    "syn_Oa01_reflectance",
+    "syn_Oa02_reflectance",
+    "syn_Oa03_reflectance",
+    "syn_Oa04_reflectance",
+    "syn_Oa05_reflectance",
+    "syn_Oa06_reflectance",
+    "syn_Oa07_reflectance",
+    "syn_Oa08_reflectance",
+    "syn_Oa09_reflectance",
+    "syn_Oa10_reflectance",
+    "syn_Oa11_reflectance",
+    "syn_Oa12_reflectance",
+    "syn_Oa16_reflectance",
+    "syn_Oa17_reflectance",
+    "syn_Oa18_reflectance",
+    "syn_Oa21_reflectance",
+]
 
 
 class Sen3CdseStacItemAccessor(StacItemAccessor):
@@ -86,20 +119,22 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         coords = dict()
         ds = self.open_asset(item.assets["geolocation"])
-        coords["longitude"] = ds["longitude"]
-        coords["latitude"] = ds["latitude"]
-        coords["altitude"] = ds["altitude"]
-        ds = self.open_asset(item.assets["time"])
-        coords["time"] = ds["time"]
-        ds_item = xr.Dataset(coords=coords)
-
-        assets = self._list_assets_from_item(item, **open_params)
+        coords["lon"] = ds["lon"]
+        coords["lat"] = ds["lat"]
+        ds_item = xr.Dataset(coords=coords, attrs=ds.attrs)
+        asset_names = open_params.pop("asset_names", SENITNEL3_ASSETS)
+        assets = list_assets_from_item(item, asset_names=asset_names)
         for asset in assets:
-            if asset.extra_fields["xcube:asset_id"] in ["geolocation", "time"]:
+            if asset.extra_fields["xcube:asset_id"] in [
+                "geolocation",
+                "time",
+                "syn_annot_rem",
+            ]:
                 continue
-            ds_item.update(self.open_asset(asset))
+            ds = self.open_asset(asset)
+            ds_item.update(ds)
 
-        if open_params.get("apply_rectification", False):
+        if open_params.get("apply_rectification", True):
             ds_item = rectify_dataset(ds_item)
         return ds_item
 
@@ -112,7 +147,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 apply_rectification=SCHEMA_APPLY_RECTIFICATION,
             ),
             required=[],
-            additional_properties=False,
+            additional_properties=True,
         )
 
 

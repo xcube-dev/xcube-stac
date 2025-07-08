@@ -120,7 +120,7 @@ class BaseStacItemAccessor(StacItemAccessor):
                 **params_properties,
             ),
             required=[] + params_required,
-            additional_properties=False,
+            additional_properties=True,
         )
 
     def _get_store(self, protocol: str, root: str, **storage_options) -> DataStore:

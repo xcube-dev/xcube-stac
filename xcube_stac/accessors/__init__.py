@@ -23,12 +23,18 @@ from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 
 from .base import BaseStacItemAccessor, XcubeStacItemAccessor
 from .sen2 import Sen2CdseStacArdcAccessor, Sen2CdseStacItemAccessor
+from .sen3 import Sen3CdseStacItemAccessor, Sen3CdseStacArdcAccessor
 
 ITEM_ACCESSOR_MAPPING = {
     "sentinel-2-l2a": Sen2CdseStacItemAccessor,
+    "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
     "xcube": XcubeStacItemAccessor,
 }
-ARDC_ACCESSOR_MAPPING = {"sentinel-2-l2a": Sen2CdseStacArdcAccessor}
+ARDC_ACCESSOR_MAPPING = {
+    "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
+    "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
+}
+CDSE_ARDC_DATA_IDS = list(ARDC_ACCESSOR_MAPPING.keys())
 
 
 def guess_item_accessor(data_id: str = None) -> StacItemAccessor:

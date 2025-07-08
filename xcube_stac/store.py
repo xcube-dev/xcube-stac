@@ -38,9 +38,9 @@ from xcube.core.store import (
     DataTypeLike,
     MultiLevelDatasetDescriptor,
 )
-from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
-from .accessors import guess_ardc_accessor, guess_item_accessor
+from .accessors import guess_ardc_accessor, guess_item_accessor, CDSE_ARDC_DATA_IDS
 from .constants import (
     CDSE_S3_ENDPOINT,
     CDSE_STAC_URL,
@@ -425,8 +425,23 @@ class StacCdseDataStore(StacDataStore):
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
             description="Describes the parameters of the xcube data store 'stac-cdse'.",
-            properties=dict(**SCHEMA_S3_STORE),
-            required=[],
+            properties=dict(
+                key=JsonStringSchema(
+                    title="AWS S3 key to access CDSE EO data.",
+                    description=(
+                        "To get key and secret, follow https://documentation."
+                        "dataspace.copernicus.eu/APIs/S3.html#generate-secrets"
+                    ),
+                ),
+                secret=JsonStringSchema(
+                    title="AWS S3 secret to access CDSE EO data.",
+                    description=(
+                        "To get key and secret, follow https://documentation."
+                        "dataspace.copernicus.eu/APIs/S3.html#generate-secrets"
+                    ),
+                ),
+            ),
+            required=["key", "secret"],
             additional_properties=False,
         )
 
@@ -471,7 +486,6 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
     def __init__(self, **storage_options_s3):
         super().__init__(**storage_options_s3)
         self._store_id = DATA_STORE_ID_CDSE
-        self._collection_ids = ["sentinel-2-l2a"]
 
     def get_data_ids(
         self,
@@ -479,7 +493,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         include_attrs: Container[str] | bool = False,
     ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
         self._assert_valid_data_type(data_type)
-        for collection_id in self._collection_ids:
+        for collection_id in CDSE_ARDC_DATA_IDS:
             if not include_attrs:
                 yield collection_id
             else:
@@ -490,7 +504,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
 
     def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
         if self._is_valid_data_type(data_type):
-            return data_id in self._collection_ids
+            return data_id in CDSE_ARDC_DATA_IDS
         return False
 
     def get_open_data_params_schema(
