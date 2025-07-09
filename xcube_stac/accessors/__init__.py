@@ -28,10 +28,12 @@ from .sen3 import Sen3CdseStacItemAccessor, Sen3CdseStacArdcAccessor
 
 CDSE_ITEM_ACCESSOR_MAPPING = {
     "sentinel-2-l2a": Sen2CdseStacItemAccessor,
+    "sentinel-2-l1c": Sen2CdseStacItemAccessor,
     "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
 }
 CDSE_ARDC_ACCESSOR_MAPPING = {
     "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
+    "sentinel-2-l1c": Sen2CdseStacArdcAccessor,
     "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
 }
 CDSE_ARDC_DATA_IDS = list(CDSE_ARDC_ACCESSOR_MAPPING.keys())

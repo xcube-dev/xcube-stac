@@ -36,6 +36,7 @@ import xmltodict
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema, JsonNumberSchema
+from xcube.core.store import DataStoreError
 
 from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import (
@@ -193,22 +194,36 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 - 'xcube:asset_id_origin': the original requested asset name.
         """
         asset_names = open_params.get("asset_names")
-        if not asset_names:
-            asset_names = SENITNEL2_L2A_BANDS
-        spatial_res_final = open_params.get("spatial_res", 10)
-        assets_sel = []
-        for i, asset_name in enumerate(asset_names):
-            asset_name_res = asset_name
-            if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                res_diff = abs(spatial_res_final - SEN2_SPATIAL_RES)
-                for spatial_res in SEN2_SPATIAL_RES[np.argsort(res_diff)]:
-                    asset_name_res = f"{asset_name}_{spatial_res}m"
-                    if asset_name_res in item.assets:
-                        break
-            asset = item.assets[asset_name_res]
-            asset.extra_fields["xcube:asset_id"] = asset_name_res
-            asset.extra_fields["xcube:asset_id_origin"] = asset_names[i]
-            assets_sel.append(asset)
+        if item.collection == "sentinel-2-l2a":
+            if not asset_names:
+                asset_names = SENITNEL2_L2A_BANDS
+            spatial_res_final = open_params.get("spatial_res", 10)
+            assets_sel = []
+            for asset_name in asset_names:
+                asset_name_res = asset_name
+                if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
+                    res_diff = abs(spatial_res_final - SEN2_SPATIAL_RES)
+                    for spatial_res in SEN2_SPATIAL_RES[np.argsort(res_diff)]:
+                        asset_name_res = f"{asset_name}_{spatial_res}m"
+                        if asset_name_res in item.assets:
+                            break
+                asset = item.assets[asset_name_res]
+                asset.extra_fields["xcube:asset_id"] = asset_name_res
+                asset.extra_fields["xcube:asset_id_origin"] = asset_name
+                assets_sel.append(asset)
+        elif item.collection == "sentinel-2-l1c":
+            if not asset_names:
+                asset_names = SENITNEL2_BANDS
+            assets_sel = []
+            for asset_name in asset_names:
+                asset = item.assets[asset_name]
+                asset.extra_fields["xcube:asset_id"] = asset_name
+                asset.extra_fields["xcube:asset_id_origin"] = asset_name
+                assets_sel.append(asset)
+        else:
+            raise DataStoreError(
+                "Only collections 'sentinel-2-l2a' and 'sentinel-2-l1c' are supported."
+            )
         return assets_sel
 
     @staticmethod
@@ -354,7 +369,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         utm_tile_id = defaultdict(list)
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
-            crs = item.assets["AOT_10m"].extra_fields["proj:code"]
+            asset = next(iter(item.assets))
+            crs = asset.extra_fields["proj:code"]
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -822,7 +838,8 @@ def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
     xmin, ymin, xmax, ymax = np.inf, np.inf, -np.inf, -np.inf
     for tile_id in items.tile_id.values:
         item = np.sum(items.sel(tile_id=tile_id).values)[0]
-        bbox = item.assets["AOT_10m"].extra_fields["proj:bbox"]
+        asset = next(iter(item.assets))
+        bbox = asset.extra_fields["proj:bbox"]
         if xmin > bbox[0]:
             xmin = bbox[0]
         if ymin > bbox[1]:
