@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://earth-search.aws.element84.com/v1
   response:
@@ -19,20 +19,22 @@ interactions:
     headers:
       Connection:
       - keep-alive
+      Content-Encoding:
+      - gzip
       Content-Length:
-      - '3369'
+      - '612'
       Content-Type:
       - application/json; charset=utf-8
       Date:
-      - Tue, 04 Feb 2025 11:50:43 GMT
+      - Wed, 09 Jul 2025 10:18:21 GMT
       Via:
-      - 1.1 6582c239f47eb90b881c158927e7aa18.cloudfront.net (CloudFront)
+      - 1.1 70edb33d401d701d341a00ffeb978b84.cloudfront.net (CloudFront)
       X-Amz-Cf-Id:
-      - WaJ_puLXPxFSEjF5TAVmhQCSLV4cSQLPCq6L-yAN-bX0VlAa1SJQhA==
+      - TSWDwdMPnKyOvODxzJMBuRWNOaJ0TM3boYzCg0ROEvxv_Z7vLrAfGw==
       X-Amz-Cf-Pop:
-      - HAM50-C1
+      - AMS58-P1
       X-Amzn-Trace-Id:
-      - Root=1-67a1ff13-3dbcbf1a338430f66b18f749;Parent=5f4614f2ccc4fe19;Sampled=0;Lineage=1:9e2884e9:0
+      - Root=1-686e41ed-2a90de50331eb77e3b83a288;Parent=34e3e4f7524b2a34;Sampled=0;Lineage=1:9e2884e9:0
       X-Cache:
       - Miss from cloudfront
       access-control-allow-origin:
@@ -40,11 +42,11 @@ interactions:
       etag:
       - W/"d29-QPs+H0wJLUX32EZKNgzG3k6wfQ8"
       x-amz-apigw-id:
-      - FdTLEFoQvHcEiIw=
+      - Nb89IGZyPHcEgZg=
       x-amzn-Remapped-content-length:
       - '3369'
       x-amzn-RequestId:
-      - 22f83e89-2453-42b7-a751-def1215b172c
+      - d23659c3-c142-4b4b-ba28-15286388570c
       x-powered-by:
       - Express
     status:
@@ -60,38 +62,37 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://stac.dataspace.copernicus.eu/v1
   response:
     body:
-      string: '{"type":"Catalog","id":"Copernicus Data Space Ecosystem (CDSE) asset-level
-        STAC catalogue","title":"cdse-stac","description":"A comprehensive and searchable
+      string: '{"type":"Catalog","id":"cdse-stac","title":"Copernicus Data Space Ecosystem
+        (CDSE) asset-level STAC catalogue","description":"A comprehensive and searchable
         catalog of Earth observation and scientific datasets that is actively maintained
         and updated by the Copernicus Data Space Ecosystem. The integrated STAC (SpatioTemporal
         Asset Catalog) API, which follows the open STAC specification, enables users
         to access detailed asset-level metadata, including spatial information, temporal
         coverage, and data specifications. This standardized interface facilitates
         efficient data discovery and retrieval across the extensive collection of
-        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter","https://api.stacspec.org/v1.0.0-rc.1/collection-search#query","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","https://api.stacspec.org/v1.0.0-rc.1/collection-search#free-text","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","https://api.stacspec.org/v1.0.0-rc.1/collection-search","https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort","https://api.stacspec.org/v1.0.0-rc.1/collection-search#fields","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/collections/extensions/transaction","http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/collections","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"],"links":[{"rel":"self","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
+        environmental and scientific resources. More information: https://documentation.dataspace.copernicus.eu/","stac_version":"1.0.0","conformsTo":["http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/collections/extensions/transaction","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/ogcapi-features#fields","https://api.stacspec.org/v1.0.0/ogcapi-features#query","https://api.stacspec.org/v1.0.0/ogcapi-features#sort","https://api.stacspec.org/v1.0.0/ogcapi-features/extensions/transaction"],"links":[{"rel":"self","type":"application/json","title":"This
+        document","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"root","type":"application/json","title":"Root","href":"https://stac.dataspace.copernicus.eu/v1/"},{"rel":"data","type":"application/json","title":"Collections
+        available for this Catalog","href":"https://stac.dataspace.copernicus.eu/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
         conformance classes implemented by this server","href":"https://stac.dataspace.copernicus.eu/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
-        search","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"child","type":"application/json","title":"Sentinel-1
-        Ground Range Detected (GRD)","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-1-grd"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Global Mosaics","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-global-mosaics"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Level-1C","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l1c"},{"rel":"child","type":"application/json","title":"Sentinel-2
-        Level-2A","href":"https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
+        search [GET]","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search [POST]","href":"https://stac.dataspace.copernicus.eu/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        available for this Catalog","href":"https://stac.dataspace.copernicus.eu/v1/queryables","method":"GET"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
         service description","href":"https://stac.dataspace.copernicus.eu/v1/api"},{"rel":"service-doc","type":"text/html","title":"OpenAPI
         service documentation","href":"https://stac.dataspace.copernicus.eu/v1/api.html"}],"stac_extensions":[]}'
     headers:
       Connection:
       - keep-alive
       Content-Length:
-      - '1034'
+      - '929'
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:50:43 GMT
+      - Wed, 09 Jul 2025 10:18:21 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:

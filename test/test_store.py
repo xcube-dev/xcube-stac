@@ -53,8 +53,8 @@ SKIP_HELP = (
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
 CDSE_CREDENTIALS = {
-    "key": "",
-    "secret": "",
+    "key": "xxx",
+    "secret": "xxx",
 }
 
 
@@ -85,8 +85,8 @@ class StacDataStoreTest(unittest.TestCase):
         self.url_netcdf = "https://geoservice.dlr.de/eoc/ogc/stac/v1"
         self.data_id_nonsearchable = "zanzibar/znz001.json"
         self.data_id_searchable = (
-            "collections/sentinel-1-grd/items/S1C_EW_GRDM_1SSH_20250707T112159_"
-            "20250707T112235_003113_006511"
+            "collections/sentinel-1-grd/items/S1A_EW_GRDM_1SDH_20250709T083719_"
+            "20250709T083754_060004_07745D"
         )
         self.data_id_time_range = (
             "lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02"
@@ -176,17 +176,23 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, len(data_ids))
         self.assertEqual(
             [
-                "collections/ENMAP_HSI_L0_QL/items/ENMAP01-_____L0-DT0000139897_202507"
-                "06T113221Z_001_V010502_20250707T010946Z?f=application%2Fgeo%2Bjson"
+                "collections/ENMAP_HSI_L2A/items/ENMAP01-____L2A-DT0000140097_20250708"
+                "T104407Z_001_V010502_20250709T035921Z?f=application%2Fgeo%2Bjson"
             ],
             data_ids,
         )
 
     @pytest.mark.vcr()
     def test_get_data_ids_cdse_ardc(self):
-        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
+        store = new_data_store(
+            DATA_STORE_ID_CDSE_ARDC,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
         data_ids = store.list_data_ids()
-        self.assertCountEqual(["sentinel-2-l2a"], data_ids)
+        self.assertCountEqual(
+            ["sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc"], data_ids
+        )
 
     @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
@@ -618,6 +624,51 @@ class StacDataStoreTest(unittest.TestCase):
             secret=CDSE_CREDENTIALS["secret"],
         )
 
+        # open Level-1C data in UTM crs
+        bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
+        crs_target = "EPSG:32632"
+        bbox_utm = reproject_bbox(bbox_wgs84, "EPSG:4326", crs_target)
+        ds = store.open_data(
+            data_id="sentinel-2-l1c",
+            bbox=bbox_utm,
+            time_range=["2020-08-29", "2020-09-03"],
+            spatial_res=60,
+            crs=crs_target,
+            asset_names=["B04"],
+            apply_scaling=True,
+            add_angles=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+
+        self.assertCountEqual(
+            ["B04", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertEqual(
+            [4, 759, 903, 11, 12, 2, 1],
+            [
+                ds.sizes["time"],
+                ds.sizes["y"],
+                ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+        self.assertEqual(
+            [1, 759, 903, 11, 12, 2, 1],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["y"][0],
+                ds.chunksizes["x"][0],
+                ds.chunksizes["angle_y"][0],
+                ds.chunksizes["angle_x"][0],
+                ds.chunksizes["angle"][0],
+                ds.chunksizes["band"][0],
+            ],
+        )
+
         # open data in UTM crs
         bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
         crs_target = "EPSG:32632"
@@ -859,7 +910,11 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_search_data_cdse_ardc(self):
-        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
+        store = new_data_store(
+            DATA_STORE_ID_CDSE_ARDC,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
         descriptors = list(
             store.search_data(
                 data_type="dataset",
@@ -928,7 +983,11 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_get_search_params_schema_cdse_ardc(self):
-        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
+        store = new_data_store(
+            DATA_STORE_ID_CDSE_ARDC,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
         schema = store.get_search_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("time_range", schema.properties)

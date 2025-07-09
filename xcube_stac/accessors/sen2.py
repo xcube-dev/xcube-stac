@@ -194,7 +194,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 - 'xcube:asset_id_origin': the original requested asset name.
         """
         asset_names = open_params.get("asset_names")
-        if item.collection == "sentinel-2-l2a":
+        if item.collection_id == "sentinel-2-l2a":
             if not asset_names:
                 asset_names = SENITNEL2_L2A_BANDS
             spatial_res_final = open_params.get("spatial_res", 10)
@@ -211,7 +211,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 asset.extra_fields["xcube:asset_id"] = asset_name_res
                 asset.extra_fields["xcube:asset_id_origin"] = asset_name
                 assets_sel.append(asset)
-        elif item.collection == "sentinel-2-l1c":
+        elif item.collection_id == "sentinel-2-l1c":
             if not asset_names:
                 asset_names = SENITNEL2_BANDS
             assets_sel = []
@@ -369,7 +369,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         utm_tile_id = defaultdict(list)
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
-            asset = next(iter(item.assets))
+            asset = next(iter(item.assets.values()))
             crs = asset.extra_fields["proj:code"]
             utm_tile_id[crs].append(tile_id)
 
@@ -600,13 +600,17 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
         - The dataset includes a spatial reference system as a coordinate.
     """
     # read out solar and viewing angles
-    geocode = xml_dict["n1:Level-2A_Tile_ID"]["n1:Geometric_Info"]["Tile_Geocoding"]
+    if "n1:Level-1C_Tile_ID" in xml_dict:
+        xml_dict = xml_dict["n1:Level-1C_Tile_ID"]
+    else:
+        xml_dict = xml_dict["n1:Level-2A_Tile_ID"]
+    geocode = xml_dict["n1:Geometric_Info"]["Tile_Geocoding"]
     ulx = float(geocode["Geoposition"][0]["ULX"])
     uly = float(geocode["Geoposition"][0]["ULY"])
     x = ulx + 5000 * np.arange(23)
     y = uly - 5000 * np.arange(23)
 
-    angles = xml_dict["n1:Level-2A_Tile_ID"]["n1:Geometric_Info"]["Tile_Angles"]
+    angles = xml_dict["n1:Geometric_Info"]["Tile_Angles"]
     map_bandid_name = {idx: name for idx, name in enumerate(SENITNEL2_BANDS)}
     band_names = band_names + ["solar"]
     detector_ids = np.unique(
@@ -838,7 +842,7 @@ def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
     xmin, ymin, xmax, ymax = np.inf, np.inf, -np.inf, -np.inf
     for tile_id in items.tile_id.values:
         item = np.sum(items.sel(tile_id=tile_id).values)[0]
-        asset = next(iter(item.assets))
+        asset = next(iter(item.assets.values()))
         bbox = asset.extra_fields["proj:bbox"]
         if xmin > bbox[0]:
             xmin = bbox[0]

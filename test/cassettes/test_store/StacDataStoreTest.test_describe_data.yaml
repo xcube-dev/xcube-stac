@@ -53,7 +53,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Mon, 07 Jul 2025 12:56:21 GMT
+      - Wed, 09 Jul 2025 10:18:05 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -70,7 +70,7 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_23963bdc:197e443c976:22af
+      - GS_FLOW_CONTROL=GS_CFLOW_3c887f01:197ee979663:-5a7a
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -131,11 +131,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Mon, 07 Jul 2025 12:56:22 GMT
+      - Wed, 09 Jul 2025 10:18:07 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_23963bdc:197e443c976:22b0
+      - GS_FLOW_CONTROL=GS_CFLOW_3c887f01:197ee979663:-5a79
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -194,11 +194,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Mon, 07 Jul 2025 12:56:23 GMT
+      - Wed, 09 Jul 2025 10:18:08 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_23963bdc:197e443c976:22d5
+      - GS_FLOW_CONTROL=GS_CFLOW_-13da2b1c:197ee77915e:65d2
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -257,11 +257,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Mon, 07 Jul 2025 12:56:24 GMT
+      - Wed, 09 Jul 2025 10:18:09 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_23963bdc:197e443c976:22fa
+      - GS_FLOW_CONTROL=GS_CFLOW_-13da2b1c:197ee77915e:65f7
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:

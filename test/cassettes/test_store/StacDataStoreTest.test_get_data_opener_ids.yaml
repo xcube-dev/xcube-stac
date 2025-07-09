@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,17 +41,17 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 04 Feb 2025 11:50:35 GMT
+      - Wed, 09 Jul 2025 10:18:19 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 04 Feb 2025 11:55:35 GMT
+      - Wed, 09 Jul 2025 10:23:19 GMT
       Source-Age:
-      - '35'
+      - '8'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Authorization,Accept-Encoding
       Via:
       - 1.1 varnish
       X-Cache:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 41019b888ce83637f62188d7700584f34b411fda
+      - f9d39cb60dfd6bba5692f7760f083991d5dd7c18
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - E08F:23121B:2072B8:2184A6:67A1FEE6
+      - E8B4:10FD1B:86B686:9A65A5:686E41E0
       X-Served-By:
-      - cache-fra-eddf8230034-FRA
+      - cache-ams2100101-AMS
       X-Timer:
-      - S1738669835.158132,VS0,VE1
+      - S1752056299.164952,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -83,7 +83,7 @@ interactions:
       Host:
       - raw.githubusercontent.com
       User-Agent:
-      - Python-urllib/3.12
+      - Python-urllib/3.13
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -113,17 +113,17 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 04 Feb 2025 11:50:35 GMT
+      - Wed, 09 Jul 2025 10:18:19 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 04 Feb 2025 11:55:35 GMT
+      - Wed, 09 Jul 2025 10:23:19 GMT
       Source-Age:
-      - '34'
+      - '1'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Authorization,Accept-Encoding
       Via:
       - 1.1 varnish
       X-Cache:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 90e3ae42eea50327e9249e01869cb840c05927d5
+      - 4ee71da1287faf46e7529a244a7dc0ef6a36f615
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - E08F:23121B:207312:21850B:67A1FEE8
+      - 8563:1E91D9:8A9182:9E4034:686E41E9
       X-Served-By:
-      - cache-fra-eddf8230159-FRA
+      - cache-rtm-ehrd2290032-RTM
       X-Timer:
-      - S1738669835.209212,VS0,VE1
+      - S1752056299.286158,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -157,7 +157,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
@@ -217,17 +217,17 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 04 Feb 2025 11:50:35 GMT
+      - Wed, 09 Jul 2025 10:18:19 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 04 Feb 2025 11:55:35 GMT
+      - Wed, 09 Jul 2025 10:23:19 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Authorization,Accept-Encoding
       Via:
       - 1.1 varnish
       X-Cache:
@@ -237,15 +237,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 410fcff4aabd0918b2d5a11d57f379d4c99c1246
+      - 442197b358e6d6ceaa8cb4386736dccb9efe837c
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 1398:2BDF41:207EF0:219115:67A1FF0B
+      - D3C5:17FD64:862E97:99DE89:686E41EB
       X-Served-By:
-      - cache-fra-eddf8230159-FRA
+      - cache-rtm-ehrd2290026-RTM
       X-Timer:
-      - S1738669835.262534,VS0,VE382
+      - S1752056299.423953,VS0,VE149
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -261,7 +261,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
   response:
@@ -321,243 +321,35 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 04 Feb 2025 11:50:35 GMT
+      - Wed, 09 Jul 2025 10:18:19 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Tue, 04 Feb 2025 11:55:35 GMT
+      - Wed, 09 Jul 2025 10:23:19 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Authorization,Accept-Encoding
       Via:
       - 1.1 varnish
       X-Cache:
-      - HIT
+      - MISS
       X-Cache-Hits:
-      - '1'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - f9d1028176af39581ab63ffe2a88e39332d8b7ad
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - 1398:2BDF41:207EF0:219115:67A1FF0B
-      X-Served-By:
-      - cache-fra-eddf8230133-FRA
-      X-Timer:
-      - S1738669836.801145,VS0,VE1
-      X-XSS-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
-  response:
-    body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
-      - '*'
-      Cache-Control:
-      - max-age=300
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Length:
-      - '914'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
-      Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
-      Date:
-      - Tue, 04 Feb 2025 11:50:35 GMT
-      ETag:
-      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
-      Expires:
-      - Tue, 04 Feb 2025 11:55:35 GMT
-      Source-Age:
       - '0'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
-      Via:
-      - 1.1 varnish
-      X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - ac7f2d173ffe3d0e234be6c8e19eb13fede32582
+      - c46cc729196c26b8edfb29d0211ee69f849b77b3
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 1398:2BDF41:207EF0:219115:67A1FF0B
+      - 924D:9E50D:844295:97F2C4:686E41EA
       X-Served-By:
-      - cache-fra-eddf8230167-FRA
+      - cache-ams2100145-AMS
       X-Timer:
-      - S1738669836.852964,VS0,VE4
-      X-XSS-Protection:
-      - 1; mode=block
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/zanzibar/znz001.json
-  response:
-    body:
-      string: "{\n  \"stac_version\": \"1.0.0-rc.1\",\n  \"stac_extensions\": [\n
-        \   \"https://stac-extensions.github.io/label/v1.0.1/schema.json\",\n    \"https://stac-extensions.github.io/version/v1.0.0/schema.json\"\n
-        \ ],\n  \"id\": \"znz001\",\n  \"type\": \"Feature\",\n  \"bbox\": [\n    39.28919876472999,\n
-        \   -5.743028283012867,\n    39.31302874892266,\n    -5.722212794937691\n
-        \ ],\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          39.28919876472999,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.743028283012867\n
-        \       ],\n        [\n          39.31302874892266,\n          -5.722212794937691\n
-        \       ],\n        [\n          39.28919876472999,\n          -5.722212794937691\n
-        \       ]\n      ]\n    ]\n  },\n  \"assets\": {\n    \"labels\": {\n      \"title\":
-        \"znz001_label\",\n      \"href\": \"https://www.dropbox.com/sh/ct3s1x2a846x3yl/AAARCAOqhcRdoU7ULOb9GJl9a/grid_001.geojson?dl=1\",\n
-        \     \"type\": \"application/geo+json\"\n    },\n    \"raster\": {\n      \"title\":
-        \"znz001_previewcog\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff; profile=cloud-optimized\"\n
-        \   },\n    \"thumbnail\": {\n      \"title\": \"znz001_thumbnail\",\n      \"href\":
-        \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.png\",\n
-        \     \"type\": \"image/png\"\n    }\n  },\n  \"properties\": {\n    \"datetime\":
-        \"2019-04-23T00:00:00Z\",\n    \"license\": \"CC-BY-4.0\",\n    \"label:properties\":
-        [\n      \"building\",\n      \"condition\"\n    ],\n    \"label:description\":
-        \"building footprints manually  labeled and classified according to building
-        completion status\",\n    \"label:tasks\": [\n      \"segmentation\"\n    ],\n
-        \   \"label:type\": \"vector\",\n    \"label:methods\": [\n      \"manual\"\n
-        \   ],\n    \"version\": \"1\",\n    \"label:classes\": [\n      {\n        \"name\":
-        \"building\",\n        \"classes\": [\n          \"yes\"\n        ]\n      },\n
-        \     {\n        \"name\": \"condition\",\n        \"classes\": [\n          \"Complete\",\n
-        \         \"Incomplete\",\n          \"Foundation\"\n        ]\n      }\n
-        \   ],\n    \"label:overviews\": [\n      {\n        \"property_key\": \"building\",\n
-        \       \"counts\": [\n          {\n            \"name\": \"yes\",\n            \"count\":
-        4440\n          }\n        ]\n      }\n    ]\n  },\n  \"links\": [\n    {\n
-        \     \"rel\": \"root\",\n      \"href\": \"../catalog.json\"\n    },\n    {\n
-        \     \"rel\": \"parent\",\n      \"href\": \"collection.json\"\n    },\n
-        \   {\n      \"rel\": \"collection\",\n      \"href\": \"collection.json\"\n
-        \   },\n    {\n      \"rel\": \"source\",\n      \"href\": \"https://oin-hotosm.s3.amazonaws.com/5afeda152b6a08001185f11a/0/5afeda152b6a08001185f11b.tif\",\n
-        \     \"title\": \"The source imagery these building labels were derived from\",\n
-        \     \"label:assets\": [\n        \"building\"\n      ]\n    }\n  ]\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Access-Control-Allow-Origin:
-      - '*'
-      Cache-Control:
-      - max-age=300
-      Connection:
-      - keep-alive
-      Content-Encoding:
-      - gzip
-      Content-Length:
-      - '914'
-      Content-Security-Policy:
-      - default-src 'none'; style-src 'unsafe-inline'; sandbox
-      Content-Type:
-      - text/plain; charset=utf-8
-      Cross-Origin-Resource-Policy:
-      - cross-origin
-      Date:
-      - Tue, 04 Feb 2025 11:50:35 GMT
-      ETag:
-      - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
-      Expires:
-      - Tue, 04 Feb 2025 11:55:35 GMT
-      Source-Age:
-      - '0'
-      Strict-Transport-Security:
-      - max-age=31536000
-      Vary:
-      - Authorization,Accept-Encoding,Origin
-      Via:
-      - 1.1 varnish
-      X-Cache:
-      - HIT
-      X-Cache-Hits:
-      - '1'
-      X-Content-Type-Options:
-      - nosniff
-      X-Fastly-Request-ID:
-      - f7f65f13dfc73f0af097808b511eb9d30981bd7a
-      X-Frame-Options:
-      - deny
-      X-GitHub-Request-Id:
-      - 1398:2BDF41:207EF0:219115:67A1FF0B
-      X-Served-By:
-      - cache-fra-eddf8230126-FRA
-      X-Timer:
-      - S1738669836.909197,VS0,VE7
+      - S1752056300.689872,VS0,VE153
       X-XSS-Protection:
       - 1; mode=block
     status:
