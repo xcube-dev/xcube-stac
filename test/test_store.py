@@ -583,6 +583,45 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
+    # @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen3(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
+
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+
+        data_id = (
+            "collections/sentinel-2-l2a/items/S2A_MSIL2A_20200301T090901"
+            "_N0500_R050_T35UPU_20230630T033416"
+        )
+
+        # open data as dataset
+        ds = store.open_data(
+            data_id=data_id,
+            apply_scaling=True,
+            add_angles=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(
+            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertCountEqual(
+            [10980, 10980, 23, 23, 2, 12],
+            [
+                ds.sizes["y"],
+                ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+
     @pytest.mark.vcr()
     def test_open_data_cdse_ardc_no_items_found(self):
         store = new_data_store(

@@ -18,13 +18,13 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
-import pystac
+
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import CDSE_STAC_URL
 
-from .base import BaseStacItemAccessor, XcubeStacItemAccessor
+from .base import BaseStacItemAccessor
 from .sen2 import Sen2CdseStacArdcAccessor, Sen2CdseStacItemAccessor
-from .sen3 import Sen3CdseStacItemAccessor, Sen3CdseStacArdcAccessor
+from .sen3 import Sen3CdseStacArdcAccessor, Sen3CdseStacItemAccessor
 
 CDSE_ITEM_ACCESSOR_MAPPING = {
     "sentinel-2-l2a": Sen2CdseStacItemAccessor,

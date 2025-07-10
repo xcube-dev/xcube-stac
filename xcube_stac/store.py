@@ -41,11 +41,11 @@ from xcube.core.store import (
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
 from .accessors import (
+    CDSE_ARDC_DATA_IDS,
     guess_ardc_accessor,
     guess_item_accessor,
-    CDSE_ARDC_DATA_IDS,
-    XcubeStacItemAccessor,
 )
+from .accessors.base import XcubeStacItemAccessor
 from .constants import (
     CDSE_S3_ENDPOINT,
     CDSE_STAC_URL,
@@ -586,13 +586,14 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         collection = access_collection(url, self._catalog)
         bbox = collection.extent.spatial.bboxes[0]
         temp_extent = collection.extent.temporal.intervals[0]
-        temp_extent_str = [None, None]
+        time_start = None
         if temp_extent[0] is not None:
-            temp_extent_str[0] = convert_datetime2str(temp_extent[0])
+            time_start = convert_datetime2str(temp_extent[0])
+        time_end = None
         if temp_extent[1] is not None:
-            temp_extent_str[1] = convert_datetime2str(temp_extent[1])
+            time_end = convert_datetime2str(temp_extent[1])
 
-        return DatasetDescriptor(data_id, bbox=bbox, time_range=tuple(temp_extent_str))
+        return DatasetDescriptor(data_id, bbox=bbox, time_range=(time_start, time_end))
 
     def search_data(
         self, data_type: DataTypeLike = None, **search_params

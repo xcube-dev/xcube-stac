@@ -19,21 +19,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-from collections import defaultdict
 from typing import Sequence
 
-import dask.array as da
+import cftime
 import numpy as np
-import pyproj
 import pystac
+import shapely
 import xarray as xr
-from xcube.core.gridmapping import GridMapping
-from xcube.core.resampling import (
-    affine_transform_dataset,
-    reproject_dataset,
-    rectify_dataset,
-)
-from xcube.util.jsonschema import JsonObjectSchema, JsonBooleanSchema
+from xcube.core.resampling import rectify_dataset
+from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
 
 from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import (
@@ -47,30 +41,25 @@ from xcube_stac.constants import (
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
 )
-from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
     add_nominal_datetime,
     get_gridmapping,
     get_spatial_dims,
+    list_assets_from_item,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
     normalize_grid_mapping,
     rename_dataset,
     reproject_bbox,
-    list_assets_from_item,
 )
 
 SCHEMA_APPLY_RECTIFICATION = JsonBooleanSchema(
     title="Apply rectification algorithm.",
-    description=("If True, data is presented on a regular grid."),
+    description="If True, data is presented on a regular grid.",
     default=True,
 )
 SENITNEL3_ASSETS = [
-    "flags",
-    "syn_amin",
-    "syn_aot550",
-    "syn_angstrom_exp550",
     "syn_S1N_reflectance",
     "syn_S1O_reflectance",
     "syn_S2N_reflectance",
@@ -122,15 +111,9 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         coords["lon"] = ds["lon"]
         coords["lat"] = ds["lat"]
         ds_item = xr.Dataset(coords=coords, attrs=ds.attrs)
-        asset_names = open_params.pop("asset_names", SENITNEL3_ASSETS)
+        asset_names = open_params.get("asset_names", SENITNEL3_ASSETS)
         assets = list_assets_from_item(item, asset_names=asset_names)
         for asset in assets:
-            if asset.extra_fields["xcube:asset_id"] in [
-                "geolocation",
-                "time",
-                "syn_annot_rem",
-            ]:
-                continue
             ds = self.open_asset(asset)
             ds_item.update(ds)
 
@@ -160,6 +143,9 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
+
+        # filter items by checking if bounding box and polygon of tiles overlap
+        items = filter_items_spatial(items, open_params["bbox"])
 
         # get STAC assets grouped by solar day
         grouped_items = group_items(items)
@@ -195,89 +181,48 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
                 spatial_res=SCHEMA_SPATIAL_RES,
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
-                apply_rectification=SCHEMA_APPLY_RECTIFICATION,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
-        """Generate a spatiotemporal data cube from access parameters.
-
-        This function takes grouped access parameters and generates a unified xarray
-        dataset, mosaicking and stacking the data across spatial tiles and time.
-        Optionally, scaling is applied and solar and viewing angle are calculated.
-
-        Args:
-            access_params: A 4D data array indexed by tile_id, asset_name, time,
-                and idx, where each element contains data access metadata.
-            **open_params: Optional keyword arguments for data opening and processing:
-                - apply_scaling (bool): Whether to apply radiometric scaling.
-                    Default is True.
-                - angles_sentinel2 (bool): Whether to include Sentinel-2 solar angles.
-                    Default is False.
-                - bbox (list): Bounding box used for spatial subsetting.
-                - crs (str): Coordinate reference system of the bounding box.
-                - opener_id, data_type, etc.: Passed to the data-opening function.
-
-        Returns:
-            A dataset representing the spatiotemporal cube.
-        """
-        # Group the tile IDs by UTM zones
-        utm_tile_id = defaultdict(list)
-        for tile_id in grouped_items.tile_id.values:
-            item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
-            crs = item.assets["AOT_10m"].extra_fields["proj:code"]
-            utm_tile_id[crs].append(tile_id)
-
-        # Insert the tile data per UTM zone
-        list_ds_utm = []
-        for crs, tile_ids in utm_tile_id.items():
-            ds = self._generate_utm_cube(
-                grouped_items.sel(tile_id=tile_ids), crs, **open_params
-            )
-            list_ds_utm.append(ds)
-
-        # Reproject datasets from different UTM zones to a common grid reference system
-        # and merge them into a single unified dataset for seamless spatial analysis.
-        ds_final = _merge_utm_zones(list_ds_utm, **open_params)
-
-        if open_params.get("add_angles", False):
-            ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
+        target_gm = get_gridmapping(
+            open_params["bbox"],
+            open_params["spatial_res"],
+            open_params["crs"],
+            TILE_SIZE,
+        )
+        bbox_latlon = reproject_bbox(
+            open_params["bbox"], open_params["crs"], "EPSG:4326"
+        )
+        dss_time = []
+        for dt_idx, dt in enumerate(grouped_items.time.values):
+            items = grouped_items.sel(time=dt).item()
+            dss_spatial = []
+            for item in items:
+                ds = self.open_item(
+                    item,
+                    asset_names=open_params.get("asset_names"),
+                    apply_rectification=False,
+                )
+                ds["lat"] = ds.lat.compute()
+                ds["lon"] = ds.lon.compute()
+                ds = _clip_sen3_dataset(ds, bbox_latlon)
+                if any(size == 0 for size in ds.sizes.values()):
+                    continue
+                ds = rectify_dataset(ds, target_gm=target_gm)
+                dss_spatial.append(ds)
+            if not dss_spatial:
+                continue
+            dss_time.append(mosaic_spatial_take_first(dss_spatial))
+        ds_final = xr.concat(dss_time, dim="time", join="exact")
+        ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
 
         return ds_final
 
 
 def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
-    """Group STAC items by solar day, tile ID, and processing version.
-
-    This method organizes a list of Sentinel-2 STAC items into an `xarray.DataArray`
-    with dimensions `(time, tile_id, idx)`, where:
-    - `time` corresponds to the solar acquisition date (ignoring time of day),
-    - `tile_id` is the Sentinel-2 MGRS tile code,
-    - `idx` accounts for up to two acquisitions per tile (e.g., due to multiple
-      observations for the same tile),
-    - The most recent processing version is selected if multiple exist.
-
-    Args:
-        items: List of STAC items to group. Each item must have:
-            - `properties["datetime_nominal"]`: Nominal acquisition datetime.
-            - `properties["grid:code"]`: Tile ID (MGRS grid).
-            - A processing version recognizable by `_get_processing_version`.
-
-    Returns:
-        A 3D DataArray of shape (time, tile_id, idx) containing STAC items.
-        Time coordinate values are actual datetimes (not just dates), derived
-        from the nominal acquisition datetime of the first item per date/tile
-        combination.
-
-    Notes:
-        - Only up to two items per (date, tile_id) and processing version
-          are considered.
-        - If more than two items exist for the same (date, tile_id, proc_version),
-          a warning is logged and only the first two are used.
-        - Among multiple processing versions, only the latest is retained.
-    """
     items = add_nominal_datetime(items)
 
     # get dates and tile IDs of the items
@@ -302,245 +247,47 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     dts = []
     for date in grouped_items.time.values:
         item = np.sum(grouped_items.sel(time=date).values)[0]
-        dts.append(
-            np.datetime64(item.properties["datetime"].replace(tzinfo=None)).astype(
-                "datetime64[ns]"
-            )
-        )
-    grouped_items = grouped_items.assign_coords(time=dts)
+        dts.append(item.datetime)
+    grouped_items = grouped_items.assign_coords(
+        time=np.array(dts, dtype="datetime64[ns]")
+    )
+    grouped_items["time"].encoding["units"] = "seconds since 1970-01-01"
+    grouped_items["time"].encoding["calendar"] = "standard"
 
     return grouped_items
 
 
-def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
-    """Compute the overall bounding box that covers all tiles in the given access
-    parameters.
+def _clip_sen3_dataset(ds: xr.Dataset, bbox: Sequence[float | int]):
+    col_min = 0
+    for col_min in range(ds.sizes["columns"]):
+        if np.any(ds.lon[:, col_min] >= bbox[0]):
+            break
+    col_max = ds.sizes["columns"] - 1
+    for col_max in range(ds.sizes["columns"] - 1, -1, -1):
+        if np.any(ds.lon[:, col_max] <= bbox[2]):
+            break
+    row_min = 0
+    for row_min in range(ds.sizes["rows"]):
+        if np.any(ds.lat[row_min, :] <= bbox[3]):
+            break
+    row_max = ds.sizes["rows"] - 1
+    for row_max in range(ds.sizes["rows"] - 1, -1, -1):
+        if np.any(ds.lat[row_max, :] >= bbox[1]):
+            break
 
-    Iterates through each tile in `access_params` to extract the bounding box
-    from its metadata and calculates the minimum bounding rectangle encompassing all
-    tiles.
-
-    Parameters:
-        items: An array containing tile metadata, with coordinates
-            including 'tile_id'.
-
-    Returns:
-        A list with four elements [xmin, ymin, xmax, ymax] representing the
-        bounding box that encloses all tiles.
-    """
-    xmin, ymin, xmax, ymax = np.inf, np.inf, -np.inf, -np.inf
-    for tile_id in items.tile_id.values:
-        item = np.sum(items.sel(tile_id=tile_id).values)[0]
-        bbox = item.assets["AOT_10m"].extra_fields["proj:bbox"]
-        if xmin > bbox[0]:
-            xmin = bbox[0]
-        if ymin > bbox[1]:
-            ymin = bbox[1]
-        if xmax < bbox[2]:
-            xmax = bbox[2]
-        if ymax < bbox[3]:
-            ymax = bbox[3]
-    return [xmin, ymin, xmax, ymax]
-
-
-def _resample_dataset_soft(
-    ds: xr.Dataset,
-    target_gm: GridMapping,
-    fill_value: float | int = np.nan,
-    interpolation: str = "nearest",
-) -> xr.Dataset:
-    """Resample a dataset to a target grid mapping, using either affine transform
-    or reprojection.
-
-    If the source and target grid mappings are close, the dataset is returned unchanged.
-    If they share the same CRS but differ spatially, an affine transformation is applied.
-    Otherwise, the dataset is reprojected to the target grid, with optional fill value
-    and interpolation.
-
-    Parameters:
-        ds: The source xarray Dataset to be resampled.
-        target_gm: The target grid mapping
-        fill_value: Value to fill in areas without data during reprojection.
-            Defaults to 0 (no-data value in the Sentinel-2 product).
-        interpolation: Interpolation method to use during reprojection
-            (see reproject_dataset function in xcube).
-
-    Returns:
-        The resampled dataset aligned with the target grid mapping.
-    """
-    source_gm = GridMapping.from_dataset(ds)
-    if source_gm.is_close(target_gm):
-        return ds
-    if target_gm.crs == source_gm.crs:
-        var_configs = {}
-        for var in ds.data_vars:
-            var_configs[var] = dict(recover_nan=True)
-        ds = affine_transform_dataset(
-            ds,
-            source_gm=source_gm,
-            target_gm=target_gm,
-            gm_name="spatial_ref",
-            var_configs=var_configs,
-        )
-    else:
-        ds = reproject_dataset(
-            ds,
-            source_gm=source_gm,
-            target_gm=target_gm,
-            fill_value=fill_value,
-            interpolation=interpolation,
-        )
-    return ds
-
-
-def _create_empty_dataset(
-    sample_ds: xr.Dataset,
-    grouped_items: xr.DataArray,
-    items_bbox: list[float | int] | tuple[float | int],
-    final_bbox: list[float | int] | tuple[float | int],
-    spatial_res: int | float,
-) -> xr.Dataset:
-    """Create an empty xarray Dataset with spatial and temporal dimensions matching
-    the given bounding boxes and grouped items.
-
-    The dataset is constructed using the data variables and types from `sample_ds`,
-    creating arrays filled with NaNs. It conforms to the native pixel grid and spatial
-    resolution of the Sentinel-2 product, while covering the spatial extent defined
-    by the input bounding boxes. The temporal dimension and coordinate values are
-    derived from `grouped_items`. The resulting dataset includes coordinates for
-    time, y, and x dimensions, along with a matching spatial reference coordinate
-    system.
-
-    Args:
-        sample_ds: A sample dataset whose data variable names and dtypes will be used.
-        grouped_items: A 2D DataArray (time, tile_id) containing grouped STAC items.
-        items_bbox: The bounding box covering all input items (minx, miny, maxx, maxy).
-        final_bbox: The target bounding box to define the spatial extent of the final
-            datacube (minx, miny, maxx, maxy).
-        spatial_res: The spatial resolution in CRS units (e.g., meters or degrees).
-
-    Returns:
-        A dataset with shape (time, y, x), filled with NaNs and ready to be populated
-        with mosaicked data.
-    """
-    half_res = spatial_res / 2
-    y_start = items_bbox[3] - spatial_res * (
-        (items_bbox[3] - final_bbox[3]) // spatial_res
-    )
-    y_end = items_bbox[1] + spatial_res * (
-        (final_bbox[1] - items_bbox[1]) // spatial_res
-    )
-    y = np.arange(y_start - half_res, y_end, -spatial_res)
-    x_end = items_bbox[2] - spatial_res * (
-        (items_bbox[2] - final_bbox[2]) // spatial_res
-    )
-    x_start = items_bbox[0] + spatial_res * (
-        (final_bbox[0] - items_bbox[0]) // spatial_res
-    )
-    x = np.arange(x_start + half_res, x_end, spatial_res)
-
-    chunks = (1, TILE_SIZE, TILE_SIZE)
-    shape = (grouped_items.sizes["time"], len(y), len(x))
-    return xr.Dataset(
-        {
-            key: (
-                ("time", "y", "x"),
-                da.full(shape, np.nan, dtype=var.dtype, chunks=chunks),
-            )
-            for (key, var) in sample_ds.data_vars.items()
-        },
-        coords={
-            "x": x,
-            "y": y,
-            "time": grouped_items.time,
-            "spatial_ref": sample_ds.spatial_ref,
-        },
+    return ds.isel(
+        columns=slice(col_min, col_max),
+        rows=slice(row_min, row_max),
     )
 
 
-def _insert_tile_data(final_ds: xr.Dataset, ds: xr.Dataset, dt_idx: int) -> xr.Dataset:
-    """Insert spatial data from a smaller dataset into a larger asset dataset at
-    the correct spatiotemporal indices.
-
-    This method locates the spatial coordinates of the input dataset `ds` within
-    the larger `final_ds` along the 'x' and 'y' dimensions, then inserts the data
-    from `ds` into the corresponding slice of `final_ds` for the specified time
-    index `dt_idx`.
-
-    Args:
-        final_ds: The larger dataset representing the final data cube for one UTM zone.
-        ds: The smaller xarray Dataset containing data to be inserted.
-        dt_idx: The time index in `final_ds` at which to insert the data.
-
-    Returns:
-        The updated `final_ds` with data from `ds` inserted at the appropriate
-        spatial location.
-    """
-    xmin = final_ds.indexes["x"].get_loc(ds.x[0].item())
-    xmax = final_ds.indexes["x"].get_loc(ds.x[-1].item())
-    ymin = final_ds.indexes["y"].get_loc(ds.y[0].item())
-    ymax = final_ds.indexes["y"].get_loc(ds.y[-1].item())
-    for var in ds.data_vars:
-        final_ds[var][dt_idx, ymin : ymax + 1, xmin : xmax + 1] = ds[var]
-    return final_ds
-
-
-def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
-    """Merge multiple Sentinel-2 datacubes for different UTM zones into a
-    single dataset.
-
-    This function takes a list of Sentinel-2 datasets (each in a different UTM zone),
-    resamples them to a common grid defined by a target CRS and spatial resolution,
-    and mosaics them into a single output using a "take first" strategy for overlaps.
-
-    Parameters:
-        list_ds_utm: A list of xarray Datasets, one for each UTM zone.
-        open_params: Dictionary of parameters required for constructing the target grid,
-            including:
-            - crs: Target coordinate reference system (string or EPSG code).
-            - spatial_res: Spatial resolution as a single value or tuple (x_res, y_res).
-            - bbox: Bounding box for the output grid (minx, miny, maxx, maxy).
-            - tile_size (optional): Tile size for the target grid.
-
-    Returns:
-        A single xarray Dataset reprojected to the target CRS and resolution,
-        containing merged data from all input UTM zones.
-
-    Notes:
-        - If one input dataset already matches the target CRS and resolution,
-          its grid mapping is reused unless resolution mismatches are found.
-        - Overlapping regions are resolved by selecting the first non-NaN value.
-    """
-    # get correct target gridmapping
-    crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
-    target_crs = pyproj.CRS.from_string(open_params["crs"])
-    crss_equal = [target_crs == crs for crs in crss]
-    if any(crss_equal):
-        true_index = crss_equal.index(True)
-        ds = list_ds_utm[true_index]
-        target_gm = GridMapping.from_dataset(ds)
-        spatial_res = open_params["spatial_res"]
-        if not isinstance(spatial_res, tuple):
-            spatial_res = (spatial_res, spatial_res)
-        if (
-            ds.x[1] - ds.x[0] != spatial_res[0]
-            or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
-        ):
-            target_gm = get_gridmapping(
-                open_params["bbox"],
-                open_params["spatial_res"],
-                open_params["crs"],
-                open_params.get("tile_size", TILE_SIZE),
-            )
-    else:
-        target_gm = get_gridmapping(
-            open_params["bbox"],
-            open_params["spatial_res"],
-            open_params["crs"],
-            open_params.get("tile_size", TILE_SIZE),
-        )
-
-    resampled_list_ds = []
-    for ds in list_ds_utm:
-        resampled_list_ds.append(_resample_dataset_soft(ds, target_gm))
-    return mosaic_spatial_take_first(resampled_list_ds)
+def filter_items_spatial(
+    items: Sequence[pystac.Item], bbox: Sequence[float | int]
+) -> Sequence[pystac.Item]:
+    bbox_geom = shapely.box(*bbox)
+    sel_items = []
+    for item in items:
+        polygon_geom = shapely.polygons(item.geometry["coordinates"])
+        if bbox_geom.intersects(polygon_geom):
+            sel_items.append(item)
+    return sel_items

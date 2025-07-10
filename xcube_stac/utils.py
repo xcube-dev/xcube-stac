@@ -40,14 +40,9 @@ from shapely.geometry import box
 from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
 from xcube.core.resampling import affine_transform_dataset
-from xcube.core.store import (
-    MULTI_LEVEL_DATASET_TYPE,
-    DataStoreError,
-    DataTypeLike,
-)
+from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
 
 from .constants import (
-    DATA_OPENER_IDS,
     MAP_FILE_EXTENSION_FORMAT,
     MAP_MIME_TYP_FORMAT,
     MLDATASET_FORMATS,

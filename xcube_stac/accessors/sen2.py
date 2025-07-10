@@ -24,6 +24,7 @@ from collections import defaultdict
 from typing import Sequence
 
 import boto3
+import cftime
 import dask
 import dask.array as da
 import numpy as np
@@ -35,8 +36,8 @@ import xarray as xr
 import xmltodict
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
-from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema, JsonNumberSchema
 from xcube.core.store import DataStoreError
+from xcube.util.jsonschema import JsonBooleanSchema, JsonNumberSchema, JsonObjectSchema
 
 from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import (
@@ -127,7 +128,9 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             region_name="default",
         )
 
-    def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
+    @staticmethod
+    # TODO noinspection Py...
+    def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
         return rioxarray.open_rasterio(
             asset.href,
             chunks=dict(),
@@ -796,6 +799,7 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
             grouped_items[idx_date, idx_tile_id, idx_proc_version].append(item)
 
     # take the latest processing version
+    # TODO noinspection Py...
     mask = grouped_items != None
     proc_version_idx = np.argmax(mask, axis=-1)
     grouped_items = np.take_along_axis(
@@ -815,10 +819,13 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     dts = []
     for date in grouped_items.time.values:
         item = np.sum(grouped_items.sel(time=date).values)[0]
-        dts.append(
-            np.datetime64(item.datetime.replace(tzinfo=None)).astype("datetime64[ns]")
-        )
+        dts.append(item.datetime)
+    grouped_items = grouped_items.assign_coords(
+        time=np.array(dts, dtype="datetime64[ns]")
+    )
     grouped_items = grouped_items.assign_coords(time=dts)
+    grouped_items["time"].encoding["units"] = "seconds since 1970-01-01"
+    grouped_items["time"].encoding["calendar"] = "standard"
 
     return grouped_items
 
@@ -1068,14 +1075,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
-                open_params.get("tile_size", TILE_SIZE),
+                TILE_SIZE,
             )
     else:
         target_gm = get_gridmapping(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
-            open_params.get("tile_size", TILE_SIZE),
+            TILE_SIZE,
         )
 
     resampled_list_ds = []
