@@ -24,7 +24,6 @@ from collections import defaultdict
 from typing import Sequence
 
 import boto3
-import cftime
 import dask
 import dask.array as da
 import numpy as np
@@ -129,7 +128,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         )
 
     @staticmethod
-    # TODO noinspection Py...
+    # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
         return rioxarray.open_rasterio(
             asset.href,
@@ -799,7 +798,7 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
             grouped_items[idx_date, idx_tile_id, idx_proc_version].append(item)
 
     # take the latest processing version
-    # TODO noinspection Py...
+    # noinspection PyComparisonWithNone
     mask = grouped_items != None
     proc_version_idx = np.argmax(mask, axis=-1)
     grouped_items = np.take_along_axis(
@@ -819,7 +818,7 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     dts = []
     for date in grouped_items.time.values:
         item = np.sum(grouped_items.sel(time=date).values)[0]
-        dts.append(item.datetime)
+        dts.append(item.datetime.replace(tzinfo=None))
     grouped_items = grouped_items.assign_coords(
         time=np.array(dts, dtype="datetime64[ns]")
     )

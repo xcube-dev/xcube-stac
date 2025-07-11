@@ -98,7 +98,7 @@ class BaseStacItemAccessor(StacItemAccessor):
             )
 
     @staticmethod
-    # TODO noinspection Py...
+    # noinspection PyUnusedLocal
     def get_open_data_params_schema(
         data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:

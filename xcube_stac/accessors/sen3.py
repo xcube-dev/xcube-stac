@@ -21,9 +21,12 @@
 
 from typing import Sequence
 
-import cftime
 import numpy as np
 import pystac
+import rasterio.session
+import rioxarray
+import warnings
+from rasterio.errors import NotGeoreferencedWarning
 import shapely
 import xarray as xr
 from xcube.core.resampling import rectify_dataset
@@ -95,15 +98,48 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
         self._storage_option_s3 = storage_options_s3
+        self.session = rasterio.session.AWSSession(
+            aws_unsigned=storage_options_s3["anon"],
+            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"].split(
+                "//"
+            )[1],
+            aws_access_key_id=storage_options_s3["key"],
+            aws_secret_access_key=storage_options_s3["secret"],
+        )
+        self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
+        # keep the rasterio environment open so that the data can be accessed
+        # when plotting or writing the data
+        self.env = self.env.__enter__()
+
+        warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
-        return xr.open_dataset(
+        ds = rioxarray.open_rasterio(
             asset.href,
-            engine="h5netcdf",
-            chunks=open_params.get("chunks", {}),
-            backend_kwargs={},
-            storage_options=self._storage_option_s3,
+            chunks=dict(band=1, y=1023, x=1217),
+            band_as_variable=True,
+            driver="netCDF",
         )
+        ds = ds.squeeze()
+        ds = ds.drop_vars(["band", "x", "y", "spatial_ref"])
+        if asset.href.endswith("geolocation.nc"):
+            ds_final = xr.Dataset()
+            ds_final.attrs = ds.attrs
+            for var_name in ["lon", "lat"]:
+                array = ds[var_name]
+                array = array.where(array != array.attrs["_FillValue"])
+                array *= array.attrs["scale_factor"]
+                ds_final[var_name] = array
+            return ds_final
+        else:
+            var_name = list(ds.data_vars)[0]
+            array = ds[var_name]
+            array = array.where(array != array.attrs["_FillValue"])
+            array *= array.attrs["scale_factor"]
+            ds_final = xr.Dataset()
+            ds_final[var_name] = array
+            ds_final.attrs = ds.attrs
+            return ds_final
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         coords = dict()
@@ -119,6 +155,8 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
 
         if open_params.get("apply_rectification", True):
             ds_item = rectify_dataset(ds_item)
+            # TODO: add georeferencing
+            # ds_item = normalize_grid_mapping(ds_item)
         return ds_item
 
     def get_open_data_params_schema(
@@ -212,13 +250,16 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
                 if any(size == 0 for size in ds.sizes.values()):
                     continue
                 ds = rectify_dataset(ds, target_gm=target_gm)
+                if ds is None:
+                    continue
                 dss_spatial.append(ds)
             if not dss_spatial:
                 continue
             dss_time.append(mosaic_spatial_take_first(dss_spatial))
         ds_final = xr.concat(dss_time, dim="time", join="exact")
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
-
+        # TODO: add geo-referencing
+        # ds_final = normalize_grid_mapping(ds_final)
         return ds_final
 
 
@@ -247,7 +288,7 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     dts = []
     for date in grouped_items.time.values:
         item = np.sum(grouped_items.sel(time=date).values)[0]
-        dts.append(item.datetime)
+        dts.append(item.datetime.replace(tzinfo=None))
     grouped_items = grouped_items.assign_coords(
         time=np.array(dts, dtype="datetime64[ns]")
     )
@@ -258,26 +299,26 @@ def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
 
 
 def _clip_sen3_dataset(ds: xr.Dataset, bbox: Sequence[float | int]):
-    col_min = 0
-    for col_min in range(ds.sizes["columns"]):
-        if np.any(ds.lon[:, col_min] >= bbox[0]):
-            break
-    col_max = ds.sizes["columns"] - 1
-    for col_max in range(ds.sizes["columns"] - 1, -1, -1):
-        if np.any(ds.lon[:, col_max] <= bbox[2]):
-            break
-    row_min = 0
-    for row_min in range(ds.sizes["rows"]):
-        if np.any(ds.lat[row_min, :] <= bbox[3]):
-            break
-    row_max = ds.sizes["rows"] - 1
-    for row_max in range(ds.sizes["rows"] - 1, -1, -1):
-        if np.any(ds.lat[row_max, :] >= bbox[1]):
-            break
+    mask = (
+        (ds.lon >= bbox[0])
+        & (ds.lon <= bbox[2])
+        & (ds.lat >= bbox[1])
+        & (ds.lat <= bbox[3])
+    )
+
+    # Find indices where mask is True
+    indices = np.where(mask)
+
+    if len(indices[0]) == 0:
+        return ds
+
+    # Now compute the minimal slice to clip
+    i_min, i_max = indices[0].min(), indices[0].max()
+    j_min, j_max = indices[1].min(), indices[1].max()
 
     return ds.isel(
-        columns=slice(col_min, col_max),
-        rows=slice(row_min, row_max),
+        x=slice(j_min, j_max + 1),
+        y=slice(i_min, i_max + 1),
     )
 
 

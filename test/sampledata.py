@@ -144,57 +144,45 @@ def sentinel_2_band_data_60m():
 
 def sentinel_3_data():
     mock_data = {
-        "band_1": (
-            ("y", "x"),
-            da.ones((1830, 1830), chunks=(1024, 1024), dtype=np.uint16),
+        "SDR_Oa01": (
+            ("band", "y", "x"),
+            da.ones((1, 4091, 4865), chunks=(1, 1023, 1217), dtype=np.float32),
+        ),
+        "SDR_Oa01_err": (
+            ("band", "y", "x"),
+            da.ones((1, 4091, 4865), chunks=(1, 1023, 1217), dtype=np.float32),
         ),
     }
-    spatial_ref = xr.DataArray(
-        np.array(0),
-        attrs={
-            "crs_wkt": (
-                'PROJCS["WGS 84 / UTM zone 32N",GEOGCS["WGS 84",DATUM["WGS_1984",'
-                'SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],'
-                'AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG",'
-                '"8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],'
-                'AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_Mercator"],PARAMETER'
-                '["latitude_of_origin",0],PARAMETER["central_meridian",9],PARAMETER'
-                '["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER'
-                '["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS'
-                '["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","32632"]]'
-            ),
-            "semi_major_axis": 6378137.0,
-            "semi_minor_axis": 6356752.314245179,
-            "inverse_flattening": 298.257223563,
-            "reference_ellipsoid_name": "WGS 84",
-            "longitude_of_prime_meridian": 0.0,
-            "prime_meridian_name": "Greenwich",
-            "geographic_crs_name": "WGS 84",
-            "horizontal_datum_name": "World Geodetic System 1984",
-            "projected_crs_name": "WGS 84 / UTM zone 32N",
-            "grid_mapping_name": "transverse_mercator",
-            "latitude_of_projection_origin": 0.0,
-            "longitude_of_central_meridian": 9.0,
-            "false_easting": 500000.0,
-            "false_northing": 0.0,
-            "scale_factor_at_central_meridian": 0.9996,
-            "spatial_ref": (
-                'PROJCS["WGS 84 / UTM zone 32N",GEOGCS["WGS 84",DATUM["WGS_1984",'
-                'SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],'
-                'AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG",'
-                '"8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG","9122"]],'
-                'AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_Mercator"],PARAMETER'
-                '["latitude_of_origin",0],PARAMETER["central_meridian",9],PARAMETER'
-                '["scale_factor",0.9996],PARAMETER["false_easting",500000],PARAMETER'
-                '["false_northing",0],UNIT["metre",1,AUTHORITY["EPSG","9001"]],AXIS'
-                '["Easting",EAST],AXIS["Northing",NORTH],AUTHORITY["EPSG","32632"]]'
-            ),
-            "GeoTransform": "499980.0 60.0 0.0 5900040.0 0.0 -60.0",
-        },
-    )
     coords = {
-        "x": np.arange(500010.0, 609751.0, 60.0),
-        "y": np.arange(5999970.0, 5890229.0, -60.0),
-        "spatial_ref": spatial_ref,
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(4865),
+        "y": np.arange(4091),
     }
-    return xr.Dataset(mock_data, coords=coords)
+    ds = xr.Dataset(mock_data, coords=coords)
+    ds["SDR_Oa01"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    ds["SDR_Oa01_err"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    return ds
+
+
+def sentinel_3_geolocation_data():
+    lon = da.linspace(0, 15, 4865, chunks=1217, dtype=np.float64)
+    lon *= da.linspace(0.5, 1.5, 4865, chunks=1217, dtype=np.float64)
+    lat = da.linspace(50, 60, 4091, chunks=1023, dtype=np.float64)
+    lat *= da.linspace(0.5, 1.5, 4091, chunks=1023, dtype=np.float64)
+    lon, lat = da.meshgrid(lon, lat, indexing="xy")
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(4865),
+        "y": np.arange(4091),
+    }
+    mock_data = {
+        "lon": (("band", "y", "x"), da.expand_dims(lon, axis=0)),
+        "lat": (("band", "y", "x"), da.expand_dims(lat, axis=0)),
+    }
+
+    ds = xr.Dataset(mock_data, coords=coords)
+    ds["lon"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    ds["lat"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    return ds

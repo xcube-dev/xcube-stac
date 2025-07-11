@@ -44,7 +44,12 @@ from xcube_stac.constants import (
 )
 from xcube_stac.utils import reproject_bbox
 
-from .sampledata import sentinel_2_band_data_10m, sentinel_2_band_data_60m
+from .sampledata import (
+    sentinel_2_band_data_10m,
+    sentinel_2_band_data_60m,
+    sentinel_3_data,
+    sentinel_3_geolocation_data,
+)
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -99,6 +104,10 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_cdse_sen2 = (
             "collections/sentinel-2-l2a/items/"
             "S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948"
+        )
+        self.data_id_cdse_sen3 = (
+            "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T"
+            "233058_20250706T233358_20250708T043306_0179_108_258_3420_ESA_O_NT_002"
         )
 
     @pytest.mark.vcr()
@@ -343,21 +352,27 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("add_angles", schema.properties)
 
+        schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen3)
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertIn("asset_names", schema.properties)
+        self.assertIn("apply_rectification", schema.properties)
+
     def test_get_open_data_params_schema_cdse_ardc(self):
         store = new_data_store(
             DATA_STORE_ID_CDSE_ARDC,
             key=CDSE_CREDENTIALS["key"],
             secret=CDSE_CREDENTIALS["secret"],
         )
-        schema = store.get_open_data_params_schema(data_id="sentinel-2-l2a")
-        # no optional arguments
-        self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
-        self.assertIn("time_range", schema.properties)
-        self.assertIn("bbox", schema.properties)
-        self.assertIn("crs", schema.properties)
-        self.assertIn("spatial_res", schema.properties)
-        self.assertIn("query", schema.properties)
+        data_ids = ("sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc")
+        for data_id in data_ids:
+            schema = store.get_open_data_params_schema(data_id=data_id)
+            self.assertIsInstance(schema, JsonObjectSchema)
+            self.assertIn("asset_names", schema.properties)
+            self.assertIn("time_range", schema.properties)
+            self.assertIn("bbox", schema.properties)
+            self.assertIn("crs", schema.properties)
+            self.assertIn("spatial_res", schema.properties)
+            self.assertIn("query", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -584,6 +599,50 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen3(self, mock_rioxarray_open):
+        mock_rioxarray_open.side_effect = [
+            sentinel_3_geolocation_data(),
+            sentinel_3_data(),
+        ]
+
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+
+        data_id = (
+            "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T233058_"
+            "20250706T233358_20250708T043306_0179_108_258_3420_ESA_O_NT_002"
+        )
+
+        # open data as dataset without rectification
+        ds = store.open_data(
+            data_id=data_id,
+            asset_names=["syn_Oa01_reflectance"],
+            apply_rectification=False,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["SDR_Oa01"], list(ds.data_vars))
+        self.assertCountEqual([4091, 4865], [ds.sizes["y"], ds.sizes["x"]])
+        self.assertEqual(2, ds.lat.ndim)
+        self.assertEqual(2, ds.lon.ndim)
+
+        # TODO add test with rectification
+        # # open data as dataset with rectification
+        # ds = store.open_data(
+        #     data_id=data_id,
+        #     asset_names=["syn_Oa01_reflectance"],
+        #     apply_rectification=True,
+        # )
+        # self.assertIsInstance(ds, xr.Dataset)
+        # self.assertCountEqual(["SDR_Oa01"], list(ds.data_vars))
+        # self.assertCountEqual([4091, 4865], [ds.sizes["lat"], ds.sizes["lon"]])
+        # self.assertEqual(1, ds.lat.ndim)
+        # self.assertEqual(1, ds.lon.ndim)
+
+    @pytest.mark.vcr()
     def test_open_data_cdse_ardc_no_items_found(self):
         store = new_data_store(
             DATA_STORE_ID_CDSE_ARDC,
@@ -773,6 +832,49 @@ class StacDataStoreTest(unittest.TestCase):
             "Data type must be one of ('dataset',), but got 'mldataset'.",
             f"{cm.exception}",
         )
+
+    # TODO add test for Sen3 ardc
+    # @pytest.mark.vcr()
+    # @patch("rioxarray.open_rasterio")
+    # def test_open_data_cdse_sen3_ardc(self, mock_rioxarray_open):
+    #     mock_rioxarray_open.side_effect = [
+    #         sentinel_3_geolocation_data(),
+    #         sentinel_3_data(),
+    #         sentinel_3_geolocation_data(),
+    #         sentinel_3_data(),
+    #         sentinel_3_geolocation_data(),
+    #         sentinel_3_data(),
+    #         sentinel_3_geolocation_data(),
+    #         sentinel_3_data(),
+    #         sentinel_3_geolocation_data(),
+    #         sentinel_3_data(),
+    #     ]
+    #     store = new_data_store(
+    #         DATA_STORE_ID_CDSE_ARDC,
+    #         key=CDSE_CREDENTIALS["key"],
+    #         secret=CDSE_CREDENTIALS["secret"],
+    #     )
+    #
+    #     ds = store.open_data(
+    #         data_id="sentinel-3-syn-2-syn-ntc",
+    #         bbox=[8, 52, 12, 55],
+    #         time_range=["2020-07-31", "2020-08-01"],
+    #         spatial_res=300 / 111320,  # meter in degree
+    #         crs="EPSG:4326",
+    #         asset_names=["syn_Oa01_reflectance"],
+    #     )
+    #     ds
+    #     self.assertIsInstance(ds, xr.Dataset)
+    #
+    #     self.assertCountEqual(["syn_Oa01_reflectance"], list(ds.data_vars))
+    #     self.assertEqual(
+    #         [2, 1115, 1486],
+    #         [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
+    #     )
+    #     self.assertEqual(
+    #         [2, 1115, 1486],
+    #         [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
+    #     )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
