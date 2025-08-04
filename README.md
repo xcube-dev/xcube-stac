@@ -48,7 +48,7 @@ Each item would then correspond to a specific measurement covering a certain are
 particular time. In multi-spectral instruments, different bands are often stored as 
 individual assets.
 
-Most STAC catalog are conform to the [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/release/v1.0.0/item-search#stac-api---item-search) 
+Most STAC catalogs conform to the [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/release/v1.0.0/item-search#stac-api---item-search) 
 specification, enabling efficient **server-side queries** based on spatial, temporal, 
 or attribute filters. Without this conformance, only **client-side searches** are 
 possible, which can be slow for large catalogs.

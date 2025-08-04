@@ -35,7 +35,7 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac.accessors.sen2 import SENITNEL2_L2A_BANDS
+from xcube_stac.accessors.sen2 import _SENITNEL2_L2A_BANDS
 from xcube_stac.constants import (
     DATA_STORE_ID,
     DATA_STORE_ID_CDSE,
@@ -583,7 +583,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
+            _SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(

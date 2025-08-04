@@ -1,4 +1,4 @@
-name: xcube-stac2
+name: xcube-stac
 channels:
   - conda-forge
 dependencies:

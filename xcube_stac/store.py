@@ -40,11 +40,7 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
-from .accessors import (
-    CDSE_ARDC_DATA_IDS,
-    guess_ardc_accessor,
-    guess_item_accessor,
-)
+from .accessors import CDSE_ARDC_DATA_IDS, guess_ardc_accessor, guess_item_accessor
 from .accessors.base import XcubeStacItemAccessor
 from .constants import (
     CDSE_S3_ENDPOINT,

@@ -41,7 +41,12 @@ from xcube_stac.version import version
 
 
 class BaseStacItemAccessor(StacItemAccessor):
-    """Provides methods for accessing the data of one general STAC item."""
+    """
+    Default implementation of `StacItemAccessor` for general STAC items.
+
+    Handles asset access via S3 or HTTPS and supports combining and scaling multiple
+    assets.
+    """
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._storage_options_s3 = storage_options_s3

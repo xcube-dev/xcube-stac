@@ -19,16 +19,16 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import warnings
 from typing import Sequence
 
 import numpy as np
 import pystac
 import rasterio.session
 import rioxarray
-import warnings
-from rasterio.errors import NotGeoreferencedWarning
 import shapely
 import xarray as xr
+from rasterio.errors import NotGeoreferencedWarning
 from xcube.core.resampling import rectify_dataset
 from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
 
@@ -93,7 +93,7 @@ SENITNEL3_ASSETS = [
 
 
 class Sen3CdseStacItemAccessor(StacItemAccessor):
-    """Provides methods for accessing the data of one general STAC Item"""
+    """Provides methods for accessing the data of a CDSE Sentinel-3 STAC Item."""
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
@@ -173,7 +173,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
 
 
 class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
-    """Provides methods for access multiple Sentinel-2 STAC Items from the
+    """Provides methods for access multiple Sentinel-3 STAC Items from the
     CDSE STAC API and build an analysis ready data cube."""
 
     def open_ardc(
@@ -183,10 +183,10 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
     ) -> xr.Dataset:
 
         # filter items by checking if bounding box and polygon of tiles overlap
-        items = filter_items_spatial(items, open_params["bbox"])
+        items = _filter_items_spatial(items, open_params["bbox"])
 
         # get STAC assets grouped by solar day
-        grouped_items = group_items(items)
+        grouped_items = _group_items(items)
 
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
@@ -263,7 +263,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
         return ds_final
 
 
-def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
+def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     items = add_nominal_datetime(items)
 
     # get dates and tile IDs of the items
@@ -322,7 +322,7 @@ def _clip_sen3_dataset(ds: xr.Dataset, bbox: Sequence[float | int]):
     )
 
 
-def filter_items_spatial(
+def _filter_items_spatial(
     items: Sequence[pystac.Item], bbox: Sequence[float | int]
 ) -> Sequence[pystac.Item]:
     bbox_geom = shapely.box(*bbox)

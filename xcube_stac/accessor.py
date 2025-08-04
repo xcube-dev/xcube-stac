@@ -30,7 +30,7 @@ from xcube.util.jsonschema import JsonObjectSchema
 
 
 class StacItemAccessor(ABC):
-    """Provides methods for accessing the data of one STAC Item"""
+    """Provides methods for accessing the data of one STAC Item."""
 
     @abstractmethod
     def open_asset(
@@ -61,7 +61,7 @@ class StacItemAccessor(ABC):
 
 
 class StacArdcAccessor(StacItemAccessor):
-    """Provides methods for access multiple STAC Items and build an analysis ready
+    """Provides methods for accessing multiple STAC Items and build an analysis ready
     data cube."""
 
     @abstractmethod

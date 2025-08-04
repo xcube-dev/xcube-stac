@@ -64,7 +64,7 @@ from xcube_stac.utils import (
 )
 from xcube_stac.version import version
 
-SENITNEL2_BANDS = [
+_SENITNEL2_BANDS = [
     "B01",
     "B02",
     "B03",
@@ -79,11 +79,11 @@ SENITNEL2_BANDS = [
     "B11",
     "B12",
 ]
-SENITNEL2_L2A_BANDS = SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
-SENITNEL2_L2A_BANDS.remove("B10")
-SEN2_SPATIAL_RES = np.array([10, 20, 60])
-SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
-SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
+_SENITNEL2_L2A_BANDS = _SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
+_SENITNEL2_L2A_BANDS.remove("B10")
+_SEN2_SPATIAL_RES = np.array([10, 20, 60])
+_SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
+_SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
     title="Add viewing and solar angles from Sentinel2 metadata.",
     description=(
         "Viewing and solar angles will be extracted for all spectral "
@@ -91,15 +91,15 @@ SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
     ),
     default=False,
 )
-SCHEMA_APPLY_SCALING_SENTINEL2 = SCHEMA_APPLY_SCALING
-SCHEMA_APPLY_SCALING_SENTINEL2.default = True
-SCHEMA_SPATIAL_RES_SEN2_ITEM = JsonNumberSchema(
-    title=SCHEMA_SPATIAL_RES.title, enum=[10, 20, 60], default=10
+_SCHEMA_APPLY_SCALING_SENTINEL2 = SCHEMA_APPLY_SCALING
+_SCHEMA_APPLY_SCALING_SENTINEL2.default = True
+_SCHEMA_SPATIAL_RES_SEN2_ITEM = JsonNumberSchema(
+    title=SCHEMA_SPATIAL_RES.title, enum=_SEN2_SPATIAL_RES, default=10
 )
 
 
 class Sen2CdseStacItemAccessor(StacItemAccessor):
-    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item"""
+    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item."""
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
@@ -161,9 +161,9 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         return JsonObjectSchema(
             properties=dict(
                 asset_names=SCHEMA_ASSET_NAMES,
-                apply_scaling=SCHEMA_APPLY_SCALING_SENTINEL2,
-                spatial_res=SCHEMA_SPATIAL_RES_SEN2_ITEM,
-                add_angles=SCHEMA_ANGLES_SENTINEL2,
+                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
+                spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
+                add_angles=_SCHEMA_ANGLES_SENTINEL2,
             ),
             required=[],
             additional_properties=False,
@@ -198,14 +198,14 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         asset_names = open_params.get("asset_names")
         if item.collection_id == "sentinel-2-l2a":
             if not asset_names:
-                asset_names = SENITNEL2_L2A_BANDS
+                asset_names = _SENITNEL2_L2A_BANDS
             spatial_res_final = open_params.get("spatial_res", 10)
             assets_sel = []
             for asset_name in asset_names:
                 asset_name_res = asset_name
-                if not re.fullmatch(SENTINEL2_REGEX_ASSET_NAME, asset_name):
-                    res_diff = abs(spatial_res_final - SEN2_SPATIAL_RES)
-                    for spatial_res in SEN2_SPATIAL_RES[np.argsort(res_diff)]:
+                if not re.fullmatch(_SENTINEL2_REGEX_ASSET_NAME, asset_name):
+                    res_diff = abs(spatial_res_final - _SEN2_SPATIAL_RES)
+                    for spatial_res in _SEN2_SPATIAL_RES[np.argsort(res_diff)]:
                         asset_name_res = f"{asset_name}_{spatial_res}m"
                         if asset_name_res in item.assets:
                             break
@@ -215,7 +215,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 assets_sel.append(asset)
         elif item.collection_id == "sentinel-2-l1c":
             if not asset_names:
-                asset_names = SENITNEL2_BANDS
+                asset_names = _SENITNEL2_BANDS
             assets_sel = []
             for asset_name in asset_names:
                 asset = item.assets[asset_name]
@@ -312,7 +312,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 20]
 
         # get STAC assets grouped by solar day
-        grouped_items = group_items(items)
+        grouped_items = _group_items(items)
 
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
@@ -345,8 +345,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
                 spatial_res=SCHEMA_SPATIAL_RES,
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
-                add_angles=SCHEMA_ANGLES_SENTINEL2,
-                apply_scaling=SCHEMA_APPLY_SCALING_SENTINEL2,
+                add_angles=_SCHEMA_ANGLES_SENTINEL2,
+                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
@@ -357,7 +357,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
 
          This function takes grouped items parameters and generates a unified xarray
          dataset, mosaicking and stacking the data across spatial tiles and time.
-         Optionally, scaling is applied and solar and viewing angle are calculated.
+         Optionally, scaling is applied and solar and viewing angles are calculated.
 
          Args:
              grouped_items: A 2D data array indexed by tile_id and time contianing STAC
@@ -573,7 +573,7 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
     band_names = [
         str(key).split("_")[0] for key in ds.keys() if str(key).startswith("B")
     ]
-    return [name for name in SENITNEL2_BANDS if name in band_names]
+    return [name for name in _SENITNEL2_BANDS if name in band_names]
 
 
 def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
@@ -613,7 +613,7 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
     y = uly - 5000 * np.arange(23)
 
     angles = xml_dict["n1:Geometric_Info"]["Tile_Angles"]
-    map_bandid_name = {idx: name for idx, name in enumerate(SENITNEL2_BANDS)}
+    map_bandid_name = {idx: name for idx, name in enumerate(_SENITNEL2_BANDS)}
     band_names = band_names + ["solar"]
     detector_ids = np.unique(
         [
@@ -747,7 +747,7 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
+def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     """Group STAC items by solar day, tile ID.
 
     This method organizes a list of Sentinel-2 STAC items into an `xarray.DataArray`
@@ -883,11 +883,11 @@ def _get_spatial_res(open_params: dict) -> int:
         spatial_res = open_params["spatial_res"] * CONVERSION_FACTOR_DEG_METER
     else:
         spatial_res = open_params["spatial_res"]
-    idxs = np.where(SEN2_SPATIAL_RES >= spatial_res)[0]
+    idxs = np.where(_SEN2_SPATIAL_RES >= spatial_res)[0]
     if len(idxs) == 0:
         spatial_res = 60
     else:
-        spatial_res = int(SEN2_SPATIAL_RES[idxs[0]])
+        spatial_res = int(_SEN2_SPATIAL_RES[idxs[0]])
 
     return spatial_res
 
