@@ -25,8 +25,8 @@ import datetime
 import itertools
 import json
 import os
-from collections.abc import Container, Iterator
-from typing import Any, Sequence
+from collections.abc import Sequence, Container, Iterator
+from typing import Any
 
 import dask.array as da
 import numpy as np

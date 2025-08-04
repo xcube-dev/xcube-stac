@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 from abc import ABC, abstractmethod
-from typing import Sequence
+from collections.abc import Sequence
 
 import pystac
 import xarray as xr

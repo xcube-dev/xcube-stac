@@ -20,7 +20,7 @@
 # SOFTWARE.
 
 import warnings
-from typing import Sequence
+from collections.abc import Sequence
 
 import numpy as np
 import pystac
