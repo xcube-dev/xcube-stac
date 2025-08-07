@@ -35,7 +35,7 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema
 
-from xcube_stac.accessors.sen2 import _SENITNEL2_L2A_BANDS
+from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
 from xcube_stac.constants import (
     DATA_STORE_ID,
     DATA_STORE_ID_CDSE,
@@ -583,7 +583,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
-            _SENITNEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
+            _SENTINEL2_L2A_BANDS + ["solar_angle", "viewing_angle"],
             list(ds.data_vars),
         )
         self.assertCountEqual(
@@ -624,7 +624,7 @@ class StacDataStoreTest(unittest.TestCase):
             apply_rectification=False,
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["SDR_Oa01"], list(ds.data_vars))
+        self.assertCountEqual(["SDR_Oa01", "SDR_Oa01_err"], list(ds.data_vars))
         self.assertCountEqual([4091, 4865], [ds.sizes["y"], ds.sizes["x"]])
         self.assertEqual(2, ds.lat.ndim)
         self.assertEqual(2, ds.lon.ndim)
@@ -660,7 +660,7 @@ class StacDataStoreTest(unittest.TestCase):
                 query={"constellation": {"eq": "sentinel-3"}},
                 spatial_res=10,
                 crs="EPSG:32635",
-                asset_names=["red", "green", "blue"],
+                asset_names=["B02", "B03", "B04"],
                 apply_scaling=True,
             )
         self.assertIsNone(ds)

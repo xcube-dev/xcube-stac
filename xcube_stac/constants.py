@@ -124,7 +124,7 @@ SCHEMA_COLLECTIONS = JsonArraySchema(
     description="Collection IDs to be included in the search request.",
 )
 SCHEMA_ASSET_NAMES = JsonArraySchema(
-    items=(JsonStringSchema(min_length=0)),
+    items=(JsonStringSchema(min_length=1)),
     unique_items=True,
     title="Names of assets",
     description="Names of assets which will be included in the data cube.",

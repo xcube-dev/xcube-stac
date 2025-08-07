@@ -48,6 +48,7 @@ from .constants import (
     MLDATASET_FORMATS,
     TILE_SIZE,
     FloatInt,
+    LOG,
 )
 from .href_parse import decode_href
 
@@ -301,15 +302,31 @@ def do_bboxes_intersect(
 
 
 def list_assets_from_item(
-    item: pystac.Item, asset_names: Sequence[str] = None
+    item: pystac.Item, asset_names: Sequence[str] | None = None
 ) -> list[pystac.Asset]:
+    selected_keys = asset_names if asset_names is not None else item.assets.keys()
     assets = []
-    for key, asset in item.assets.items():
+
+    for key in selected_keys:
+        asset = item.assets.get(key)
+        if asset is None:
+            LOG.warning(
+                "Asset name '%s' not found in assets of item '%s'.", key, item.id
+            )
+            continue
+
         format_id = get_format_id(asset)
-        if (asset_names is None or key in asset_names) and format_id is not None:
+        if format_id is not None:
             asset.extra_fields["xcube:asset_id"] = key
             asset.extra_fields["xcube:format_id"] = format_id
             assets.append(asset)
+
+    if not assets:
+        raise RuntimeError(
+            "No valid assets found in item '%s' for asset_names=%s."
+            % (item.id, asset_names)
+        )
+
     return assets
 
 

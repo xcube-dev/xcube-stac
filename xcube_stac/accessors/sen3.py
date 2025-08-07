@@ -30,14 +30,18 @@ import shapely
 import xarray as xr
 from rasterio.errors import NotGeoreferencedWarning
 from xcube.core.resampling import rectify_dataset
-from xcube.util.jsonschema import JsonBooleanSchema, JsonObjectSchema
+from xcube.util.jsonschema import (
+    JsonBooleanSchema,
+    JsonObjectSchema,
+    JsonArraySchema,
+    JsonStringSchema,
+)
 
 from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_APPLY_SCALING,
-    SCHEMA_ASSET_NAMES,
     SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
@@ -57,12 +61,7 @@ from xcube_stac.utils import (
     reproject_bbox,
 )
 
-SCHEMA_APPLY_RECTIFICATION = JsonBooleanSchema(
-    title="Apply rectification algorithm.",
-    description="If True, data is presented on a regular grid.",
-    default=True,
-)
-SENITNEL3_ASSETS = [
+_SENTINEL3_ASSETS = [
     "syn_S1N_reflectance",
     "syn_S1O_reflectance",
     "syn_S2N_reflectance",
@@ -90,6 +89,21 @@ SENITNEL3_ASSETS = [
     "syn_Oa18_reflectance",
     "syn_Oa21_reflectance",
 ]
+_SCHEMA_APPLY_RECTIFICATION = JsonBooleanSchema(
+    title="Apply rectification algorithm.",
+    description="If True, data is presented on a regular grid.",
+    default=True,
+)
+_SCHEMA_ASSET_NAMES = JsonArraySchema(
+    items=(JsonStringSchema(min_length=1, enum=_SENTINEL3_ASSETS)),
+    unique_items=True,
+    title="Names of assets (spectral bands).",
+)
+_SCHEMA_ADD_ERROR_BANDS = JsonBooleanSchema(
+    title="Add error bands.",
+    description="If True, error datasets for each band is added.",
+    default=True,
+)
 
 
 class Sen3CdseStacItemAccessor(StacItemAccessor):
@@ -131,15 +145,18 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 array *= array.attrs["scale_factor"]
                 ds_final[var_name] = array
             return ds_final
-        else:
-            var_name = list(ds.data_vars)[0]
+        var_names = list(ds.data_vars)
+        if not open_params.get("add_error_bands", True):
+            var_names = var_names[:1]
+        ds_final = xr.Dataset()
+        ds_final.attrs = ds.attrs
+        for var_name in var_names:
             array = ds[var_name]
             array = array.where(array != array.attrs["_FillValue"])
             array *= array.attrs["scale_factor"]
-            ds_final = xr.Dataset()
             ds_final[var_name] = array
-            ds_final.attrs = ds.attrs
-            return ds_final
+
+        return ds_final
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         coords = dict()
@@ -147,10 +164,10 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         coords["lon"] = ds["lon"]
         coords["lat"] = ds["lat"]
         ds_item = xr.Dataset(coords=coords, attrs=ds.attrs)
-        asset_names = open_params.get("asset_names", SENITNEL3_ASSETS)
+        asset_names = open_params.get("asset_names", _SENTINEL3_ASSETS)
         assets = list_assets_from_item(item, asset_names=asset_names)
         for asset in assets:
-            ds = self.open_asset(asset)
+            ds = self.open_asset(asset, **open_params)
             ds_item.update(ds)
 
         if open_params.get("apply_rectification", True):
@@ -164,8 +181,9 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
             properties=dict(
-                asset_names=SCHEMA_ASSET_NAMES,
-                apply_rectification=SCHEMA_APPLY_RECTIFICATION,
+                asset_names=_SCHEMA_ASSET_NAMES,
+                apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
+                add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
             ),
             required=[],
             additional_properties=True,
@@ -213,12 +231,13 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
             properties=dict(
-                asset_names=SCHEMA_ASSET_NAMES,
+                asset_names=_SCHEMA_ASSET_NAMES,
                 time_range=SCHEMA_TIME_RANGE,
                 bbox=SCHEMA_BBOX,
                 spatial_res=SCHEMA_SPATIAL_RES,
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
+                add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,

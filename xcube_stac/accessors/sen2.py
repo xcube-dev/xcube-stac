@@ -36,14 +36,19 @@ import xmltodict
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
-from xcube.util.jsonschema import JsonBooleanSchema, JsonNumberSchema, JsonObjectSchema
+from xcube.util.jsonschema import (
+    JsonBooleanSchema,
+    JsonArraySchema,
+    JsonStringSchema,
+    JsonNumberSchema,
+    JsonObjectSchema,
+)
 
 from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_APPLY_SCALING,
-    SCHEMA_ASSET_NAMES,
     SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
@@ -64,7 +69,7 @@ from xcube_stac.utils import (
 )
 from xcube_stac.version import version
 
-_SENITNEL2_BANDS = [
+_SENTINEL2_BANDS = [
     "B01",
     "B02",
     "B03",
@@ -79,8 +84,8 @@ _SENITNEL2_BANDS = [
     "B11",
     "B12",
 ]
-_SENITNEL2_L2A_BANDS = _SENITNEL2_BANDS + ["AOT", "SCL", "WVP"]
-_SENITNEL2_L2A_BANDS.remove("B10")
+_SENTINEL2_L2A_BANDS = _SENTINEL2_BANDS + ["AOT", "SCL", "WVP"]
+_SENTINEL2_L2A_BANDS.remove("B10")
 _SEN2_SPATIAL_RES = np.array([10, 20, 60])
 _SENTINEL2_REGEX_ASSET_NAME = "^[A-Z]{3}_[0-9]{2}m$"
 _SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
@@ -95,6 +100,11 @@ _SCHEMA_APPLY_SCALING_SENTINEL2 = SCHEMA_APPLY_SCALING
 _SCHEMA_APPLY_SCALING_SENTINEL2.default = True
 _SCHEMA_SPATIAL_RES_SEN2_ITEM = JsonNumberSchema(
     title=SCHEMA_SPATIAL_RES.title, enum=_SEN2_SPATIAL_RES, default=10
+)
+_SCHEMA_ASSET_NAMES = JsonArraySchema(
+    items=(JsonStringSchema(min_length=1, enum=_SENTINEL2_L2A_BANDS)),
+    unique_items=True,
+    title="Names of assets (spectral bands)",
 )
 
 
@@ -160,7 +170,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
             properties=dict(
-                asset_names=SCHEMA_ASSET_NAMES,
+                asset_names=_SCHEMA_ASSET_NAMES,
                 apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
                 spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
                 add_angles=_SCHEMA_ANGLES_SENTINEL2,
@@ -183,7 +193,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             item: The STAC item containing the assets to filter.
             **open_params: Optional parameters to control asset selection:
                 - asset_names (list[str], optional): List of desired asset keys.
-                    Defaults to SENITNEL2_L2A_BANDS.
+                    Defaults to SENTINEL2_L2A_BANDS.
                 - spatial_res (int, optional): Desired spatial resolution in meters
                   defining the asset selection. *spatial_res* must be one of
                   [10, 20, 60]. Defaults to 10.
@@ -198,7 +208,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         asset_names = open_params.get("asset_names")
         if item.collection_id == "sentinel-2-l2a":
             if not asset_names:
-                asset_names = _SENITNEL2_L2A_BANDS
+                asset_names = _SENTINEL2_L2A_BANDS
             spatial_res_final = open_params.get("spatial_res", 10)
             assets_sel = []
             for asset_name in asset_names:
@@ -215,7 +225,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 assets_sel.append(asset)
         elif item.collection_id == "sentinel-2-l1c":
             if not asset_names:
-                asset_names = _SENITNEL2_BANDS
+                asset_names = _SENTINEL2_BANDS
             assets_sel = []
             for asset_name in asset_names:
                 asset = item.assets[asset_name]
@@ -339,7 +349,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
             properties=dict(
-                asset_names=SCHEMA_ASSET_NAMES,
+                asset_names=_SCHEMA_ASSET_NAMES,
                 time_range=SCHEMA_TIME_RANGE,
                 bbox=SCHEMA_BBOX,
                 spatial_res=SCHEMA_SPATIAL_RES,
@@ -562,7 +572,7 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
 
     This function scans the keys of the input dataset and collects those that
     start with a 'B' (e.g., 'B02', 'B08A'). It returns only the names that match
-    known Sentinel-2 band identifiers defined in the global `SENITNEL2_BANDS` list.
+    known Sentinel-2 band identifiers defined in the global `SENTINEL2_BANDS` list.
 
     Parameters:
         ds: The input dataset containing variables named with band prefixes.
@@ -573,7 +583,7 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
     band_names = [
         str(key).split("_")[0] for key in ds.keys() if str(key).startswith("B")
     ]
-    return [name for name in _SENITNEL2_BANDS if name in band_names]
+    return [name for name in _SENTINEL2_BANDS if name in band_names]
 
 
 def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
@@ -613,7 +623,7 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
     y = uly - 5000 * np.arange(23)
 
     angles = xml_dict["n1:Geometric_Info"]["Tile_Angles"]
-    map_bandid_name = {idx: name for idx, name in enumerate(_SENITNEL2_BANDS)}
+    map_bandid_name = {idx: name for idx, name in enumerate(_SENTINEL2_BANDS)}
     band_names = band_names + ["solar"]
     detector_ids = np.unique(
         [
