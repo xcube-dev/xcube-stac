@@ -101,7 +101,7 @@ _SCHEMA_ASSET_NAMES = JsonArraySchema(
 )
 _SCHEMA_ADD_ERROR_BANDS = JsonBooleanSchema(
     title="Add error bands.",
-    description="If True, error datasets for each band is added.",
+    description="If True, the error band for each band is added.",
     default=True,
 )
 
@@ -146,6 +146,18 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 ds_final[var_name] = array
             return ds_final
         var_names = list(ds.data_vars)
+        if not open_params.get("add_error_bands", True):
+            var_names = [
+                var_name for var_name in var_names if not var_name.endswith("_err")
+            ]
+            ds = ds[var_names]
+        for var_name in var_names:
+            ds[var_name] = ds[var_name].where(
+                ds[var_name] != ds[var_name].attrs["_FillValue"]
+            )
+            ds[var_name] *= ds[var_name].attrs["scale_factor"]
+        return ds
+
         if not open_params.get("add_error_bands", True):
             var_names = var_names[:1]
         ds_final = xr.Dataset()

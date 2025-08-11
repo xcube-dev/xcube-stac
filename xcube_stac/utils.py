@@ -322,7 +322,7 @@ def list_assets_from_item(
             assets.append(asset)
 
     if not assets:
-        raise RuntimeError(
+        raise DataStoreError(
             "No valid assets found in item '%s' for asset_names=%s."
             % (item.id, asset_names)
         )
