@@ -1,4 +1,14 @@
-## Changes in 0.4.1 (under development)
+## Changes in 1.0.0
+
+* Restructured the store architecture: the keyword argument `stack_mode` has been
+  removed. A new data store, `stac-cdse-ardc`, has been introduced, enabling the
+  creation of 3D analysis-ready data cubes from multiple STAC items (observation
+  tiles). The README has been updated to provide a concise user guide.
+* Added support for analysis-ready data cubes in `stac-cdse-ardc` for **Sentinel-2
+  L1C** (`data_id="sentinel-2-l1c"`).
+* Added support for analysis-ready data cubes in `stac-cdse-ardc` for **Sentinel-3
+  Synergy** products (`data_id="sentinel-3-syn-2-syn-ntc"`).
+
 
 ## Changes in 0.4.0
 
