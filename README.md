@@ -14,6 +14,7 @@ for accessing data from [STAC (SpatioTemporal Asset Catalogs)](https://stacspec.
 1. [Overview](#overview)
    1. [General structure of a STAC catalog](#general-structure-of-a-stac-catalog)
    2. [General functionality of xcube-stac](#general-functionality-of-xcube-stac)
+   3. [Special support for the CDSE STAC API](#special-support-for-the-cdse-stac-api)
 2. [Setup](#setup)
    1. [Installing the xcube-stac plugin](#installing-the-xcube-stac-plugin)
    2. [Getting S3 credentials for CDSE data access ](#getting-s3-credentials-for-cdse-data-access)
@@ -23,51 +24,95 @@ for accessing data from [STAC (SpatioTemporal Asset Catalogs)](https://stacspec.
 4. [Testing](#testing)
    1. [Some notes on the strategy of unit-testing](#some-notes-on-the-strategy-of-unit-testing)
 
+--- 
+
 ## Overview
 
 ### General structure of a STAC catalog
-A SpatioTemporal Asset Catalog (STAC) consists of three main components: catalog,
-collection, and item. Each item can contain multiple assets, each linked to a data
-source. Items are associated with a timestamp or temporal range and a bounding box,
-describing the spatial and temporal extent of the data. 
 
-Items within a collection generally exhibit
-similarities. For example, a STAC catalog might contain multiple collections
-corresponding to different space-borne instruments. Each item represents a measurement
-covering a specific spatial area at a particular timestamp. For a multi-spectral
-instrument, different bands are often stored as separate assets.
+A **SpatioTemporal Asset Catalog (STAC)** typically consists of three main components:
 
-A STAC catalog can comply with the [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/release/v1.0.0/item-search#stac-api---item-search)
-conformance class, enabling server-side searches for items based on specific
-parameters. If this compliance is not met, only client-side searches are possible,
-which can be slow for large STAC catalogs.
+- **Catalogs**
+- **Collections**
+- **Items**
+
+Each **item** represents a spatiotemporal observation and includes:
+
+- a timestamp or temporal range
+- a bounding box defining its spatial extent
+- one or more **assets**, each linking to a data source (such as imagery or metadata)
+
+Items within a **collection** generally share common characteristics. For example, 
+a STAC catalog might have separate collections for different satellite data products. 
+Each item would then correspond to a specific measurement covering a certain area at a 
+particular time. In multi-spectral instruments, different bands are often stored as 
+individual assets.
+
+Most STAC catalogs conform to the [STAC API - Item Search](https://github.com/radiantearth/stac-api-spec/tree/release/v1.0.0/item-search#stac-api---item-search) 
+specification, enabling efficient **server-side queries** based on spatial, temporal, 
+or attribute filters. Without this conformance, only **client-side searches** are 
+possible, which can be slow for large catalogs.
+
+---
 
 ### General functionality of xcube-stac
-The xcube-stac plugin reads the data sources from the STAC catalog and opens the data
-in an analysis ready form following the [xcube dataset convention](https://xcube.readthedocs.io/en/latest/cubespec.html).
-By default, a data ID represents one item, which is opened as a dataset, with each
-asset becoming a data variable within the dataset. 
 
-Additionally, a stack mode is
-available, enabling the stacking of items using the core functionality of [xcube](https://xcube.readthedocs.io/en/latest/).
-This allows for mosaicking multiple tiles grouped by solar day, and concatenating
-the datacube along the temporal axis.
+The **xcube-stac plugin** reads data sources described by a STAC catalog and opens 
+them as `xr.Dataset` that follows the [xcube dataset convention](https://xcube.readthedocs.io/en/latest/cubespec.html).
 
-Also, [odc-stac](https://odc-stac.readthedocs.io/en/latest/) and
-[stackstac](https://stackstac.readthedocs.io/en/latest/) has been
-considered during the evaluation of python libraries supporting stacking of STAC items.
-However, both stacking libraries depend on GDAL driver for reading the data with
-`rasterio.open`, which prohibit the reading the data from the
-[CDSE S3 endpoint](https://documentation.dataspace.copernicus.eu/APIs/S3.html), due to
-blocking of the rasterio AWS environments. 
-Comparing  [odc-stac](https://odc-stac.readthedocs.io/en/latest/) and
-[stackstac](https://stackstac.readthedocs.io/en/latest/), 
-the [benchmarking report](https://benchmark-odc-stac-vs-stackstac.netlify.app/) shows
-that ocd-stac outperforms stackstac. Furthermore, stackstac is barely tested and  shows an 
-[issue](https://github.com/gjoseph92/stackstac/issues/196) in making
-use of the overview levels of COGs files. Still, stackstac and odc-stack shows high 
-popularity in the community and might be supported in the future. 
+By default:
 
+- A **data ID** corresponds to a single STAC item.
+- Each item is opened as a dataset, with each asset becoming a data variable within 
+  that dataset.
+
+The following data stores are available:
+
+1. `"stac"`: General STAC data store; it uses [xcube's file-system data stores](https://xcube.readthedocs.io/en/latest/dataaccess.html#filesystem-based-data-stores) 
+    to access the data source, thus data sources in Zarr, NetCDF, and GeoTIFF format can 
+    be accessed.
+2. `"stac-xcube`: STAC data store to access datasets published by [xcube server STAC API](https://xcube.readthedocs.io/en/latest/webapi.html).
+3. `"stac-cdse"`: STAC data store tailored to the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?.language=en).
+   Specific tailoring is supported for the collections mentioned in [Special support for the CDSE STAC API](#special-support-for-the-cdse-stac-api).
+4. `"stac-cdse-ardc"`: This data store generates **3D spatiotemporal analysis-ready 
+   data cubes** from multiple STAC items for the collections mentioned in [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?language=en).
+
+---
+
+### Special support for the CDSE STAC API
+
+For some collections, the data store enables creation of **analysis-ready data cubes 
+(ARDCs)** from multiple STAC items published by the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?language=en).
+
+Currently, we support the following collections and data IDs:
+
+- [`sentinel-2-l1c`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l1c)
+- [`sentinel-2-l2a`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l2a)
+- [`sentinel-3-syn-2-syn-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-syn-2-syn-ntc)
+
+The workflow for building a 3D analysis-ready cube includes:
+
+1. **Querying** products from the CDSE STAC API for a specified time range and spatial 
+   extent.
+2. **Retrieving** observations using a lazy-loading reader. (Different collections use 
+   different readers depending on the underlying data format.)
+3. **Mosaicking** spatial tiles into single images per timestamp.
+4. **Stacking** these mosaics along the temporal axis to produce a 3D data cube.
+
+> **Note:**  
+> During evaluation, we also considered [odc-stac](https://odc-stac.readthedocs.io/en/latest/) 
+> and [stackstac](https://stackstac.readthedocs.io/en/latest/) for stacking STAC items.  
+> However, both libraries rely on `rasterio.open` (GDAL drivers) to read data, which 
+> prevents accessing data directly from the [CDSE S3 endpoint](https://documentation.dataspace.copernicus.eu/APIs/S3.html) 
+> due to blocked AWS environments.
+>
+> Among them, a [benchmark](https://benchmark-odc-stac-vs-stackstac.netlify.app/) shows 
+> that `odc-stac` outperforms `stackstac`. Additionally, `stackstac` is less mature, 
+> with known issues (e.g., [#196](https://github.com/gjoseph92/stackstac/issues/196)) 
+> handling COG overviews. Despite this, both are widely used in the community and may
+> be supported in future releases.
+
+---
 
 ## Setup
 
@@ -140,9 +185,14 @@ is supported. An example is shown in a [notebook](examples/notebooks/cdse_senitn
 The following Jupyter notebooks provide some examples: 
 
 * `example/notebooks/cdse_sentinel_2.ipynb`:
-  This notebook shows an example how to access Sentinel-2 L2A data using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html).
-  It shows stacking of individual tiles and mosaicking of multiple tiles measured on
-  the same solar day.
+  This notebook shows an example how to access Sentinel-2 L1C and L2A data using the 
+  [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles and how 
+  to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC items.  
+* `example/notebooks/cdse_sentinel_3.ipynb`: This notebook shows an example how to 
+  access Sentinel-3 Synergy Level-2 Land Surface Reflectance and Aerosol product 
+  using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles 
+  and how to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC 
+  items. 
 * `example/notebooks/geotiff_nonsearchable_catalog.ipynb`:
   This notebook shows an example how to load a GeoTIFF file from a non-searchable
   STAC catalog.
@@ -159,9 +209,8 @@ The following Jupyter notebooks provide some examples:
 ### Getting started
 
 The xcube [data store framework](https://xcube.readthedocs.io/en/latest/dataaccess.html#data-store-framework)
-allows to access data in an analysis ready format, following the few lines of
-code below. In the following examples [S3 credentials](#getting-s3-credentials-for-cdse-data-access)
-for CDSE data access is needed
+allows to access data, following the few lines of code below. In the following examples 
+[S3 credentials](#getting-s3-credentials-for-cdse-data-access) for CDSE data access is needed
 
 ```python
 from xcube.core.store import new_data_store
@@ -177,15 +226,11 @@ ds = store.open_data(
 )
 ds
 ```
-The data ID `"collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912"` points to the
-[CDSE STAC item's JSON](https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912)
-and is specified by the segment of the URL that follows the catalog's URL. The optional
-keyword argument `data_type` can be set to `dataset` and `mldataset`, which returns a
-`xr.Dataset` and a [xcube multi-resolution dataset](https://xcube.readthedocs.io/en/latest/mldatasets.html),
-respectively. Note that in the above example, if `data_type` is not assigned,
-a `xarray.Dataset` will be returned.
+The data ID `"collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912"` 
+points to the [CDSE STAC item's JSON](https://stac.dataspace.copernicus.eu/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_N0500_R065_T32TMT_20230530T175912)
+and is specified by the segment of the URL that follows the catalog's URL.
 
-To use the stac-mode, initiate a stac store with the argument `stack_mode=True`.
+To generate a 3D spatiotemporal datacubes, execute the following lines of code.  
 
 ```python
 from xcube.core.store import new_data_store
@@ -195,23 +240,24 @@ credentials = {
     "secret": "xxx",
 }
 
-store = new_data_store("stac-cdse", **credentials)
+store = new_data_store("stac-cdse-ardc", **credentials)
 ds = store.open_data(
     data_id="sentinel-2-l2a",
-    bbox=[9.1, 53.1, 10.7, 54],
+    bbox=[9.7, 53.3, 10.3, 53.8],
     time_range=["2020-07-15", "2020-08-01"],
-    spatial_res=10 / 111320, # meter in degree (approx.)
+    spatial_res=10 / 111320, # meter in degree
     crs="EPSG:4326",
-    asset_names=["B02", "B03", "B04", "SCL"],
+    asset_names=["B02", "B03", "B04"],
 )
 ```
 
-In the stacking mode, the data IDs are the collection IDs within the STAC catalog. To
-get Sentinel-2 L2A data, we assign `data_id` to `"sentinel-2-l2a"` in the above example.
-The bounding box and time range are assigned to define the temporal and spatial extent
-of the data cube. The parameter `crs` and `spatial_res` are required as well and define
-the coordinate reference system (CRS) and the spatial resolution, respectively. Note, 
-that the bounding box and spatial resolution needs to be given in the respective CRS.
+In the `stac-cdse-ardc` data store, the data IDs are the collection IDs within the STAC 
+catalog. To get Sentinel-2 L2A data, we assign `data_id` to `"sentinel-2-l2a"` in the 
+above example. The bounding box and time range are assigned to define the temporal and 
+spatial extent of the data cube. The parameter `crs` and `spatial_res` are required as 
+well and define the coordinate reference system (CRS) and the spatial resolution, 
+respectively. Note, that the bounding box and spatial resolution needs to be given 
+in the respective CRS.
 
 ## Testing
 

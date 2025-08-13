@@ -26,7 +26,7 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stac_extension.raster import apply_offset_scaling
+from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 
 
 def create_raster_stac_item_v1() -> pystac.Item:
@@ -93,6 +93,23 @@ def create_raster_stac_item_v2() -> pystac.Item:
 
 class RasterTest(unittest.TestCase):
 
+    def test_get_stac_extension(self):
+        item_v1 = create_raster_stac_item_v1()
+        self.assertEqual("v1", get_stac_extension(item_v1))
+
+        item_v2 = create_raster_stac_item_v2()
+        self.assertEqual("v2", get_stac_extension(item_v2))
+
+        item_v1.stac_extensions = []
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            version = get_stac_extension(item_v1)
+        self.assertIsNone(version)
+        self.assertEqual(1, len(cm.output))
+        msg = (
+            "WARNING:xcube.stac:No raster STAC extension found for item 'example-item'."
+        )
+        self.assertEqual(msg, str(cm.output[-1]))
+
     def test_apply_offset_scaling(self):
         item_v1 = create_raster_stac_item_v1()
         item_v2 = create_raster_stac_item_v2()
@@ -102,8 +119,8 @@ class RasterTest(unittest.TestCase):
             coords=dict(y=[5000, 5010, 5020], x=[7430, 7440, 7450]),
         )
         da_v2 = da_v1.copy()
-        da_mod_v1 = apply_offset_scaling(da_v1, item_v1, "B01")
-        da_mod_v2 = apply_offset_scaling(da_v2, item_v2, "B01")
+        da_mod_v1 = apply_offset_scaling(da_v1, item_v1.assets["B01"], "v1")
+        da_mod_v2 = apply_offset_scaling(da_v2, item_v2.assets["B01"], "v2")
         da_mod_expected = xr.DataArray(
             data=np.array(
                 [[np.nan, 0.25, 0.25], [0.05, 0.05, 0.05], [0.15, 0.15, 0.15]]
@@ -115,22 +132,11 @@ class RasterTest(unittest.TestCase):
         xr.testing.assert_allclose(da_mod_v2, da_mod_expected)
 
         with self.assertLogs("xcube.stac", level="WARNING") as cm:
-            ds_mod_v1 = apply_offset_scaling(da_v1, item_v1, "B01", raster_version="v3")
+            ds_mod_v1 = apply_offset_scaling(da_v1, item_v1.assets["B01"], "v3")
         xr.testing.assert_allclose(ds_mod_v1, da_v1)
         self.assertEqual(1, len(cm.output))
         msg = (
             "WARNING:xcube.stac:Stac extension raster exists only for version 'v1' "
             "and 'v2', not for 'v3'. No scaling is applied."
-        )
-        self.assertEqual(msg, str(cm.output[-1]))
-
-        item_v1.stac_extensions = []
-        with self.assertLogs("xcube.stac", level="WARNING") as cm:
-            ds_mod_v1 = apply_offset_scaling(da_v1, item_v1, asset_name="B01")
-        xr.testing.assert_allclose(ds_mod_v1, da_v1)
-        self.assertEqual(1, len(cm.output))
-        msg = (
-            "WARNING:xcube.stac:The item 'example-item' is not conform to "
-            "the stac-extension 'raster'. No scaling is applied."
         )
         self.assertEqual(msg, str(cm.output[-1]))

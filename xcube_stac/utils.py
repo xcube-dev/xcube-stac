@@ -23,8 +23,9 @@ import collections
 import copy
 import datetime
 import itertools
+import json
 import os
-from collections.abc import Container, Iterator
+from collections.abc import Sequence, Container, Iterator
 from typing import Any
 
 import dask.array as da
@@ -33,25 +34,23 @@ import pandas as pd
 import pyproj
 import pystac
 import pystac_client
+import requests
 import xarray as xr
 from shapely.geometry import box
 from xcube.core.gridmapping import GridMapping
 from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
 from xcube.core.resampling import affine_transform_dataset
-from xcube.core.store import (
-    DATASET_TYPE,
-    MULTI_LEVEL_DATASET_TYPE,
-    DataStoreError,
-    DataTypeLike,
-)
+from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
 
 from .constants import (
-    DATA_OPENER_IDS,
     MAP_FILE_EXTENSION_FORMAT,
     MAP_MIME_TYP_FORMAT,
+    MLDATASET_FORMATS,
     TILE_SIZE,
     FloatInt,
+    LOG,
 )
+from .href_parse import decode_href
 
 _CATALOG_JSON = "catalog.json"
 
@@ -86,7 +85,7 @@ def search_nonsearchable_catalog(
             a flat STAC catalog hierarchy is assumed, consisting only of items.
 
     Yields:
-        An iterator over the items matching the **open_params.
+        An iterator over the items matching the **search_params.
     """
 
     if pystac_object.extra_fields[
@@ -130,7 +129,7 @@ def search_collections(
         catalog: pystac catalog object
 
     Yields:
-        An iterator over the items matching the **open_params.
+        An iterator over the items matching the **search_params.
     """
 
     for collection in catalog.get_collections():
@@ -149,10 +148,10 @@ def search_collections(
 
 
 def get_format_id(asset: pystac.Asset) -> str:
-    if asset.media_type is None:
-        format_id = get_format_from_path(asset.href)
-    else:
-        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+    format_id = get_format_from_path(asset.href)
+    if format_id is None:
+        if isinstance(asset.media_type, str):
+            format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
     return format_id
 
 
@@ -176,6 +175,7 @@ def get_attrs_from_pystac_object(
     attrs = {}
     supported_keys = [
         "id",
+        "type",
         "title",
         "description",
         "keywords",
@@ -186,6 +186,9 @@ def get_attrs_from_pystac_object(
         "properties",
         "links",
         "assets",
+        "stac_version",
+        "stac_extensions",
+        "collection",
     ]
     for key in supported_keys:
         if hasattr(pystac_obj, key) and (include_attrs is True or key in include_attrs):
@@ -296,6 +299,35 @@ def do_bboxes_intersect(
         the bounding box given by *open_params*, otherwise False.
     """
     return box(*bbox_test).intersects(box(*open_params["bbox"]))
+
+
+def list_assets_from_item(
+    item: pystac.Item, asset_names: Sequence[str] | None = None
+) -> list[pystac.Asset]:
+    selected_keys = asset_names if asset_names is not None else item.assets.keys()
+    assets = []
+
+    for key in selected_keys:
+        asset = item.assets.get(key)
+        if asset is None:
+            LOG.warning(
+                "Asset name '%s' not found in assets of item '%s'.", key, item.id
+            )
+            continue
+
+        format_id = get_format_id(asset)
+        if format_id is not None:
+            asset.extra_fields["xcube:asset_id"] = key
+            asset.extra_fields["xcube:format_id"] = format_id
+            assets.append(asset)
+
+    if not assets:
+        raise DataStoreError(
+            "No valid assets found in item '%s' for asset_names=%s."
+            % (item.id, asset_names)
+        )
+
+    return assets
 
 
 def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
@@ -431,41 +463,6 @@ def get_format_from_path(path: str) -> str:
     return MAP_FILE_EXTENSION_FORMAT.get(file_extension)
 
 
-def is_valid_data_type(data_type: DataTypeLike) -> bool:
-    """Auxiliary function to check if data type is supported
-    by the store.
-
-    Args:
-        data_type: Data type that is to be checked.
-
-    Returns:
-        True if *data_type* is supported by the store, otherwise False
-    """
-    return (
-        data_type is None
-        or DATASET_TYPE.is_super_type_of(data_type)
-        or MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
-    )
-
-
-def assert_valid_data_type(data_type: DataTypeLike) -> None:
-    """Auxiliary function to assert if data type is supported
-    by the store.
-
-    Args:
-        data_type: Data type that is to be checked.
-
-    Raises:
-        DataStoreError: Error, if *data_type* is not
-            supported by the store.
-    """
-    if not is_valid_data_type(data_type):
-        raise DataStoreError(
-            f"Data type must be {DATASET_TYPE.alias!r} or "
-            f"{MULTI_LEVEL_DATASET_TYPE.alias!r}, but got {data_type!r}."
-        )
-
-
 def is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
     """Auxiliary function to check if data type is a multi-level
     dataset type.
@@ -477,24 +474,6 @@ def is_valid_ml_data_type(data_type: DataTypeLike) -> bool:
         True if *data_type* is a multi-level dataset type, otherwise False
     """
     return MULTI_LEVEL_DATASET_TYPE.is_super_type_of(data_type)
-
-
-def assert_valid_opener_id(opener_id: str) -> None:
-    """Auxiliary function to assert if data opener identified by
-    *opener_id* is supported by the store.
-
-    Args:
-        opener_id: Data opener identifier
-
-    Raises:
-        DataStoreError: Error, if *opener_id* is not
-            supported by the store.
-    """
-    if opener_id is not None and opener_id not in DATA_OPENER_IDS:
-        raise DataStoreError(
-            f"Data opener identifier must be one of "
-            f"{DATA_OPENER_IDS}, but got {opener_id!r}."
-        )
 
 
 def get_data_id_from_pystac_object(
@@ -510,25 +489,106 @@ def get_data_id_from_pystac_object(
         data ID consisting the URL section of an item
         following the catalog URL.
     """
-    return get_url_from_pystac_object(pystac_obj).replace(catalog_url, "")
+    return get_url_from_pystac_object(pystac_obj).replace(f"{catalog_url}/", "")
 
 
 def modify_catalog_url(url: str) -> str:
-    """Normalizes a STAC catalog URL by removing a trailing 'catalog.json' (if present)
-    and ensuring it ends with a forward slash.
+    """Normalizes a STAC catalog URL by removing a trailing 'catalog.json' if present.
 
     Args:
         url: The original STAC catalog URL.
 
     Returns:
-        A normalized URL string without 'catalog.json' and with a trailing slash.
+        A normalized URL string without 'catalog.json'.
     """
-    url_mod = url
-    if url_mod[-len(_CATALOG_JSON) :] == "catalog.json":
-        url_mod = url_mod[:-12]
-    if url_mod[-1] != "/":
-        url_mod += "/"
-    return url_mod
+    if url.endswith(_CATALOG_JSON):
+        url = url.replace(_CATALOG_JSON, "")
+    if url[-1] == "/":
+        url = url[:-1]
+    return url
+
+
+def access_item(url: str, catalog: pystac.Catalog) -> pystac.Item:
+    """Retrieves and parses a STAC item associated with the given data ID.
+
+    Args:
+        url: url to STAC item
+        catalog: pystac catalog object
+
+    Returns:
+        A `pystac.Item` object representing the STAC item.
+
+    Raises:
+        DataStoreError: If the item cannot be retrieved from the catalog or
+        if the response cannot be parsed into a valid STAC item.
+    """
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        raise DataStoreError(f"Failed to access STAC item at {url}: {e}")
+
+    try:
+        return pystac.Item.from_dict(
+            json.loads(response.text),
+            href=url,
+            root=catalog,
+            preserve_dict=False,
+        )
+    except Exception as e:
+        raise DataStoreError(f"Failed to parse STAC item JSON at {url}: {e}")
+
+
+def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
+    """Retrieves and parses a STAC collection associated with the given data ID.
+
+    Args:
+        url: url to STAC collection
+        catalog: pystac catalog object
+
+    Returns:
+        A `pystac.Collection` object representing the STAC collection.
+
+    Raises:
+        DataStoreError: If the collection cannot be retrieved from the catalog or
+        if the response cannot be parsed into a valid STAC collection.
+    """
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        raise DataStoreError(f"Failed to access STAC collection at {url}: {e}")
+
+    try:
+        return pystac.Collection.from_dict(
+            json.loads(response.text),
+            href=url,
+            root=catalog,
+            preserve_dict=False,
+        )
+    except Exception as e:
+        raise DataStoreError(f"Failed to parse SATC collection JSON at {url}: {e}")
+
+
+def is_mldataset_available(
+    item: pystac.Item, asset_names: Sequence[int] = None
+) -> bool:
+    format_ids = list_format_ids(item, asset_names=asset_names)
+    return all(format_id in MLDATASET_FORMATS for format_id in format_ids)
+
+
+def list_format_ids(item: pystac.Item, asset_names: Sequence[str] = None) -> list[str]:
+    assets = list_assets_from_item(item, asset_names=asset_names)
+    return list(np.unique([asset.extra_fields["xcube:format_id"] for asset in assets]))
+
+
+def list_protocols(item: pystac.Item, asset_names: Sequence[str] = None) -> list[str]:
+    assets = list_assets_from_item(item, asset_names=asset_names)
+    protocols = []
+    for asset in assets:
+        protocol, _, _, _ = decode_href(asset.href)
+        protocols.append(protocol)
+    return list(np.unique(protocols))
 
 
 def reproject_bbox(
@@ -773,30 +833,6 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     ds = datasets[0].copy()
     for ds_asset in datasets[1:]:
         ds.update(ds_asset)
-    return ds
-
-
-def clip_dataset_by_bbox(
-    ds: xr.Dataset, bbox: tuple[float | int] | list[float | int]
-) -> xr.Dataset:
-    """Clips a dataset to a given bounding box.
-
-    The function selects a spatial subset of the dataset based on the provided
-    bounding box. It automatically handles datasets with increasing or decreasing
-    y-axis orientation.
-
-    Args:
-        ds: The input dataset to be clipped.
-        bbox: The bounding box in the form (min_x, min_y, max_x, max_y).
-
-    Returns:
-        A new xarray.Dataset spatially subset to the given bounding box.
-    """
-    y, x = get_spatial_dims(ds)
-    if ds.y[-1] - ds.y[0] < 0:
-        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[3], bbox[1])})
-    else:
-        ds = ds.sel({x: slice(bbox[0], bbox[2]), y: slice(bbox[1], bbox[3])})
     return ds
 
 

@@ -9,426 +9,462 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://s3.eu-central-1.wasabisys.com/stac/odse/catalog.json
   response:
     body:
-      string: "{\n  \"type\": \"Catalog\",\n  \"id\": \"odse\",\n  \"stac_version\":
+      string: "{\n  \"type\": \"Catalog\",\n  \"id\": \"stac\",\n  \"stac_version\":
         \"1.0.0\",\n  \"description\": \"Spatio-Temporal Asset Catalog for European-wide
-        layers provided by [Open Environmental Data Cube Europe](https://ecodatacube.eu),
-        co-financed under Grant Agreement Connecting Europe Facility (CEF) Telecom
-        [project 2018-EU-IA-0095](https://ec.europa.eu/inea/en/connecting-europe-facility/cef-telecom/2018-eu-ia-0095)
-        by the European Union.\",\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"./catalog.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Open Environmental Data Cube Europe\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./lcv_land.mask_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Continental Europe
-        land mask\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_blue_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly blue band
-        of GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_green_landsat.glad.ard/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly green band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_nir_landsat.glad.ard/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly NIR band of GLAD landsat ARD (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_red_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly red band
-        of GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_swir1_landsat.glad.ard/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly SWIR1 band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_swir2_landsat.glad.ard/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly SWIR2 band of GLAD landsat ARD (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_thermal_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly thermal
-        band of GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_ndvi_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly NDVI of
-        GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_ndvi_landsat.glad.ard.trend/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly NDVI trend component of
-        GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_blue_sentinel.s2l2a/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly blue band of Sentinel-2
-        L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_green_sentinel.s2l2a/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly green band of Sentinel-2 L2A (2018-2021)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_nir_sentinel.s2l2a/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly NIR band
-        of Sentinel-2 L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_red_sentinel.s2l2a/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly red band of Sentinel-2
-        L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_swir1_sentinel.s2l2a/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly SWIR1 band of Sentinel-2 L2A (2018-2021)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_swir2_sentinel.s2l2a/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly SWIR2
-        band of Sentinel-2 L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_blue_sentinel.s2l2a_10m/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual blue band of Sentinel-2 L2A
-        (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_green_sentinel.s2l2a_10m/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual green band
-        of Sentinel-2 L2A (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_nir_sentinel.s2l2a_10m/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual NIR band of Sentinel-2 L2A
-        (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_red_sentinel.s2l2a_10m/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly red band
-        of Sentinel-2 L2A (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.hcl_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual land use
-        and land cover at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.111_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual continuous
-        urban fabric at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.112_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual discontinuous
-        urban fabric at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.121_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual industrial
-        or commercial units at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.122_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual road and
-        rail networks and associated land at 30 m (2000\\u20132020)\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.123_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual port areas
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.124_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual airports at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.131_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual mineral extraction
-        sites at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.132_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual dump sites
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.133_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual construction sites at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.141_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual green urban areas at 30 m
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.142_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual sport and leisure facilities
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.211_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual non-irrigated arable land
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.212_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual permanently irrigated arable
-        land at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.213_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual rice fields
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.221_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual vineyards at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.222_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual fruit trees
-        and berry plantations at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.223_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual olive groves
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.231_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual pastures at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.241_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual annual crops
-        associated with permanent crops at 30 m (2000\\u20132020)\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.242_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual complex cultivation
-        patterns at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.243_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual land principally
-        occupied by agriculture (with significant areas of natural vegetation) at
-        30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.244_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual agro-forestry areas at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.311_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual broad-leaved forest at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.312_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual coniferous forest at 30 m
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.313_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual mixed forest at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.321_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual natural grasslands
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.322_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual moors and heathland at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.323_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual sclerophyllous vegetation
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.324_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual transitional woodland-shrub
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.331_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual beaches, dunes, sands at
-        30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.332_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual bare rocks at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.333_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual sparsely
-        vegetated areas at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.334_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual burnt areas
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.335_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual glaciers and perpetual snow
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.411_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual inland marshes at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.412_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual peat bogs
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.421_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual salt marshes at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.422_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual salines at
-        30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.423_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual intertidal flats at 30 m
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.511_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual water courses at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.512_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual water bodies
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.521_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual coastal lagoons at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./veg_abies.alba_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
-        distribution for Abies alba (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./veg_castanea.sativa_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        layers provided by [EcoDataCube](http://EcoDataCube.eu).\",\n  \"links\":
+        [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"EcoDataCube\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./accum.precipitation_chelsa.montlhy/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"CHELSA Monthly accumulated
+        precipitation\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./soil.types_ensemble_prob/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: Soil type probability\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./soil.types_ensemble/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: Soil
+        type dominant class\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lst_mod11a2.nighttime/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"MOD11A2 monthly land surface temperature (night-time)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lst_mod11a2.daytime/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"MOD11A2 monthly
+        land surface temperature (day-time)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./wv_mcd19a2v061.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"MCD19A2 monthly water vapor\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./gedtm_rf/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Ensemble
+        Digital Terrain Model (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./slope.in.degree_edtm/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenLandMap Slope in degree (GEDTM30)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./geomorphon_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Geomorphons
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./pos.openness_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Positive
+        openness (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./neg.openness_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Negative openness (GEDTM30)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./hillshade_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Hillshade
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./minic_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Minimal
+        curvature (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./maxic_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Maximal curvature (GEDTM30)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./pro.curv_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Profile
+        curvature (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./tan.curv_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Tangential curvature (GEDTM30)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ring.curv_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Ring
+        curvature (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./shpindx_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Shape index (GEDTM30)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./dfme_edtm/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenLandMap Difference from mean
+        elevation (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./ssdon_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Spherical Standard Deviation of the Normals
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ls.factor_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap LS factor
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./twi_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Topographic
+        Wetness Index (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./no2_s5p.l3.trop.tmwm.p50/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Sentinel-5P long-term tropospheric nitrogen dioxide density\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./soilsuite/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"DLR Sentinel-2 SoilSuite
+        5-year composite (2018-2022)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./building.mask_wsf/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"DLR World Settlement Footprint\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ch4.vmr_s5p.l2.m.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Sentinel-5P monthly
+        methane density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./ndwi.mcfeeters_glad.landsat.ard2.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        bimonthly Normalized Difference Water Index (NDWI, McFeeters)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./imd.clms_vhr_20m/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Imperviousness density
+        3-years (20-m)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./imd.clms_vhr_10m/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Imperviousness density 3-years (10-m)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./ndti_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Normalized Difference Tillage Intensity (NDTI)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ndwi_glad.landsat.ard2.seasconv.yearly.m.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of Bare Soil Fraction (BSF)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./ndvi_glad.landsat.ard2.seasconv.yearly.m.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of min. Normalized Difference Lillage Index (NDTI)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndti.min.slopes_glad.landsat.ard2.seasconv.yearly.min.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of NDVI\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./bsf_glad.landsat.ard2.seasconv.yearly.m.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of Normalized Difference Water Index (NDWI, Gao)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndti.min_glad.landsat.ard2.seasconv.bimonthly.min/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly min. Normalized Difference Tillage Intensity (NDTI)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./bsf_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Bare Soil Fraction (BSF)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./ndvi_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Normalized Difference Vegetation Index (NDVI)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./ndwi.gao_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Normalized Difference Water Index (NDWI, Gao)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./evi_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Enhanced Vegetation Index (EVI)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./fapar_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Fraction of Absorbed Photosynthetically Active Radiation
+        (FAPAR)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndsi_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Normalized Difference Snow Index (NDSI)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./ndti_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Landsat Normalized Difference Tillage Intensity (NDTI)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndvi_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Normalized Difference Vegetation Index (NDVI)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ndwi.gao_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Normalized Difference Water Index (NDWI, Gao)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./oc_iso.10694.1995.mg.cm3/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: Soil
+        organic carbon density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./oc_iso.10694.1995.wpct/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: Soil organic carbon content\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ph.h2o_iso.10390.2021.index/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        pH in water\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ph.cacl2_iso.10390.2021.index/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        pH in CaCl2\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./bd.core_iso.11272.2017.g.cm3/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        core bulk density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./k.ext_usda.nrcs.mg.kg/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: soil extractable pottasium\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./sand.tot_iso.11277.2020.wpct/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        sand weight percent\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./silt.tot_iso.11277.2020.wpct/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: soil silt weight percent\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./clay.tot_iso.11277.2020.wpct/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        clay weight percent\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./veg_abies.alba_anv.eml/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Actual probability distribution for Abies alba (2000\\u20132020)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./veg_castanea.sativa_anv.eml/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Castanea sativa (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_corylus.avellana_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Corylus avellana (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_fagus.sylvatica_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Fagus Sylvatica (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_olea.europaea_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Olea europaea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./veg_picea.abies_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
-        distribution for Picea abies (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.halepensis_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus halepensis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.nigra_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus nigra (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.pinea_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus pinea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.sylvestris_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus sylvestris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_prunus.avium_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Prunus avium (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.cerris_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus cerris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.ilex_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus ilex (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.robur_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus robur (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.suber_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus suber (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_salix.caprea_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Salix caprea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_abies.alba_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Abies alba (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_castanea.sativa_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Castanea sativa (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_corylus.avellana_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Corylus avellana (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_fagus.sylvatica_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Fagus sylvatica (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_olea.europaea_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Olea europaea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_picea.abies_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Picea abies (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.halepensis_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus halepensis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.nigra_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus nigra (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.pinea_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus pinea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.sylvestris_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus sylvestris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_prunus.avium_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Prunus avium (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.cerris_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus cerris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.ilex_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus ilex (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.robur_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus robur (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.suber_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus suber (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_salix.caprea_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Salix caprea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./enq_pm25_et.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Air quality PM2.5\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./clm_prec_era5.copernicus_sum/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land precipitation
-        daily sum (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./clm_air.temp_era5.copernicus/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"ERA5 Daily land air temperature
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./clm_skin.temp_era5.copernicus/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"ERA5 Daily land surface temperature (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./clm_prec_era5.copernicus_sum.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 precipitation
-        trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./clm_prec_era5.copernicus_sum.trend/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 precipitation
-        trend component (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./clm_skin.temp_era5.copernicus_trend/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        temperature trend component (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./clm_skin.temp_era5.copernicus_mn.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        min. temperature trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./clm_skin.temp_era5.copernicus_av.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        ave. temperature trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./clm_skin.temp_era5.copernicus_mx.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        max. temperature trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_building.residential_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Residental buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building.commercial_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Commercial buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building.industrial_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Industrial buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building_copernicus.osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Copernicus-OSM Buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_cemetery_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Cemeteries\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_construction.site_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Construction
-        sites\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_dump.site_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Dump sites\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_farmland_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Farmland\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_farmyard_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Farmyard\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_forest_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Forest\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_grass_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Grass\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_harbour_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Harbours\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_meadow_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Meadows\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_military_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Military\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_orchard_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Orchards\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_quarry_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Quarries\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_railway_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Railways\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_reservoir_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Reservoirs\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_road_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Roads\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_vineyard_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Vineyards\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_salt_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Salt\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_greenhouse_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Greenhouse\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./adm_nuts/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"NUTS-OSM administrative
-        areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_clc_landcover/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"CORINE Land Cover\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./adm_protected.areas/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Natura2000-OSM Protected
-        areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_ndvi_landsat.glad.trend.slope/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"NDVI trend slope\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_ndvi_landsat.glad.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"NDVI trend slope
-        R2\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./enq_aod_et.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Aerosol Optical
-        Depth (2018-2021) \"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./enq_fire.disturbance_modis.mcd64a1/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"MODIS MCD64A1 6 Burned Area\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./enq_flood.events_copernicus.ems/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Copernicus EMS flood
-        activations\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./enq_fire.disturbance_copernicus.ems/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Copernicus EMS fire
-        activations\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./sol_clay.tot.psa_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Soil clay content
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./sol_db.od_eumap/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Soil bulk density (2000\\u20132020)\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./sol_log.oc_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Soil log organic
-        carbon content (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./sol_ph.h2o_eumap/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Soil pH in H2O (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./sol_sand.tot.psa_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Soil sand content
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./dtm_elevation/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Digital Terrain Model in dm\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./dtm_hillshade/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Terrain hillshade\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./dtm_slope/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Slope terrain\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./dtm_vbf/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Valley Bottom Flatness
-        index\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./dtm_topidx/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Topographic index
-        (wetness index)\"\n    }\n  ],\n  \"stac_extensions\": [],\n  \"title\": \"Open
-        Environmental Data Cube Europe\"\n}"
+        \"child\",\n      \"href\": \"./lcv_landcover.111/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for continuous
+        urban fabric\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.112/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for discontinuous urban fabric\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.121/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for industrial or commercial units\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.122/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for road
+        and rail networks and associated land\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.123/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for port
+        areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.124/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for airports\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.131/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for mineral extraction sites\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.132/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for dump sites\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.133/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for construction sites\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.141/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for green urban areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.142/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for sport and leisure facilities\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.211/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for non-irrigated arable land\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.212/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for permanently
+        irrigated arable land\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.213/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for rice fields\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.221/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for vineyards\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.222/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for fruit trees and berry plantations\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.223/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for olive groves\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.231/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for pastures\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.241/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for annual crops associated with permanent crops\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_landcover.242/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for complex
+        cultivation patterns\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.243/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for land principally occupied by
+        agriculture, with significant areas of natural vegetation\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.244/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for agro-forestry areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.311/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for broad-leaved forest\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.312/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for coniferous forest\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.313/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for mixed forest\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.321/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for natural grasslands\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.322/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for moors and heathland\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.323/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for sclerophyllous vegetation\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.324/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for transitional
+        woodland-shrub\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.331/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for beaches, dunes, sands\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.332/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for bare rocks\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.333/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for sparsely vegetated areas\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.334/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for burnt areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.335/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for glaciers and perpetual snow\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.411/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for inland marshes\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.412/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for peat bogs\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.421/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for salt marshes\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.422/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for salines\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_landcover.423/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for intertidal
+        flats\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.511/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for water courses\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.512/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for water bodies\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.521/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for coastal lagoons\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.522/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for estuaries\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.hcl/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover dominant
+        class (CORINE compatible)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./blue_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly blue band\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./green_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly green band\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./red_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly red band\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./nir_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly Near-Infrared band (NIR)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./swir1_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Shortwave Near-Infrared band (SWIR1)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./swir2_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Shortwave Near-Infrared 2 band (SWIR2)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./nos_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Number of Seasons (NOS)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./cdr_glad.landsat.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly Crop Duration Ratio (CDR)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./savi_glad.landsat.ard2.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        Bimonthly Soil Adjusted Vegetation Index (SAVI)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./short.veg.height_lgb/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Global Pasture Watch:
+        Annual short vegetation height\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_building.commercial/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenStreetMap commercial building
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building.industrial/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap industrial
+        building density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_building.residential/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenStreetMap residential building density\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_cemetery/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap cemetery
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_construction.site/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap construction
+        site density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_dump.site/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenStreetMap dump site density\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_farmland/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenStreetMap farmland density\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_forest/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap forest
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_grass/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap grassland
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_greenhouse/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap greenhouse
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_harbour/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap harbour
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_meadow/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap meadow
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_military/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap military
+        area density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_orchard/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenStreetMap orchard density\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_quarry/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenStreetMap quarry density\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_railway/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap railway
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_reservoir/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap reservoir
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_road/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap road
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_salt/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap saline
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_vineyard/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap vineyard
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./landcover_clc.plus/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"CORINE Land Cover
+        (CLC+) Backbone\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./clm_air.temp_era5.copernicus/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"ERA5 monthly land air temperature\"\n    }\n  ],\n  \"title\":
+        \"EcoDataCube\"\n}\n"
     headers:
       Accept-Ranges:
       - bytes
+      Content-Disposition:
+      - inline; filename="catalog.json"
       Content-Length:
-      - '29241'
+      - '31959'
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:51:11 GMT
+      - Wed, 09 Jul 2025 10:19:12 GMT
       ETag:
-      - '"326fbfb3eeb064cf4c2092261381fb89"'
+      - '"fbde85466e29cfce80fc12e21db378cb"'
       Last-Modified:
-      - Fri, 15 Jul 2022 14:06:49 GMT
+      - Thu, 10 Apr 2025 10:37:29 GMT
       Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
+      - WasabiS3/7.23.4756-2025-06-18-5f41d1d9e6
       x-amz-id-2:
-      - TzpJibLyq7DpH1TWIO/niol1LYv21CvyGlIMwn8sYdLjqXggB6HWOMFUFqd0ikL3AlDbuNa2HfKS
+      - LSbv7qJVeO9firMiifLcpJnGDTgqv8ix9UoNEjZ3zYiIf5h4HepUMyswk7cfex5rDZOoshF9hKT4
       x-amz-request-id:
-      - B01DF63F42AB13C2:B
+      - 93BEEDDBF1C4829D:B
       x-wasabi-cm-reference-id:
-      - 1738669870953 130.117.252.100 ConID:2406883811/EngineConID:23150431/Core:70
+      - 1752056352326 130.117.252.101 ConID:4497125121/EngineConID:43140362/Core:71
     status:
       code: 200
       message: OK
@@ -440,428 +476,464 @@ interactions:
       Host:
       - s3.eu-central-1.wasabisys.com
       User-Agent:
-      - Python-urllib/3.12
+      - Python-urllib/3.13
     method: GET
     uri: https://s3.eu-central-1.wasabisys.com/stac/odse/catalog.json
   response:
     body:
-      string: "{\n  \"type\": \"Catalog\",\n  \"id\": \"odse\",\n  \"stac_version\":
+      string: "{\n  \"type\": \"Catalog\",\n  \"id\": \"stac\",\n  \"stac_version\":
         \"1.0.0\",\n  \"description\": \"Spatio-Temporal Asset Catalog for European-wide
-        layers provided by [Open Environmental Data Cube Europe](https://ecodatacube.eu),
-        co-financed under Grant Agreement Connecting Europe Facility (CEF) Telecom
-        [project 2018-EU-IA-0095](https://ec.europa.eu/inea/en/connecting-europe-facility/cef-telecom/2018-eu-ia-0095)
-        by the European Union.\",\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"./catalog.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Open Environmental Data Cube Europe\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./lcv_land.mask_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Continental Europe
-        land mask\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_blue_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly blue band
-        of GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_green_landsat.glad.ard/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly green band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_nir_landsat.glad.ard/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly NIR band of GLAD landsat ARD (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_red_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly red band
-        of GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_swir1_landsat.glad.ard/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly SWIR1 band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_swir2_landsat.glad.ard/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly SWIR2 band of GLAD landsat ARD (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_thermal_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly thermal
-        band of GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_ndvi_landsat.glad.ard/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly NDVI of
-        GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_ndvi_landsat.glad.ard.trend/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly NDVI trend component of
-        GLAD landsat ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_blue_sentinel.s2l2a/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly blue band of Sentinel-2
-        L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_green_sentinel.s2l2a/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly green band of Sentinel-2 L2A (2018-2021)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_nir_sentinel.s2l2a/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly NIR band
-        of Sentinel-2 L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_red_sentinel.s2l2a/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly red band of Sentinel-2
-        L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_swir1_sentinel.s2l2a/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Quarterly SWIR1 band of Sentinel-2 L2A (2018-2021)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_swir2_sentinel.s2l2a/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly SWIR2
-        band of Sentinel-2 L2A (2018-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_blue_sentinel.s2l2a_10m/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual blue band of Sentinel-2 L2A
-        (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_green_sentinel.s2l2a_10m/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual green band
-        of Sentinel-2 L2A (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_nir_sentinel.s2l2a_10m/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual NIR band of Sentinel-2 L2A
-        (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_red_sentinel.s2l2a_10m/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Quarterly red band
-        of Sentinel-2 L2A (2017-2021)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.hcl_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual land use
-        and land cover at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.111_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual continuous
-        urban fabric at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.112_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual discontinuous
-        urban fabric at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.121_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual industrial
-        or commercial units at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.122_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual road and
-        rail networks and associated land at 30 m (2000\\u20132020)\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.123_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual port areas
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.124_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual airports at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.131_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual mineral extraction
-        sites at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.132_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual dump sites
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.133_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual construction sites at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.141_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual green urban areas at 30 m
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.142_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual sport and leisure facilities
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.211_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual non-irrigated arable land
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.212_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual permanently irrigated arable
-        land at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.213_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual rice fields
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.221_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual vineyards at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.222_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual fruit trees
-        and berry plantations at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.223_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual olive groves
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.231_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual pastures at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.241_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual annual crops
-        associated with permanent crops at 30 m (2000\\u20132020)\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.242_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual complex cultivation
-        patterns at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./lcv_landcover.243_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual land principally
-        occupied by agriculture (with significant areas of natural vegetation) at
-        30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.244_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual agro-forestry areas at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.311_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual broad-leaved forest at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.312_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual coniferous forest at 30 m
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.313_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual mixed forest at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.321_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual natural grasslands
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.322_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual moors and heathland at 30
-        m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.323_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual sclerophyllous vegetation
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.324_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual transitional woodland-shrub
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.331_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual beaches, dunes, sands at
-        30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.332_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual bare rocks at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.333_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual sparsely
-        vegetated areas at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_landcover.334_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual burnt areas
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.335_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual glaciers and perpetual snow
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.411_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual inland marshes at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.412_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual peat bogs
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.421_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual salt marshes at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.422_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual salines at
-        30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.423_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual intertidal flats at 30 m
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.511_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual water courses at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.512_lucas.corine.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Annual water bodies
-        at 30 m (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./lcv_landcover.521_lucas.corine.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Annual coastal lagoons at 30 m (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./veg_abies.alba_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
-        distribution for Abies alba (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./veg_castanea.sativa_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        layers provided by [EcoDataCube](http://EcoDataCube.eu).\",\n  \"links\":
+        [\n    {\n      \"rel\": \"root\",\n      \"href\": \"./catalog.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"EcoDataCube\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./accum.precipitation_chelsa.montlhy/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"CHELSA Monthly accumulated
+        precipitation\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./soil.types_ensemble_prob/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: Soil type probability\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./soil.types_ensemble/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: Soil
+        type dominant class\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lst_mod11a2.nighttime/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"MOD11A2 monthly land surface temperature (night-time)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lst_mod11a2.daytime/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"MOD11A2 monthly
+        land surface temperature (day-time)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./wv_mcd19a2v061.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"MCD19A2 monthly water vapor\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./gedtm_rf/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Ensemble
+        Digital Terrain Model (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./slope.in.degree_edtm/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenLandMap Slope in degree (GEDTM30)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./geomorphon_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Geomorphons
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./pos.openness_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Positive
+        openness (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./neg.openness_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Negative openness (GEDTM30)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./hillshade_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Hillshade
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./minic_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Minimal
+        curvature (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./maxic_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Maximal curvature (GEDTM30)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./pro.curv_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Profile
+        curvature (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./tan.curv_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Tangential curvature (GEDTM30)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ring.curv_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Ring
+        curvature (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./shpindx_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Shape index (GEDTM30)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./dfme_edtm/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenLandMap Difference from mean
+        elevation (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./ssdon_edtm/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenLandMap Spherical Standard Deviation of the Normals
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ls.factor_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap LS factor
+        (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./twi_edtm/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenLandMap Topographic
+        Wetness Index (GEDTM30)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./no2_s5p.l3.trop.tmwm.p50/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Sentinel-5P long-term tropospheric nitrogen dioxide density\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./soilsuite/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"DLR Sentinel-2 SoilSuite
+        5-year composite (2018-2022)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./building.mask_wsf/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"DLR World Settlement Footprint\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ch4.vmr_s5p.l2.m.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Sentinel-5P monthly
+        methane density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./ndwi.mcfeeters_glad.landsat.ard2.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        bimonthly Normalized Difference Water Index (NDWI, McFeeters)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./imd.clms_vhr_20m/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Imperviousness density
+        3-years (20-m)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./imd.clms_vhr_10m/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Imperviousness density 3-years (10-m)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./ndti_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Normalized Difference Tillage Intensity (NDTI)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ndwi_glad.landsat.ard2.seasconv.yearly.m.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of Bare Soil Fraction (BSF)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./ndvi_glad.landsat.ard2.seasconv.yearly.m.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of min. Normalized Difference Lillage Index (NDTI)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndti.min.slopes_glad.landsat.ard2.seasconv.yearly.min.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of NDVI\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./bsf_glad.landsat.ard2.seasconv.yearly.m.theilslopes/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat long-term trend of Normalized Difference Water Index (NDWI, Gao)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndti.min_glad.landsat.ard2.seasconv.bimonthly.min/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly min. Normalized Difference Tillage Intensity (NDTI)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./bsf_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Bare Soil Fraction (BSF)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./ndvi_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Normalized Difference Vegetation Index (NDVI)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./ndwi.gao_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Normalized Difference Water Index (NDWI, Gao)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./evi_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Enhanced Vegetation Index (EVI)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./fapar_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Fraction of Absorbed Photosynthetically Active Radiation
+        (FAPAR)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndsi_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Normalized Difference Snow Index (NDSI)\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./ndti_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Landsat Normalized Difference Tillage Intensity (NDTI)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ndvi_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Normalized Difference Vegetation Index (NDVI)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ndwi.gao_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat bimonthly Normalized Difference Water Index (NDWI, Gao)\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./oc_iso.10694.1995.mg.cm3/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: Soil
+        organic carbon density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./oc_iso.10694.1995.wpct/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: Soil organic carbon content\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./ph.h2o_iso.10390.2021.index/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        pH in water\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./ph.cacl2_iso.10390.2021.index/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        pH in CaCl2\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./bd.core_iso.11272.2017.g.cm3/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        core bulk density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./k.ext_usda.nrcs.mg.kg/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: soil extractable pottasium\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./sand.tot_iso.11277.2020.wpct/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        sand weight percent\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./silt.tot_iso.11277.2020.wpct/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"AI4SoilHealth: soil silt weight percent\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./clay.tot_iso.11277.2020.wpct/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"AI4SoilHealth: soil
+        clay weight percent\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./veg_abies.alba_anv.eml/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Actual probability distribution for Abies alba (2000\\u20132020)\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./veg_castanea.sativa_anv.eml/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Castanea sativa (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_corylus.avellana_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Corylus avellana (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_fagus.sylvatica_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Fagus Sylvatica (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_olea.europaea_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Olea europaea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./veg_picea.abies_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
-        distribution for Picea abies (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.halepensis_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus halepensis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.nigra_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus nigra (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.pinea_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus pinea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.sylvestris_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Pinus sylvestris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_prunus.avium_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Prunus avium (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.cerris_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus cerris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.ilex_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus ilex (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.robur_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus robur (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.suber_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Quercus suber (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_salix.caprea_anv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ANV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Actual probability
         distribution for Salix caprea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_abies.alba_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Abies alba (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_castanea.sativa_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Castanea sativa (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_corylus.avellana_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Corylus avellana (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_fagus.sylvatica_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Fagus sylvatica (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_olea.europaea_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Olea europaea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_picea.abies_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Picea abies (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.halepensis_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus halepensis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.nigra_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus nigra (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.pinea_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus pinea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_pinus.sylvestris_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Pinus sylvestris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_prunus.avium_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Prunus avium (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.cerris_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus cerris (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.ilex_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus ilex (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.robur_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus robur (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_quercus.suber_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Quercus suber (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
         \"child\",\n      \"href\": \"./veg_salix.caprea_pnv.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"PNV - Probability
+        \     \"type\": \"application/json\",\n      \"title\": \"Potential probability
         distribution for Salix caprea (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./enq_pm25_et.eml/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Air quality PM2.5\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./clm_prec_era5.copernicus_sum/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land precipitation
-        daily sum (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./clm_air.temp_era5.copernicus/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"ERA5 Daily land air temperature
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./clm_skin.temp_era5.copernicus/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"ERA5 Daily land surface temperature (2000\\u20132020)\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./clm_prec_era5.copernicus_sum.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 precipitation
-        trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./clm_prec_era5.copernicus_sum.trend/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 precipitation
-        trend component (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./clm_skin.temp_era5.copernicus_trend/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        temperature trend component (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./clm_skin.temp_era5.copernicus_mn.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        min. temperature trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./clm_skin.temp_era5.copernicus_av.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        ave. temperature trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./clm_skin.temp_era5.copernicus_mx.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"ERA5 Land surface
-        max. temperature trend analysis (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./lcv_building.residential_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Residental buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building.commercial_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Commercial buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building.industrial_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Industrial buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building_copernicus.osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Copernicus-OSM Buildings\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_cemetery_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Cemeteries\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_construction.site_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Construction
-        sites\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_dump.site_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Dump sites\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_farmland_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Farmland\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_farmyard_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Farmyard\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_forest_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Forest\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_grass_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Grass\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_harbour_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Harbours\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_meadow_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Meadows\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_military_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Military\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_orchard_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Orchards\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_quarry_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Quarries\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_railway_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Railways\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_reservoir_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Reservoirs\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_road_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Roads\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_vineyard_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Vineyards\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_salt_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Salt\"\n    },\n
-        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_greenhouse_osm/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"OSM Greenhouse\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./adm_nuts/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"NUTS-OSM administrative
-        areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_clc_landcover/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"CORINE Land Cover\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./adm_protected.areas/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Natura2000-OSM Protected
-        areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_ndvi_landsat.glad.trend.slope/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"NDVI trend slope\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_ndvi_landsat.glad.trend.ols/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"NDVI trend slope
-        R2\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./enq_aod_et.eml/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Aerosol Optical
-        Depth (2018-2021) \"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./enq_fire.disturbance_modis.mcd64a1/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"MODIS MCD64A1 6 Burned Area\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./enq_flood.events_copernicus.ems/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Copernicus EMS flood
-        activations\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./enq_fire.disturbance_copernicus.ems/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Copernicus EMS fire
-        activations\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./sol_clay.tot.psa_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Soil clay content
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./sol_db.od_eumap/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Soil bulk density (2000\\u20132020)\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./sol_log.oc_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Soil log organic
-        carbon content (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n
-        \     \"href\": \"./sol_ph.h2o_eumap/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Soil pH in H2O (2000\\u20132020)\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./sol_sand.tot.psa_eumap/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Soil sand content
-        (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
-        \"./dtm_elevation/collection.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"Digital Terrain Model in dm\"\n    },\n    {\n      \"rel\":
-        \"child\",\n      \"href\": \"./dtm_hillshade/collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Terrain hillshade\"\n    },\n    {\n
-        \     \"rel\": \"child\",\n      \"href\": \"./dtm_slope/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Slope terrain\"\n
-        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./dtm_vbf/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Valley Bottom Flatness
-        index\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./dtm_topidx/collection.json\",\n
-        \     \"type\": \"application/json\",\n      \"title\": \"Topographic index
-        (wetness index)\"\n    }\n  ],\n  \"stac_extensions\": [],\n  \"title\": \"Open
-        Environmental Data Cube Europe\"\n}"
+        \"child\",\n      \"href\": \"./lcv_landcover.111/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for continuous
+        urban fabric\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.112/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for discontinuous urban fabric\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.121/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for industrial or commercial units\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.122/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for road
+        and rail networks and associated land\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.123/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for port
+        areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.124/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for airports\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.131/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for mineral extraction sites\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.132/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for dump sites\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.133/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for construction sites\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.141/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for green urban areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.142/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for sport and leisure facilities\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.211/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for non-irrigated arable land\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.212/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for permanently
+        irrigated arable land\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.213/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for rice fields\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.221/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for vineyards\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.222/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for fruit trees and berry plantations\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.223/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for olive groves\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.231/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for pastures\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.241/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for annual crops associated with permanent crops\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_landcover.242/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for complex
+        cultivation patterns\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.243/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for land principally occupied by
+        agriculture, with significant areas of natural vegetation\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.244/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for agro-forestry areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.311/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for broad-leaved forest\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.312/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for coniferous forest\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.313/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for mixed forest\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.321/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for natural grasslands\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.322/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for moors and heathland\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.323/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for sclerophyllous vegetation\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_landcover.324/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for transitional
+        woodland-shrub\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.331/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for beaches, dunes, sands\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.332/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for bare rocks\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.333/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for sparsely vegetated areas\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.334/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for burnt areas\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.335/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for glaciers and perpetual snow\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.411/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for inland marshes\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.412/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for peat bogs\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.421/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for salt marshes\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.422/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for salines\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_landcover.423/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Land cover probability for intertidal
+        flats\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.511/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for water courses\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.512/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for water bodies\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.521/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover probability
+        for coastal lagoons\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_landcover.522/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"Land cover probability for estuaries\"\n    },\n    {\n
+        \     \"rel\": \"child\",\n      \"href\": \"./lcv_landcover.hcl/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Land cover dominant
+        class (CORINE compatible)\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./blue_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly blue band\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./green_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly green band\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./red_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly red band\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./nir_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly Near-Infrared band (NIR)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./swir1_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Shortwave Near-Infrared band (SWIR1)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./swir2_glad.landsat.ard2.seasconv.m.yearly/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Shortwave Near-Infrared 2 band (SWIR2)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./nos_glad.landsat.ard2.seasconv/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Cloud-free reconstructed
+        Landsat yearly Number of Seasons (NOS)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./cdr_glad.landsat.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        yearly Crop Duration Ratio (CDR)\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./savi_glad.landsat.ard2.seasconv/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"Cloud-free reconstructed Landsat
+        Bimonthly Soil Adjusted Vegetation Index (SAVI)\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./short.veg.height_lgb/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"Global Pasture Watch:
+        Annual short vegetation height\"\n    },\n    {\n      \"rel\": \"child\",\n
+        \     \"href\": \"./lcv_building.commercial/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenStreetMap commercial building
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_building.industrial/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap industrial
+        building density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_building.residential/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenStreetMap residential building density\"\n    },\n
+        \   {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_cemetery/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap cemetery
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_construction.site/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap construction
+        site density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_dump.site/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenStreetMap dump site density\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_farmland/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenStreetMap farmland density\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_forest/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap forest
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_grass/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap grassland
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_greenhouse/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap greenhouse
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_harbour/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap harbour
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_meadow/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap meadow
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_military/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap military
+        area density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./lcv_orchard/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"OpenStreetMap orchard density\"\n    },\n    {\n      \"rel\":
+        \"child\",\n      \"href\": \"./lcv_quarry/collection.json\",\n      \"type\":
+        \"application/json\",\n      \"title\": \"OpenStreetMap quarry density\"\n
+        \   },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_railway/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap railway
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_reservoir/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap reservoir
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_road/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap road
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_salt/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap saline
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./lcv_vineyard/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"OpenStreetMap vineyard
+        density\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\": \"./landcover_clc.plus/collection.json\",\n
+        \     \"type\": \"application/json\",\n      \"title\": \"CORINE Land Cover
+        (CLC+) Backbone\"\n    },\n    {\n      \"rel\": \"child\",\n      \"href\":
+        \"./clm_air.temp_era5.copernicus/collection.json\",\n      \"type\": \"application/json\",\n
+        \     \"title\": \"ERA5 monthly land air temperature\"\n    }\n  ],\n  \"title\":
+        \"EcoDataCube\"\n}\n"
     headers:
       Accept-Ranges:
       - bytes
       Connection:
       - close
+      Content-Disposition:
+      - inline; filename="catalog.json"
       Content-Length:
-      - '29241'
+      - '31959'
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:51:11 GMT
+      - Wed, 09 Jul 2025 10:19:13 GMT
       ETag:
-      - '"326fbfb3eeb064cf4c2092261381fb89"'
+      - '"fbde85466e29cfce80fc12e21db378cb"'
       Last-Modified:
-      - Fri, 15 Jul 2022 14:06:49 GMT
+      - Thu, 10 Apr 2025 10:37:29 GMT
       Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
+      - WasabiS3/7.23.4744-2025-06-12-4415a38b27
       x-amz-id-2:
-      - /owj/jj9iM6bzNrywWRG4m4/ZVffHIcaPvH/M2WthYLfpMDKYictk+mLdc0oKIvAp/QulrJsMIY9
+      - J0EqLO2DxEz9L1ejp3DirlOO0gDqbcJ7+CtaS1WXlZTY43lhERHbDNYmIf9ON1NMhQtk032G0dxZ
       x-amz-request-id:
-      - ED955701A46A77B0:A
+      - 1C5D259DDD0984FE:B
       x-wasabi-cm-reference-id:
-      - 1738669871105 130.117.252.101 ConID:2406883881/EngineConID:23144160/Core:53
+      - 1752056352939 130.117.252.105 ConID:4535345216/EngineConID:43070739/Core:89
     status:
       code: 200
       message: OK
@@ -875,7 +947,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
   response:
@@ -927,19 +999,19 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:51:11 GMT
+      - Wed, 09 Jul 2025 10:19:13 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
       - Thu, 19 May 2022 19:07:42 GMT
       Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
+      - WasabiS3/7.23.4756-2025-06-18-5f41d1d9e6
       x-amz-id-2:
-      - Xx7uFac8tgWUcDBZ2daq3x9Y74y4mLRr47qiPRYza0CmFf585hZCWOCzqATC/U6pnETzsgGC3bq+
+      - K5phwwSWRfqLFky54YQI+4Qm0j2tSUyKHgCipjTcZcGBP8qIiY/RtUPV3MNNc7PgjHg9LpmJuDeW
       x-amz-request-id:
-      - F45B81940644BA04:A
+      - 7A7AF6612B735C76:A
       x-wasabi-cm-reference-id:
-      - 1738669871236 130.117.252.103 ConID:2569339119/EngineConID:24742352/Core:21
+      - 1752056353173 130.117.252.108 ConID:4490877125/EngineConID:43237850/Core:54
     status:
       code: 200
       message: OK
@@ -953,7 +1025,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
   response:
@@ -1005,19 +1077,19 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:51:11 GMT
+      - Wed, 09 Jul 2025 10:19:13 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
       - Thu, 19 May 2022 19:07:42 GMT
       Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
+      - WasabiS3/7.23.4744-2025-06-12-4415a38b27
       x-amz-id-2:
-      - KIkkuKvJIP8f49tjAp1BHrD0cAhNmp6ZLk1FwrfrH9gTsapNG6LAEVddsQLdSPjbtj20RK/URW30
+      - eDDzmCxY/PCv6NosxGyGaOEJlrwQ7wyfWWfzOMtT5NxJfCi3FsRj9EzhMm8VywIbnvf/BhV4q/Lk
       x-amz-request-id:
-      - 5BA57C83DFB5D1C0:A
+      - FC22162194594BC2:B
       x-wasabi-cm-reference-id:
-      - 1738669871454 130.117.252.101 ConID:2406884073/EngineConID:23171867/Core:39
+      - 1752056353632 130.117.252.105 ConID:4535345515/EngineConID:43236503/Core:11
     status:
       code: 200
       message: OK
@@ -1031,7 +1103,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
   response:
@@ -1083,19 +1155,19 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:51:17 GMT
+      - Wed, 09 Jul 2025 10:19:18 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
       - Thu, 19 May 2022 19:07:42 GMT
       Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
+      - WasabiS3/7.23.4744-2025-06-12-4415a38b27
       x-amz-id-2:
-      - nwKiSjkmvREpVlNOJGNQ4SnxTOhXKDxYicmR7Inoy2MzVO2l87aZE/CvR9kHze/VobBPPGWe07Y/
+      - WJHmY9oklwFC7/DA2owrJ9RPyaVZEizeTKPXnvbIoZ2Jro7voIddoM4kv30bWHvcUoADaaURuF65
       x-amz-request-id:
-      - DB908AE27FECA082:A
+      - E78FC3E42ED5367A:B
       x-wasabi-cm-reference-id:
-      - 1738669877667 130.117.252.101 ConID:2406887374/EngineConID:23089288/Core:91
+      - 1752056358039 130.117.252.109 ConID:4490879456/EngineConID:42955260/Core:105
     status:
       code: 200
       message: OK
@@ -1109,7 +1181,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
   response:
@@ -1161,175 +1233,19 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Tue, 04 Feb 2025 11:51:17 GMT
+      - Wed, 09 Jul 2025 10:19:18 GMT
       ETag:
       - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
       Last-Modified:
       - Thu, 19 May 2022 19:07:42 GMT
       Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
+      - WasabiS3/7.23.4756-2025-06-18-5f41d1d9e6
       x-amz-id-2:
-      - jhjHxA/0QoK95uX2+FG9LhA+2tOGvozVqyZro1BsxlA5q8fBSuGLPTKn5IVpnVmYJAR/wESV6eJi
+      - Y8XZltKNskih4lQblLtDOqTly/XiAzeA6qQMXxVHDVw/q3vB1zxFjkeOgXCFEHY+ExCWSTOiEByC
       x-amz-request-id:
-      - 01848BE8E3272080:A
+      - 66ED99C20E51A556:B
       x-wasabi-cm-reference-id:
-      - 1738669877826 130.117.252.110 ConID:2403938084/EngineConID:23022589/Core:94
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
-  response:
-    body:
-      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
-        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
-        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
-        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
-        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
-        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
-        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
-        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
-        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
-        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
-        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
-        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
-        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
-        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
-        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
-        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '3945'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 04 Feb 2025 11:51:19 GMT
-      ETag:
-      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
-      Last-Modified:
-      - Thu, 19 May 2022 19:07:42 GMT
-      Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
-      x-amz-id-2:
-      - WkwpcD2/yi13d94t6zdovJ7rPPyioC9ocpidA/WRYTuJW29iY9bqDjVsTnbEBvUw31cBJfTcmufF
-      x-amz-request-id:
-      - AF9BFE5E0B53ECA9:B
-      x-wasabi-cm-reference-id:
-      - 1738669879232 130.117.252.111 ConID:2403938836/EngineConID:23063730/Core:91
-    status:
-      code: 200
-      message: OK
-- request:
-    body: null
-    headers:
-      Accept:
-      - '*/*'
-      Accept-Encoding:
-      - gzip, deflate, br, zstd
-      Connection:
-      - keep-alive
-      User-Agent:
-      - python-requests/2.32.3
-    method: GET
-    uri: https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20.json
-  response:
-    body:
-      string: "{\n  \"type\": \"Feature\",\n  \"stac_version\": \"1.0.0\",\n  \"id\":
-        \"lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20\",\n  \"properties\": {\n
-        \   \"start_datetime\": \"1999-12-02\",\n    \"end_datetime\": \"2000-03-20\",\n
-        \   \"gsd\": \"30\",\n    \"instruments\": [\n      \"TM\",\n      \"ETM+\",\n
-        \     \"OLI\"\n    ],\n    \"platform\": \"landsat\",\n    \"datetime\": \"1999-12-02T00:00:00Z\"\n
-        \ },\n  \"geometry\": {\n    \"type\": \"Polygon\",\n    \"coordinates\":
-        [\n      [\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          77.69295185585888\n
-        \       ],\n        [\n          63.352379098951936,\n          24.399543432891665\n
-        \       ],\n        [\n          -23.550818268711048,\n          24.399543432891665\n
-        \       ]\n      ]\n    ]\n  },\n  \"links\": [\n    {\n      \"rel\": \"root\",\n
-        \     \"href\": \"../../catalog.json\",\n      \"type\": \"application/json\",\n
-        \     \"title\": \"OpenDataScience Europe\"\n    },\n    {\n      \"rel\":
-        \"collection\",\n      \"href\": \"../collection.json\",\n      \"type\":
-        \"application/json\",\n      \"title\": \"Quarterly blue band of GLAD landsat
-        ARD (2000\\u20132020)\"\n    },\n    {\n      \"rel\": \"parent\",\n      \"href\":
-        \"../collection.json\",\n      \"type\": \"application/json\",\n      \"title\":
-        \"Quarterly blue band of GLAD landsat ARD (2000\\u20132020)\"\n    }\n  ],\n
-        \ \"assets\": {\n    \"blue_p50\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"main\": true,\n
-        \     \"roles\": [\n        \"data\"\n      ]\n    },\n    \"blue_p25\": {\n
-        \     \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"blue_p75\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"qa_f\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/eumap/lcv/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.tif\",\n
-        \     \"type\": \"image/tiff; application=geotiff\",\n      \"roles\": [\n
-        \       \"data\"\n      ]\n    },\n    \"thumbnail\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": [\n        \"thumbnail\"\n
-        \     ]\n    },\n    \"blue_p25_preview\": {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p25_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"blue_p75_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_blue_landsat.glad.ard_p75_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    },\n    \"qa_f_preview\":
-        {\n      \"href\": \"https://s3.eu-central-1.wasabisys.com/stac/odse/lcv_blue_landsat.glad.ard/lcv_blue_landsat.glad.ard_1999.12.02..2000.03.20/lcv_qa_landsat.glad.ard_f_30m_0..0cm_1999.12.02..2000.03.20_eumap_epsg3035_v1.1.png\",\n
-        \     \"type\": \"image/png\",\n      \"roles\": []\n    }\n  },\n  \"bbox\":
-        [\n    -23.550818268711048,\n    24.399543432891665,\n    63.352379098951936,\n
-        \   77.69295185585888\n  ],\n  \"stac_extensions\": [\n    \"https://stac-extensions.github.io/eo/v1.0.0/schema.json\"\n
-        \ ],\n  \"collection\": \"lcv_blue_landsat.glad.ard\"\n}"
-    headers:
-      Accept-Ranges:
-      - bytes
-      Content-Length:
-      - '3945'
-      Content-Type:
-      - application/json
-      Date:
-      - Tue, 04 Feb 2025 11:51:19 GMT
-      ETag:
-      - '"751b3e3d2f8eaffcf4ecd41619ec1fae"'
-      Last-Modified:
-      - Thu, 19 May 2022 19:07:42 GMT
-      Server:
-      - WasabiS3/7.21.4960-2025-01-15-3a15701bcf
-      x-amz-id-2:
-      - kO2afoDVKXYgMXSmTov5WgDPyFyXfEL7alvE1Rlqq6SFG8b79sGxuc5dNHLw2YM9j4AOVnQS3rLm
-      x-amz-request-id:
-      - 5CEF85A30F9F8FCF:A
-      x-wasabi-cm-reference-id:
-      - 1738669879364 130.117.252.104 ConID:2463467433/EngineConID:24301230/Core:18
+      - 1752056358331 130.117.252.109 ConID:4490879658/EngineConID:42993357/Core:97
     status:
       code: 200
       message: OK

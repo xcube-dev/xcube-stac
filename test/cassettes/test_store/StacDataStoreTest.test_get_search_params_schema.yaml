@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.3
+      - python-requests/2.32.4
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,17 +41,17 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 04 Feb 2025 11:50:48 GMT
+      - Wed, 09 Jul 2025 10:18:25 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Tue, 04 Feb 2025 11:55:48 GMT
+      - Wed, 09 Jul 2025 10:23:25 GMT
       Source-Age:
-      - '48'
+      - '15'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Authorization,Accept-Encoding
       Via:
       - 1.1 varnish
       X-Cache:
@@ -61,15 +61,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - dbeda4c29add4f3ec3db8aa444dc0ca4ded30363
+      - 2d9195f6308a252c46e075072e04026795bd4dd8
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - E08F:23121B:2072B8:2184A6:67A1FEE6
+      - E8B4:10FD1B:86B686:9A65A5:686E41E0
       X-Served-By:
-      - cache-fra-eddf8230084-FRA
+      - cache-ams2100120-AMS
       X-Timer:
-      - S1738669848.998238,VS0,VE5
+      - S1752056305.477271,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -83,7 +83,7 @@ interactions:
       Host:
       - raw.githubusercontent.com
       User-Agent:
-      - Python-urllib/3.12
+      - Python-urllib/3.13
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -113,17 +113,17 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Tue, 04 Feb 2025 11:50:48 GMT
+      - Wed, 09 Jul 2025 10:18:25 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Tue, 04 Feb 2025 11:55:48 GMT
+      - Wed, 09 Jul 2025 10:23:25 GMT
       Source-Age:
-      - '47'
+      - '15'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
-      - Authorization,Accept-Encoding,Origin
+      - Authorization,Accept-Encoding
       Via:
       - 1.1 varnish
       X-Cache:
@@ -133,15 +133,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 928cb8fc1841bc192792f87cb331bc26b175cfad
+      - 159bb46a1085bf86226fc14f3994465bc492039f
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - E08F:23121B:207312:21850B:67A1FEE8
+      - E8B4:10FD1B:86B6DB:9A6606:686E41E2
       X-Served-By:
-      - cache-fra-eddf8230084-FRA
+      - cache-ams2100085-AMS
       X-Timer:
-      - S1738669848.054835,VS0,VE2
+      - S1752056306.594641,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

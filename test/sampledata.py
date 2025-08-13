@@ -140,3 +140,49 @@ def sentinel_2_band_data_60m():
         "spatial_ref": spatial_ref,
     }
     return xr.Dataset(mock_data, coords=coords)
+
+
+def sentinel_3_data():
+    mock_data = {
+        "SDR_Oa01": (
+            ("band", "y", "x"),
+            da.ones((1, 4091, 4865), chunks=(1, 1023, 1217), dtype=np.float32),
+        ),
+        "SDR_Oa01_err": (
+            ("band", "y", "x"),
+            da.ones((1, 4091, 4865), chunks=(1, 1023, 1217), dtype=np.float32),
+        ),
+    }
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(4865),
+        "y": np.arange(4091),
+    }
+    ds = xr.Dataset(mock_data, coords=coords)
+    ds["SDR_Oa01"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    ds["SDR_Oa01_err"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    return ds
+
+
+def sentinel_3_geolocation_data():
+    lon = da.linspace(0, 15, 4865, chunks=1217, dtype=np.float64)
+    lon *= da.linspace(0.5, 1.5, 4865, chunks=1217, dtype=np.float64)
+    lat = da.linspace(50, 60, 4091, chunks=1023, dtype=np.float64)
+    lat *= da.linspace(0.5, 1.5, 4091, chunks=1023, dtype=np.float64)
+    lon, lat = da.meshgrid(lon, lat, indexing="xy")
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(4865),
+        "y": np.arange(4091),
+    }
+    mock_data = {
+        "lon": (("band", "y", "x"), da.expand_dims(lon, axis=0)),
+        "lat": (("band", "y", "x"), da.expand_dims(lat, axis=0)),
+    }
+
+    ds = xr.Dataset(mock_data, coords=coords)
+    ds["lon"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    ds["lat"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    return ds
