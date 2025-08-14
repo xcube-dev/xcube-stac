@@ -1,3 +1,5 @@
+## Changes in 1.0.1 (under development)
+ 
 ## Changes in 1.0.0
 
 * Restructured the store architecture: the keyword argument `stack_mode` has been
