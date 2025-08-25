@@ -37,7 +37,7 @@ from xcube.util.jsonschema import (
     JsonStringSchema,
 )
 
-from xcube_stac.accessor import StacItemAccessor
+from xcube_stac.accessor import StacItemAccessor, StacArdcAccessor
 from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
@@ -202,7 +202,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         )
 
 
-class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor):
+class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
     """Provides methods for access multiple Sentinel-3 STAC Items from the
     CDSE STAC API and build an analysis ready data cube."""
 

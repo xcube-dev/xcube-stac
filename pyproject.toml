@@ -25,6 +25,7 @@ dependencies = [
     "libgdal-jp2openjpeg",
     "numpy",
     "pandas",
+    "planetary-computer",
     "pyproj",
     "pystac",
     "pystac-client",

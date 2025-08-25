@@ -40,6 +40,11 @@ DATA_STORE_ID_CDSE_ARDC = "stac-cdse-ardc"
 CDSE_STAC_URL = "https://stac.dataspace.copernicus.eu/v1"
 CDSE_S3_ENDPOINT = "https://eodata.dataspace.copernicus.eu"
 
+# planetary computer specific constants
+DATA_STORE_ID_PC = "stac-pc"
+DATA_STORE_ID_PC_ARDC = "stac-pc-ardc"
+PC_STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
+
 # xcube specific constants
 DATA_STORE_ID_XCUBE = "stac-xcube"
 

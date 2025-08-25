@@ -27,6 +27,7 @@ import boto3
 import dask
 import dask.array as da
 import numpy as np
+import planetary_computer
 import pyproj
 import pystac
 import rasterio.session
@@ -44,7 +45,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
 )
 
-from xcube_stac.accessor import StacItemAccessor
+from xcube_stac.accessor import StacItemAccessor, StacArdcAccessor
 from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
@@ -140,9 +141,10 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     @staticmethod
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
+        tile_size = open_params.get("tile_size", (1024, 1024))
         return rioxarray.open_rasterio(
             asset.href,
-            chunks=dict(),
+            chunks=dict(x=tile_size[0], y=tile_size[1]),
             band_as_variable=True,
         )
 
@@ -303,7 +305,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         return ds_angles
 
 
-class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
+class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
     """Provides methods to access multiple Sentinel-2 STAC Items from the
     CDSE STAC API and build an analysis ready data cube."""
 
@@ -382,7 +384,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
             asset = next(iter(item.assets.values()))
-            crs = asset.extra_fields["proj:code"]
+            crs = asset.extra_fields.get("proj:code", item.properties["proj:code"])
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -785,8 +787,14 @@ def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     proc_versions = []
     for item in items:
         dates.append(item.properties["datetime_nominal"].date())
-        tile_ids.append(item.properties["grid:code"])
-        proc_versions.append(item.properties["processing:version"])
+        tile_ids.append(
+            item.properties.get("grid:code", item.properties.get("s2:mgrs_tile"))
+        )
+        proc_versions.append(
+            item.properties.get(
+                "processing:version", item.properties.get("s2:processing_baseline")
+            )
+        )
     dates = np.unique(dates)
     tile_ids = np.unique(tile_ids)
     proc_versions = np.unique(proc_versions)[::-1]
@@ -797,8 +805,10 @@ def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     )
     for idx, item in enumerate(items):
         date = item.properties["datetime_nominal"].date()
-        tile_id = item.properties["grid:code"]
-        proc_version = item.properties["processing:version"]
+        tile_id = item.properties.get("grid:code", item.properties.get("s2:mgrs_tile"))
+        proc_version = item.properties.get(
+            "processing:version", item.properties.get("s2:processing_baseline")
+        )
         idx_date = np.where(dates == date)[0][0]
         idx_tile_id = np.where(tile_ids == tile_id)[0][0]
         idx_proc_version = np.where(proc_versions == proc_version)[0][0]
@@ -1157,3 +1167,70 @@ def _create_nan_slice(ds: xr.Dataset) -> xr.Dataset:
             nan_data, dims=array.dims, coords=array.coords, attrs=array.attrs
         )
     return nan_ds
+
+
+class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
+    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item."""
+
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        self._catalog = catalog
+
+    @staticmethod
+    # noinspection PyUnusedLocal
+    def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
+        tile_size = open_params.get("tile_size", (1024, 1024))
+        return rioxarray.open_rasterio(
+            asset.href,
+            chunks=dict(x=tile_size[0], y=tile_size[1]),
+            band_as_variable=True,
+        )
+
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+        item = planetary_computer.sign(item)
+        apply_scaling = open_params.pop("apply_scaling", True)
+        assets = self._list_assets_from_item(item, **open_params)
+        dss = [self.open_asset(asset) for asset in assets]
+        ds = self._combiner_function(
+            dss,
+            item=item,
+            assets=assets,
+            apply_scaling=apply_scaling,
+        )
+        if open_params.get("add_angles", False):
+            ds = self._add_sen2_angles(item, ds)
+        ds.attrs = dict(
+            stac_catalog_url=self._catalog.get_self_href(),
+            stac_item_id=item.id,
+            xcube_stac_version=version,
+        )
+        return ds
+
+    @staticmethod
+    def _list_assets_from_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
+        asset_names = open_params.get("asset_names")
+        if not asset_names:
+            if item.collection_id == "sentinel-2-l2a":
+                asset_names = _SENTINEL2_L2A_BANDS
+            elif item.collection_id == "sentinel-2-l1c":
+                asset_names = _SENTINEL2_BANDS
+            else:
+                raise DataStoreError(
+                    "Only collections 'sentinel-2-l2a' and 'sentinel-2-l1c' are supported."
+                )
+
+        assets_sel = []
+        for asset_name in asset_names:
+            asset = item.assets[asset_name]
+            asset.extra_fields["xcube:asset_id"] = asset_name
+            asset.extra_fields["xcube:asset_id_origin"] = asset_name
+            assets_sel.append(asset)
+        return assets_sel
+
+
+class Sen2PlanetaryComputerStacArdcAccessor(
+    Sen2PlanetaryComputerStacItemAccessor, Sen2CdseStacArdcAccessor
+):
+    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item."""
+
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        self._catalog = catalog

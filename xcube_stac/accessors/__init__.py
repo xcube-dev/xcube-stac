@@ -20,41 +20,63 @@
 # DEALINGS IN THE SOFTWARE.
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
-from xcube_stac.constants import CDSE_STAC_URL
+from xcube_stac.constants import (
+    CDSE_STAC_URL,
+    DATA_STORE_ID_CDSE,
+    DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_PC,
+    DATA_STORE_ID_PC_ARDC,
+)
 
 from .base import BaseStacItemAccessor
-from .sen2 import Sen2CdseStacArdcAccessor, Sen2CdseStacItemAccessor
+from .sen2 import (
+    Sen2CdseStacArdcAccessor,
+    Sen2CdseStacItemAccessor,
+    Sen2PlanetaryComputerStacItemAccessor,
+    Sen2PlanetaryComputerStacArdcAccessor,
+)
 from .sen3 import Sen3CdseStacArdcAccessor, Sen3CdseStacItemAccessor
 
-CDSE_ITEM_ACCESSOR_MAPPING = {
-    "sentinel-2-l2a": Sen2CdseStacItemAccessor,
-    "sentinel-2-l1c": Sen2CdseStacItemAccessor,
-    "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
+ACCESSOR_MAPPING = {
+    DATA_STORE_ID_CDSE: {
+        "sentinel-2-l2a": Sen2CdseStacItemAccessor,
+        "sentinel-2-l1c": Sen2CdseStacItemAccessor,
+        "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
+    },
+    DATA_STORE_ID_CDSE_ARDC: {
+        "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
+        "sentinel-2-l1c": Sen2CdseStacArdcAccessor,
+        "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
+    },
+    DATA_STORE_ID_PC: {
+        "sentinel-2-l2a": Sen2PlanetaryComputerStacItemAccessor,
+    },
+    DATA_STORE_ID_PC_ARDC: {
+        "sentinel-2-l2a": Sen2PlanetaryComputerStacArdcAccessor,
+    },
 }
-CDSE_ARDC_ACCESSOR_MAPPING = {
-    "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
-    "sentinel-2-l1c": Sen2CdseStacArdcAccessor,
-    "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
-}
-CDSE_ARDC_DATA_IDS = list(CDSE_ARDC_ACCESSOR_MAPPING.keys())
 
 
-def guess_item_accessor(url_catalog: str, data_id: str = None) -> StacItemAccessor:
-    if url_catalog == CDSE_STAC_URL:
+def guess_item_accessor(store_id: str, data_id: str = None) -> "StacItemAccessor":
+    if store_id in ACCESSOR_MAPPING.keys():
         if data_id is not None:
-            for key in CDSE_ITEM_ACCESSOR_MAPPING.keys():
+            for key in ACCESSOR_MAPPING[store_id].keys():
                 if key in data_id:
-                    return CDSE_ITEM_ACCESSOR_MAPPING[key]
+                    return ACCESSOR_MAPPING[store_id][key]
     return BaseStacItemAccessor
 
 
-def guess_ardc_accessor(url_catalog: str, data_id: str = None) -> StacArdcAccessor:
+def guess_ardc_accessor(store_id: str, data_id: str = None) -> "StacArdcAccessor":
     accesor = None
-    if url_catalog == CDSE_STAC_URL:
-        accesor = CDSE_ARDC_ACCESSOR_MAPPING.get(data_id)
+    if store_id in ACCESSOR_MAPPING.keys():
+        accesor = ACCESSOR_MAPPING[store_id].get(data_id)
     if accesor is None:
         raise NotImplementedError(
-            f"No ARDC accessor implemented for data_id {data_id!r} and "
-            f"cataog url {url_catalog!r}."
+            f"No ARDC accessor implemented for store_id {store_id!r} "
+            f"and data_id {data_id!r}."
         )
     return accesor
+
+
+def list_ardc_data_ids(store_id: str) -> list:
+    return list(ACCESSOR_MAPPING[store_id].keys())
