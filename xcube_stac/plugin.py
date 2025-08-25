@@ -26,6 +26,8 @@ from .constants import (
     DATA_STORE_ID,
     DATA_STORE_ID_CDSE,
     DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_PC,
+    DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
 )
 
@@ -53,6 +55,27 @@ def init_plugin(ext_registry: extension.ExtensionRegistry):
         point=EXTENSION_POINT_DATA_STORES,
         name=DATA_STORE_ID_CDSE_ARDC,
         description="'stac-cdse-ardc' data store",
+    )
+
+    # xcube DataStore extensions for PlanetaryComputer STAC API
+    ext_registry.add_extension(
+        loader=extension.import_component(
+            "xcube_stac.store:StacPlanetaryComputerDataStore"
+        ),
+        point=EXTENSION_POINT_DATA_STORES,
+        name=DATA_STORE_ID_PC,
+        description="'stac-pc' data store",
+    )
+
+    # xcube DataStore extensions for PlanetaryComputer STAC API ARDC
+    # (analysis-ready data cubes)
+    ext_registry.add_extension(
+        loader=extension.import_component(
+            "xcube_stac.store:ArdcStacPlanetaryComputerDataStore"
+        ),
+        point=EXTENSION_POINT_DATA_STORES,
+        name=DATA_STORE_ID_PC_ARDC,
+        description="'stac-pc-ardc' data store",
     )
 
     # xcube DataStore extensions for xcube STAC API
