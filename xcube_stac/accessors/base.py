@@ -102,10 +102,9 @@ class BaseStacItemAccessor(StacItemAccessor):
                 ),
             )
 
-    @staticmethod
     # noinspection PyUnusedLocal
     def get_open_data_params_schema(
-        data_id: str = None, opener_id: str = None
+        self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         if opener_id is not None:
             store = new_data_store("https")

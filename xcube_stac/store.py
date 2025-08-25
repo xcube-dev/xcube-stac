@@ -23,6 +23,7 @@ from collections.abc import Container, Iterator
 from typing import Any
 
 import numpy as np
+import planetary_computer
 import pystac
 import pystac_client
 import requests
@@ -40,21 +41,21 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
-from .accessors import list_ardc_data_ids, guess_ardc_accessor, guess_item_accessor
+from .accessors import guess_ardc_accessor, guess_item_accessor, list_ardc_data_ids
 from .accessors.base import XcubeStacItemAccessor
 from .constants import (
     CDSE_S3_ENDPOINT,
     CDSE_STAC_URL,
     DATA_OPENER_IDS,
+    DATA_STORE_ID,
     DATA_STORE_ID_CDSE,
     DATA_STORE_ID_CDSE_ARDC,
-    DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_PC,
-    DATA_STORE_ID,
+    DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
-    PC_STAC_URL,
     LOG,
     MAP_FILE_EXTENSION_FORMAT,
+    PC_STAC_URL,
     PROTOCOLS,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_BBOX,
@@ -82,6 +83,7 @@ from .utils import (
 from .version import version
 
 
+# Data Stores for accessing single STAC items
 class StacDataStore(DataStore):
     """STAC implementation of the data store.
 
@@ -109,7 +111,7 @@ class StacDataStore(DataStore):
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
-            description="Describes the parameters of the xcube data store 'stac'.",
+            description="Parameters to initiate the data store.",
             properties=dict(url=SCHEMA_URL, **SCHEMA_S3_STORE),
             required=["url"],
             additional_properties=False,
@@ -176,6 +178,7 @@ class StacDataStore(DataStore):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         self._assert_valid_opener_id(opener_id)
+        # noinspection PyArgumentList
         accessor = guess_item_accessor(self._store_id, data_id)(
             self._catalog, **self._storage_options_s3
         )
@@ -205,6 +208,7 @@ class StacDataStore(DataStore):
         # access item and open with accessor
         url = f"{self._url}/{data_id}"
         item = access_item(url, self._catalog)
+        # noinspection PyArgumentList
         accessor = guess_item_accessor(self._store_id, data_id)(
             self._catalog, **self._storage_options_s3
         )
@@ -353,7 +357,7 @@ class StacXcubeDataStore(StacDataStore):
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
-            description="Describes the parameters of the xcube data store 'stac-xcube'.",
+            description="Parameters to initiate the data store.",
             properties=dict(url=SCHEMA_URL, **SCHEMA_S3_STORE),
             required=["url"],
             additional_properties=False,
@@ -434,7 +438,7 @@ class StacCdseDataStore(StacDataStore):
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
-            description="Describes the parameters of the xcube data store 'stac-cdse'.",
+            description="Parameters to initiate the data store.",
             properties=dict(
                 key=JsonStringSchema(
                     title="AWS S3 key to access CDSE EO data.",
@@ -470,7 +474,7 @@ class StacCdseDataStore(StacDataStore):
         # We return a generic opener ID here. In this data store, specific data
         # accessors are delegated based on the data ID to handle different
         # Sentinel missions transparently.
-        return ("dataset:format:stac-cdse",)
+        return (f"dataset:format:{self._store_id}",)
 
     def get_data_ids(
         self,
@@ -478,8 +482,8 @@ class StacCdseDataStore(StacDataStore):
         include_attrs: Container[str] | bool = False,
     ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
         raise NotImplementedError(
-            "Listing all data IDs is not supported in the 'stac-cdse' data store, "
-            "because the underlying CDSE STAC API contains too many items. "
+            f"Listing all data IDs is not supported in the {self._store_id!r} data "
+            "store, because the underlying CDSE STAC API contains too many items. "
             "Use the `search_data()` method to find datasets matching your criteria."
         )
 
@@ -488,54 +492,29 @@ class StacCdseDataStore(StacDataStore):
         return False
 
 
-class StacPlanetaryComputerDataStore(StacDataStore):
+class StacPlanetaryComputerDataStore(StacCdseDataStore):
     """STAC implementation of the data store for CDSE STAC API."""
 
+    # noinspection PyMissingConstructor
     def __init__(self):
-        super().__init__(url=PC_STAC_URL)
+        self._url = modify_catalog_url(PC_STAC_URL)
+        self._storage_options_s3 = dict()
         self._store_id = DATA_STORE_ID_PC
+        self._catalog = pystac_client.Client.open(
+            PC_STAC_URL, modifier=planetary_computer.sign_inplace, timeout=3600
+        )
+        self._searchable = True
 
     @classmethod
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
-            description="Describes the parameters of the xcube data store 'stac-pc'.",
+            description="Parameters to initiate the data store.",
             required=[],
             additional_properties=False,
         )
 
-    @classmethod
-    def get_data_types(cls) -> tuple[str, ...]:
-        return (DATASET_TYPE.alias,)
 
-    def get_data_opener_ids(
-        self, data_id: str = None, data_type: DataTypeLike = None
-    ) -> tuple[str, ...]:
-        LOG.info(
-            f"In the {self._store_id!r} data store, data openers are specific to each "
-            "Sentinel mission which are selected via the *data_id*. A generic "
-            "opener ID is returned."
-        )
-        # We return a generic opener ID here. In this data store, specific data
-        # accessors are delegated based on the data ID to handle different
-        # Sentinel missions transparently.
-        return ("dataset:format:stac-pc",)
-
-    def get_data_ids(
-        self,
-        data_type: DataTypeLike = None,
-        include_attrs: Container[str] | bool = False,
-    ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
-        raise NotImplementedError(
-            "Listing all data IDs is not supported in the 'stac-pc' data store, "
-            "because the underlying CDSE STAC API contains too many items. "
-            "Use the `search_data()` method to find datasets matching your criteria."
-        )
-
-    @staticmethod
-    def _is_mldataset_available(item: pystac.Item) -> bool:
-        return False
-
-
+# Data Stores for analysis-ready data cubes
 class ArdcStacCdseDataStore(StacCdseDataStore):
     """Data store to generate analysis-ready data cubes from multiple STAC items
     using the CDSE STAC API.
@@ -571,9 +550,10 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         self._assert_valid_opener_id(opener_id)
         if data_id is None:
             raise DataStoreError(
-                "Please assign the *data_id* in the 'stac-cdse-ardc' data store to "
+                f"Please assign the *data_id* in the {self._store_id!r} data store to "
                 "retrieve the open_params for a specific data collection."
             )
+        # noinspection PyArgumentList
         accessor = guess_ardc_accessor(self._store_id, data_id)(
             self._catalog, **self._storage_options_s3
         )
@@ -618,6 +598,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             )
             return None
 
+        # noinspection PyArgumentList
         accessor = guess_ardc_accessor(self._store_id, data_id)(
             self._catalog, **self._storage_options_s3
         )
@@ -672,137 +653,25 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         )
 
 
-class ArdcStacPlanetaryComputerDataStore(StacPlanetaryComputerDataStore):
+class ArdcStacPlanetaryComputerDataStore(ArdcStacCdseDataStore):
     """Data store to generate analysis-ready data cubes from multiple STAC items
     using the CDSE STAC API.
     """
 
+    # noinspection PyMissingConstructor
     def __init__(self):
-        super().__init__()
+        self._url = modify_catalog_url(PC_STAC_URL)
+        self._storage_options_s3 = dict()
         self._store_id = DATA_STORE_ID_PC_ARDC
-
-    def get_data_ids(
-        self,
-        data_type: DataTypeLike = None,
-        include_attrs: Container[str] | bool = False,
-    ) -> Iterator[str | tuple[str, dict[str, Any]], None]:
-        self._assert_valid_data_type(data_type)
-        for collection_id in list_ardc_data_ids(self._store_id):
-            if not include_attrs:
-                yield collection_id
-            else:
-                url = f"{self._url}/collections/{collection_id}"
-                collection = access_collection(url, self._catalog)
-                attrs = get_attrs_from_pystac_object(collection, include_attrs)
-                yield collection.id, attrs
-
-    def has_data(self, data_id: str, data_type: DataTypeLike = None) -> bool:
-        if self._is_valid_data_type(data_type):
-            return data_id in list_ardc_data_ids(self._store_id)
-        return False
-
-    def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
-    ) -> JsonObjectSchema:
-        self._assert_valid_opener_id(opener_id)
-        if data_id is None:
-            raise DataStoreError(
-                "Please assign the *data_id* in the 'stac-cdse-ardc' data store to "
-                "retrieve the open_params for a specific data collection."
-            )
-        accessor = guess_ardc_accessor(self._store_id, data_id)(
-            self._catalog, **self._storage_options_s3
+        self._catalog = pystac_client.Client.open(
+            PC_STAC_URL, modifier=planetary_computer.sign_inplace, timeout=3600
         )
-        return accessor.get_open_data_params_schema(
-            data_id=data_id, opener_id=opener_id
-        )
+        self._searchable = True
 
-    def open_data(
-        self,
-        data_id: str,
-        opener_id: str = None,
-        data_type: DataTypeLike = None,
-        **open_params,
-    ) -> xr.Dataset | MultiLevelDataset:
-        # check input parameter
-        self._assert_valid_data_type(data_type)
-        self._assert_valid_opener_id(opener_id)
-        schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
-        schema.validate_instance(open_params)
-
-        # search for items
-        bbox_wgs84 = reproject_bbox(
-            open_params["bbox"], open_params["crs"], "EPSG:4326"
-        )
-        items = list(
-            search_items(
-                self._catalog,
-                self._searchable,
-                collections=[data_id],
-                bbox=bbox_wgs84,
-                time_range=open_params["time_range"],
-                query=open_params.get("query"),
-            )
-        )
-
-        if len(items) == 0:
-            LOG.warn(
-                f"No items found in collection {data_id!r} for the "
-                f"parameters bbox {bbox_wgs84!r}, time_range "
-                f"{open_params['time_range']!r} and "
-                f"query {open_params.get('query', 'None')!r}."
-            )
-            return None
-
-        accessor = guess_ardc_accessor(self._store_id, data_id)(
-            self._catalog, **self._storage_options_s3
-        )
-        ds = accessor.open_ardc(
-            items,
-            opener_id=opener_id,
-            data_type=data_type,
-            **open_params,
-        )
-        ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-        ds.attrs["xcube_stac_version"] = version
-        return ds
-
-    def describe_data(
-        self, data_id: str, data_type: DataTypeLike = None
-    ) -> DatasetDescriptor | MultiLevelDatasetDescriptor:
-        self._assert_valid_data_type(data_type)
-
-        # get extent from collection
-        url = f"{self._url}/collections/{data_id}"
-        collection = access_collection(url, self._catalog)
-        bbox = collection.extent.spatial.bboxes[0]
-        temp_extent = collection.extent.temporal.intervals[0]
-        time_start = None
-        if temp_extent[0] is not None:
-            time_start = convert_datetime2str(temp_extent[0])
-        time_end = None
-        if temp_extent[1] is not None:
-            time_end = convert_datetime2str(temp_extent[1])
-
-        return DatasetDescriptor(data_id, bbox=bbox, time_range=(time_start, time_end))
-
-    def search_data(
-        self, data_type: DataTypeLike = None, **search_params
-    ) -> Iterator[DatasetDescriptor | MultiLevelDatasetDescriptor]:
-        self._assert_valid_data_type(data_type)
-        schema = self.get_search_params_schema()
-        schema.validate_instance(search_params)
-        for collection in search_collections(self._catalog, **search_params):
-            yield self.describe_data(collection.id, data_type=data_type)
-
-    def get_search_params_schema(
-        self, data_type: DataTypeLike = None
-    ) -> JsonObjectSchema:
+    @classmethod
+    def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
-            ),
+            description="Parameters to initiate the data store.",
             required=[],
             additional_properties=False,
         )

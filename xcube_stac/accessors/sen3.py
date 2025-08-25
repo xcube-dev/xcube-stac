@@ -31,17 +31,15 @@ import xarray as xr
 from rasterio.errors import NotGeoreferencedWarning
 from xcube.core.resampling import rectify_dataset
 from xcube.util.jsonschema import (
+    JsonArraySchema,
     JsonBooleanSchema,
     JsonObjectSchema,
-    JsonArraySchema,
     JsonStringSchema,
 )
 
-from xcube_stac.accessor import StacItemAccessor, StacArdcAccessor
+from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
-    CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
-    SCHEMA_APPLY_SCALING,
     SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
@@ -51,13 +49,8 @@ from xcube_stac.constants import (
 from xcube_stac.utils import (
     add_nominal_datetime,
     get_gridmapping,
-    get_spatial_dims,
     list_assets_from_item,
-    merge_datasets,
     mosaic_spatial_take_first,
-    normalize_crs,
-    normalize_grid_mapping,
-    rename_dataset,
     reproject_bbox,
 )
 
@@ -158,6 +151,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             ds[var_name] *= ds[var_name].attrs["scale_factor"]
         return ds
 
+        # noinspection PyUnreachableCode
         if not open_params.get("add_error_bands", True):
             var_names = var_names[:1]
         ds_final = xr.Dataset()

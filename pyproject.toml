@@ -3,7 +3,7 @@ requires = ["setuptools >= 61.2.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "xcube_stac"
+name = "xcube-stac"
 dynamic = ["version"]
 authors = [
   {name = "Konstantin Ntokas", email = "konstantin.ntokas@brockmann-consult.de"}

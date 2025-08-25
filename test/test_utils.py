@@ -318,7 +318,8 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(crs_pyproj, normalize_crs(crs_str))
         self.assertEqual(crs_pyproj, normalize_crs(crs_pyproj))
 
-    def test_merge_datasets(self):
+    @staticmethod
+    def test_merge_datasets():
         ds1 = xr.Dataset()
         ds1["B01"] = xr.DataArray(
             data=da.ones((3, 3)),
@@ -406,7 +407,8 @@ class UtilsTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    def test_mosaic_spatial_take_first(self):
+    @staticmethod
+    def test_mosaic_spatial_take_first():
         list_ds = []
         # first tile
         data = np.array(

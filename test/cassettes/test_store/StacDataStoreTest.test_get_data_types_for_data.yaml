@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 09 Jul 2025 10:18:21 GMT
+      - Mon, 25 Aug 2025 14:51:42 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Wed, 09 Jul 2025 10:23:21 GMT
+      - Mon, 25 Aug 2025 14:56:42 GMT
       Source-Age:
-      - '11'
+      - '242'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -57,19 +57,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '1'
+      - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 4db24f3dc5e7b1916d4ef1edfdee9b382cfc0f75
+      - 1c75ed22cd5d82118707a9e7c66005232a22c49d
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - E8B4:10FD1B:86B686:9A65A5:686E41E0
+      - AC50:2E7EDD:1911D48:1C0C440:68AC7787
       X-Served-By:
-      - cache-ams2100147-AMS
+      - cache-fra-eddf8230162-FRA
       X-Timer:
-      - S1752056302.866715,VS0,VE1
+      - S1756133503.699023,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -113,13 +113,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 09 Jul 2025 10:18:22 GMT
+      - Mon, 25 Aug 2025 14:51:42 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Wed, 09 Jul 2025 10:23:22 GMT
+      - Mon, 25 Aug 2025 14:56:42 GMT
       Source-Age:
-      - '11'
+      - '242'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -129,19 +129,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '1'
+      - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 6ef4e3b728d384540ca0727e55851cee00fb1c5b
+      - 59b09ebd1bb9c503be98897072ec712c4dd2301e
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - E8B4:10FD1B:86B6DB:9A6606:686E41E2
+      - AC50:2E7EDD:1911D7F:1C0C46E:68AC778C
       X-Served-By:
-      - cache-ams21062-AMS
+      - cache-fra-eddf8230140-FRA
       X-Timer:
-      - S1752056302.033241,VS0,VE1
+      - S1756133503.754360,VS0,VE2
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -217,13 +217,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 09 Jul 2025 10:18:22 GMT
+      - Mon, 25 Aug 2025 14:51:42 GMT
       ETag:
       - W/"1923ecd4bc9d501e9a4f26486395e7fcd45f9ef272ada43ce0b0560471e4a3da"
       Expires:
-      - Wed, 09 Jul 2025 10:23:22 GMT
+      - Mon, 25 Aug 2025 14:56:42 GMT
       Source-Age:
-      - '3'
+      - '242'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -233,19 +233,19 @@ interactions:
       X-Cache:
       - HIT
       X-Cache-Hits:
-      - '1'
+      - '0'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - cb4fa4a03963e48adc5b6124eedc50ec03989e10
+      - 3757981896c671090e5506e286a5bcf839cbf63c
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - D3C5:17FD64:862E97:99DE89:686E41EB
+      - 0AB1:209604:1E1F879:2269EAE:68AC778C
       X-Served-By:
-      - cache-rtm-ehrd2290020-RTM
+      - cache-fra-eddf8230104-FRA
       X-Timer:
-      - S1752056302.187400,VS0,VE1
+      - S1756133503.814894,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -279,7 +279,7 @@ interactions:
         declaration as application/x-yaml"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=text%2Fhtml","rel":"conformance","type":"text/html","title":"Conformance
         declaration as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=application%2Fjson","rel":"data","type":"application/json","title":"Collections
         Metadata as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections?f=text%2Fhtml","rel":"data","type":"text/html","title":"Collections
-        Metadata as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SAR4TEC_ASCE","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_DEM_90","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_RH95_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L0_QL","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L1B","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SAR4TEC_DESC","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GL_MOW_DE_P1Y_FREQ","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_NONRES_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_AI_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SWIM_WE","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2-soilsuite-europe-2018-2022-P5Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_BUILDINGS_NONRES_GER_1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_Evolution","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSOrthoTiles","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/N2N_NOISE_DE_2017","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDE_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FCCL_DE_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_SURFACECOV_COMP_GER_10M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TIMELINE_AVHRR_P1M_LSTD","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_COVER_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_VOLUME_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/IOER_STRUCTURE_HEIGHT_GER_100M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Collect","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L4_P1D_NO2surf","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCD_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDL_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L3A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSScene4Band","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDL_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/DESIS_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_FNF_50","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_AGBD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDE_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSScene3Band","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GL_MOW_DE_P1Y_FC","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SUPERSITES","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L3A_WASP","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_ALH_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2015","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2LH_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2019","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/CROPTYPES_DE_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_UVI_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Scene","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2-soilsuite-africa-2018-2021-P4Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCE_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
+        Metadata as text/html"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SAR4TEC_ASCE","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_DEM_90","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_RH95_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CF_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L0_QL","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L1B","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SAR4TEC_DESC","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GL_MOW_DE_P1Y_FREQ","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_AI_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SWIM_WE","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2-soilsuite-europe-2018-2022-P5Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_Evolution","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_HCHO","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSOrthoTiles","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/N2N_NOISE_DE_2017","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_CTH","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDE_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FCCL_DE_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TIMELINE_AVHRR_P1M_LSTD","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_COVER_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L2A_MAJA_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_O3_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF3D_MATSTOCK","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_COT_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Collect","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L4_P1D_NO2surf","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCD_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDL_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RE_L3A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/ENMAP_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSScene4Band","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDL_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/DESIS_HSI_L2A","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/TDM_FNF_50","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1M","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/FOREST_STRUCTURE_DE_AGBD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCDE_MEAN","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_PSScene3Band","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GL_MOW_DE_P1Y_FC","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/D4H","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GWP_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/SUPERSITES","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2_L3A_WASP","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_ALH_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCD_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2015","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_SO2LH_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/WSF_2019","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/CROPTYPES_DE_P1Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S5P_TROPOMI_L3_P1D_UVI_v2","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/RESA_SkySat_Scene","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/S2-soilsuite-africa-2018-2021-P4Y","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/collections/GSP_SCE_P1D","rel":"child","type":"application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
         as application/geo+json","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=text%2Fhtml","rel":"search","type":"text/html","title":"Items
         as text/html","method":"GET"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1?f=application%2Fjson","rel":"root","type":"application/json","title":"Root
         Catalog as application/json"},{"href":"https://geoservice.dlr.de/eoc/ogc/stac/v1/search?f=application%2Fgeo%2Bjson","rel":"search","type":"application/geo+json","title":"Items
@@ -305,7 +305,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 09 Jul 2025 10:18:22 GMT
+      - Mon, 25 Aug 2025 14:51:43 GMT
       Link:
       - <https://geoservice.dlr.de/eoc/ogc/stac/v1/conformance?f=application%2Fjson>;
         rel="self"; type="application/json"; title="This document"
@@ -322,7 +322,7 @@ interactions:
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_-13da2b1c:197ee77915e:665b
+      - GS_FLOW_CONTROL=GS_CFLOW_4dc40e10:198e13817a3:-651
       Transfer-Encoding:
       - chunked
       X-Content-Type-Options:
@@ -389,11 +389,11 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 09 Jul 2025 10:18:23 GMT
+      - Mon, 25 Aug 2025 14:51:43 GMT
       Server:
       - nginx
       Set-Cookie:
-      - GS_FLOW_CONTROL=GS_CFLOW_3c887f01:197ee979663:-5a4f
+      - GS_FLOW_CONTROL=GS_CFLOW_4dc40e10:198e13817a3:-650
       X-Content-Type-Options:
       - nosniff
       X-Control-flow-delay-ms:
@@ -443,7 +443,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Wed, 09 Jul 2025 10:18:23 GMT
+      - Mon, 25 Aug 2025 14:51:43 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -532,13 +532,299 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Wed, 09 Jul 2025 10:18:24 GMT
+      - Mon, 25 Aug 2025 14:51:44 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
       - br
       vary:
       - Accept-Encoding
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.4
+    method: GET
+    uri: https://planetarycomputer.microsoft.com/api/stac/v1
+  response:
+    body:
+      string: '{"type":"Catalog","id":"microsoft-pc","title":"Microsoft Planetary
+        Computer STAC API","description":"Searchable spatiotemporal metadata describing
+        Earth science datasets hosted by the Microsoft Planetary Computer","stac_version":"1.0.0","conformsTo":["https://api.stacspec.org/v1.0.0/core","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/ogcapi-features","https://api.stacspec.org/v1.0.0/item-search","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/item-search#sort","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text"],"links":[{"rel":"self","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"data","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
+        conformance classes implemented by this server","href":"https://planetarycomputer.microsoft.com/api/stac/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables","href":"https://planetarycomputer.microsoft.com/api/stac/v1/queryables","method":"GET"},{"rel":"child","type":"application/json","title":"Daymet
+        Annual Puerto Rico","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-annual-pr"},{"rel":"child","type":"application/json","title":"Daymet
+        Daily Hawaii","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-daily-hi"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Seamless DEMs","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-seamless"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Digital Surface Model","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-dsm"},{"rel":"child","type":"application/json","title":"Forest
+        Inventory and Analysis","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/fia"},{"rel":"child","type":"application/json","title":"gridMET","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/gridmet"},{"rel":"child","type":"application/json","title":"Daymet
+        Annual North America","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-annual-na"},{"rel":"child","type":"application/json","title":"Daymet
+        Monthly North America","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-monthly-na"},{"rel":"child","type":"application/json","title":"Daymet
+        Annual Hawaii","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-annual-hi"},{"rel":"child","type":"application/json","title":"Daymet
+        Monthly Hawaii","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-monthly-hi"},{"rel":"child","type":"application/json","title":"Daymet
+        Monthly Puerto Rico","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-monthly-pr"},{"rel":"child","type":"application/json","title":"gNATSGO
+        Soil Database - Tables","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/gnatsgo-tables"},{"rel":"child","type":"application/json","title":"HGB:
+        Harmonized Global Biomass for 2010","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/hgb"},{"rel":"child","type":"application/json","title":"Copernicus
+        DEM GLO-30","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-30"},{"rel":"child","type":"application/json","title":"Copernicus
+        DEM GLO-90","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/cop-dem-glo-90"},{"rel":"child","type":"application/json","title":"TerraClimate","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/terraclimate"},{"rel":"child","type":"application/json","title":"Earth
+        Exchange Global Daily Downscaled Projections (NEX-GDDP-CMIP6)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/nasa-nex-gddp-cmip6"},{"rel":"child","type":"application/json","title":"GPM
+        IMERG","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/gpm-imerg-hhr"},{"rel":"child","type":"application/json","title":"gNATSGO
+        Soil Database - Rasters","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/gnatsgo-rasters"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Height above Ground","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-hag"},{"rel":"child","type":"application/json","title":"10m
+        Annual Land Use Land Cover (9-class) V2","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/io-lulc-annual-v02"},{"rel":"child","type":"application/json","title":"GOES-R
+        Cloud & Moisture Imagery","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/goes-cmi"},{"rel":"child","type":"application/json","title":"CONUS404","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/conus404"},{"rel":"child","type":"application/json","title":"Sentinel
+        1 Radiometrically Terrain Corrected (RTC)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-rtc"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Intensity","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-intensity"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Point Source","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-pointsourceid"},{"rel":"child","type":"application/json","title":"MTBS:
+        Monitoring Trends in Burn Severity","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/mtbs"},{"rel":"child","type":"application/json","title":"C-CAP
+        Regional Land Cover and Change","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-c-cap"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Point Cloud","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-copc"},{"rel":"child","type":"application/json","title":"MODIS
+        Burned Area Monthly","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-64A1-061"},{"rel":"child","type":"application/json","title":"ALOS
+        Forest/Non-Forest Annual Mosaic","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/alos-fnf-mosaic"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Returns","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-returns"},{"rel":"child","type":"application/json","title":"MoBI:
+        Map of Biodiversity Importance","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/mobi"},{"rel":"child","type":"application/json","title":"Landsat
+        Collection 2 Level-2","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l2"},{"rel":"child","type":"application/json","title":"ERA5
+        - PDS","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/era5-pds"},{"rel":"child","type":"application/json","title":"Chloris
+        Biomass","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/chloris-biomass"},{"rel":"child","type":"application/json","title":"HydroForecast
+        - Kwando & Upper Zambezi Rivers","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/kaza-hydroforecast"},{"rel":"child","type":"application/json","title":"Planet-NICFI
+        Basemaps (Analytic)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/planet-nicfi-analytic"},{"rel":"child","type":"application/json","title":"MODIS
+        Gross Primary Productivity 8-Day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-17A2H-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Land Surface Temperature/Emissivity 8-Day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-11A2-061"},{"rel":"child","type":"application/json","title":"Daymet
+        Daily Puerto Rico","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-daily-pr"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Digital Terrain Model (Native)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-dtm-native"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Classification","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-classification"},{"rel":"child","type":"application/json","title":"USGS
+        3DEP Lidar Digital Terrain Model","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/3dep-lidar-dtm"},{"rel":"child","type":"application/json","title":"USGS
+        Gap Land Cover","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/gap"},{"rel":"child","type":"application/json","title":"MODIS
+        Gross Primary Productivity 8-Day Gap-Filled","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-17A2HGF-061"},{"rel":"child","type":"application/json","title":"Planet-NICFI
+        Basemaps (Visual)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/planet-nicfi-visual"},{"rel":"child","type":"application/json","title":"Global
+        Biodiversity Information Facility (GBIF)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/gbif"},{"rel":"child","type":"application/json","title":"MODIS
+        Net Primary Production Yearly Gap-Filled","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-17A3HGF-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Surface Reflectance 8-Day (500m)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-09A1-061"},{"rel":"child","type":"application/json","title":"ALOS
+        World 3D-30m","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/alos-dem"},{"rel":"child","type":"application/json","title":"ALOS
+        PALSAR Annual Mosaic","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/alos-palsar-mosaic"},{"rel":"child","type":"application/json","title":"Deltares
+        Global Water Availability","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/deltares-water-availability"},{"rel":"child","type":"application/json","title":"MODIS
+        Net Evapotranspiration Yearly Gap-Filled","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-16A3GF-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Land Surface Temperature/3-Band Emissivity 8-Day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-21A2-061"},{"rel":"child","type":"application/json","title":"US
+        Census","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/us-census"},{"rel":"child","type":"application/json","title":"JRC
+        Global Surface Water","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/jrc-gsw"},{"rel":"child","type":"application/json","title":"Deltares
+        Global Flood Maps","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/deltares-floods"},{"rel":"child","type":"application/json","title":"MODIS
+        Nadir BRDF-Adjusted Reflectance (NBAR) Daily","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-43A4-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Surface Reflectance 8-Day (250m)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-09Q1-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Thermal Anomalies/Fire Daily","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-14A1-061"},{"rel":"child","type":"application/json","title":"HREA:
+        High Resolution Electricity Access","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/hrea"},{"rel":"child","type":"application/json","title":"MODIS
+        Vegetation Indices 16-Day (250m)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-13Q1-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Thermal Anomalies/Fire 8-Day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-14A2-061"},{"rel":"child","type":"application/json","title":"Sentinel-2
+        Level-2A","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a"},{"rel":"child","type":"application/json","title":"MODIS
+        Leaf Area Index/FPAR 8-Day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-15A2H-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Land Surface Temperature/Emissivity Daily","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-11A1-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Leaf Area Index/FPAR 4-Day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-15A3H-061"},{"rel":"child","type":"application/json","title":"MODIS
+        Vegetation Indices 16-Day (500m)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-13A1-061"},{"rel":"child","type":"application/json","title":"Daymet
+        Daily North America","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/daymet-daily-na"},{"rel":"child","type":"application/json","title":"Land
+        Cover of Canada","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/nrcan-landcover"},{"rel":"child","type":"application/json","title":"MODIS
+        Snow Cover 8-day","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-10A2-061"},{"rel":"child","type":"application/json","title":"ECMWF
+        Open Data (real-time)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/ecmwf-forecast"},{"rel":"child","type":"application/json","title":"NOAA
+        MRMS QPE 24-Hour Pass 2","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-mrms-qpe-24h-pass2"},{"rel":"child","type":"application/json","title":"NASADEM
+        HGT v001","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/nasadem"},{"rel":"child","type":"application/json","title":"Esri
+        10-Meter Land Cover (10-class)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/io-lulc"},{"rel":"child","type":"application/json","title":"Landsat
+        Collection 2 Level-1","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/landsat-c2-l1"},{"rel":"child","type":"application/json","title":"Denver
+        Regional Council of Governments Land Use Land Cover","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/drcog-lulc"},{"rel":"child","type":"application/json","title":"Chesapeake
+        Land Cover (7-class)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/chesapeake-lc-7"},{"rel":"child","type":"application/json","title":"Chesapeake
+        Land Cover (13-class)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/chesapeake-lc-13"},{"rel":"child","type":"application/json","title":"Chesapeake
+        Land Use","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/chesapeake-lu"},{"rel":"child","type":"application/json","title":"NOAA
+        MRMS QPE 1-Hour Pass 1","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-mrms-qpe-1h-pass1"},{"rel":"child","type":"application/json","title":"NOAA
+        MRMS QPE 1-Hour Pass 2","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-mrms-qpe-1h-pass2"},{"rel":"child","type":"application/json","title":"Monthly
+        NOAA U.S. Climate Gridded Dataset (NClimGrid)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-nclimgrid-monthly"},{"rel":"child","type":"application/json","title":"USDA
+        Cropland Data Layers (CDLs)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/usda-cdl"},{"rel":"child","type":"application/json","title":"Urban
+        Innovation Eclipse Sensor Data","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/eclipse"},{"rel":"child","type":"application/json","title":"ESA
+        Climate Change Initiative Land Cover Maps (Cloud Optimized GeoTIFF)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-cci-lc"},{"rel":"child","type":"application/json","title":"ESA
+        Climate Change Initiative Land Cover Maps (NetCDF)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-cci-lc-netcdf"},{"rel":"child","type":"application/json","title":"FWS
+        National Wetlands Inventory","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/fws-nwi"},{"rel":"child","type":"application/json","title":"USGS
+        LCMAP CONUS Collection 1.3","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/usgs-lcmap-conus-v13"},{"rel":"child","type":"application/json","title":"USGS
+        LCMAP Hawaii Collection 1.0","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/usgs-lcmap-hawaii-v10"},{"rel":"child","type":"application/json","title":"NOAA
+        US Tabular Climate Normals","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-climate-normals-tabular"},{"rel":"child","type":"application/json","title":"NOAA
+        US Gridded Climate Normals (NetCDF)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-climate-normals-netcdf"},{"rel":"child","type":"application/json","title":"GOES-R
+        Lightning Detection","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/goes-glm"},{"rel":"child","type":"application/json","title":"Sentinel
+        1 Level-1 Ground Range Detected (GRD)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-1-grd"},{"rel":"child","type":"application/json","title":"NOAA
+        US Gridded Climate Normals (Cloud-Optimized GeoTIFF)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-climate-normals-gridded"},{"rel":"child","type":"application/json","title":"ASTER
+        L1T","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/aster-l1t"},{"rel":"child","type":"application/json","title":"CIL
+        Global Downscaled Projections for Climate Impacts Research (CC-BY-SA-4.0)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/cil-gdpcir-cc-by-sa"},{"rel":"child","type":"application/json","title":"NAIP:
+        National Agriculture Imagery Program","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/naip"},{"rel":"child","type":"application/json","title":"10m
+        Annual Land Use Land Cover (9-class) V1","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/io-lulc-9-class"},{"rel":"child","type":"application/json","title":"Biodiversity
+        Intactness","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/io-biodiversity"},{"rel":"child","type":"application/json","title":"Sea
+        Surface Temperature - WHOI CDR","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-cdr-sea-surface-temperature-whoi"},{"rel":"child","type":"application/json","title":"Global
+        Ocean Heat Content CDR","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-cdr-ocean-heat-content"},{"rel":"child","type":"application/json","title":"CIL
+        Global Downscaled Projections for Climate Impacts Research (CC0-1.0)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/cil-gdpcir-cc0"},{"rel":"child","type":"application/json","title":"CIL
+        Global Downscaled Projections for Climate Impacts Research (CC-BY-4.0)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/cil-gdpcir-cc-by"},{"rel":"child","type":"application/json","title":"Sea
+        Surface Temperature - WHOI CDR NetCDFs","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-cdr-sea-surface-temperature-whoi-netcdf"},{"rel":"child","type":"application/json","title":"Sea
+        Surface Temperature - Optimum Interpolation CDR","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-cdr-sea-surface-temperature-optimum-interpolation"},{"rel":"child","type":"application/json","title":"MODIS
+        Snow Cover Daily","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/modis-10A1-061"},{"rel":"child","type":"application/json","title":"Sentinel-5P
+        Level-2","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-5p-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Water (Full Resolution)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-olci-wfr-l2-netcdf"},{"rel":"child","type":"application/json","title":"Global
+        Ocean Heat Content CDR NetCDFs","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/noaa-cdr-ocean-heat-content-netcdf"},{"rel":"child","type":"application/json","title":"Harmonized
+        Landsat Sentinel-2 (HLS) Version 2.0, Landsat Data","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/hls2-l30"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Global Aerosol","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-synergy-aod-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        10-Day Surface Reflectance and NDVI (SPOT VEGETATION)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-synergy-v10-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Land (Full Resolution)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-olci-lfr-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Land Radar Altimetry","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-sral-lan-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Land Surface Temperature","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-lst-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Sea Surface Temperature","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-wst-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Ocean Radar Altimetry","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-sral-wat-l2-netcdf"},{"rel":"child","type":"application/json","title":"Harmonized
+        Landsat Sentinel-2 (HLS) Version 2.0, Sentinel-2 Data","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/hls2-s30"},{"rel":"child","type":"application/json","title":"Microsoft
+        Building Footprints","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/ms-buildings"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Fire Radiative Power","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-frp-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Land Surface Reflectance and Aerosol","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-synergy-syn-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        Top of Atmosphere Reflectance (SPOT VEGETATION)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-synergy-vgp-l2-netcdf"},{"rel":"child","type":"application/json","title":"Sentinel-3
+        1-Day Surface Reflectance and NDVI (SPOT VEGETATION)","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-synergy-vg1-l2-netcdf"},{"rel":"child","type":"application/json","title":"ESA
+        WorldCover","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/esa-worldcover"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
+        service description","href":"https://planetarycomputer.microsoft.com/api/stac/v1/openapi.json"},{"rel":"service-doc","type":"text/html","title":"OpenAPI
+        service documentation","href":"https://planetarycomputer.microsoft.com/api/stac/v1/docs"}],"stac_extensions":[]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - X-PC-Request-Entity,DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+      Access-Control-Allow-Methods:
+      - PUT, GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '3435'
+      Content-Type:
+      - application/json
+      Date:
+      - Mon, 25 Aug 2025 14:51:44 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Cache:
+      - CONFIG_NOCACHE
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
+      x-azure-ref:
+      - 20250825T145144Z-17b985bf97bhc6r5hC1CPHss40000000056000000000neh6
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.4
+    method: GET
+    uri: https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452
+  response:
+    body:
+      string: '{"id":"S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452","bbox":[7.760788654244106,46.85855466024772,9.130470361916801,47.85362771191058],"type":"Feature","links":[{"rel":"collection","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a"},{"rel":"parent","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"self","type":"application/geo+json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-2-l2a/items/S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452"},{"rel":"license","href":"https://sentinel.esa.int/documents/247904/690755/Sentinel_Data_Legal_Notice"},{"rel":"preview","href":"https://planetarycomputer.microsoft.com/api/data/v1/item/map?collection=sentinel-2-l2a&item=S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452","title":"Map
+        of item","type":"text/html"}],"assets":{"AOT":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_AOT_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Aerosol
+        optical thickness (AOT)"},"B01":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R60m/T32TMT_20200705T101559_B01_60m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[1830,1830],"proj:transform":[60.0,0.0,399960.0,0.0,-60.0,5300040.0],"gsd":60.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        1 - Coastal aerosol - 60m","eo:bands":[{"name":"B01","common_name":"coastal","description":"Band
+        1 - Coastal aerosol","center_wavelength":0.443,"full_width_half_max":0.027}]},"B02":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_B02_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        2 - Blue - 10m","eo:bands":[{"name":"B02","common_name":"blue","description":"Band
+        2 - Blue","center_wavelength":0.49,"full_width_half_max":0.098}]},"B03":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_B03_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        3 - Green - 10m","eo:bands":[{"name":"B03","common_name":"green","description":"Band
+        3 - Green","center_wavelength":0.56,"full_width_half_max":0.045}]},"B04":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_B04_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        4 - Red - 10m","eo:bands":[{"name":"B04","common_name":"red","description":"Band
+        4 - Red","center_wavelength":0.665,"full_width_half_max":0.038}]},"B05":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_B05_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        5 - Vegetation red edge 1 - 20m","eo:bands":[{"name":"B05","common_name":"rededge","description":"Band
+        5 - Vegetation red edge 1","center_wavelength":0.704,"full_width_half_max":0.019}]},"B06":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_B06_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        6 - Vegetation red edge 2 - 20m","eo:bands":[{"name":"B06","common_name":"rededge","description":"Band
+        6 - Vegetation red edge 2","center_wavelength":0.74,"full_width_half_max":0.018}]},"B07":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_B07_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        7 - Vegetation red edge 3 - 20m","eo:bands":[{"name":"B07","common_name":"rededge","description":"Band
+        7 - Vegetation red edge 3","center_wavelength":0.783,"full_width_half_max":0.028}]},"B08":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_B08_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        8 - NIR - 10m","eo:bands":[{"name":"B08","common_name":"nir","description":"Band
+        8 - NIR","center_wavelength":0.842,"full_width_half_max":0.145}]},"B09":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R60m/T32TMT_20200705T101559_B09_60m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[1830,1830],"proj:transform":[60.0,0.0,399960.0,0.0,-60.0,5300040.0],"gsd":60.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        9 - Water vapor - 60m","eo:bands":[{"name":"B09","description":"Band 9 - Water
+        vapor","center_wavelength":0.945,"full_width_half_max":0.026}]},"B11":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_B11_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        11 - SWIR (1.6) - 20m","eo:bands":[{"name":"B11","common_name":"swir16","description":"Band
+        11 - SWIR (1.6)","center_wavelength":1.61,"full_width_half_max":0.143}]},"B12":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_B12_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        12 - SWIR (2.2) - 20m","eo:bands":[{"name":"B12","common_name":"swir22","description":"Band
+        12 - SWIR (2.2)","center_wavelength":2.19,"full_width_half_max":0.242}]},"B8A":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_B8A_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Band
+        8A - Vegetation red edge 4 - 20m","eo:bands":[{"name":"B8A","common_name":"rededge","description":"Band
+        8A - Vegetation red edge 4","center_wavelength":0.865,"full_width_half_max":0.033}]},"SCL":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R20m/T32TMT_20200705T101559_SCL_20m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[5490,5490],"proj:transform":[20.0,0.0,399960.0,0.0,-20.0,5300040.0],"gsd":20.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Scene
+        classfication map (SCL)"},"WVP":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_WVP_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"Water
+        vapour (WVP)"},"visual":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/IMG_DATA/R10m/T32TMT_20200705T101559_TCI_10m.tif","proj:bbox":[399960.0,5190240.0,509760.0,5300040.0],"proj:shape":[10980,10980],"proj:transform":[10.0,0.0,399960.0,0.0,-10.0,5300040.0],"gsd":10.0,"type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["data"],"title":"True
+        color image","eo:bands":[{"name":"B04","common_name":"red","description":"Band
+        4 - Red","center_wavelength":0.665,"full_width_half_max":0.038},{"name":"B03","common_name":"green","description":"Band
+        3 - Green","center_wavelength":0.56,"full_width_half_max":0.045},{"name":"B02","common_name":"blue","description":"Band
+        2 - Blue","center_wavelength":0.49,"full_width_half_max":0.098}]},"preview":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/QI_DATA/T32TMT_20200705T101559_PVI.tif","type":"image/tiff;
+        application=geotiff; profile=cloud-optimized","roles":["thumbnail"],"title":"Thumbnail"},"safe-manifest":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/manifest.safe","type":"application/xml","roles":["metadata"],"title":"SAFE
+        manifest"},"granule-metadata":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/GRANULE/L2A_T32TMT_A017394_20200705T101917/MTD_TL.xml","type":"application/xml","roles":["metadata"],"title":"Granule
+        metadata"},"inspire-metadata":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/INSPIRE.xml","type":"application/xml","roles":["metadata"],"title":"INSPIRE
+        metadata"},"product-metadata":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/MTD_MSIL2A.xml","type":"application/xml","roles":["metadata"],"title":"Product
+        metadata"},"datastrip-metadata":{"href":"https://sentinel2l2a01.blob.core.windows.net/sentinel2-l2/32/T/MT/2020/07/05/S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE/DATASTRIP/DS_ESRI_20200825T083454_S20200705T101917/MTD_DS.xml","type":"application/xml","roles":["metadata"],"title":"Datastrip
+        metadata"},"tilejson":{"title":"TileJSON with default rendering","href":"https://planetarycomputer.microsoft.com/api/data/v1/item/tilejson.json?collection=sentinel-2-l2a&item=S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452&assets=visual&asset_bidx=visual%7C1%2C2%2C3&nodata=0&format=png","type":"application/json","roles":["tiles"]},"rendered_preview":{"title":"Rendered
+        preview","rel":"preview","href":"https://planetarycomputer.microsoft.com/api/data/v1/item/preview.png?collection=sentinel-2-l2a&item=S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452&assets=visual&asset_bidx=visual%7C1%2C2%2C3&nodata=0&format=png","roles":["overview"],"type":"image/png"}},"geometry":{"type":"Polygon","coordinates":[[[7.76078865,46.85855466],[7.76182195,46.861447],[7.81485338,47.00784217],[7.86666402,47.15462283],[7.91885465,47.30134266],[7.97257961,47.447671],[8.02595985,47.59412901],[8.08072995,47.74015246],[8.1198647,47.84831655],[9.13047036,47.85362771],[9.12805716,46.86562825],[7.76078865,46.85855466]]]},"collection":"sentinel-2-l2a","properties":{"datetime":"2020-07-05T10:15:59.024000Z","platform":"Sentinel-2B","proj:epsg":32632,"instruments":["msi"],"s2:mgrs_tile":"32TMT","constellation":"Sentinel
+        2","s2:granule_id":"S2B_OPER_MSI_L2A_TL_ESRI_20200825T083454_A017394_T32TMT_N02.12","eo:cloud_cover":9.336255,"s2:datatake_id":"GS2B_20200705T101559_017394_N02.12","s2:product_uri":"S2B_MSIL2A_20200705T101559_N0212_R065_T32TMT_20200825T083452.SAFE","s2:datastrip_id":"S2B_OPER_MSI_L2A_DS_ESRI_20200825T083454_S20200705T101917_N02.12","s2:product_type":"S2MSI2A","sat:orbit_state":"descending","s2:datatake_type":"INS-NOBS","s2:generation_time":"2020-08-25T08:34:52.912Z","sat:relative_orbit":65,"s2:water_percentage":4.170933,"s2:mean_solar_zenith":27.7137933540773,"s2:mean_solar_azimuth":147.295339983614,"s2:processing_baseline":"02.12","s2:snow_ice_percentage":0.158964,"s2:vegetation_percentage":75.904739,"s2:thin_cirrus_percentage":0.006403,"s2:cloud_shadow_percentage":0.527607,"s2:nodata_pixel_percentage":18.124741,"s2:unclassified_percentage":1.510134,"s2:dark_features_percentage":0.45287,"s2:not_vegetated_percentage":7.938507,"s2:degraded_msi_data_percentage":0.0,"s2:high_proba_clouds_percentage":7.800486,"s2:reflectance_conversion_factor":0.967398932975655,"s2:medium_proba_clouds_percentage":1.529366,"s2:saturated_defective_pixel_percentage":0.0},"stac_extensions":["https://stac-extensions.github.io/eo/v1.0.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json","https://stac-extensions.github.io/projection/v1.0.0/schema.json"],"stac_version":"1.0.0"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - X-PC-Request-Entity,DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+      Access-Control-Allow-Methods:
+      - PUT, GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2570'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Mon, 25 Aug 2025 14:51:45 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Cache:
+      - CONFIG_NOCACHE
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
+      x-azure-ref:
+      - 20250825T145144Z-17b985bf97bh8hbnhC1CPHn3tw00000001a0000000002re3
     status:
       code: 200
       message: OK

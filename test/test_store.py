@@ -35,11 +35,14 @@ from xcube.core.store import (
 )
 from xcube.util.jsonschema import JsonObjectSchema
 
+# noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
 from xcube_stac.constants import (
     DATA_STORE_ID,
     DATA_STORE_ID_CDSE,
+    DATA_STORE_ID_PC,
     DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
 )
 from xcube_stac.utils import reproject_bbox
@@ -105,6 +108,10 @@ class StacDataStoreTest(unittest.TestCase):
             "collections/sentinel-2-l2a/items/"
             "S2A_MSIL2A_20241107T113311_N0511_R080_T32VKR_20241107T123948"
         )
+        self.data_id_pc_sen2 = (
+            "collections/sentinel-2-l2a/items/"
+            "S2B_MSIL2A_20200705T101559_R065_T32TMT_20200825T083452"
+        )
         self.data_id_cdse_sen3 = (
             "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T"
             "233058_20250706T233358_20250708T043306_0179_108_258_3420_ESA_O_NT_002"
@@ -120,6 +127,15 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("key", schema.properties)
         self.assertIn("secret", schema.properties)
         self.assertIn("url", schema.required)
+
+    @pytest.mark.vcr()
+    def test_get_data_store_params_schema_pc(self):
+        store = new_data_store(DATA_STORE_ID_PC)
+        schema = store.get_data_store_params_schema()
+        self.assertIsInstance(schema, JsonObjectSchema)
+        self.assertNotIn("url", schema.properties)
+        self.assertNotIn("url", schema.required)
+        self.assertFalse(schema.additional_properties)
 
     @pytest.mark.vcr()
     def test_get_data_types(self):
@@ -154,6 +170,12 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(
             ("dataset",),
             store.get_data_types_for_data(self.data_id_cdse_sen2),
+        )
+
+        # Planetary Computer STAC API Sentinel-2
+        store = new_data_store(DATA_STORE_ID_PC)
+        self.assertEqual(
+            ("dataset",), store.get_data_types_for_data(self.data_id_pc_sen2)
         )
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
@@ -204,11 +226,18 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
     @pytest.mark.vcr()
+    def test_get_data_ids_pc_ardc(self):
+        store = new_data_store(DATA_STORE_ID_PC_ARDC)
+        data_ids = store.list_data_ids()
+        self.assertCountEqual(["sentinel-2-l2a"], data_ids)
+
+    @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         include_attrs = ["id", "bbox", "links"]
         data_id, attrs = next(store.get_data_ids(include_attrs=include_attrs))
         self.assertEqual(self.data_id_searchable, data_id)
+        self.assertIsInstance(attrs, dict)
         self.assertCountEqual(include_attrs, list(attrs.keys()))
 
         data_id, attrs = next(store.get_data_ids(include_attrs=True))
@@ -222,6 +251,7 @@ class StacDataStoreTest(unittest.TestCase):
             "assets",
             "stac_extensions",
         ]
+        self.assertIsInstance(attrs, dict)
         self.assertCountEqual(all_attrs, list(attrs.keys()))
 
     @pytest.mark.vcr()
@@ -364,6 +394,19 @@ class StacDataStoreTest(unittest.TestCase):
             secret=CDSE_CREDENTIALS["secret"],
         )
         data_ids = ("sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc")
+        for data_id in data_ids:
+            schema = store.get_open_data_params_schema(data_id=data_id)
+            self.assertIsInstance(schema, JsonObjectSchema)
+            self.assertIn("asset_names", schema.properties)
+            self.assertIn("time_range", schema.properties)
+            self.assertIn("bbox", schema.properties)
+            self.assertIn("crs", schema.properties)
+            self.assertIn("spatial_res", schema.properties)
+            self.assertIn("query", schema.properties)
+
+    def test_get_open_data_params_schema_pc_ardc(self):
+        store = new_data_store(DATA_STORE_ID_PC_ARDC)
+        data_ids = ["sentinel-2-l2a"]
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonObjectSchema)
@@ -600,6 +643,17 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
+    def test_open_data_pc_sen2(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
+
+        store = new_data_store(DATA_STORE_ID_PC)
+        ds = store.open_data(data_id=self.data_id_pc_sen2, apply_scaling=True)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(_SENTINEL2_L2A_BANDS, list(ds.data_vars))
+        self.assertCountEqual([10980, 10980], [ds.sizes["y"], ds.sizes["x"]])
+
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen3(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_geolocation_data(),
@@ -831,6 +885,99 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(
             "Data type must be one of ('dataset',), but got 'mldataset'.",
             f"{cm.exception}",
+        )
+
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_pc_sen2_ardc(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data_60m()
+        store = new_data_store(DATA_STORE_ID_PC_ARDC)
+
+        # open data in UTM crs
+        bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
+        crs_target = "EPSG:32632"
+        bbox_utm = reproject_bbox(bbox_wgs84, "EPSG:4326", crs_target)
+        ds = store.open_data(
+            data_id="sentinel-2-l2a",
+            bbox=bbox_utm,
+            time_range=["2020-08-29", "2020-09-03"],
+            spatial_res=60,
+            crs=crs_target,
+            asset_names=["B04"],
+            apply_scaling=True,
+            add_angles=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+
+        self.assertCountEqual(
+            ["B04", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertEqual(
+            [4, 759, 903, 11, 12, 2, 1],
+            [
+                ds.sizes["time"],
+                ds.sizes["y"],
+                ds.sizes["x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+        self.assertEqual(
+            [1, 759, 903, 11, 12, 2, 1],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["y"][0],
+                ds.chunksizes["x"][0],
+                ds.chunksizes["angle_y"][0],
+                ds.chunksizes["angle_x"][0],
+                ds.chunksizes["angle"][0],
+                ds.chunksizes["band"][0],
+            ],
+        )
+
+        # open dataset in WGS84
+        ds = store.open_data(
+            data_id="sentinel-2-l2a",
+            asset_names=["B04"],
+            bbox=bbox_wgs84,
+            time_range=["2020-07-26", "2020-08-01"],
+            spatial_res=0.00054,
+            crs="EPSG:4326",
+            apply_scaling=True,
+            add_angles=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+
+        self.assertCountEqual(
+            ["B04", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertEqual(
+            [4, 742, 1483, 10, 19, 2, 1],
+            [
+                ds.sizes["time"],
+                ds.sizes["lat"],
+                ds.sizes["lon"],
+                ds.sizes["angle_lat"],
+                ds.sizes["angle_lon"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+        self.assertEqual(
+            [1, 742, 1483, 10, 19, 2, 1],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+                ds.chunksizes["angle_lat"][0],
+                ds.chunksizes["angle_lon"][0],
+                ds.chunksizes["angle"][0],
+                ds.chunksizes["band"][0],
+            ],
         )
 
     # TODO add test for Sen3 ardc

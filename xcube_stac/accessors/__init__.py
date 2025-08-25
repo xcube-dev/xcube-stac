@@ -19,21 +19,21 @@
 # FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 # DEALINGS IN THE SOFTWARE.
 
+from typing import Type
+
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
-    CDSE_STAC_URL,
     DATA_STORE_ID_CDSE,
     DATA_STORE_ID_CDSE_ARDC,
     DATA_STORE_ID_PC,
     DATA_STORE_ID_PC_ARDC,
 )
-
 from .base import BaseStacItemAccessor
 from .sen2 import (
     Sen2CdseStacArdcAccessor,
     Sen2CdseStacItemAccessor,
-    Sen2PlanetaryComputerStacItemAccessor,
     Sen2PlanetaryComputerStacArdcAccessor,
+    Sen2PlanetaryComputerStacItemAccessor,
 )
 from .sen3 import Sen3CdseStacArdcAccessor, Sen3CdseStacItemAccessor
 
@@ -57,7 +57,7 @@ ACCESSOR_MAPPING = {
 }
 
 
-def guess_item_accessor(store_id: str, data_id: str = None) -> "StacItemAccessor":
+def guess_item_accessor(store_id: str, data_id: str = None) -> Type[StacItemAccessor]:
     if store_id in ACCESSOR_MAPPING.keys():
         if data_id is not None:
             for key in ACCESSOR_MAPPING[store_id].keys():
@@ -66,7 +66,7 @@ def guess_item_accessor(store_id: str, data_id: str = None) -> "StacItemAccessor
     return BaseStacItemAccessor
 
 
-def guess_ardc_accessor(store_id: str, data_id: str = None) -> "StacArdcAccessor":
+def guess_ardc_accessor(store_id: str, data_id: str = None) -> Type[StacArdcAccessor]:
     accesor = None
     if store_id in ACCESSOR_MAPPING.keys():
         accesor = ACCESSOR_MAPPING[store_id].get(data_id)
@@ -75,6 +75,7 @@ def guess_ardc_accessor(store_id: str, data_id: str = None) -> "StacArdcAccessor
             f"No ARDC accessor implemented for store_id {store_id!r} "
             f"and data_id {data_id!r}."
         )
+    # noinspection PyTypeChecker
     return accesor
 
 
