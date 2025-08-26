@@ -1,4 +1,12 @@
 ## Changes in 1.0.1 (under development)
+
+* **Added new data stores** `stac-pc` and `stac-pc-ardc`.  
+  - `stac-pc` allows opening Sentinel-2 Level-2A tiles as individual datasets.  
+  - `stac-pc-ardc` enables combining multiple tiles into 3D **analysis-ready data cubes**.  
+  
+  These stores are analogous to `stac-cdse` and `stac-cdse-ardc`, but offer 
+  improved **cube generation performance** by leveraging
+  **cloud-optimized GeoTIFFs (COGs)**.
  
 ## Changes in 1.0.0
 
