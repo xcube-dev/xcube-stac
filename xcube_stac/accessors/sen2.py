@@ -41,6 +41,7 @@ from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonBooleanSchema,
+    JsonComplexSchema,
     JsonNumberSchema,
     JsonObjectSchema,
     JsonStringSchema,
@@ -51,7 +52,6 @@ from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_APPLY_SCALING,
-    SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
     SCHEMA_TIME_RANGE,
@@ -107,6 +107,27 @@ _SCHEMA_ASSET_NAMES = JsonArraySchema(
     items=(JsonStringSchema(min_length=1, enum=_SENTINEL2_L2A_BANDS)),
     unique_items=True,
     title="Names of assets (spectral bands)",
+)
+_SCHEMA_POINT = JsonArraySchema(
+    items=(
+        JsonNumberSchema(minimum=-180, maximum=180),
+        JsonNumberSchema(minimum=-90, maximum=90),
+    ),
+    title="Point given in (lon, lat) in geographical coordinates.",
+)
+_SCHEMA_BBOX_WIDTH = JsonNumberSchema(
+    title="Full width of bounding box, aligned around the coordinates given in `point`.",
+    exclusive_minimum=0,
+    maximum=10000,
+)
+_SCHEMA_BBOX = JsonArraySchema(
+    items=(
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+    ),
+    title="Bounding box [x1,y1,x2,y2] in coordinates of the given CRS.",
 )
 
 
@@ -333,8 +354,12 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # get STAC assets grouped by solar day
         grouped_items = self._group_items(items)
 
-        # apply mosaicking and stacking
-        ds = self._generate_cube(grouped_items, **open_params)
+        if "point" in open_params:
+            # apply only stacking
+            ds = self._generate_cube_single_tile(grouped_items, **open_params)
+        else:
+            # apply mosaicking and stacking
+            ds = self._generate_cube(grouped_items, **open_params)
 
         # add attributes
         # Gather all used STAC item IDs used in the data cube for each time step
@@ -356,11 +381,11 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
-        return JsonObjectSchema(
+        bbox_schema = JsonObjectSchema(
             properties=dict(
                 asset_names=_SCHEMA_ASSET_NAMES,
                 time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
+                bbox=_SCHEMA_BBOX,
                 spatial_res=SCHEMA_SPATIAL_RES,
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
@@ -370,6 +395,22 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
+        point_schema = JsonObjectSchema(
+            properties=dict(
+                asset_names=_SCHEMA_ASSET_NAMES,
+                time_range=SCHEMA_TIME_RANGE,
+                point=_SCHEMA_POINT,
+                bbox_width=_SCHEMA_BBOX_WIDTH,
+                spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
+                query=SCHEMA_ADDITIONAL_QUERY,
+                add_angles=_SCHEMA_ANGLES_SENTINEL2,
+                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
+            ),
+            required=["time_range", "point", "spatial_res", "bbox_width"],
+            additional_properties=False,
+        )
+        # noinspection PyTypeChecker
+        return JsonComplexSchema(one_of=[bbox_schema, point_schema])
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
         """Generate a spatiotemporal data cube from multiple items.
@@ -412,6 +453,72 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         if open_params.get("add_angles", False):
             ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
 
+        return ds_final
+
+    def _generate_cube_single_tile(
+        self, grouped_items: xr.DataArray, **open_params
+    ) -> xr.Dataset:
+
+        # find tile closest to the given point
+        centers = np.zeros((2, grouped_items.sizes["tile_id"]))
+        for idx_tile_id in range(grouped_items.shape[1]):
+            item = grouped_items.isel(time=0, tile_id=idx_tile_id).item()[0]
+            centers[0, idx_tile_id] = (item.bbox[0] + item.bbox[2]) / 2
+            centers[1, idx_tile_id] = (item.bbox[1] + item.bbox[3]) / 2
+        idx_min = np.argmin(
+            (centers[0] - open_params["point"][0]) ** 2
+            + (centers[1] - open_params["point"][1]) ** 2
+        )
+        grouped_items = grouped_items[:, idx_min]
+
+        # Open data and stack along time axis
+        open_item_open_params = dict(
+            asset_names=open_params.get("asset_names"),
+            spatial_res=open_params.get("spatial_res", 10),
+            apply_scaling=open_params.get("apply_scaling", True),
+            add_angles=open_params.get("add_angles", False),
+            tile_size=open_params.get("tile_size"),
+        )
+        dss = []
+        idx_remove_dt = []
+        for dt_idx, dt in enumerate(grouped_items.time.values):
+            items = grouped_items.isel(time=dt_idx).item()
+            multi_tiles = []
+            for item in items:
+                ds = self.open_item(item, **open_item_open_params)
+                multi_tiles.append(ds)
+            if not multi_tiles:
+                idx_remove_dt.append(dt_idx)
+                continue
+            dss.append(mosaic_spatial_take_first(multi_tiles))
+        ds_final = xr.concat(dss, dim="time", join="exact")
+        np_datetimes_sel = [
+            value
+            for idx, value in enumerate(grouped_items.time.values)
+            if idx not in idx_remove_dt
+        ]
+        ds_final = ds_final.assign_coords(coords=dict(time=np_datetimes_sel))
+
+        # clip dataset
+        item = np.sum(grouped_items.values)[0]
+        asset = next(iter(item.assets.values()))
+        crs_data = asset.extra_fields.get(
+            self._stac_item_properties["crs"],
+            item.properties.get(self._stac_item_properties["crs"]),
+        )
+        t = pyproj.Transformer.from_crs("EPSG:4326", crs_data, always_xy=True)
+        point_data = t.transform(open_params["point"][0], open_params["point"][1])
+        bbox_hwidth = open_params["bbox_width"] / 2
+        bbox_data = [
+            point_data[0] - bbox_hwidth,
+            point_data[1] - bbox_hwidth,
+            point_data[0] + bbox_hwidth,
+            point_data[1] + bbox_hwidth,
+        ]
+        ds_final = ds_final.sel(
+            x=slice(bbox_data[0], bbox_data[2]),
+            y=slice(bbox_data[3], bbox_data[1]),
+        )
         return ds_final
 
     def _group_items(self, items: Sequence[pystac.Item]) -> xr.DataArray:
@@ -532,6 +639,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             spatial_res=spatial_res,
             apply_scaling=open_params.get("apply_scaling", True),
             add_angles=False,
+            tile_size=open_params.get("tile_size"),
         )
         final_ds = None
         for dt_idx, dt in enumerate(grouped_items.time.values):

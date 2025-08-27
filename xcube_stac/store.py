@@ -575,15 +575,21 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         schema.validate_instance(open_params)
 
         # search for items
-        bbox_wgs84 = reproject_bbox(
-            open_params["bbox"], open_params["crs"], "EPSG:4326"
-        )
+        if "point" in open_params:
+            bbox_wgs84 = None
+            point_geojson = {"type": "Point", "coordinates": open_params["point"]}
+        else:
+            bbox_wgs84 = reproject_bbox(
+                open_params["bbox"], open_params["crs"], "EPSG:4326"
+            )
+            point_geojson = None
         items = list(
             search_items(
                 self._catalog,
                 self._searchable,
                 collections=[data_id],
                 bbox=bbox_wgs84,
+                intersects=point_geojson,
                 time_range=open_params["time_range"],
                 query=open_params.get("query"),
             )
