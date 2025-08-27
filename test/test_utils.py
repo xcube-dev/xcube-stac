@@ -21,27 +21,36 @@
 
 import datetime
 import unittest
+from unittest.mock import patch, Mock
 
 import dask.array as da
 import numpy as np
 import pyproj
 import pystac
+import requests
 import xarray as xr
 from xcube.core.store import DataStoreError
 
 from xcube_stac.utils import (
+    access_collection,
+    access_item,
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,
     get_format_from_path,
     get_format_id,
+    get_grid_mapping_name,
     get_spatial_dims,
     is_collection_in_time_range,
     is_item_in_time_range,
+    list_assets_from_item,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
+    rename_dataset,
     reproject_bbox,
+    search_collections,
+    search_nonsearchable_catalog,
     update_dict,
 )
 
@@ -139,6 +148,124 @@ class UtilsTest(unittest.TestCase):
             "'end_datetime' or 'datetime'.",
             f"{cm.exception}",
         )
+
+    @staticmethod
+    def _create_catalog():
+        catalog = pystac.Catalog(
+            id="test-catalog",
+            description="Test catalog",
+            extra_fields=dict(type="Catalog"),
+        )
+
+        spatial_extent1 = pystac.SpatialExtent([[0.0, 0.0, 10.0, 10.0]])
+        temporal_extent1 = pystac.TemporalExtent(
+            [
+                [
+                    datetime.datetime(2020, 1, 1, tzinfo=datetime.timezone.utc),
+                    datetime.datetime(2025, 1, 1, tzinfo=datetime.timezone.utc),
+                ]
+            ]
+        )
+        extent1 = pystac.Extent(spatial_extent1, temporal_extent1)
+        collection1 = pystac.Collection(
+            id="col1",
+            description="Collection 1",
+            extent=extent1,
+            extra_fields=dict(type="Collection"),
+        )
+
+        spatial_extent2 = pystac.SpatialExtent([[20.0, 20.0, 30.0, 30.0]])
+        temporal_extent2 = pystac.TemporalExtent(
+            [
+                [
+                    datetime.datetime(2010, 1, 1, tzinfo=datetime.timezone.utc),
+                    datetime.datetime(2015, 1, 1, tzinfo=datetime.timezone.utc),
+                ]
+            ]
+        )
+        extent2 = pystac.Extent(spatial_extent2, temporal_extent2)
+        collection2 = pystac.Collection(
+            id="col2",
+            description="Collection 2",
+            extent=extent2,
+            extra_fields=dict(type="Collection"),
+        )
+        item1 = pystac.Item(
+            id="item1",
+            geometry=None,
+            bbox=[0, 0, 1, 1],
+            datetime=datetime.datetime(2022, 6, 1),
+            properties={"datetime": datetime.datetime(2022, 6, 1).isoformat()},
+        )
+        collection1.add_item(item1)
+
+        item2 = pystac.Item(
+            id="item2",
+            geometry=None,
+            bbox=[3, 5, 4, 6],
+            datetime=datetime.datetime(2023, 6, 1),
+            properties={"datetime": datetime.datetime(2023, 6, 1).isoformat()},
+        )
+        collection1.add_item(item2)
+        catalog.add_child(collection1)
+        catalog.add_child(collection2)
+        return catalog
+
+    def test_search_nonsearchable_catalog(self):
+        catalog = self._create_catalog()
+
+        result = list(search_nonsearchable_catalog(catalog))
+        ids = [item.id for item in result]
+        self.assertCountEqual(["item1", "item2"], ids)
+
+        result = list(search_nonsearchable_catalog(catalog, bbox=[3.0, 5.0, 6.0, 6.0]))
+        ids = [item.id for item in result]
+        self.assertCountEqual(["item2"], ids)
+
+        result = list(
+            search_nonsearchable_catalog(catalog, bbox=[50.0, 50.0, 60.0, 60.0])
+        )
+        self.assertEqual([], result)
+
+        result = list(
+            search_nonsearchable_catalog(
+                catalog, time_range=["2022-01-01", "2023-01-01"]
+            )
+        )
+        ids = [item.id for item in result]
+        self.assertCountEqual(["item1"], ids)
+
+        result = list(
+            search_nonsearchable_catalog(
+                catalog, time_range=["2018-01-01", "2019-01-01"]
+            )
+        )
+        self.assertEqual([], result)
+
+    def test_search_collections(self):
+        catalog = self._create_catalog()
+
+        result = list(search_collections(catalog))
+        ids = [c.id for c in result]
+        self.assertCountEqual(["col1", "col2"], ids)
+
+        result = list(search_collections(catalog, bbox=[5.0, 5.0, 6.0, 6.0]))
+        ids = [c.id for c in result]
+        self.assertEqual(["col1"], ids)
+
+        result = list(search_collections(catalog, bbox=[50.0, 50.0, 60.0, 60.0]))
+        self.assertEqual([], result)
+
+        result = list(
+            search_collections(catalog, time_range=["2022-01-01", "2023-01-01"])
+        )
+        ids = [c.id for c in result]
+        self.assertEqual(["col1"], ids)
+
+        result = list(
+            search_collections(catalog, time_range=["2018-01-01", "2019-01-01"])
+        )
+        self.assertEqual([], result)
 
     def test_is_collection_in_time_range(self):
         collection1 = pystac.Collection(
@@ -263,6 +390,36 @@ class UtilsTest(unittest.TestCase):
         for west, south, east, north, fun in item_test_paramss:
             fun(do_bboxes_intersect(item.bbox, bbox=[west, south, east, north]))
 
+    def test_list_assets_from_item(self):
+        self.item = pystac.Item(
+            id="item1",
+            geometry=None,
+            bbox=[0, 0, 1, 1],
+            datetime=datetime.datetime(2024, 1, 1, 12, 00, 00),
+            properties={},
+        )
+        asset1 = pystac.Asset(href="s3://bucket/a1.tif", media_type="image/tiff")
+        asset2 = pystac.Asset(
+            href="s3://bucket/a2.xyz", media_type="application/octet-stream"
+        )
+        self.item.assets["a1"] = asset1
+        self.item.assets["a2"] = asset2
+
+        # Capture log warning
+        with self.assertLogs("xcube.stac", level="WARNING") as cm:
+            assets = list_assets_from_item(self.item, asset_names=["missing", "a1"])
+        self.assertIn(
+            "Asset name 'missing' not found in assets of item 'item1'", cm.output[-1]
+        )
+        self.assertEqual(len(assets), 1)
+        self.assertEqual(assets[0].href, "s3://bucket/a1.tif")
+
+        # raise DataStoreError
+        with self.assertRaises(DataStoreError) as cm:
+            list_assets_from_item(self.item, asset_names=["a2"])
+
+        self.assertIn("No valid assets found in item 'item1'", str(cm.exception))
+
     def test_get_format_from_path(self):
         path = "https://example/data/file.tif"
         self.assertEqual("geotiff", get_format_from_path(path))
@@ -318,7 +475,8 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual(crs_pyproj, normalize_crs(crs_str))
         self.assertEqual(crs_pyproj, normalize_crs(crs_pyproj))
 
-    def test_merge_datasets(self):
+    @staticmethod
+    def test_merge_datasets():
         ds1 = xr.Dataset()
         ds1["B01"] = xr.DataArray(
             data=da.ones((3, 3)),
@@ -406,14 +564,15 @@ class UtilsTest(unittest.TestCase):
             f"{cm.exception}",
         )
 
-    def test_mosaic_spatial_take_first(self):
+    @staticmethod
+    def test_mosaic_spatial_take_first():
         list_ds = []
         # first tile
         data = np.array(
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                [[10, 11, 12], [13, 14, np.nan], [np.nan, np.nan, np.nan]],
-                [[19, 20, 21], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]],
+                [[10, 11, 12], [13, 14, 0], [0, 0, 0]],
+                [[19, 20, 21], [0, 0, 0], [0, 0, 0]],
             ],
             dtype=float,
         )
@@ -430,9 +589,9 @@ class UtilsTest(unittest.TestCase):
         # second tile
         data = np.array(
             [
-                [[np.nan, np.nan, np.nan], [np.nan, np.nan, 106], [107, 108, 109]],
-                [[np.nan, np.nan, np.nan], [113, 114, 115], [116, 117, 118]],
-                [[np.nan, np.nan, 120], [121, 122, 123], [124, 125, 126]],
+                [[0, 0, 0], [0, 0, 106], [107, 108, 109]],
+                [[0, 0, 0], [113, 114, 115], [116, 117, 118]],
+                [[0, 0, 120], [121, 122, 123], [124, 125, 126]],
             ],
             dtype=float,
         )
@@ -448,11 +607,11 @@ class UtilsTest(unittest.TestCase):
         list_ds.append(xr.Dataset({"B01": data_array}))
 
         # test only one tile
-        ds_test = mosaic_spatial_take_first(list_ds[:1])
+        ds_test = mosaic_spatial_take_first(list_ds[:1], fill_value=0)
         xr.testing.assert_allclose(ds_test, list_ds[0])
 
         # test two tiles
-        ds_test = mosaic_spatial_take_first(list_ds)
+        ds_test = mosaic_spatial_take_first(list_ds, fill_value=0)
         data = np.array(
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -481,5 +640,67 @@ class UtilsTest(unittest.TestCase):
             list_ds[i] = ds
         ds_expected = xr.Dataset({"B01": data_array})
         ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
-        ds_test = mosaic_spatial_take_first(list_ds)
+        ds_test = mosaic_spatial_take_first(list_ds, fill_value=0)
         xr.testing.assert_allclose(ds_test, ds_expected)
+
+    def test_get_grid_mapping_name(self):
+        ds = xr.Dataset(
+            data_vars={
+                "var1": (("x", "y"), np.random.rand(2, 2)),
+                "crs": xr.DataArray(0, attrs={}),
+            }
+        )
+        self.assertEqual(get_grid_mapping_name(ds), "crs")
+
+    @patch("xcube_stac.utils.requests.get")
+    def test_access_item_invalid_json(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = "INVALID JSON"
+        mock_get.return_value = mock_response
+
+        catalog = Mock(spec=pystac.Catalog)
+        url = "https://example.com/item.json"
+
+        with self.assertRaises(DataStoreError) as cm:
+            access_item(url, catalog)
+        self.assertIn("Failed to parse STAC item JSON", str(cm.exception))
+
+    @patch("xcube_stac.utils.requests.get")
+    def test_access_collection_request_failure(self, mock_get):
+        mock_get.side_effect = requests.RequestException("Network error")
+        catalog = Mock(spec=pystac.Catalog)
+        url = "https://example.com/collection.json"
+
+        with self.assertRaises(DataStoreError) as cm:
+            access_collection(url, catalog)
+        self.assertIn("Failed to access STAC collection", str(cm.exception))
+
+    @patch("xcube_stac.utils.requests.get")
+    def test_access_collection_invalid_json(self, mock_get):
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.text = "INVALID JSON"
+        mock_get.return_value = mock_response
+
+        catalog = Mock(spec=pystac.Catalog)
+        url = "https://example.com/collection.json"
+
+        with self.assertRaises(DataStoreError) as cm:
+            access_collection(url, catalog)
+        self.assertIn("Failed to parse SATC collection JSON", str(cm.exception))
+
+    def test_rename_dataset(self):
+        ds = xr.Dataset(
+            {
+                "band1": (("x", "y"), [[1, 2], [3, 4]]),
+                "band2": (("x", "y"), [[5, 6], [7, 8]]),
+            }
+        )
+        renamed_ds = rename_dataset(ds, "asset1")
+        self.assertIn("asset1_band1", renamed_ds.data_vars)
+        self.assertIn("asset1_band2", renamed_ds.data_vars)
+        self.assertNotIn("band1", renamed_ds.data_vars)
+        self.assertNotIn("band2", renamed_ds.data_vars)
+        self.assertEqual(renamed_ds["asset1_band1"].values.tolist(), [[1, 2], [3, 4]])
+        self.assertEqual(renamed_ds["asset1_band2"].values.tolist(), [[5, 6], [7, 8]])

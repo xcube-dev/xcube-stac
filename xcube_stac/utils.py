@@ -25,7 +25,7 @@ import datetime
 import itertools
 import json
 import os
-from collections.abc import Sequence, Container, Iterator
+from collections.abc import Container, Iterator, Sequence
 from typing import Any
 
 import dask.array as da
@@ -43,12 +43,12 @@ from xcube.core.resampling import affine_transform_dataset
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
 
 from .constants import (
+    LOG,
     MAP_FILE_EXTENSION_FORMAT,
     MAP_MIME_TYP_FORMAT,
     MLDATASET_FORMATS,
     TILE_SIZE,
     FloatInt,
-    LOG,
 )
 from .href_parse import decode_href
 
@@ -330,7 +330,7 @@ def list_assets_from_item(
     return assets
 
 
-def add_nominal_datetime(items: list[pystac.Item]) -> list[pystac.Item]:
+def add_nominal_datetime(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
     """Adds the nominal (solar) time to each STAC item's properties under the key
     "datetime_nominal", based on the item's original UTC datetime.
 

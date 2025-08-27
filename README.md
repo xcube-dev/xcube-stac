@@ -65,30 +65,35 @@ By default:
 - A **data ID** corresponds to a single STAC item.
 - Each item is opened as a dataset, with each asset becoming a data variable within 
   that dataset.
+- In ARDC-mode data stores (`*-ardc`), a data ID can also correspond to a 
+  **collection ID**.
 
-The following data stores are available:
 
-1. `"stac"`: General STAC data store; it uses [xcube's file-system data stores](https://xcube.readthedocs.io/en/latest/dataaccess.html#filesystem-based-data-stores) 
-    to access the data source, thus data sources in Zarr, NetCDF, and GeoTIFF format can 
-    be accessed.
-2. `"stac-xcube`: STAC data store to access datasets published by [xcube server STAC API](https://xcube.readthedocs.io/en/latest/webapi.html).
-3. `"stac-cdse"`: STAC data store tailored to the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?.language=en).
-   Specific tailoring is supported for the collections mentioned in [Special support for the CDSE STAC API](#special-support-for-the-cdse-stac-api).
-4. `"stac-cdse-ardc"`: This data store generates **3D spatiotemporal analysis-ready 
-   data cubes** from multiple STAC items for the collections mentioned in [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?language=en).
+#### Available data stores
+
+1. `"stac"`: General STAC data store. Uses [xcube's file-system data stores](https://xcube.readthedocs.io/en/latest/dataaccess.html#filesystem-based-data-stores) to access Zarr, NetCDF, or GeoTIFF sources.
+2. `"stac-xcube"`: Accesses datasets published by the [xcube server STAC API](https://xcube.readthedocs.io/en/latest/webapi.html).
+3. `"stac-cdse"`: Tailored for the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?.language=en).
+   specific support is provided for the collections listed in [Special support for the CDSE STAC API](#special-support-for-the-cdse-stac-api).
+4. `"stac-cdse-ardc"`: Generates **3D spatiotemporal analysis-ready data cubes (ARDCs)** 
+   from multiple STAC items for the supported CDSE collections listed in [Special support for the CDSE STAC API](#special-support-for-the-cdse-stac-api).
+5. `"stac-pc"`: Tailored for the [Planetary Computer STAC API](https://planetarycomputer.microsoft.com/).
+   Specific support is provided for the collections listed in [Special support for the Planetary Computer STAC API](#special-support-for-the-planetary-computer-stac-api).
+6. `"stac-pc-ardc"`: Generates ARDCs from multiple STAC items for the supported
+   Planetary Computer collections listed in [Special support for the Planetary Computer STAC API](#special-support-for-the-planetary-computer-stac-api).
 
 ---
 
-### Special support for the CDSE STAC API
+### Building analysis-ready data stores (ARDCs)
 
-For some collections, the data store enables creation of **analysis-ready data cubes 
-(ARDCs)** from multiple STAC items published by the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?language=en).
+Some STAC catalogs are designed to enable the creation of 
+**analysis-ready data cubes (ARDCs)** from multiple STAC items in a collection.  
 
-Currently, we support the following collections and data IDs:
 
-- [`sentinel-2-l1c`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l1c)
-- [`sentinel-2-l2a`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l2a)
-- [`sentinel-3-syn-2-syn-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-syn-2-syn-ntc)
+Currently, ARDC support is provided for:
+
+- [CDSE STAC API](#special-support-for-the-cdse-stac-api)
+- [Planetary Computer STAC API](#special-support-for-the-planetary-computer-stac-api)
 
 The workflow for building a 3D analysis-ready cube includes:
 
@@ -111,6 +116,22 @@ The workflow for building a 3D analysis-ready cube includes:
 > with known issues (e.g., [#196](https://github.com/gjoseph92/stackstac/issues/196)) 
 > handling COG overviews. Despite this, both are widely used in the community and may
 > be supported in future releases.
+
+
+#### Special support for the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?language=en)
+
+Currently, we support the following collections and data IDs:
+
+- [`sentinel-2-l1c`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l1c)
+- [`sentinel-2-l2a`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l2a)
+- [`sentinel-3-syn-2-syn-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-syn-2-syn-ntc)
+
+
+#### Special support for the [Planetary Computer STAC API](https://planetarycomputer.microsoft.com/)
+
+Currently, we support the following collections and data IDs:
+
+- [`sentinel-2-l2a`](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a)
 
 ---
 
@@ -184,15 +205,6 @@ is supported. An example is shown in a [notebook](examples/notebooks/cdse_senitn
 ### Overview of Jupyter notebooks
 The following Jupyter notebooks provide some examples: 
 
-* `example/notebooks/cdse_sentinel_2.ipynb`:
-  This notebook shows an example how to access Sentinel-2 L1C and L2A data using the 
-  [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles and how 
-  to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC items.  
-* `example/notebooks/cdse_sentinel_3.ipynb`: This notebook shows an example how to 
-  access Sentinel-3 Synergy Level-2 Land Surface Reflectance and Aerosol product 
-  using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles 
-  and how to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC 
-  items. 
 * `example/notebooks/geotiff_nonsearchable_catalog.ipynb`:
   This notebook shows an example how to load a GeoTIFF file from a non-searchable
   STAC catalog.
@@ -200,10 +212,24 @@ The following Jupyter notebooks provide some examples:
   This notebook shows an example how to load a GeoTIFF file from a searchable
   STAC catalog.
 * `example/notebooks/netcdf_searchable_catalog.ipynb`:
-  This notebook shows an example how to load a NetCDF file from a searchable
+  This notebook shows an example of how to load a NetCDF file from a searchable
   STAC catalog.
+* `example/notebooks/sentinel_2_cdse.ipynb`:
+  This notebook shows an example of how to access Sentinel-2 L1C and L2A data using the 
+  [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles and how 
+  to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC items.  
+* `example/notebooks/sentinel_2_planetary_computer.ipynb`:
+  This notebook shows an example of how to access Sentinel-2 L2A data using the 
+  [Planetary Computer STAC API](planetarycomputer.microsoft.com). It shows how to 
+  access individual observation tiles and how to generate spatiotemporal 3d 
+  analysis-ready data cubes from multiple STAC items.  
+* `example/notebooks/sentinel_3_cdse.ipynb`: This notebook shows an example of how to 
+  access Sentinel-3 Synergy Level-2 Land Surface Reflectance and Aerosol product 
+  using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles 
+  and how to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC 
+  items. 
 * `example/notebooks/xcube_server_stac_s3.ipynb`:
-  This notebook shows an example how to open data sources published by xcube server
+  This notebook shows an example of how to open data sources published by xcube server
   via the STAC API.
 
 ### Getting started

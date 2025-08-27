@@ -27,9 +27,11 @@ import boto3
 import dask
 import dask.array as da
 import numpy as np
+import planetary_computer
 import pyproj
 import pystac
 import rasterio.session
+import requests
 import rioxarray
 import xarray as xr
 import xmltodict
@@ -37,14 +39,14 @@ from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import (
-    JsonBooleanSchema,
     JsonArraySchema,
-    JsonStringSchema,
+    JsonBooleanSchema,
     JsonNumberSchema,
     JsonObjectSchema,
+    JsonStringSchema,
 )
 
-from xcube_stac.accessor import StacItemAccessor
+from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
@@ -136,13 +138,20 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             aws_secret_access_key=storage_options_s3["secret"],
             region_name="default",
         )
+        # define field names in STAC item
+        self._stac_item_properties = dict(
+            tile_id="grid:code",
+            crs="proj:code",
+            processing_version="processing:version",
+        )
 
     @staticmethod
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
+        tile_size = open_params.get("tile_size", (1024, 1024))
         return rioxarray.open_rasterio(
             asset.href,
-            chunks=dict(),
+            chunks=dict(x=tile_size[0], y=tile_size[1]),
             band_as_variable=True,
         )
 
@@ -303,7 +312,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         return ds_angles
 
 
-class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
+class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
     """Provides methods to access multiple Sentinel-2 STAC Items from the
     CDSE STAC API and build an analysis ready data cube."""
 
@@ -322,7 +331,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         items = [item for item in items if abs(item.bbox[2] - item.bbox[0]) < 20]
 
         # get STAC assets grouped by solar day
-        grouped_items = _group_items(items)
+        grouped_items = self._group_items(items)
 
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
@@ -382,7 +391,10 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
             asset = next(iter(item.assets.values()))
-            crs = asset.extra_fields["proj:code"]
+            crs = asset.extra_fields.get(
+                self._stac_item_properties["crs"],
+                item.properties.get(self._stac_item_properties["crs"]),
+            )
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -401,6 +413,91 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
             ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
 
         return ds_final
+
+    def _group_items(self, items: Sequence[pystac.Item]) -> xr.DataArray:
+        """Group STAC items by solar day, tile ID.
+
+        This method organizes a list of Sentinel-2 STAC items into an `xarray.DataArray`
+        with dimensions `(time, tile_id)`, where:
+        - `time` corresponds to the solar acquisition date (ignoring time of day),
+        - `tile_id` is the Sentinel-2 MGRS tile code,
+        - The most recent processing version is selected if multiple exist.
+
+        Args:
+            items: List of STAC items to group. Each item must have:
+                - Nominal acquisition datetime.
+                - Tile ID (MGRS grid).
+                - processing version
+
+        Returns:
+            A 2D DataArray of shape (time, tile_id) containing STAC items.
+            Time coordinate values are datetimes, derived from the UTC datetime of the
+            first item per date.
+        """
+        items = add_nominal_datetime(items)
+
+        # get dates and tile IDs of the items
+        dates = []
+        tile_ids = []
+        proc_versions = []
+        for item in items:
+            dates.append(item.properties["datetime_nominal"].date())
+            tile_ids.append(item.properties.get(self._stac_item_properties["tile_id"]))
+            proc_versions.append(
+                item.properties.get(self._stac_item_properties["processing_version"])
+            )
+        dates = np.unique(dates)
+        tile_ids = np.unique(tile_ids)
+        proc_versions = np.unique(proc_versions)[::-1]
+
+        # sort items by date and tile ID into a data array
+        grouped_items = np.full(
+            (len(dates), len(tile_ids), len(proc_versions)), None, dtype=object
+        )
+        for idx, item in enumerate(items):
+            date = item.properties["datetime_nominal"].date()
+            tile_id = item.properties.get(self._stac_item_properties["tile_id"])
+            proc_version = item.properties.get(
+                self._stac_item_properties["processing_version"]
+            )
+            idx_date = np.where(dates == date)[0][0]
+            idx_tile_id = np.where(tile_ids == tile_id)[0][0]
+            idx_proc_version = np.where(proc_versions == proc_version)[0][0]
+            if grouped_items[idx_date, idx_tile_id, idx_proc_version] is None:
+                grouped_items[idx_date, idx_tile_id, idx_proc_version] = [item]
+            else:
+                grouped_items[idx_date, idx_tile_id, idx_proc_version].append(item)
+
+        # take the latest processing version
+        # noinspection PyComparisonWithNone
+        mask = grouped_items != None
+        proc_version_idx = np.argmax(mask, axis=-1)
+        grouped_items = np.take_along_axis(
+            grouped_items, proc_version_idx[..., np.newaxis], axis=-1
+        )[..., 0]
+        for idx_date in range(grouped_items.shape[0]):
+            for idx_tile_id in range(grouped_items.shape[1]):
+                if grouped_items[idx_date, idx_tile_id] is None:
+                    grouped_items[idx_date, idx_tile_id] = []
+        grouped_items = xr.DataArray(
+            grouped_items,
+            dims=("time", "tile_id"),
+            coords=dict(time=dates, tile_id=tile_ids),
+        )
+
+        # replace date by datetime from first item
+        dts = []
+        for date in grouped_items.time.values:
+            item = np.sum(grouped_items.sel(time=date).values)[0]
+            dts.append(item.datetime.replace(tzinfo=None))
+        grouped_items = grouped_items.assign_coords(
+            time=np.array(dts, dtype="datetime64[ns]")
+        )
+        grouped_items = grouped_items.assign_coords(time=dts)
+        grouped_items["time"].encoding["units"] = "seconds since 1970-01-01"
+        grouped_items["time"].encoding["calendar"] = "standard"
+
+        return grouped_items
 
     def _generate_utm_cube(
         self,
@@ -522,6 +619,133 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor):
         ds_angles = mosaic_spatial_take_first(list_ds_tiles)
         ds_final = _add_angles(ds_final, ds_angles)
         return ds_final
+
+
+class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
+    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item."""
+
+    # noinspection PyMissingConstructor
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        self._catalog = catalog
+        # define field names in STAC items
+        self._stac_item_properties = dict(
+            tile_id="s2:mgrs_tile",
+            crs="proj:code",
+            processing_version="s2:processing_baseline",
+        )
+
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+        if not self._is_pc_signed(item):
+            item = planetary_computer.sign_item(item)
+        return super().open_item(item, **open_params)
+
+    @staticmethod
+    def _is_pc_signed(item: pystac.Item) -> bool:
+        for asset in item.assets.values():
+            if "sig=" in asset.href or "sv=" in asset.href:
+                return True
+        return False
+
+    def _combiner_function(
+        self,
+        dss: Sequence[xr.Dataset],
+        item: pystac.Item = None,
+        assets: Sequence[pystac.Asset] = None,
+        apply_scaling: bool = True,
+    ) -> xr.Dataset:
+        dss = [
+            rename_dataset(ds, asset.extra_fields["xcube:asset_id_origin"])
+            for (ds, asset) in zip(dss, assets)
+        ]
+        if apply_scaling:
+            dss = [
+                self._apply_offset_scaling(ds, item) for (ds, asset) in zip(dss, assets)
+            ]
+        ds = merge_datasets(dss)
+        return normalize_grid_mapping(ds)
+
+    @staticmethod
+    def _list_assets_from_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
+        asset_names = open_params.get("asset_names")
+        if not asset_names:
+            asset_names = _SENTINEL2_L2A_BANDS
+
+        assets_sel = []
+        for asset_name in asset_names:
+            asset = item.assets[asset_name]
+            asset.extra_fields["xcube:asset_id"] = asset_name
+            asset.extra_fields["xcube:asset_id_origin"] = asset_name
+            assets_sel.append(asset)
+        return assets_sel
+
+    @staticmethod
+    def _apply_offset_scaling(ds: xr.Dataset, item: pystac.Item) -> xr.Dataset:
+        if "SCL" in ds.data_vars:
+            return ds
+
+        info = item.properties.get("xcube:offset_scaling")
+        if info is None:
+            response = requests.get(item.assets["product-metadata"].href)
+            response.raise_for_status()
+            xml_dict = xmltodict.parse(response.text)
+            info = xml_dict[f"n1:Level-2A_User_Product"]["n1:General_Info"][
+                "Product_Image_Characteristics"
+            ]
+            item.properties["xcube:offset_scaling"] = info
+
+        if "AOT" in ds.data_vars:
+            scale = float(
+                info["QUANTIFICATION_VALUES_LIST"]["AOT_QUANTIFICATION_VALUE"]["#text"]
+            )
+            offset = 0
+        elif "WVP" in ds.data_vars:
+            scale = float(
+                info["QUANTIFICATION_VALUES_LIST"]["WVP_QUANTIFICATION_VALUE"]["#text"]
+            )
+            offset = 0
+        else:
+            scale = float(
+                info["QUANTIFICATION_VALUES_LIST"]["BOA_QUANTIFICATION_VALUE"]["#text"]
+            )
+            if "BOA_ADD_OFFSET_VALUES_LIST" in info:
+                offset = int(
+                    info["BOA_ADD_OFFSET_VALUES_LIST"]["BOA_ADD_OFFSET"][0]["#text"]
+                )
+            else:
+                offset = 0
+        nodata = int(
+            next(
+                d["SPECIAL_VALUE_INDEX"]
+                for d in info["Special_Values"]
+                if d["SPECIAL_VALUE_TEXT"] == "NODATA"
+            )
+        )
+
+        ds = ds.where(ds != nodata)
+        ds += offset
+        ds /= scale
+
+        return ds
+
+    def get_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
+        response = requests.get(item.assets["granule-metadata"].href)
+        response.raise_for_status()
+        xml_dict = xmltodict.parse(response.text)
+
+        # read angles from xml file and add to dataset
+        band_names = _get_band_names_from_dataset(ds)
+        ds_angles = _get_sen2_angles(xml_dict, band_names)
+
+        return ds_angles
+
+
+class Sen2PlanetaryComputerStacArdcAccessor(
+    Sen2PlanetaryComputerStacItemAccessor, Sen2CdseStacArdcAccessor
+):
+    """Provides methods for accessing the data of a CDSE Sentinel-2 STAC Item."""
+
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        super().__init__(catalog, **storage_options_s3)
 
 
 def _get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
@@ -755,88 +979,6 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
     ds = ds.chunk(dict(angle=-1, band=-1))
 
     return ds
-
-
-def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
-    """Group STAC items by solar day, tile ID.
-
-    This method organizes a list of Sentinel-2 STAC items into an `xarray.DataArray`
-    with dimensions `(time, tile_id)`, where:
-    - `time` corresponds to the solar acquisition date (ignoring time of day),
-    - `tile_id` is the Sentinel-2 MGRS tile code,
-    - The most recent processing version is selected if multiple exist.
-
-    Args:
-        items: List of STAC items to group. Each item must have:
-            - `properties["datetime_nominal"]`: Nominal acquisition datetime.
-            - `properties["grid:code"]`: Tile ID (MGRS grid).
-            - `properties["processing:version"]`: processing version
-
-    Returns:
-        A 2D DataArray of shape (time, tile_id) containing STAC items.
-        Time coordinate values are datetimes, derived from the UTC datetime of the
-        first item per date.
-    """
-    items = add_nominal_datetime(items)
-
-    # get dates and tile IDs of the items
-    dates = []
-    tile_ids = []
-    proc_versions = []
-    for item in items:
-        dates.append(item.properties["datetime_nominal"].date())
-        tile_ids.append(item.properties["grid:code"])
-        proc_versions.append(item.properties["processing:version"])
-    dates = np.unique(dates)
-    tile_ids = np.unique(tile_ids)
-    proc_versions = np.unique(proc_versions)[::-1]
-
-    # sort items by date and tile ID into a data array
-    grouped_items = np.full(
-        (len(dates), len(tile_ids), len(proc_versions)), None, dtype=object
-    )
-    for idx, item in enumerate(items):
-        date = item.properties["datetime_nominal"].date()
-        tile_id = item.properties["grid:code"]
-        proc_version = item.properties["processing:version"]
-        idx_date = np.where(dates == date)[0][0]
-        idx_tile_id = np.where(tile_ids == tile_id)[0][0]
-        idx_proc_version = np.where(proc_versions == proc_version)[0][0]
-        if grouped_items[idx_date, idx_tile_id, idx_proc_version] is None:
-            grouped_items[idx_date, idx_tile_id, idx_proc_version] = [item]
-        else:
-            grouped_items[idx_date, idx_tile_id, idx_proc_version].append(item)
-
-    # take the latest processing version
-    # noinspection PyComparisonWithNone
-    mask = grouped_items != None
-    proc_version_idx = np.argmax(mask, axis=-1)
-    grouped_items = np.take_along_axis(
-        grouped_items, proc_version_idx[..., np.newaxis], axis=-1
-    )[..., 0]
-    for idx_date in range(grouped_items.shape[0]):
-        for idx_tile_id in range(grouped_items.shape[1]):
-            if grouped_items[idx_date, idx_tile_id] is None:
-                grouped_items[idx_date, idx_tile_id] = []
-    grouped_items = xr.DataArray(
-        grouped_items,
-        dims=("time", "tile_id"),
-        coords=dict(time=dates, tile_id=tile_ids),
-    )
-
-    # replace date by datetime from first item
-    dts = []
-    for date in grouped_items.time.values:
-        item = np.sum(grouped_items.sel(time=date).values)[0]
-        dts.append(item.datetime.replace(tzinfo=None))
-    grouped_items = grouped_items.assign_coords(
-        time=np.array(dts, dtype="datetime64[ns]")
-    )
-    grouped_items = grouped_items.assign_coords(time=dts)
-    grouped_items["time"].encoding["units"] = "seconds since 1970-01-01"
-    grouped_items["time"].encoding["calendar"] = "standard"
-
-    return grouped_items
 
 
 def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
