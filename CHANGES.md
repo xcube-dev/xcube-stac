@@ -1,6 +1,7 @@
 ## Changes in 1.0.1 (under development)
 
-* **Added new data stores** `stac-pc` and `stac-pc-ardc`.  
+* **Added new data stores** `stac-pc` and `stac-pc-ardc` supporting the 
+  Planetary Computer STAC API.  
   - `stac-pc` allows opening Sentinel-2 Level-2A tiles as individual datasets.  
   - `stac-pc-ardc` enables combining multiple tiles into 3D **analysis-ready data cubes**.  
   

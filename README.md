@@ -212,24 +212,24 @@ The following Jupyter notebooks provide some examples:
   This notebook shows an example how to load a GeoTIFF file from a searchable
   STAC catalog.
 * `example/notebooks/netcdf_searchable_catalog.ipynb`:
-  This notebook shows an example how to load a NetCDF file from a searchable
+  This notebook shows an example of how to load a NetCDF file from a searchable
   STAC catalog.
 * `example/notebooks/sentinel_2_cdse.ipynb`:
-  This notebook shows an example how to access Sentinel-2 L1C and L2A data using the 
+  This notebook shows an example of how to access Sentinel-2 L1C and L2A data using the 
   [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles and how 
   to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC items.  
 * `example/notebooks/sentinel_2_planetary_computer.ipynb`:
-  This notebook shows an example how to access Sentinel-2 L2A data using the 
+  This notebook shows an example of how to access Sentinel-2 L2A data using the 
   [Planetary Computer STAC API](planetarycomputer.microsoft.com). It shows how to 
   access individual observation tiles and how to generate spatiotemporal 3d 
   analysis-ready data cubes from multiple STAC items.  
-* `example/notebooks/sentinel_3_cdse.ipynb`: This notebook shows an example how to 
+* `example/notebooks/sentinel_3_cdse.ipynb`: This notebook shows an example of how to 
   access Sentinel-3 Synergy Level-2 Land Surface Reflectance and Aerosol product 
   using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles 
   and how to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC 
   items. 
 * `example/notebooks/xcube_server_stac_s3.ipynb`:
-  This notebook shows an example how to open data sources published by xcube server
+  This notebook shows an example of how to open data sources published by xcube server
   via the STAC API.
 
 ### Getting started

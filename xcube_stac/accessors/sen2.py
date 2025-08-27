@@ -156,8 +156,6 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         )
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
-        if not self._is_pc_signed(item):
-            item = planetary_computer.sign_item(item)
         apply_scaling = open_params.pop("apply_scaling", True)
         assets = self._list_assets_from_item(item, **open_params)
         dss = [self.open_asset(asset) for asset in assets]
@@ -189,13 +187,6 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             required=[],
             additional_properties=False,
         )
-
-    @staticmethod
-    def _is_pc_signed(item: pystac.Item) -> bool:
-        for asset in item.assets.values():
-            if "sig=" in asset.href or "sv=" in asset.href:
-                return True
-        return False
 
     @staticmethod
     def _list_assets_from_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
@@ -642,6 +633,18 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             crs="proj:code",
             processing_version="s2:processing_baseline",
         )
+
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+        if not self._is_pc_signed(item):
+            item = planetary_computer.sign_item(item)
+        return super().open_item(item, **open_params)
+
+    @staticmethod
+    def _is_pc_signed(item: pystac.Item) -> bool:
+        for asset in item.assets.values():
+            if "sig=" in asset.href or "sv=" in asset.href:
+                return True
+        return False
 
     def _combiner_function(
         self,
