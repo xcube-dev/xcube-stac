@@ -31,7 +31,6 @@ from xcube_stac.accessors.base import BaseStacItemAccessor
 
 
 class BaseStacItemAccessorTest(unittest.TestCase):
-
     def setUp(self):
         self.catalog = pystac.Catalog(
             id="test-catalog",

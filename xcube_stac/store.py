@@ -29,29 +29,57 @@ import pystac_client
 import requests
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (DATASET_TYPE, MULTI_LEVEL_DATASET_TYPE,
-                              DatasetDescriptor, DataStore, DataStoreError,
-                              DataType, DataTypeLike,
-                              MultiLevelDatasetDescriptor)
+from xcube.core.store import (
+    DATASET_TYPE,
+    MULTI_LEVEL_DATASET_TYPE,
+    DatasetDescriptor,
+    DataStore,
+    DataStoreError,
+    DataType,
+    DataTypeLike,
+    MultiLevelDatasetDescriptor,
+)
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
 
-from .accessors import (guess_ardc_accessor, guess_item_accessor,
-                        list_ardc_data_ids)
+from .accessors import guess_ardc_accessor, guess_item_accessor, list_ardc_data_ids
 from .accessors.base import XcubeStacItemAccessor
-from .constants import (CDSE_S3_ENDPOINT, CDSE_STAC_URL, DATA_OPENER_IDS,
-                        DATA_STORE_ID, DATA_STORE_ID_CDSE,
-                        DATA_STORE_ID_CDSE_ARDC, DATA_STORE_ID_PC,
-                        DATA_STORE_ID_PC_ARDC, DATA_STORE_ID_XCUBE, LOG,
-                        MAP_FILE_EXTENSION_FORMAT, PC_STAC_URL, PROTOCOLS,
-                        SCHEMA_ADDITIONAL_QUERY, SCHEMA_BBOX,
-                        SCHEMA_COLLECTIONS, SCHEMA_S3_STORE, SCHEMA_TIME_RANGE,
-                        SCHEMA_URL)
-from .utils import (access_collection, access_item, convert_datetime2str,
-                    get_attrs_from_pystac_object,
-                    get_data_id_from_pystac_object, is_mldataset_available,
-                    is_valid_ml_data_type, list_format_ids, list_protocols,
-                    modify_catalog_url, reproject_bbox, search_collections,
-                    search_items, update_dict)
+from .constants import (
+    CDSE_S3_ENDPOINT,
+    CDSE_STAC_URL,
+    DATA_OPENER_IDS,
+    DATA_STORE_ID,
+    DATA_STORE_ID_CDSE,
+    DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_PC,
+    DATA_STORE_ID_PC_ARDC,
+    DATA_STORE_ID_XCUBE,
+    LOG,
+    MAP_FILE_EXTENSION_FORMAT,
+    PC_STAC_URL,
+    PROTOCOLS,
+    SCHEMA_ADDITIONAL_QUERY,
+    SCHEMA_BBOX,
+    SCHEMA_COLLECTIONS,
+    SCHEMA_S3_STORE,
+    SCHEMA_TIME_RANGE,
+    SCHEMA_URL,
+)
+from .utils import (
+    access_collection,
+    access_item,
+    convert_datetime2str,
+    get_attrs_from_pystac_object,
+    get_data_id_from_pystac_object,
+    is_mldataset_available,
+    is_valid_ml_data_type,
+    list_format_ids,
+    list_protocols,
+    modify_catalog_url,
+    reproject_bbox,
+    search_collections,
+    search_items,
+    update_dict,
+)
 from .version import version
 
 

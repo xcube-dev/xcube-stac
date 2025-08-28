@@ -38,23 +38,38 @@ import xmltodict
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
-from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
-                                   JsonComplexSchema, JsonNumberSchema,
-                                   JsonObjectSchema, JsonStringSchema)
+from xcube.util.jsonschema import (
+    JsonArraySchema,
+    JsonBooleanSchema,
+    JsonComplexSchema,
+    JsonNumberSchema,
+    JsonObjectSchema,
+    JsonStringSchema,
+)
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
-from xcube_stac.constants import (CONVERSION_FACTOR_DEG_METER,
-                                  SCHEMA_ADDITIONAL_QUERY,
-                                  SCHEMA_APPLY_SCALING, SCHEMA_CRS,
-                                  SCHEMA_SPATIAL_RES, SCHEMA_TILE_SIZE,
-                                  SCHEMA_TIME_RANGE, TILE_SIZE)
-from xcube_stac.stac_extension.raster import (apply_offset_scaling,
-                                              get_stac_extension)
-from xcube_stac.utils import (add_nominal_datetime, get_gridmapping,
-                              get_spatial_dims, merge_datasets,
-                              mosaic_spatial_take_first, normalize_crs,
-                              normalize_grid_mapping, rename_dataset,
-                              reproject_bbox)
+from xcube_stac.constants import (
+    CONVERSION_FACTOR_DEG_METER,
+    SCHEMA_ADDITIONAL_QUERY,
+    SCHEMA_APPLY_SCALING,
+    SCHEMA_CRS,
+    SCHEMA_SPATIAL_RES,
+    SCHEMA_TILE_SIZE,
+    SCHEMA_TIME_RANGE,
+    TILE_SIZE,
+)
+from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
+from xcube_stac.utils import (
+    add_nominal_datetime,
+    get_gridmapping,
+    get_spatial_dims,
+    merge_datasets,
+    mosaic_spatial_take_first,
+    normalize_crs,
+    normalize_grid_mapping,
+    rename_dataset,
+    reproject_bbox,
+)
 from xcube_stac.version import version
 
 _SENTINEL2_BANDS = [
@@ -334,7 +349,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
-
         # Remove items with incorrect bounding boxes in the CDSE Sentinel-2 L2A catalog.
         # This issue primarily affects tiles that cross the antimeridian and has been
         # reported as a catalog bug. A single Sentinel-2 tile spans approximately
@@ -359,9 +373,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(
             {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
+                dt.astype("datetime64[ms]").astype("O").isoformat(): [
                     item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values
@@ -454,7 +466,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
     def _generate_cube_single_tile(
         self, grouped_items: xr.DataArray, **open_params
     ) -> xr.Dataset:
-
         # find tile closest to the given point
         centers = np.zeros((2, grouped_items.sizes["tile_id"]))
         for idx_tile_id in range(grouped_items.shape[1]):

@@ -21,21 +21,27 @@
 
 import unittest
 
-from xcube_stac.accessors import (BaseStacItemAccessor,
-                                  Sen2CdseStacArdcAccessor,
-                                  Sen2CdseStacItemAccessor,
-                                  Sen2PlanetaryComputerStacArdcAccessor,
-                                  Sen2PlanetaryComputerStacItemAccessor,
-                                  Sen3CdseStacArdcAccessor,
-                                  Sen3CdseStacItemAccessor,
-                                  guess_ardc_accessor, guess_item_accessor,
-                                  list_ardc_data_ids)
-from xcube_stac.constants import (DATA_STORE_ID_CDSE, DATA_STORE_ID_CDSE_ARDC,
-                                  DATA_STORE_ID_PC, DATA_STORE_ID_PC_ARDC)
+from xcube_stac.accessors import (
+    BaseStacItemAccessor,
+    Sen2CdseStacArdcAccessor,
+    Sen2CdseStacItemAccessor,
+    Sen2PlanetaryComputerStacArdcAccessor,
+    Sen2PlanetaryComputerStacItemAccessor,
+    Sen3CdseStacArdcAccessor,
+    Sen3CdseStacItemAccessor,
+    guess_ardc_accessor,
+    guess_item_accessor,
+    list_ardc_data_ids,
+)
+from xcube_stac.constants import (
+    DATA_STORE_ID_CDSE,
+    DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_PC,
+    DATA_STORE_ID_PC_ARDC,
+)
 
 
 class AccessorInitTest(unittest.TestCase):
-
     # ------------------------------------------------------------------
     # guess_item_accessor
     # ------------------------------------------------------------------

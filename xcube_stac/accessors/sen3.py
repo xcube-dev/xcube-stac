@@ -30,16 +30,29 @@ import shapely
 import xarray as xr
 from rasterio.errors import NotGeoreferencedWarning
 from xcube.core.resampling import rectify_dataset
-from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
-                                   JsonObjectSchema, JsonStringSchema)
+from xcube.util.jsonschema import (
+    JsonArraySchema,
+    JsonBooleanSchema,
+    JsonObjectSchema,
+    JsonStringSchema,
+)
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
-from xcube_stac.constants import (SCHEMA_ADDITIONAL_QUERY, SCHEMA_BBOX,
-                                  SCHEMA_CRS, SCHEMA_SPATIAL_RES,
-                                  SCHEMA_TIME_RANGE, TILE_SIZE)
-from xcube_stac.utils import (add_nominal_datetime, get_gridmapping,
-                              list_assets_from_item, mosaic_spatial_take_first,
-                              reproject_bbox)
+from xcube_stac.constants import (
+    SCHEMA_ADDITIONAL_QUERY,
+    SCHEMA_BBOX,
+    SCHEMA_CRS,
+    SCHEMA_SPATIAL_RES,
+    SCHEMA_TIME_RANGE,
+    TILE_SIZE,
+)
+from xcube_stac.utils import (
+    add_nominal_datetime,
+    get_gridmapping,
+    list_assets_from_item,
+    mosaic_spatial_take_first,
+    reproject_bbox,
+)
 
 _SENTINEL3_ASSETS = [
     "syn_S1N_reflectance",
@@ -192,7 +205,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
-
         # filter items by checking if bounding box and polygon of tiles overlap
         items = _filter_items_spatial(items, open_params["bbox"])
 
@@ -208,9 +220,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(
             {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
+                dt.astype("datetime64[ms]").astype("O").isoformat(): [
                     item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values

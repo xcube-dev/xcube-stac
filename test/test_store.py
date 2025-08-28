@@ -27,19 +27,32 @@ from unittest.mock import patch
 import pytest
 import xarray as xr
 from xcube.core.mldataset import MultiLevelDataset
-from xcube.core.store import (DatasetDescriptor, DataStoreError,
-                              MultiLevelDatasetDescriptor, new_data_store)
+from xcube.core.store import (
+    DatasetDescriptor,
+    DataStoreError,
+    MultiLevelDatasetDescriptor,
+    new_data_store,
+)
 from xcube.util.jsonschema import JsonComplexSchema, JsonObjectSchema
 
 # noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
-from xcube_stac.constants import (DATA_STORE_ID, DATA_STORE_ID_CDSE,
-                                  DATA_STORE_ID_CDSE_ARDC, DATA_STORE_ID_PC,
-                                  DATA_STORE_ID_PC_ARDC, DATA_STORE_ID_XCUBE)
+from xcube_stac.constants import (
+    DATA_STORE_ID,
+    DATA_STORE_ID_CDSE,
+    DATA_STORE_ID_CDSE_ARDC,
+    DATA_STORE_ID_PC,
+    DATA_STORE_ID_PC_ARDC,
+    DATA_STORE_ID_XCUBE,
+)
 from xcube_stac.utils import reproject_bbox
 
-from .sampledata import (sentinel_2_band_data_10m, sentinel_2_band_data_60m,
-                         sentinel_3_data, sentinel_3_geolocation_data)
+from .sampledata import (
+    sentinel_2_band_data_10m,
+    sentinel_2_band_data_60m,
+    sentinel_3_data,
+    sentinel_3_geolocation_data,
+)
 
 SKIP_HELP = (
     "Skipped, because server is not running:"
@@ -67,7 +80,6 @@ XCUBE_SERVER_IS_RUNNING = is_server_running()
 
 
 class StacDataStoreTest(unittest.TestCase):
-
     def setUp(self):
         self.url_nonsearchable = (
             "https://raw.githubusercontent.com/stac-extensions/"
