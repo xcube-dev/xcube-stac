@@ -27,7 +27,7 @@ import pystac
 import xarray as xr
 from xcube.core.store import DataStore
 
-from xcube_stac.accessors.base import (BaseStacItemAccessor)
+from xcube_stac.accessors.base import BaseStacItemAccessor
 
 
 class BaseStacItemAccessorTest(unittest.TestCase):
