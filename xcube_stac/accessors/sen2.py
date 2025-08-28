@@ -38,38 +38,23 @@ import xmltodict
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
-from xcube.util.jsonschema import (
-    JsonArraySchema,
-    JsonBooleanSchema,
-    JsonComplexSchema,
-    JsonNumberSchema,
-    JsonObjectSchema,
-    JsonStringSchema,
-)
+from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
+                                   JsonComplexSchema, JsonNumberSchema,
+                                   JsonObjectSchema, JsonStringSchema)
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
-from xcube_stac.constants import (
-    CONVERSION_FACTOR_DEG_METER,
-    SCHEMA_ADDITIONAL_QUERY,
-    SCHEMA_APPLY_SCALING,
-    SCHEMA_CRS,
-    SCHEMA_SPATIAL_RES,
-    SCHEMA_TIME_RANGE,
-    SCHEMA_TILE_SIZE,
-    TILE_SIZE,
-)
-from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
-from xcube_stac.utils import (
-    add_nominal_datetime,
-    get_gridmapping,
-    get_spatial_dims,
-    merge_datasets,
-    mosaic_spatial_take_first,
-    normalize_crs,
-    normalize_grid_mapping,
-    rename_dataset,
-    reproject_bbox,
-)
+from xcube_stac.constants import (CONVERSION_FACTOR_DEG_METER,
+                                  SCHEMA_ADDITIONAL_QUERY,
+                                  SCHEMA_APPLY_SCALING, SCHEMA_CRS,
+                                  SCHEMA_SPATIAL_RES, SCHEMA_TILE_SIZE,
+                                  SCHEMA_TIME_RANGE, TILE_SIZE)
+from xcube_stac.stac_extension.raster import (apply_offset_scaling,
+                                              get_stac_extension)
+from xcube_stac.utils import (add_nominal_datetime, get_gridmapping,
+                              get_spatial_dims, merge_datasets,
+                              mosaic_spatial_take_first, normalize_crs,
+                              normalize_grid_mapping, rename_dataset,
+                              reproject_bbox)
 from xcube_stac.version import version
 
 _SENTINEL2_BANDS = [
@@ -812,7 +797,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             response = requests.get(item.assets["product-metadata"].href)
             response.raise_for_status()
             xml_dict = xmltodict.parse(response.text)
-            info = xml_dict[f"n1:Level-2A_User_Product"]["n1:General_Info"][
+            info = xml_dict["n1:Level-2A_User_Product"]["n1:General_Info"][
                 "Product_Image_Characteristics"
             ]
             item.properties["xcube:offset_scaling"] = info

@@ -21,7 +21,7 @@
 
 import datetime
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import dask.array as da
 import numpy as np
@@ -31,28 +31,16 @@ import requests
 import xarray as xr
 from xcube.core.store import DataStoreError
 
-from xcube_stac.utils import (
-    access_collection,
-    access_item,
-    convert_datetime2str,
-    convert_str2datetime,
-    do_bboxes_intersect,
-    get_format_from_path,
-    get_format_id,
-    get_grid_mapping_name,
-    get_spatial_dims,
-    is_collection_in_time_range,
-    is_item_in_time_range,
-    list_assets_from_item,
-    merge_datasets,
-    mosaic_spatial_take_first,
-    normalize_crs,
-    rename_dataset,
-    reproject_bbox,
-    search_collections,
-    search_nonsearchable_catalog,
-    update_dict,
-)
+from xcube_stac.utils import (access_collection, access_item,
+                              convert_datetime2str, convert_str2datetime,
+                              do_bboxes_intersect, get_format_from_path,
+                              get_format_id, get_grid_mapping_name,
+                              get_spatial_dims, is_collection_in_time_range,
+                              is_item_in_time_range, list_assets_from_item,
+                              merge_datasets, mosaic_spatial_take_first,
+                              normalize_crs, rename_dataset, reproject_bbox,
+                              search_collections, search_nonsearchable_catalog,
+                              update_dict)
 
 
 class UtilsTest(unittest.TestCase):

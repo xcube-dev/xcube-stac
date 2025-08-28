@@ -30,29 +30,16 @@ import shapely
 import xarray as xr
 from rasterio.errors import NotGeoreferencedWarning
 from xcube.core.resampling import rectify_dataset
-from xcube.util.jsonschema import (
-    JsonArraySchema,
-    JsonBooleanSchema,
-    JsonObjectSchema,
-    JsonStringSchema,
-)
+from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
+                                   JsonObjectSchema, JsonStringSchema)
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
-from xcube_stac.constants import (
-    SCHEMA_ADDITIONAL_QUERY,
-    SCHEMA_BBOX,
-    SCHEMA_CRS,
-    SCHEMA_SPATIAL_RES,
-    SCHEMA_TIME_RANGE,
-    TILE_SIZE,
-)
-from xcube_stac.utils import (
-    add_nominal_datetime,
-    get_gridmapping,
-    list_assets_from_item,
-    mosaic_spatial_take_first,
-    reproject_bbox,
-)
+from xcube_stac.constants import (SCHEMA_ADDITIONAL_QUERY, SCHEMA_BBOX,
+                                  SCHEMA_CRS, SCHEMA_SPATIAL_RES,
+                                  SCHEMA_TIME_RANGE, TILE_SIZE)
+from xcube_stac.utils import (add_nominal_datetime, get_gridmapping,
+                              list_assets_from_item, mosaic_spatial_take_first,
+                              reproject_bbox)
 
 _SENTINEL3_ASSETS = [
     "syn_S1N_reflectance",

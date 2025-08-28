@@ -22,19 +22,13 @@
 from typing import Type
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
-from xcube_stac.constants import (
-    DATA_STORE_ID_CDSE,
-    DATA_STORE_ID_CDSE_ARDC,
-    DATA_STORE_ID_PC,
-    DATA_STORE_ID_PC_ARDC,
-)
+from xcube_stac.constants import (DATA_STORE_ID_CDSE, DATA_STORE_ID_CDSE_ARDC,
+                                  DATA_STORE_ID_PC, DATA_STORE_ID_PC_ARDC)
+
 from .base import BaseStacItemAccessor
-from .sen2 import (
-    Sen2CdseStacArdcAccessor,
-    Sen2CdseStacItemAccessor,
-    Sen2PlanetaryComputerStacArdcAccessor,
-    Sen2PlanetaryComputerStacItemAccessor,
-)
+from .sen2 import (Sen2CdseStacArdcAccessor, Sen2CdseStacItemAccessor,
+                   Sen2PlanetaryComputerStacArdcAccessor,
+                   Sen2PlanetaryComputerStacItemAccessor)
 from .sen3 import Sen3CdseStacArdcAccessor, Sen3CdseStacItemAccessor
 
 ACCESSOR_MAPPING = {

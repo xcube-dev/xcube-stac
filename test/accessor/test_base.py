@@ -21,12 +21,13 @@
 
 import unittest
 from unittest.mock import patch
-import xarray as xr
+
 import numpy as np
 import pystac
+import xarray as xr
 from xcube.core.store import DataStore
 
-from xcube_stac.accessors.base import BaseStacItemAccessor, XcubeStacItemAccessor
+from xcube_stac.accessors.base import (BaseStacItemAccessor)
 
 
 class BaseStacItemAccessorTest(unittest.TestCase):

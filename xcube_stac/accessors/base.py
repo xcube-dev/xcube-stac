@@ -30,13 +30,10 @@ from xcube.util.jsonschema import JsonObjectSchema
 from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import LOG, SCHEMA_APPLY_SCALING, SCHEMA_ASSET_NAMES
 from xcube_stac.href_parse import decode_href
-from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
-from xcube_stac.utils import (
-    list_assets_from_item,
-    normalize_grid_mapping,
-    rename_dataset,
-    update_dict,
-)
+from xcube_stac.stac_extension.raster import (apply_offset_scaling,
+                                              get_stac_extension)
+from xcube_stac.utils import (list_assets_from_item, normalize_grid_mapping,
+                              rename_dataset, update_dict)
 from xcube_stac.version import version
 
 
