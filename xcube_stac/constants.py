@@ -148,11 +148,11 @@ SCHEMA_TILE_SIZE = JsonComplexSchema(
         "or single int for quadratic chunk size."
     ),
     one_of=[
-        JsonNumberSchema(exclusive_minimum=256),
+        JsonNumberSchema(minimum=256),
         JsonArraySchema(
             items=(
-                JsonNumberSchema(exclusive_minimum=256),
-                JsonNumberSchema(exclusive_minimum=256),
+                JsonNumberSchema(minimum=256),
+                JsonNumberSchema(minimum=256),
             )
         ),
     ],
