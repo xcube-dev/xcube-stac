@@ -486,7 +486,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             spatial_res=open_params.get("spatial_res", 10),
             apply_scaling=open_params.get("apply_scaling", True),
             add_angles=open_params.get("add_angles", False),
-            tile_size=open_params.get("tile_size"),
+            tile_size=open_params.get("tile_size", TILE_SIZE),
         )
         dss = []
         idx_remove_dt = []
