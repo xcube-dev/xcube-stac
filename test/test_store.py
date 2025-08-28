@@ -33,7 +33,7 @@ from xcube.core.store import (
     MultiLevelDatasetDescriptor,
     new_data_store,
 )
-from xcube.util.jsonschema import JsonObjectSchema
+from xcube.util.jsonschema import JsonObjectSchema, JsonComplexSchema
 
 # noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
@@ -396,7 +396,7 @@ class StacDataStoreTest(unittest.TestCase):
         data_ids = ("sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc")
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
-            self.assertIsInstance(schema, JsonObjectSchema)
+            self.assertIsInstance(schema, JsonSchema)
             self.assertIn("asset_names", schema.properties)
             self.assertIn("time_range", schema.properties)
             self.assertIn("bbox", schema.properties)
@@ -903,6 +903,7 @@ class StacDataStoreTest(unittest.TestCase):
             crs=crs_target,
             asset_names=["B04"],
             apply_scaling=True,
+            add_angles=True,
             add_angles=True,
         )
         self.assertIsInstance(ds, xr.Dataset)

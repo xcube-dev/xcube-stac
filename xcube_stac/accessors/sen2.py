@@ -55,6 +55,7 @@ from xcube_stac.constants import (
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
     SCHEMA_TIME_RANGE,
+    SCHEMA_TILE_SIZE,
     TILE_SIZE,
 )
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
@@ -116,7 +117,10 @@ _SCHEMA_POINT = JsonArraySchema(
     title="Point given in (lon, lat) in geographical coordinates.",
 )
 _SCHEMA_BBOX_WIDTH = JsonNumberSchema(
-    title="Full width of bounding box, aligned around the coordinates given in `point`.",
+    title=(
+        "Full width of bounding box in meter, aligned around the "
+        "coordinates given in `point`."
+    ),
     exclusive_minimum=0,
     maximum=10000,
 )
@@ -169,7 +173,9 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     @staticmethod
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
-        tile_size = open_params.get("tile_size", (1024, 1024))
+        tile_size = open_params.get("tile_size", TILE_SIZE)
+        if isinstance(tile_size, int):
+            tile_size = (tile_size, tile_size)
         return rioxarray.open_rasterio(
             asset.href,
             chunks=dict(x=tile_size[0], y=tile_size[1]),
@@ -179,7 +185,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         apply_scaling = open_params.pop("apply_scaling", True)
         assets = self._list_assets_from_item(item, **open_params)
-        dss = [self.open_asset(asset) for asset in assets]
+        dss = [self.open_asset(asset, **open_params) for asset in assets]
         ds = self._combiner_function(
             dss,
             item=item,
@@ -204,6 +210,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
                 spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
                 add_angles=_SCHEMA_ANGLES_SENTINEL2,
+                tile_size=SCHEMA_TILE_SIZE,
             ),
             required=[],
             additional_properties=False,
@@ -391,6 +398,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 query=SCHEMA_ADDITIONAL_QUERY,
                 add_angles=_SCHEMA_ANGLES_SENTINEL2,
                 apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
+                tile_size=SCHEMA_TILE_SIZE,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
@@ -405,6 +413,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 query=SCHEMA_ADDITIONAL_QUERY,
                 add_angles=_SCHEMA_ANGLES_SENTINEL2,
                 apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
+                tile_size=SCHEMA_TILE_SIZE,
             ),
             required=["time_range", "point", "spatial_res", "bbox_width"],
             additional_properties=False,
@@ -660,7 +669,12 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 mosaicked_ds = mosaic_spatial_take_first(multi_tiles)
                 if final_ds is None:
                     final_ds = _create_empty_dataset(
-                        mosaicked_ds, grouped_items, items_bbox, final_bbox, spatial_res
+                        mosaicked_ds,
+                        grouped_items,
+                        items_bbox,
+                        final_bbox,
+                        spatial_res,
+                        tile_size=open_params.get("tile_size"),
                     )
                 final_ds = _insert_tile_data(final_ds, mosaicked_ds, dt_idx)
 
@@ -1204,6 +1218,7 @@ def _create_empty_dataset(
     items_bbox: list[float | int] | tuple[float | int],
     final_bbox: list[float | int] | tuple[float | int],
     spatial_res: int | float,
+    tile_size: int | tuple[int] | None = None,
 ) -> xr.Dataset:
     """Create an empty xarray Dataset with spatial and temporal dimensions matching
     the given bounding boxes and grouped items.
@@ -1223,6 +1238,7 @@ def _create_empty_dataset(
         final_bbox: The target bounding box to define the spatial extent of the final
             datacube (minx, miny, maxx, maxy).
         spatial_res: The spatial resolution in CRS units (e.g., meters or degrees).
+        tile_size: Optional user defined spatial chunk size of final dataset
 
     Returns:
         A dataset with shape (time, y, x), filled with NaNs and ready to be populated
@@ -1244,7 +1260,9 @@ def _create_empty_dataset(
     )
     x = np.arange(x_start + half_res, x_end, spatial_res)
 
-    chunks = (1, TILE_SIZE, TILE_SIZE)
+    if isinstance(tile_size, int):
+        tile_size = (tile_size, tile_size)
+    chunks = (1, tile_size[1], tile_size[0])
     shape = (grouped_items.sizes["time"], len(y), len(x))
     return xr.Dataset(
         {
@@ -1334,14 +1352,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
-                TILE_SIZE,
+                open_params.get("tile_size", TILE_SIZE),
             )
     else:
         target_gm = get_gridmapping(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
-            TILE_SIZE,
+            open_params.get("tile_size", TILE_SIZE),
         )
 
     resampled_list_ds = []
