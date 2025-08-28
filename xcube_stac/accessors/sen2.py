@@ -389,6 +389,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
         bbox_schema = JsonObjectSchema(
+            title="Open parameters to open via a user-defined bounding box.",
             properties=dict(
                 asset_names=_SCHEMA_ASSET_NAMES,
                 time_range=SCHEMA_TIME_RANGE,
@@ -404,6 +405,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             additional_properties=False,
         )
         point_schema = JsonObjectSchema(
+            title="Open parameters to generate a cube cutout around a given `point`.",
             properties=dict(
                 asset_names=_SCHEMA_ASSET_NAMES,
                 time_range=SCHEMA_TIME_RANGE,
@@ -648,7 +650,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             spatial_res=spatial_res,
             apply_scaling=open_params.get("apply_scaling", True),
             add_angles=False,
-            tile_size=open_params.get("tile_size"),
+            tile_size=open_params.get("tile_size", TILE_SIZE),
         )
         final_ds = None
         for dt_idx, dt in enumerate(grouped_items.time.values):
@@ -674,7 +676,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                         items_bbox,
                         final_bbox,
                         spatial_res,
-                        tile_size=open_params.get("tile_size"),
+                        tile_size=open_params.get("tile_size", TILE_SIZE),
                     )
                 final_ds = _insert_tile_data(final_ds, mosaicked_ds, dt_idx)
 

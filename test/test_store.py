@@ -387,35 +387,51 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("asset_names", schema.properties)
         self.assertIn("apply_rectification", schema.properties)
 
+    # noinspection PyUnresolvedReferences
     def test_get_open_data_params_schema_cdse_ardc(self):
         store = new_data_store(
             DATA_STORE_ID_CDSE_ARDC,
             key=CDSE_CREDENTIALS["key"],
             secret=CDSE_CREDENTIALS["secret"],
         )
-        data_ids = ("sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc")
+        data_ids = ("sentinel-2-l2a", "sentinel-2-l1c")
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
-            self.assertIsInstance(schema, JsonSchema)
-            self.assertIn("asset_names", schema.properties)
-            self.assertIn("time_range", schema.properties)
-            self.assertIn("bbox", schema.properties)
-            self.assertIn("crs", schema.properties)
-            self.assertIn("spatial_res", schema.properties)
-            self.assertIn("query", schema.properties)
+            self.assertIsInstance(schema, JsonComplexSchema)
+            self.assertEqual(2, len(schema.one_of))
+            self.assertIn("asset_names", schema.one_of[0].properties)
+            self.assertIn("time_range", schema.one_of[0].properties)
+            self.assertIn("bbox", schema.one_of[0].properties)
+            self.assertIn("crs", schema.one_of[0].properties)
+            self.assertIn("spatial_res", schema.one_of[0].properties)
+            self.assertIn("query", schema.one_of[0].properties)
+            self.assertIn("asset_names", schema.one_of[1].properties)
+            self.assertIn("time_range", schema.one_of[1].properties)
+            self.assertIn("point", schema.one_of[1].properties)
+            self.assertIn("bbox_width", schema.one_of[1].properties)
+            self.assertIn("spatial_res", schema.one_of[1].properties)
+            self.assertIn("query", schema.one_of[1].properties)
 
+    # noinspection PyUnresolvedReferences
     def test_get_open_data_params_schema_pc_ardc(self):
         store = new_data_store(DATA_STORE_ID_PC_ARDC)
         data_ids = ["sentinel-2-l2a"]
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
-            self.assertIsInstance(schema, JsonObjectSchema)
-            self.assertIn("asset_names", schema.properties)
-            self.assertIn("time_range", schema.properties)
-            self.assertIn("bbox", schema.properties)
-            self.assertIn("crs", schema.properties)
-            self.assertIn("spatial_res", schema.properties)
-            self.assertIn("query", schema.properties)
+            self.assertIsInstance(schema, JsonComplexSchema)
+            self.assertEqual(2, len(schema.one_of))
+            self.assertIn("asset_names", schema.one_of[0].properties)
+            self.assertIn("time_range", schema.one_of[0].properties)
+            self.assertIn("bbox", schema.one_of[0].properties)
+            self.assertIn("crs", schema.one_of[0].properties)
+            self.assertIn("spatial_res", schema.one_of[0].properties)
+            self.assertIn("query", schema.one_of[0].properties)
+            self.assertIn("asset_names", schema.one_of[1].properties)
+            self.assertIn("time_range", schema.one_of[1].properties)
+            self.assertIn("point", schema.one_of[1].properties)
+            self.assertIn("bbox_width", schema.one_of[1].properties)
+            self.assertIn("spatial_res", schema.one_of[1].properties)
+            self.assertIn("query", schema.one_of[1].properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -826,6 +842,47 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
+        # open timeseries
+        ds = store.open_data(
+            data_id="sentinel-2-l2a",
+            asset_names=["B04"],
+            point=(10.5, 53.5),
+            bbox_width=6000,
+            time_range=["2020-07-26", "2020-08-01"],
+            spatial_res=60,
+            add_angles=True,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+
+        self.assertCountEqual(
+            ["B04", "solar_angle", "viewing_angle"],
+            list(ds.data_vars),
+        )
+        self.assertEqual(
+            [2, 100, 100, 23, 23, 2, 1],
+            [
+                ds.sizes["time"],
+                ds.sizes["x"],
+                ds.sizes["x"],
+                ds.sizes["angle_x"],
+                ds.sizes["angle_y"],
+                ds.sizes["angle"],
+                ds.sizes["band"],
+            ],
+        )
+        self.assertEqual(
+            [1, 100, 100, 23, 23, 2, 1],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["x"][0],
+                ds.chunksizes["y"][0],
+                ds.chunksizes["angle_x"][0],
+                ds.chunksizes["angle_y"][0],
+                ds.chunksizes["angle"][0],
+                ds.chunksizes["band"][0],
+            ],
+        )
+
         # open dataset in WGS84
         ds = store.open_data(
             data_id="sentinel-2-l2a",
@@ -856,7 +913,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 742, 1483, 10, 19, 2, 1],
+            [1, 742, 1024, 10, 19, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -903,7 +960,6 @@ class StacDataStoreTest(unittest.TestCase):
             crs=crs_target,
             asset_names=["B04"],
             apply_scaling=True,
-            add_angles=True,
             add_angles=True,
         )
         self.assertIsInstance(ds, xr.Dataset)
@@ -967,7 +1023,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 742, 1483, 10, 19, 2, 1],
+            [1, 742, 1024, 10, 19, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],

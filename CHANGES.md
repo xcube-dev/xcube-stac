@@ -8,6 +8,12 @@
   These stores are analogous to `stac-cdse` and `stac-cdse-ardc`, but offer 
   improved **cube generation performance** by leveraging
   **cloud-optimized GeoTIFFs (COGs)**.
+* **Timeseries cube generation for Sentinel-2 (single-tile mode):**  
+  A new mode was added that generates a time series cube from a single Sentinel-2 tile.  
+  Instead of providing `bbox` and `crs`, you now supply a `point` (lon, lat) together  
+  with a `bbox_width` in meters (must be < 10,000). The system will cut out a region  
+  around the given point, restricted to a single tile and native crs, and stack 
+  it along the time dimension. This improves cube generation performance.  
  
 ## Changes in 1.0.0
 
