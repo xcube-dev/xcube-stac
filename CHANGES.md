@@ -1,4 +1,4 @@
-## Changes in 1.0.1 (under development)
+## Changes in 1.1.0
 
 * **Added new data stores** `stac-pc` and `stac-pc-ardc` supporting the 
   Planetary Computer STAC API.  
