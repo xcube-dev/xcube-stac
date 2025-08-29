@@ -28,6 +28,7 @@ from xcube_stac.constants import (
     DATA_STORE_ID_PC,
     DATA_STORE_ID_PC_ARDC,
 )
+
 from .base import BaseStacItemAccessor
 from .sen2 import (
     Sen2CdseStacArdcAccessor,

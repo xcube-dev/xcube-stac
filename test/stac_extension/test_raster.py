@@ -26,8 +26,7 @@ import numpy as np
 import pystac
 import xarray as xr
 
-from xcube_stac.stac_extension.raster import (apply_offset_scaling,
-                                              get_stac_extension)
+from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 
 
 def create_raster_stac_item_v1() -> pystac.Item:
@@ -93,7 +92,6 @@ def create_raster_stac_item_v2() -> pystac.Item:
 
 
 class RasterTest(unittest.TestCase):
-
     def test_get_stac_extension(self):
         item_v1 = create_raster_stac_item_v1()
         self.assertEqual("v1", get_stac_extension(item_v1))

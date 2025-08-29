@@ -829,6 +829,13 @@ def get_spatial_dims(ds: xr.Dataset) -> (str, str):
     return y_coord, x_coord
 
 
+def _get_tile_size(open_params: dict) -> tuple[int, int]:
+    tile_size = open_params.get("tile_size", TILE_SIZE)
+    if isinstance(tile_size, int):
+        tile_size = (tile_size, tile_size)
+    return tile_size
+
+
 def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     ds = datasets[0].copy()
     for ds_asset in datasets[1:]:

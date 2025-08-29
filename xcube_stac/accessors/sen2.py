@@ -35,12 +35,14 @@ import requests
 import rioxarray
 import xarray as xr
 import xmltodict
+from xcube.core.chunk import chunk_dataset
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonBooleanSchema,
+    JsonComplexSchema,
     JsonNumberSchema,
     JsonObjectSchema,
     JsonStringSchema,
@@ -51,9 +53,9 @@ from xcube_stac.constants import (
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_APPLY_SCALING,
-    SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
+    SCHEMA_TILE_SIZE,
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
 )
@@ -62,6 +64,7 @@ from xcube_stac.utils import (
     add_nominal_datetime,
     get_gridmapping,
     get_spatial_dims,
+    _get_tile_size,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
@@ -108,6 +111,30 @@ _SCHEMA_ASSET_NAMES = JsonArraySchema(
     unique_items=True,
     title="Names of assets (spectral bands)",
 )
+_SCHEMA_POINT = JsonArraySchema(
+    items=(
+        JsonNumberSchema(minimum=-180, maximum=180),
+        JsonNumberSchema(minimum=-90, maximum=90),
+    ),
+    title="Point given in (lon, lat) in geographical coordinates.",
+)
+_SCHEMA_BBOX_WIDTH = JsonNumberSchema(
+    title=(
+        "Full width of bounding box in meter, aligned around the "
+        "coordinates given in `point`."
+    ),
+    exclusive_minimum=0,
+    maximum=10000,
+)
+_SCHEMA_BBOX = JsonArraySchema(
+    items=(
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+        JsonNumberSchema(),
+    ),
+    title="Bounding box [x1,y1,x2,y2] in coordinates of the given CRS.",
+)
 
 
 class Sen2CdseStacItemAccessor(StacItemAccessor):
@@ -148,7 +175,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     @staticmethod
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
-        tile_size = open_params.get("tile_size", (1024, 1024))
+        tile_size = _get_tile_size(open_params)
         return rioxarray.open_rasterio(
             asset.href,
             chunks=dict(x=tile_size[0], y=tile_size[1]),
@@ -158,7 +185,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         apply_scaling = open_params.pop("apply_scaling", True)
         assets = self._list_assets_from_item(item, **open_params)
-        dss = [self.open_asset(asset) for asset in assets]
+        dss = [self.open_asset(asset, **open_params) for asset in assets]
         ds = self._combiner_function(
             dss,
             item=item,
@@ -183,6 +210,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
                 spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
                 add_angles=_SCHEMA_ANGLES_SENTINEL2,
+                tile_size=SCHEMA_TILE_SIZE,
             ),
             required=[],
             additional_properties=False,
@@ -321,7 +349,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
-
         # Remove items with incorrect bounding boxes in the CDSE Sentinel-2 L2A catalog.
         # This issue primarily affects tiles that cross the antimeridian and has been
         # reported as a catalog bug. A single Sentinel-2 tile spans approximately
@@ -333,8 +360,12 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # get STAC assets grouped by solar day
         grouped_items = self._group_items(items)
 
-        # apply mosaicking and stacking
-        ds = self._generate_cube(grouped_items, **open_params)
+        if "point" in open_params:
+            # apply only stacking
+            ds = self._generate_cube_single_tile(grouped_items, **open_params)
+        else:
+            # apply mosaicking and stacking
+            ds = self._generate_cube(grouped_items, **open_params)
 
         # add attributes
         # Gather all used STAC item IDs used in the data cube for each time step
@@ -342,9 +373,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(
             {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
+                dt.astype("datetime64[ms]").astype("O").isoformat(): [
                     item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values
@@ -356,20 +385,40 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
     ) -> JsonObjectSchema:
-        return JsonObjectSchema(
+        bbox_schema = JsonObjectSchema(
+            title="Open parameters to open via a user-defined bounding box.",
             properties=dict(
                 asset_names=_SCHEMA_ASSET_NAMES,
                 time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
+                bbox=_SCHEMA_BBOX,
                 spatial_res=SCHEMA_SPATIAL_RES,
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
                 add_angles=_SCHEMA_ANGLES_SENTINEL2,
                 apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
+                tile_size=SCHEMA_TILE_SIZE,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
+        point_schema = JsonObjectSchema(
+            title="Open parameters to generate a cube cutout around a given `point`.",
+            properties=dict(
+                asset_names=_SCHEMA_ASSET_NAMES,
+                time_range=SCHEMA_TIME_RANGE,
+                point=_SCHEMA_POINT,
+                bbox_width=_SCHEMA_BBOX_WIDTH,
+                spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
+                query=SCHEMA_ADDITIONAL_QUERY,
+                add_angles=_SCHEMA_ANGLES_SENTINEL2,
+                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
+                tile_size=SCHEMA_TILE_SIZE,
+            ),
+            required=["time_range", "point", "spatial_res", "bbox_width"],
+            additional_properties=False,
+        )
+        # noinspection PyTypeChecker
+        return JsonComplexSchema(one_of=[bbox_schema, point_schema])
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
         """Generate a spatiotemporal data cube from multiple items.
@@ -412,6 +461,77 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         if open_params.get("add_angles", False):
             ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
 
+        return ds_final
+
+    def _generate_cube_single_tile(
+        self, grouped_items: xr.DataArray, **open_params
+    ) -> xr.Dataset:
+        # find tile closest to the given point
+        centers = np.zeros((2, grouped_items.sizes["tile_id"]))
+        for idx_tile_id in range(grouped_items.shape[1]):
+            item = grouped_items.isel(time=0, tile_id=idx_tile_id).item()[0]
+            centers[0, idx_tile_id] = (item.bbox[0] + item.bbox[2]) / 2
+            centers[1, idx_tile_id] = (item.bbox[1] + item.bbox[3]) / 2
+        idx_min = np.argmin(
+            (centers[0] - open_params["point"][0]) ** 2
+            + (centers[1] - open_params["point"][1]) ** 2
+        )
+        grouped_items = grouped_items[:, idx_min]
+
+        # Open data and stack along time axis
+        tile_size = _get_tile_size(open_params)
+        open_item_open_params = dict(
+            asset_names=open_params.get("asset_names"),
+            spatial_res=open_params.get("spatial_res", 10),
+            apply_scaling=open_params.get("apply_scaling", True),
+            add_angles=open_params.get("add_angles", False),
+            tile_size=tile_size,
+        )
+        dss = []
+        idx_remove_dt = []
+        for dt_idx, dt in enumerate(grouped_items.time.values):
+            items = grouped_items.isel(time=dt_idx).item()
+            multi_tiles = []
+            for item in items:
+                ds = self.open_item(item, **open_item_open_params)
+                multi_tiles.append(ds)
+            if not multi_tiles:
+                idx_remove_dt.append(dt_idx)
+                continue
+            dss.append(mosaic_spatial_take_first(multi_tiles))
+        ds_final = xr.concat(dss, dim="time", join="exact")
+        np_datetimes_sel = [
+            value
+            for idx, value in enumerate(grouped_items.time.values)
+            if idx not in idx_remove_dt
+        ]
+        ds_final = ds_final.assign_coords(coords=dict(time=np_datetimes_sel))
+
+        # clip dataset
+        item = np.sum(grouped_items.values)[0]
+        asset = next(iter(item.assets.values()))
+        crs_data = asset.extra_fields.get(
+            self._stac_item_properties["crs"],
+            item.properties.get(self._stac_item_properties["crs"]),
+        )
+        t = pyproj.Transformer.from_crs("EPSG:4326", crs_data, always_xy=True)
+        point_data = t.transform(open_params["point"][0], open_params["point"][1])
+        bbox_width = open_params["bbox_width"] / 2
+        bbox_data = [
+            point_data[0] - bbox_width,
+            point_data[1] - bbox_width,
+            point_data[0] + bbox_width,
+            point_data[1] + bbox_width,
+        ]
+        ds_final = ds_final.sel(
+            x=slice(bbox_data[0], bbox_data[2]),
+            y=slice(bbox_data[3], bbox_data[1]),
+        )
+        ds_final = chunk_dataset(
+            ds_final,
+            chunk_sizes=dict(x=tile_size[0], y=tile_size[1]),
+            format_name="zarr",
+        )
         return ds_final
 
     def _group_items(self, items: Sequence[pystac.Item]) -> xr.DataArray:
@@ -532,6 +652,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             spatial_res=spatial_res,
             apply_scaling=open_params.get("apply_scaling", True),
             add_angles=False,
+            tile_size=open_params.get("tile_size", TILE_SIZE),
         )
         final_ds = None
         for dt_idx, dt in enumerate(grouped_items.time.values):
@@ -552,7 +673,12 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 mosaicked_ds = mosaic_spatial_take_first(multi_tiles)
                 if final_ds is None:
                     final_ds = _create_empty_dataset(
-                        mosaicked_ds, grouped_items, items_bbox, final_bbox, spatial_res
+                        mosaicked_ds,
+                        grouped_items,
+                        items_bbox,
+                        final_bbox,
+                        spatial_res,
+                        tile_size=open_params.get("tile_size", TILE_SIZE),
                     )
                 final_ds = _insert_tile_data(final_ds, mosaicked_ds, dt_idx)
 
@@ -688,7 +814,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             response = requests.get(item.assets["product-metadata"].href)
             response.raise_for_status()
             xml_dict = xmltodict.parse(response.text)
-            info = xml_dict[f"n1:Level-2A_User_Product"]["n1:General_Info"][
+            info = xml_dict["n1:Level-2A_User_Product"]["n1:General_Info"][
                 "Product_Image_Characteristics"
             ]
             item.properties["xcube:offset_scaling"] = info
@@ -1096,6 +1222,7 @@ def _create_empty_dataset(
     items_bbox: list[float | int] | tuple[float | int],
     final_bbox: list[float | int] | tuple[float | int],
     spatial_res: int | float,
+    tile_size: int | tuple[int] | None = None,
 ) -> xr.Dataset:
     """Create an empty xarray Dataset with spatial and temporal dimensions matching
     the given bounding boxes and grouped items.
@@ -1115,6 +1242,7 @@ def _create_empty_dataset(
         final_bbox: The target bounding box to define the spatial extent of the final
             datacube (minx, miny, maxx, maxy).
         spatial_res: The spatial resolution in CRS units (e.g., meters or degrees).
+        tile_size: Optional user defined spatial chunk size of final dataset
 
     Returns:
         A dataset with shape (time, y, x), filled with NaNs and ready to be populated
@@ -1136,7 +1264,9 @@ def _create_empty_dataset(
     )
     x = np.arange(x_start + half_res, x_end, spatial_res)
 
-    chunks = (1, TILE_SIZE, TILE_SIZE)
+    if isinstance(tile_size, int):
+        tile_size = (tile_size, tile_size)
+    chunks = (1, tile_size[1], tile_size[0])
     shape = (grouped_items.sizes["time"], len(y), len(x))
     return xr.Dataset(
         {
@@ -1226,14 +1356,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
-                TILE_SIZE,
+                tile_size=open_params.get("tile_size", TILE_SIZE),
             )
     else:
         target_gm = get_gridmapping(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
-            TILE_SIZE,
+            tile_size=open_params.get("tile_size", TILE_SIZE),
         )
 
     resampled_list_ds = []

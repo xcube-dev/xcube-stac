@@ -21,7 +21,7 @@
 
 import datetime
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import dask.array as da
 import numpy as np
@@ -56,7 +56,6 @@ from xcube_stac.utils import (
 
 
 class UtilsTest(unittest.TestCase):
-
     def test_get_format_id(self):
         asset = pystac.Asset(
             href="https://example.com/data/test.tif",

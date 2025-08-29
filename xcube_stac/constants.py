@@ -22,9 +22,15 @@
 import logging
 
 from xcube.core.store.fs.impl.fs import S3FsAccessor
-from xcube.util.jsonschema import (JsonArraySchema, JsonBooleanSchema,
-                                   JsonDateSchema, JsonNumberSchema,
-                                   JsonObjectSchema, JsonStringSchema)
+from xcube.util.jsonschema import (
+    JsonArraySchema,
+    JsonBooleanSchema,
+    JsonComplexSchema,
+    JsonDateSchema,
+    JsonNumberSchema,
+    JsonObjectSchema,
+    JsonStringSchema,
+)
 
 # general stac constants
 DATA_STORE_ID = "stac"
@@ -44,7 +50,7 @@ PC_STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
 DATA_STORE_ID_XCUBE = "stac-xcube"
 
 # other constants
-TILE_SIZE = 2048
+TILE_SIZE = 1024
 LOG = logging.getLogger("xcube.stac")
 FloatInt = float | int
 CONVERSION_FACTOR_DEG_METER = 111320
@@ -135,3 +141,20 @@ SCHEMA_APPLY_SCALING = JsonBooleanSchema(
 )
 SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
 SCHEMA_CRS = JsonStringSchema(title="Coordinate reference system", default="EPSG:4326")
+SCHEMA_TILE_SIZE = JsonComplexSchema(
+    title="Spatial chunk size",
+    description=(
+        "Either a tuple asigning width and height (x, y), "
+        "or single int for quadratic chunk size."
+    ),
+    one_of=[
+        JsonNumberSchema(minimum=256),
+        JsonArraySchema(
+            items=(
+                JsonNumberSchema(minimum=256),
+                JsonNumberSchema(minimum=256),
+            )
+        ),
+    ],
+    default=TILE_SIZE,
+)

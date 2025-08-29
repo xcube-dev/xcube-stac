@@ -205,7 +205,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
-
         # filter items by checking if bounding box and polygon of tiles overlap
         items = _filter_items_spatial(items, open_params["bbox"])
 
@@ -221,9 +220,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(
             {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
+                dt.astype("datetime64[ms]").astype("O").isoformat(): [
                     item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values
