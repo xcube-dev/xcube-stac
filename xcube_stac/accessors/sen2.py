@@ -35,6 +35,7 @@ import requests
 import rioxarray
 import xarray as xr
 import xmltodict
+from xcube.core.chunk import chunk_dataset
 from xcube.core.gridmapping import GridMapping
 from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
@@ -63,6 +64,7 @@ from xcube_stac.utils import (
     add_nominal_datetime,
     get_gridmapping,
     get_spatial_dims,
+    _get_tile_size,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
@@ -173,9 +175,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     @staticmethod
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
-        tile_size = open_params.get("tile_size", TILE_SIZE)
-        if isinstance(tile_size, int):
-            tile_size = (tile_size, tile_size)
+        tile_size = _get_tile_size(open_params)
         return rioxarray.open_rasterio(
             asset.href,
             chunks=dict(x=tile_size[0], y=tile_size[1]),
@@ -479,12 +479,13 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         grouped_items = grouped_items[:, idx_min]
 
         # Open data and stack along time axis
+        tile_size = _get_tile_size(open_params)
         open_item_open_params = dict(
             asset_names=open_params.get("asset_names"),
             spatial_res=open_params.get("spatial_res", 10),
             apply_scaling=open_params.get("apply_scaling", True),
             add_angles=open_params.get("add_angles", False),
-            tile_size=open_params.get("tile_size", TILE_SIZE),
+            tile_size=tile_size,
         )
         dss = []
         idx_remove_dt = []
@@ -525,6 +526,11 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         ds_final = ds_final.sel(
             x=slice(bbox_data[0], bbox_data[2]),
             y=slice(bbox_data[3], bbox_data[1]),
+        )
+        ds_final = chunk_dataset(
+            ds_final,
+            chunk_sizes=dict(x=tile_size[0], y=tile_size[1]),
+            format_name="zarr",
         )
         return ds_final
 
@@ -1350,14 +1356,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
-                open_params.get("tile_size", TILE_SIZE),
+                tile_size=open_params.get("tile_size", TILE_SIZE),
             )
     else:
         target_gm = get_gridmapping(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
-            open_params.get("tile_size", TILE_SIZE),
+            tile_size=open_params.get("tile_size", TILE_SIZE),
         )
 
     resampled_list_ds = []
