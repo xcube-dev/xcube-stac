@@ -156,5 +156,5 @@ SCHEMA_TILE_SIZE = JsonComplexSchema(
             )
         ),
     ],
-    default=1024,
+    default=TILE_SIZE,
 )

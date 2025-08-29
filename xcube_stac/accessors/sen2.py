@@ -516,12 +516,12 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         )
         t = pyproj.Transformer.from_crs("EPSG:4326", crs_data, always_xy=True)
         point_data = t.transform(open_params["point"][0], open_params["point"][1])
-        bbox_hwidth = open_params["bbox_width"] / 2
+        bbox_width = open_params["bbox_width"] / 2
         bbox_data = [
-            point_data[0] - bbox_hwidth,
-            point_data[1] - bbox_hwidth,
-            point_data[0] + bbox_hwidth,
-            point_data[1] + bbox_hwidth,
+            point_data[0] - bbox_width,
+            point_data[1] - bbox_width,
+            point_data[0] + bbox_width,
+            point_data[1] + bbox_width,
         ]
         ds_final = ds_final.sel(
             x=slice(bbox_data[0], bbox_data[2]),
