@@ -867,6 +867,7 @@ def mosaic_spatial_take_first(
 
     ds_mosaic = xr.Dataset()
     for key in list_ds[0]:
+        # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
         if list_ds[0][key].ndim >= 2:
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
             if np.isnan(fill_value):
