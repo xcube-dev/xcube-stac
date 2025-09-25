@@ -191,6 +191,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             item=item,
             assets=assets,
             apply_scaling=apply_scaling,
+            **open_params,
         )
         if open_params.get("add_angles", False):
             ds = self._add_sen2_angles(item, ds)
@@ -281,6 +282,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         item: pystac.Item = None,
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = True,
+        **open_params,
     ) -> xr.Dataset:
         dss = [
             rename_dataset(ds, asset.extra_fields["xcube:asset_id_origin"])
@@ -292,7 +294,16 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 apply_offset_scaling(ds, asset, raster_version)
                 for (ds, asset) in zip(dss, assets)
             ]
-        ds = merge_datasets(dss)
+        if "spatial_res" in open_params:
+            target_gm = get_gridmapping(
+                bbox=assets[0].extra_fields["proj:bbox"],
+                spatial_res=open_params["spatial_res"],
+                crs=assets[0].extra_fields["proj:code"],
+                tile_size=open_params.get("tile_size", TILE_SIZE),
+            )
+            ds = merge_datasets(dss, target_gm=target_gm)
+        else:
+            ds = merge_datasets(dss)
         return normalize_grid_mapping(ds)
 
     def _add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
@@ -373,7 +384,9 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(
             {
-                dt.astype("datetime64[ms]").astype("O").isoformat(): [
+                dt.astype("datetime64[ms]")
+                .astype("O")
+                .isoformat(): [
                     item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values
@@ -778,6 +791,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
         item: pystac.Item = None,
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = True,
+        **open_params,
     ) -> xr.Dataset:
         dss = [
             rename_dataset(ds, asset.extra_fields["xcube:asset_id_origin"])
@@ -787,7 +801,16 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             dss = [
                 self._apply_offset_scaling(ds, item) for (ds, asset) in zip(dss, assets)
             ]
-        ds = merge_datasets(dss)
+        if "spatial_res" in open_params:
+            target_gm = get_gridmapping(
+                bbox=assets[0].extra_fields["proj:bbox"],
+                spatial_res=open_params["spatial_res"],
+                crs=item.properties["proj:code"],
+                tile_size=open_params.get("tile_size", TILE_SIZE),
+            )
+            ds = merge_datasets(dss, target_gm=target_gm)
+        else:
+            ds = merge_datasets(dss)
         return normalize_grid_mapping(ds)
 
     @staticmethod
