@@ -1,3 +1,10 @@
+## Changes in 1.1.1
+
+* Fixed a bug when requesting Sentinel-2 data cubes at 20 m and 60 m resolution,
+  which previously failed due to incorrect assignment of the final grid mapping.
+* Fixed a bug in time series cube generation for Sentinel-2 data when including
+  viewing angles.
+
 ## Changes in 1.1.0
 
 * **Added new data stores** `stac-pc` and `stac-pc-ardc` supporting the 

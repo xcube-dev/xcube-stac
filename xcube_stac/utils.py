@@ -747,7 +747,7 @@ def get_gridmapping(
     y_size = np.ceil(abs(bbox[3] - bbox[1]) / spatial_res[1]) + 1
     return GridMapping.regular(
         size=(x_size, y_size),
-        xy_min=(bbox[0] - spatial_res[0] / 2, bbox[1] - spatial_res[1] / 2),
+        xy_min=(bbox[0], bbox[1]),
         xy_res=spatial_res,
         crs=crs,
         tile_size=tile_size,
@@ -850,7 +850,7 @@ def mosaic_spatial_take_first(
     non-fill value encountered across datasets at each pixel location.
 
     The function assumes all datasets share the same spatial dimensions and coordinate
-    system. Only variables with 2D spatial dimensions (y, x) are processed. At each
+    system. Only variables with 2D spatial dimensions are processed. At each
     spatial location, the first non-fill (or non-NaN) value across the dataset stack
     is selected.
 
@@ -865,10 +865,9 @@ def mosaic_spatial_take_first(
     if len(list_ds) == 1:
         return list_ds[0]
 
-    y_coord, x_coord = get_spatial_dims(list_ds[0])
     ds_mosaic = xr.Dataset()
     for key in list_ds[0]:
-        if list_ds[0][key].dims[-2:] == (y_coord, x_coord):
+        if list_ds[0][key].ndim >= 2:
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
             if np.isnan(fill_value):
                 nonnan_mask = ~da.isnan(da_arr)
