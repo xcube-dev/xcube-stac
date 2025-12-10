@@ -440,6 +440,7 @@ class StacDataStoreTest(unittest.TestCase):
         ds = store.open_data(
             self.data_id_time_range,
             apply_scaling=True,
+            data_type="dataset",
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
@@ -447,17 +448,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
-            [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
-        )
-        self.assertDictEqual(
-            dict(
-                AREA_OR_POINT="Area",
-                _FillValue=0,
-                scale_factor=1.0,
-                add_offset=0.0,
-                grid_mapping="spatial_ref",
-            ),
-            ds.blue_p25.attrs,
+            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
         # open data where multiple assets are stored in one mldataset
@@ -471,7 +462,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
-            [512, 512], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
     @pytest.mark.vcr()

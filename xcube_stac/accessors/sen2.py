@@ -482,7 +482,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # find tile closest to the given point
         centers = np.zeros((2, grouped_items.sizes["tile_id"]))
         for idx_tile_id in range(grouped_items.shape[1]):
-            item = grouped_items.isel(time=0, tile_id=idx_tile_id).item()[0]
+            item = np.sum(grouped_items.isel(tile_id=idx_tile_id).values)[0]
             centers[0, idx_tile_id] = (item.bbox[0] + item.bbox[2]) / 2
             centers[1, idx_tile_id] = (item.bbox[1] + item.bbox[3]) / 2
         idx_min = np.argmin(

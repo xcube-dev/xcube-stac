@@ -41,8 +41,8 @@ class BaseStacItemAccessorTest(unittest.TestCase):
 
     @patch("rioxarray.open_rasterio")
     def test_open_asset(self, open_rasterio_mock):
-        open_rasterio_mock.return_value = xr.DataArray(
-            np.ones((10, 10)), dims=("y", "x")
+        open_rasterio_mock.return_value = xr.Dataset(
+            {"test": xr.DataArray(np.ones((10, 10)), dims=("y", "x"))}
         )
 
         asset = pystac.Asset(
@@ -51,13 +51,14 @@ class BaseStacItemAccessorTest(unittest.TestCase):
             roles=["data"],
             title="Test GeoTIFF",
         )
-        ds = self.accessor.open_asset(asset)
+        ds = self.accessor.open_asset(asset, data_type="dataset")
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertIn("band", ds)
+        self.assertIn("test", ds)
         open_rasterio_mock.assert_called_once_with(
             "s3://bucket/data/my-image.tif",
             overview_level=None,
-            chunks={"x": 512, "y": 512},
+            chunks={"x": 1024, "y": 1024},
+            band_as_variable=True,
         )
 
     def test_get_store(self):

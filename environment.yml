@@ -9,6 +9,7 @@ dependencies:
   - dask
   - h5netcdf
   - libgdal-jp2openjpeg
+  - liggdal-netcdf
   - numpy
   - pandas
   - planetary-computer
