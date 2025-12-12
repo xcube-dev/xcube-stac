@@ -35,7 +35,7 @@ dependencies = [
     "rioxarray",
     "xarray",
     "xmltodict",
-    "xcube-core>=1.11.0"
+    "xcube-core>=1.13.0"
 ]
 
 [tool.setuptools.dynamic]
