@@ -69,6 +69,22 @@ def search_items(
     return items
 
 
+def bbox_to_geojson(bbox):
+    min_x, min_y, max_x, max_y = bbox
+    return {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [min_x, min_y],
+                [max_x, min_y],
+                [max_x, max_y],
+                [min_x, max_y],
+                [min_x, min_y],
+            ]
+        ],
+    }
+
+
 def search_nonsearchable_catalog(
     pystac_object: pystac.Catalog | pystac.Collection,
     recursive: bool = True,

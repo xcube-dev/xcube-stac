@@ -1,3 +1,10 @@
+## Changes in 1.1.2
+
+- Improved robustness of Sentinel-2 time series cube generation by fixing an issue
+  in nearest-tile selection when some tiles are missing.
+- Updated item search to use **intersects** by default, enabling more accurate spatial
+  queries via GeoJSON polygons instead of simple bounding boxes.
+
 ## Changes in 1.1.1
 
 * Fixed a bug when requesting Sentinel-2 data cubes at 20 m and 60 m resolution,
