@@ -510,7 +510,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 idx_remove_dt.append(dt_idx)
                 continue
             dss.append(mosaic_spatial_take_first(multi_tiles))
-        ds_final = xr.concat(dss, dim="time", join="exact")
+        ds_final = xr.concat(dss, dim="time", join="override")
         np_datetimes_sel = [
             value
             for idx, value in enumerate(grouped_items.time.values)
@@ -734,7 +734,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 else:
                     ds_time = mosaic_spatial_take_first(multi_tiles)
                     list_ds_time.append(ds_time)
-            ds_tile = xr.concat(list_ds_time, dim="time", join="exact").chunk(-1)
+            ds_tile = xr.concat(list_ds_time, dim="time", join="override").chunk(-1)
             np_datetimes_sel = [
                 value
                 for idx, value in enumerate(grouped_items.time.values)
@@ -1342,7 +1342,9 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
     return mosaic_spatial_take_first(resampled_list_ds)
 
 
-def _fill_nan_slices(ds: xr.Dataset, times: np.array, idx_nan: list[int]) -> xr.Dataset:
+def _fill_nan_slices(
+    ds: xr.Dataset, times: np.ndarray, idx_nan: list[int]
+) -> xr.Dataset:
     """Insert NaN-filled time slices into a dataset at specified indices along
     the time axis.
 
@@ -1371,7 +1373,7 @@ def _fill_nan_slices(ds: xr.Dataset, times: np.array, idx_nan: list[int]) -> xr.
             list_ds.append(ds.isel(time=slice(idx - i, idx_nan[i + 1] - i - 1)))
     if idx_nan[-1] < len(times) - 1:
         list_ds.append(ds.isel(time=slice(idx_nan[-1] - (len(idx_nan) - 1), None)))
-    return xr.concat(list_ds, dim="time", join="exact")
+    return xr.concat(list_ds, dim="time", join="override")
 
 
 def _create_nan_slice(ds: xr.Dataset) -> xr.Dataset:

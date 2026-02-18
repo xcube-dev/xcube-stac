@@ -151,19 +151,6 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             ds[var_name] *= ds[var_name].attrs["scale_factor"]
         return ds
 
-        # noinspection PyUnreachableCode
-        if not open_params.get("add_error_bands", True):
-            var_names = var_names[:1]
-        ds_final = xr.Dataset()
-        ds_final.attrs = ds.attrs
-        for var_name in var_names:
-            array = ds[var_name]
-            array = array.where(array != array.attrs["_FillValue"])
-            array *= array.attrs["scale_factor"]
-            ds_final[var_name] = array
-
-        return ds_final
-
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         coords = dict()
         ds = self.open_asset(item.assets["geolocation"])
@@ -188,6 +175,59 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 asset_names=_SCHEMA_ASSET_NAMES,
                 apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
                 add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
+            ),
+            required=[],
+            additional_properties=True,
+        )
+
+
+class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
+    """Provides methods for accessing the data of a CDSE Sentinel-3
+    SLSTR Level-2 Land Surface Temperature products STAC Item.
+    """
+
+    def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
+        ds = rioxarray.open_rasterio(
+            asset.href,
+            chunks="auto",
+            band_as_variable=True,
+            driver="netCDF",
+        )[0]
+        ds = ds.squeeze()
+        ds = ds.drop_vars(["band", "x", "y", "spatial_ref"])
+        if asset.href.endswith("geodetic_in.nc"):
+            ds_final = xr.Dataset()
+            ds_final.attrs = ds.attrs
+            for var_name in ["longitude_in", "latitude_in"]:
+                array = ds[var_name]
+                array = array.where(array != array.attrs["_FillValue"])
+                array *= array.attrs["scale_factor"]
+                ds_final[var_name] = array
+            return ds_final
+        else:
+            ds = ds[["LST"]]
+            ds["LST"] = ds["LST"].where(ds["LST"] != ds["LST"].attrs["_FillValue"])
+            ds["LST"] *= ds["LST"].attrs["scale_factor"]
+            return ds
+
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+        # get LST data
+        ds = self.open_asset(item.assets["LST_in"])
+
+        # get geolocation
+        geo = self.open_asset(item.assets["geodetic_in"])
+        ds = ds.assign_coords(dict(lat=geo["latitude_in"], lon=geo["longitude_in"]))
+
+        if open_params.get("apply_rectification", True):
+            ds = rectify_dataset(ds)
+        return ds
+
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        return JsonObjectSchema(
+            properties=dict(
+                apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
             ),
             required=[],
             additional_properties=True,
@@ -275,9 +315,32 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
             if not dss_spatial:
                 continue
             dss_time.append(mosaic_spatial_take_first(dss_spatial))
-        ds_final = xr.concat(dss_time, dim="time", join="exact")
+        ds_final = xr.concat(dss_time, dim="time", join="override")
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
         return ds_final
+
+
+class Sen3LstCdseStacArdcAccessor(
+    Sen3CdseStacArdcAccessor, Sen3LstCdseStacItemAccessor
+):
+    """Provides methods for access multiple Sentinel-3 SLSTR Level-2 Land Surface
+    Temperature STAC Items from the CDSE STAC API and build an analysis ready
+    data cube."""
+
+    def get_open_data_params_schema(
+        self, data_id: str = None, opener_id: str = None
+    ) -> JsonObjectSchema:
+        return JsonObjectSchema(
+            properties=dict(
+                time_range=SCHEMA_TIME_RANGE,
+                bbox=SCHEMA_BBOX,
+                spatial_res=SCHEMA_SPATIAL_RES,
+                crs=SCHEMA_CRS,
+                query=SCHEMA_ADDITIONAL_QUERY,
+            ),
+            required=["time_range", "bbox", "spatial_res", "crs"],
+            additional_properties=False,
+        )
 
 
 def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
