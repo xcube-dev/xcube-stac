@@ -891,7 +891,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 741, 1482, 9, 18, 2, 1],
+            [4, 741, 1482, 9, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -903,7 +903,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 741, 1024, 9, 18, 2, 1],
+            [1, 741, 1482, 9, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -1001,7 +1001,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 741, 1482, 9, 18, 2, 1],
+            [4, 741, 1482, 9, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -1013,7 +1013,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 741, 1024, 9, 18, 2, 1],
+            [1, 741, 1482, 9, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],

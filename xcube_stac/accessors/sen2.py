@@ -36,8 +36,6 @@ import rioxarray
 import xarray as xr
 import xmltodict
 from xcube.core.chunk import chunk_dataset
-from xcube_resampling.gridmapping import GridMapping
-from xcube_resampling import resample_in_space
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import (
     JsonArraySchema,
@@ -47,6 +45,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
+from xcube_resampling import resample_in_space
 from xcube_resampling.utils import reproject_bbox
 from xcube_resampling.gridmapping import GridMapping
 
@@ -325,7 +324,10 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         target_gm = _get_angle_target_gm(ds)
         ds_angles = self.get_sen2_angles(item, ds)
         ds_angles = resample_in_space(
-            ds_angles, target_gm=target_gm, interp_methods="bilinear"
+            ds_angles,
+            target_gm=target_gm,
+            interp_methods="bilinear",
+            prevent_nan_propagations=True,
         )
         ds = _add_angles(ds, ds_angles)
         return ds
@@ -740,7 +742,10 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             ]
             ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
             ds_tile = resample_in_space(
-                ds_tile, target_gm=target_gm, interp_methods="bilinear"
+                ds_tile,
+                target_gm=target_gm,
+                interp_methods="bilinear",
+                prevent_nan_propagations=True,
             )
             ds_tile = ds_tile.chunk(dict(time=1))
             if len(idx_remove_dt) > 0:
@@ -912,27 +917,17 @@ def _get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
         is 5000 meters. This resolution is preserved in the resulting target grid
         mapping used during datacube generation.
     """
-    crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
     gm_final = GridMapping.from_dataset(ds_final)
-    x_coord, y_coord = gm_final.xy_var_names
-    if crs.is_geographic:
+    x_name, y_name = gm_final.xy_var_names
+    if gm_final.crs.is_geographic:
         y_res = 5000 / 111320
-        y_center = (ds_final[x_coord][0].item() + ds_final[x_coord][-1].item()) / 2
+        y_center = (ds_final[y_name][0].item() + ds_final[y_name][-1].item()) / 2
         x_res = 5000 / (111320 * np.cos(np.radians(y_center)))
     else:
         y_res = 5000
         x_res = 5000
 
-    bbox = [
-        ds_final[x_coord][0].item(),
-        ds_final[y_coord][0].item(),
-        ds_final[x_coord][-1].item(),
-        ds_final[y_coord][-1].item(),
-    ]
-    if bbox[3] < bbox[1]:
-        y_min, y_max = bbox[3], bbox[1]
-        bbox[1], bbox[3] = y_min, y_max
-    return GridMapping.regular_from_bbox(bbox, (x_res, y_res), crs)
+    return GridMapping.regular_from_bbox(gm_final.xy_bbox, (x_res, y_res), gm_final.crs)
 
 
 def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:

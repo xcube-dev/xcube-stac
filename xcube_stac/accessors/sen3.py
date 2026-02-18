@@ -266,11 +266,8 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                     asset_names=open_params.get("asset_names"),
                     apply_rectification=False,
                 )
-                ds["lat"] = ds.lat.compute()
-                ds["lon"] = ds.lon.compute()
-                ds = _clip_sen3_dataset(ds, bbox_latlon)
-                if any(size == 0 for size in ds.sizes.values()):
-                    continue
+                ds["lat"] = ds["lat"].persist()
+                ds["lon"] = ds["lon"].persist()
                 ds = rectify_dataset(ds, target_gm=target_gm)
                 if ds is None:
                     continue
@@ -316,30 +313,6 @@ def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
     grouped_items["time"].encoding["calendar"] = "standard"
 
     return grouped_items
-
-
-def _clip_sen3_dataset(ds: xr.Dataset, bbox: Sequence[float | int]):
-    mask = (
-        (ds.lon >= bbox[0])
-        & (ds.lon <= bbox[2])
-        & (ds.lat >= bbox[1])
-        & (ds.lat <= bbox[3])
-    )
-
-    # Find indices where mask is True
-    indices = np.where(mask)
-
-    if len(indices[0]) == 0:
-        return ds
-
-    # Now compute the minimal slice to clip
-    i_min, i_max = indices[0].min(), indices[0].max()
-    j_min, j_max = indices[1].min(), indices[1].max()
-
-    return ds.isel(
-        x=slice(j_min, j_max + 1),
-        y=slice(i_min, i_max + 1),
-    )
 
 
 def _filter_items_spatial(
