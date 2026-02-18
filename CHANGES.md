@@ -1,3 +1,8 @@
+## Changes in 1.2.0 (under devlopment)
+
+- Switched spatial resampling to the new `xcube_resampling` library,
+  replacing `xcube.core.resampling`.
+
 ## Changes in 1.1.2
 
 - Improved robustness of Sentinel-2 time series cube generation by fixing an issue

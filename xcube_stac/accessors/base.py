@@ -33,7 +33,6 @@ from xcube_stac.href_parse import decode_href
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
     list_assets_from_item,
-    normalize_grid_mapping,
     rename_dataset,
     update_dict,
 )
@@ -55,16 +54,11 @@ class BaseStacItemAccessor(StacItemAccessor):
     def open_asset(
         self, asset: pystac.Asset, **open_params
     ) -> xr.Dataset | MultiLevelDataset:
-        protocol, root, fs_path, storage_options = decode_href(asset.href)
+        protocol, root, fs_path = decode_href(asset.href)
         if protocol == "https":
             store = self._get_store(protocol, root=root)
         elif protocol == "s3":
-            storage_options = update_dict(
-                self._storage_options_s3,
-                storage_options,
-                inplace=False,
-            )
-            store = self._get_store(protocol, root=root, **storage_options)
+            store = self._get_store(protocol, root=root, **self._storage_options_s3)
         else:
             raise DataStoreError(
                 f"Neither 's3' nor 'https' could be derived from href {asset.href!r}."
@@ -169,7 +163,7 @@ class BaseStacItemAccessor(StacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
-        return normalize_grid_mapping(combined_ds)
+        return combined_ds
 
 
 class XcubeStacItemAccessor(BaseStacItemAccessor):

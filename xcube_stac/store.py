@@ -40,6 +40,7 @@ from xcube.core.store import (
     MultiLevelDatasetDescriptor,
 )
 from xcube.util.jsonschema import JsonObjectSchema, JsonStringSchema
+from xcube_resampling.utils import reproject_bbox
 
 from .accessors import guess_ardc_accessor, guess_item_accessor, list_ardc_data_ids
 from .accessors.base import XcubeStacItemAccessor
@@ -76,7 +77,6 @@ from .utils import (
     list_format_ids,
     list_protocols,
     modify_catalog_url,
-    reproject_bbox,
     search_collections,
     search_items,
     update_dict,

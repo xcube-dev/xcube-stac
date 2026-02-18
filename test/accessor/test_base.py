@@ -57,7 +57,7 @@ class BaseStacItemAccessorTest(unittest.TestCase):
         open_rasterio_mock.assert_called_once_with(
             "s3://bucket/data/my-image.tif",
             overview_level=None,
-            chunks={"x": 1024, "y": 1024},
+            chunks="auto",
             band_as_variable=True,
         )
 

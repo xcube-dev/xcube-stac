@@ -29,13 +29,15 @@ import rioxarray
 import shapely
 import xarray as xr
 from rasterio.errors import NotGeoreferencedWarning
-from xcube.core.resampling import rectify_dataset
+from xcube_resampling import rectify_dataset
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonBooleanSchema,
     JsonObjectSchema,
     JsonStringSchema,
 )
+from xcube_resampling.utils import reproject_bbox
+from xcube_resampling.gridmapping import GridMapping
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
@@ -48,10 +50,8 @@ from xcube_stac.constants import (
 )
 from xcube_stac.utils import (
     add_nominal_datetime,
-    get_gridmapping,
     list_assets_from_item,
     mosaic_spatial_take_first,
-    reproject_bbox,
 )
 
 _SENTINEL3_ASSETS = [
@@ -178,8 +178,6 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
 
         if open_params.get("apply_rectification", True):
             ds_item = rectify_dataset(ds_item)
-            # TODO: add georeferencing
-            # ds_item = normalize_grid_mapping(ds_item)
         return ds_item
 
     def get_open_data_params_schema(
@@ -220,7 +218,9 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         # strings, and the values are lists of corresponding item IDs.
         ds.attrs["stac_item_ids"] = dict(
             {
-                dt.astype("datetime64[ms]").astype("O").isoformat(): [
+                dt.astype("datetime64[ms]")
+                .astype("O")
+                .isoformat(): [
                     item.id for item in np.sum(grouped_items.sel(time=dt).values)
                 ]
                 for dt in grouped_items.time.values
@@ -247,7 +247,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         )
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
-        target_gm = get_gridmapping(
+        target_gm = GridMapping.regular_from_bbox(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
@@ -280,8 +280,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
             dss_time.append(mosaic_spatial_take_first(dss_spatial))
         ds_final = xr.concat(dss_time, dim="time", join="exact")
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
-        # TODO: add geo-referencing
-        # ds_final = normalize_grid_mapping(ds_final)
         return ds_final
 
 

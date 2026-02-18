@@ -34,6 +34,7 @@ from xcube.core.store import (
     new_data_store,
 )
 from xcube.util.jsonschema import JsonComplexSchema, JsonObjectSchema
+from xcube_resampling.utils import reproject_bbox
 
 # noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
@@ -45,7 +46,6 @@ from xcube_stac.constants import (
     DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
 )
-from xcube_stac.utils import reproject_bbox
 
 from .sampledata import (
     sentinel_2_band_data_10m,
@@ -299,13 +299,13 @@ class StacDataStoreTest(unittest.TestCase):
             opener_ids, store.get_data_opener_ids(data_type="mldataset")
         )
         opener_ids = (
-            "mldataset:geotiff:s3",
-            "dataset:geotiff:s3",
+            "mldataset:geotiff:https",
+            "dataset:geotiff:https",
         )
         self.assertCountEqual(
             opener_ids, store.get_data_opener_ids(data_id=self.data_id_nonsearchable)
         )
-        opener_ids = ("dataset:geotiff:s3",)
+        opener_ids = ("dataset:geotiff:https",)
         self.assertCountEqual(
             opener_ids,
             store.get_data_opener_ids(
@@ -448,7 +448,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
-            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+            [11264, 11264], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
         # open data where multiple assets are stored in one mldataset
@@ -462,7 +462,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
-            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+            [11264, 11264], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
     @pytest.mark.vcr()
@@ -636,7 +636,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 23, 23, 2, 12],
+            [10980, 10980, 22, 22, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
@@ -763,7 +763,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 11, 12, 2, 1],
+            [4, 759, 903, 10, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -775,7 +775,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 11, 12, 2, 1],
+            [1, 759, 903, 10, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -808,7 +808,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 11, 12, 2, 1],
+            [4, 759, 903, 10, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -820,7 +820,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 11, 12, 2, 1],
+            [1, 759, 903, 10, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -849,7 +849,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [2, 100, 100, 23, 23, 2, 1],
+            [2, 100, 100, 22, 22, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["x"],
@@ -861,7 +861,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 100, 100, 23, 23, 2, 1],
+            [1, 100, 100, 22, 22, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["x"][0],
@@ -891,7 +891,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 742, 1483, 10, 19, 2, 1],
+            [4, 741, 1482, 9, 18, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -903,7 +903,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 742, 1024, 10, 19, 2, 1],
+            [1, 741, 1024, 9, 18, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -959,7 +959,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 11, 12, 2, 1],
+            [4, 759, 903, 10, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -971,7 +971,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 11, 12, 2, 1],
+            [1, 759, 903, 10, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -1001,7 +1001,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 742, 1483, 10, 19, 2, 1],
+            [4, 741, 1482, 9, 18, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -1013,7 +1013,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 742, 1024, 10, 19, 2, 1],
+            [1, 741, 1024, 9, 18, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
