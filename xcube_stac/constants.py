@@ -54,6 +54,7 @@ TILE_SIZE = 2048
 LOG = logging.getLogger("xcube.stac")
 FloatInt = float | int
 CONVERSION_FACTOR_DEG_METER = 111320
+MEAN_EARTH_RADIUS = 6370997  # meter
 
 # constants for data access
 PROTOCOLS = ["https", "s3"]
