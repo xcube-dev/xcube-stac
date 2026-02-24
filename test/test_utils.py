@@ -44,7 +44,7 @@ from xcube_stac.utils import (
     list_assets_from_item,
     merge_datasets,
     mosaic_spatial_take_first,
-normalize_crs,
+    normalize_crs,
     rename_dataset,
     search_collections,
     search_nonsearchable_catalog,
@@ -428,7 +428,6 @@ class UtilsTest(unittest.TestCase):
         dic_expected = dict(a=1, d=1, b=dict(c=5, e=8))
         self.assertDictEqual(dic_expected, update_dict(dic, dic_update))
 
-
     def test_normalize_crs(self):
         crs_str = "EPSG:4326"
         crs_pyproj = pyproj.CRS.from_string(crs_str)
@@ -497,8 +496,6 @@ class UtilsTest(unittest.TestCase):
         ds_merged_expected["B02"] = ds3["B03"]
         ds_merged_expected["B03"] = ds3["B03"]
         xr.testing.assert_allclose(ds_merged_expected, ds_merged)
-
-
 
     @staticmethod
     def test_mosaic_spatial_take_first():

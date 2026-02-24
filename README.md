@@ -125,6 +125,7 @@ Currently, we support the following collections and data IDs:
 - [`sentinel-2-l1c`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l1c)
 - [`sentinel-2-l2a`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l2a)
 - [`sentinel-3-syn-2-syn-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-syn-2-syn-ntc)
+- [`sentinel-3-sl-2-lst-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-sl-2-lst-ntc)
 
 
 #### Special support for the [Planetary Computer STAC API](https://planetarycomputer.microsoft.com/)
@@ -132,6 +133,8 @@ Currently, we support the following collections and data IDs:
 Currently, we support the following collections and data IDs:
 
 - [`sentinel-2-l2a`](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a)
+- [`sentinel-3-synergy-syn-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-synergy-syn-l2-netcdf)
+- [`sentinel-3-slstr-lst-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-slstr-lst-l2-netcdf)
 
 ---
 
@@ -224,10 +227,16 @@ The following Jupyter notebooks provide some examples:
   access individual observation tiles and how to generate spatiotemporal 3d 
   analysis-ready data cubes from multiple STAC items.  
 * `example/notebooks/sentinel_3_cdse.ipynb`: This notebook shows an example of how to 
-  access Sentinel-3 Synergy Level-2 Land Surface Reflectance and Aerosol product 
-  using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows how to access individual observation tiles 
-  and how to generate spatiotemporal 3d analysis-ready data cubes from multiple STAC 
-  items. 
+  access Sentinel-3 Synergy Level-2 Land Surface Reflectance and Aerosol product and
+  the SLSTR Level-2 Land Surface Temperature using the [CDSE STAC API](https://documentation.dataspace.copernicus.eu/APIs/STAC.html). It shows 
+  how to access individual observation tiles and how to generate spatiotemporal 3d 
+  analysis-ready data cubes from multiple STAC items. 
+* `example/notebooks/sentinel_3_planetary_computer.ipynb`: This notebook shows an 
+  example of how to access Sentinel-3 Synergy Level-2 Land Surface Reflectance and 
+  Aerosol product and the SLSTR Level-2 Land Surface Temperature using the 
+  [Planetary Computer STAC API](planetarycomputer.microsoft.com). It shows how to access individual observation 
+  tiles and how to generate spatiotemporal 3d analysis-ready data cubes from multiple
+  STAC items. 
 * `example/notebooks/xcube_server_stac_s3.ipynb`:
   This notebook shows an example of how to open data sources published by xcube server
   via the STAC API.

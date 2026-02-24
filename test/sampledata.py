@@ -142,22 +142,22 @@ def sentinel_2_band_data_60m():
     return xr.Dataset(mock_data, coords=coords)
 
 
-def sentinel_3_data():
+def sentinel_3_syn_data():
     mock_data = {
         "SDR_Oa01": (
             ("band", "y", "x"),
-            da.ones((1, 4091, 4865), chunks=(1, 1023, 1217), dtype=np.float32),
+            da.ones((1, 1023, 1217), chunks=(1, 1023, 1217), dtype=np.float32),
         ),
         "SDR_Oa01_err": (
             ("band", "y", "x"),
-            da.ones((1, 4091, 4865), chunks=(1, 1023, 1217), dtype=np.float32),
+            da.ones((1, 1023, 1217), chunks=(1, 1023, 1217), dtype=np.float32),
         ),
     }
     coords = {
         "spatial_ref": np.array([0]),
         "band": np.array([0]),
-        "x": np.arange(4865),
-        "y": np.arange(4091),
+        "x": np.arange(1217),
+        "y": np.arange(1023),
     }
     ds = xr.Dataset(mock_data, coords=coords)
     ds["SDR_Oa01"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
@@ -165,24 +165,200 @@ def sentinel_3_data():
     return ds
 
 
-def sentinel_3_geolocation_data():
-    lon = da.linspace(0, 15, 4865, chunks=1217, dtype=np.float64)
-    lon *= da.linspace(0.5, 1.5, 4865, chunks=1217, dtype=np.float64)
-    lat = da.linspace(50, 60, 4091, chunks=1023, dtype=np.float64)
-    lat *= da.linspace(0.5, 1.5, 4091, chunks=1023, dtype=np.float64)
+def sentinel_3_syn_geolocation_data():
+    lon = da.linspace(0, 15, 1217, chunks=1217, dtype=np.float64)
+    lat = da.linspace(50, 60, 1023, chunks=1023, dtype=np.float64)
     lon, lat = da.meshgrid(lon, lat, indexing="xy")
+    lon /= da.cos(da.radians(lat))
+
+    # skew due to earth curvature
+    skew = 0.2
+    lon += skew * (lat - lat[0]) / (lat[-1] - lat[0])
+
+    # rotate image
+    rotation_deg = -25
+    theta = np.radians(rotation_deg)
+    lat0 = np.mean(lat)
+    lon0 = np.mean(lon)
+    x = lon - lon0
+    y = lat - lat0
+    x_rot = x * np.cos(theta) - y * np.sin(theta)
+    y_rot = x * np.sin(theta) + y * np.cos(theta)
+    lon_final = x_rot + lon0
+    lat_final = y_rot + lat0
+
     coords = {
         "spatial_ref": np.array([0]),
         "band": np.array([0]),
-        "x": np.arange(4865),
-        "y": np.arange(4091),
+        "x": np.arange(1217),
+        "y": np.arange(1023),
     }
     mock_data = {
-        "lon": (("band", "y", "x"), da.expand_dims(lon, axis=0)),
-        "lat": (("band", "y", "x"), da.expand_dims(lat, axis=0)),
+        "lon": (("band", "y", "x"), da.expand_dims(lon_final, axis=0)),
+        "lat": (("band", "y", "x"), da.expand_dims(lat_final, axis=0)),
     }
 
     ds = xr.Dataset(mock_data, coords=coords)
     ds["lon"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
     ds["lat"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    return ds
+
+
+def sentinel_3_lst_data():
+    mock_data = {
+        "LST": (
+            ("band", "y", "x"),
+            da.ones((1, 500, 500), chunks=(1, 500, 500), dtype=np.float32),
+        )
+    }
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(500),
+        "y": np.arange(500),
+    }
+    ds = xr.Dataset(mock_data, coords=coords)
+    ds["LST"].attrs = {
+        "_FillValue": -10000,
+        "scale_factor": 0.0001,
+        "add_offset": 273.32,
+    }
+    return ds
+
+
+def sentinel_3_lst_mask_data():
+    # Define bit positions like real Sentinel-3
+    flag_meanings = (
+        "coastline ocean tidal land inland_water unfilled spare spare "
+        "cosmetic duplicate day twilight sun_glint snow summary_cloud summary_pointing"
+    )
+    flag_masks = np.array(
+        [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768],
+        dtype=np.uint16,
+    )
+
+    unfilled_bit = 32
+    cloud_bit = 16384
+    pointing_bit = 32768
+
+    # Create flags array
+    data = np.zeros((1, 500, 500), dtype=np.uint16)
+    data[:, 0:150, 0:150] = unfilled_bit  # unfilled block
+    data[:, 150:300, 150:300] = cloud_bit  # cloud block
+    data[:, 300:450, 300:450] = pointing_bit  # bad pointing block
+    data[:, 450:500, 450:500] = (
+        cloud_bit | pointing_bit
+    )  # combined bits (priority test)
+    confidence_in = da.from_array(data, chunks=(1, 500, 500))
+
+    ds_flags = xr.Dataset(
+        {"confidence_in": (("band", "y", "x"), confidence_in)},
+        coords={
+            "band": [0],
+            "y": np.arange(500),
+            "x": np.arange(500),
+            "spatial_ref": 0,
+        },
+    )
+
+    ds_flags["confidence_in"].attrs = {
+        "flag_meanings": flag_meanings,
+        "flag_masks": flag_masks,
+    }
+
+    return ds_flags
+
+
+def sentinel_3_angles_data():
+    mock_data = {
+        "sat_azimuth_tn": (
+            ("band", "y", "x"),
+            da.ones((1, 500, 40), chunks=(1, 500, 40), dtype=np.float32),
+        ),
+        "sat_zenith_tn": (
+            ("band", "y", "x"),
+            da.ones((1, 500, 40), chunks=(1, 500, 40), dtype=np.float32),
+        ),
+    }
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(40),
+        "y": np.arange(500),
+    }
+    return xr.Dataset(mock_data, coords=coords)
+
+
+def sentinel_3_angles_geolocation_data():
+    lon = da.linspace(-2, 17, 40, chunks=40, dtype=np.float64)
+    lat = da.linspace(50, 60, 500, chunks=40, dtype=np.float64)
+    lon, lat = da.meshgrid(lon, lat, indexing="xy")
+    lon /= da.cos(da.radians(lat))
+
+    # skew due to earth curvature
+    skew = 0.2
+    lon += skew * (lat - lat[0]) / (lat[-1] - lat[0])
+
+    # rotate image
+    rotation_deg = -25
+    theta = np.radians(rotation_deg)
+    lat0 = np.mean(lat)
+    lon0 = np.mean(lon)
+    x = lon - lon0
+    y = lat - lat0
+    x_rot = x * np.cos(theta) - y * np.sin(theta)
+    lon_final = x_rot + lon0
+
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(40),
+        "y": np.arange(500),
+    }
+    mock_data = {
+        "longitude_tx": (("band", "y", "x"), da.expand_dims(lon_final, axis=0)),
+    }
+
+    return xr.Dataset(mock_data, coords=coords)
+
+
+def sentinel_3_lst_geolocation_data():
+    lon = da.linspace(0, 15, 500, chunks=500, dtype=np.float64)
+    lat = da.linspace(50, 60, 500, chunks=500, dtype=np.float64)
+    lon, lat = da.meshgrid(lon, lat, indexing="xy")
+    lon /= da.cos(da.radians(lat))
+
+    # skew due to earth curvature
+    skew = 0.2
+    lon += skew * (lat - lat[0]) / (lat[-1] - lat[0])
+
+    # rotate image
+    rotation_deg = -25
+    theta = np.radians(rotation_deg)
+    lat0 = np.mean(lat)
+    lon0 = np.mean(lon)
+    x = lon - lon0
+    y = lat - lat0
+    x_rot = x * np.cos(theta) - y * np.sin(theta)
+    y_rot = x * np.sin(theta) + y * np.cos(theta)
+    lon_final = x_rot + lon0
+    lat_final = y_rot + lat0
+
+    coords = {
+        "spatial_ref": np.array([0]),
+        "band": np.array([0]),
+        "x": np.arange(500),
+        "y": np.arange(500),
+    }
+    elev = da.linspace(0, 1000, 500**2).reshape((500, 500))
+    mock_data = {
+        "longitude_in": (("band", "y", "x"), da.expand_dims(lon_final, axis=0)),
+        "latitude_in": (("band", "y", "x"), da.expand_dims(lat_final, axis=0)),
+        "elevation_in": (("band", "y", "x"), da.expand_dims(elev, axis=0)),
+    }
+
+    ds = xr.Dataset(mock_data, coords=coords)
+    ds["longitude_in"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    ds["latitude_in"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
+    ds["elevation_in"].attrs = {"_FillValue": -9999, "scale_factor": 1.0}
     return ds

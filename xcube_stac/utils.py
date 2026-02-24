@@ -37,9 +37,10 @@ import pystac_client
 import requests
 import xarray as xr
 from shapely.geometry import box
-from xcube_resampling.gridmapping import GridMapping
-from xcube_resampling import affine_transform_dataset
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
+from xcube_resampling import affine_transform_dataset
+from xcube_resampling.constants import FillValues
+from xcube_resampling.gridmapping import GridMapping
 
 from .constants import (
     LOG,
@@ -627,7 +628,9 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
 
 
 def merge_datasets(
-    datasets: list[xr.Dataset], target_gm: GridMapping = None
+    datasets: list[xr.Dataset],
+    target_gm: GridMapping = None,
+    fill_values: FillValues = None,
 ) -> xr.Dataset:
     """Merges a list of datasets into a single dataset, optionally resampling
     to a target grid mapping.
@@ -641,6 +644,7 @@ def merge_datasets(
         target_gm: Optional `GridMapping` to which all datasets will be resampled.
                    If not provided, the grid mapping from the dataset with the
                    highest resolution (smallest x spacing) is used.
+        fill_values: fill values propagated to xcube_resampling.affine_transform
 
     Returns:
         A single dataset resulting from merging all input datasets,
@@ -671,7 +675,11 @@ def merge_datasets(
                 )
         datasets_resampled = []
         for ds in datasets_grouped:
-            datasets_resampled.append(affine_transform_dataset(ds, target_gm=target_gm))
+            datasets_resampled.append(
+                affine_transform_dataset(
+                    ds, target_gm=target_gm, fill_values=fill_values
+                )
+            )
         ds = _update_datasets(datasets_resampled)
     return ds
 
@@ -691,7 +699,7 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], fill_value: int | float = np.nan
+    list_ds: list[xr.Dataset], fill_value: dict | int | float = np.nan
 ) -> xr.Dataset:
     """Creates a spatial mosaic from a list of datasets by taking the first
     non-fill value encountered across datasets at each pixel location.
@@ -703,7 +711,9 @@ def mosaic_spatial_take_first(
 
     Args:
         list_ds: A list of datasets to be mosaicked.
-        fill_value: The value considered as missing data. Defaults to NaN.
+        fill_value: The value considered as missing data. Can be a mapping from
+            variable name to fill_value, where defaults to NaN if variable name not
+            specified. Defaults to NaN.
 
     Returns:
         A new dataset representing the mosaicked result, using the first valid
@@ -712,21 +722,26 @@ def mosaic_spatial_take_first(
     if len(list_ds) == 1:
         return list_ds[0]
 
-    ds_mosaic = xr.Dataset()
+    ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
     for key in list_ds[0]:
         # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
         if list_ds[0][key].ndim >= 2:
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            if np.isnan(fill_value):
+            if isinstance(fill_value, dict):
+                array_fv = fill_value.get(key, np.nan)
+            else:
+                array_fv = fill_value
+            if np.isnan(array_fv):
                 nonnan_mask = ~da.isnan(da_arr)
             else:
-                nonnan_mask = da_arr != fill_value
+                nonnan_mask = da_arr != array_fv
             first_non_nan_index = nonnan_mask.argmax(axis=0)
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
                 da_arr_select,
                 dims=list_ds[0][key].dims,
                 coords=list_ds[0][key].coords,
+                attrs=list_ds[0][key].attrs,
             )
 
     return ds_mosaic

@@ -1,5 +1,5 @@
-from xcube.core.store import new_data_store
 import matplotlib.pyplot as plt
+from xcube.core.store import new_data_store
 
 store = new_data_store("stac-pc")
 descriptors = list(

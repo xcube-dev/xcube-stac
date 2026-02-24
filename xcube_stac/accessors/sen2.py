@@ -46,8 +46,8 @@ from xcube.util.jsonschema import (
     JsonStringSchema,
 )
 from xcube_resampling import resample_in_space
-from xcube_resampling.utils import reproject_bbox
 from xcube_resampling.gridmapping import GridMapping
+from xcube_resampling.utils import reproject_bbox
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
@@ -62,8 +62,8 @@ from xcube_stac.constants import (
 )
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
-    add_nominal_datetime,
     _get_tile_size,
+    add_nominal_datetime,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
@@ -288,8 +288,12 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         if apply_scaling:
             raster_version = get_stac_extension(item)
             dss = [
-                apply_offset_scaling(ds, asset, raster_version)
-                for (ds, asset) in zip(dss, assets)
+                (
+                    apply_offset_scaling(ds, asset, raster_version)
+                    if "SCL" not in asset.title
+                    else ds
+                )
+                for ds, asset in zip(dss, assets)
             ]
         if "spatial_res" in open_params:
             target_gm = GridMapping.regular_from_bbox(
@@ -298,9 +302,9 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 crs=assets[0].extra_fields["proj:code"],
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
-            ds = merge_datasets(dss, target_gm=target_gm)
+            ds = merge_datasets(dss, target_gm=target_gm, fill_values={"SCL": 0})
         else:
-            ds = merge_datasets(dss)
+            ds = merge_datasets(dss, fill_values={"SCL": 0})
         return ds
 
     def _add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
@@ -509,7 +513,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             if not multi_tiles:
                 idx_remove_dt.append(dt_idx)
                 continue
-            dss.append(mosaic_spatial_take_first(multi_tiles))
+            dss.append(mosaic_spatial_take_first(multi_tiles, fill_value={"SCL": 0}))
         ds_final = xr.concat(dss, dim="time", join="override")
         np_datetimes_sel = [
             value
@@ -681,7 +685,9 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                     multi_tiles.append(ds)
                 if not multi_tiles:
                     continue
-                mosaicked_ds = mosaic_spatial_take_first(multi_tiles)
+                mosaicked_ds = mosaic_spatial_take_first(
+                    multi_tiles, fill_value={"SCL": 0}
+                )
                 if final_ds is None:
                     final_ds = _create_empty_dataset(
                         mosaicked_ds,
@@ -1337,9 +1343,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
     resampled_list_ds = []
     for ds in list_ds_utm:
         resampled_list_ds.append(
-            resample_in_space(ds, target_gm=target_gm, prevent_nan_propagations=True)
+            resample_in_space(
+                ds,
+                target_gm=target_gm,
+                fill_values={"SCL": 0},
+                prevent_nan_propagations=True,
+            )
         )
-    return mosaic_spatial_take_first(resampled_list_ds)
+    return mosaic_spatial_take_first(resampled_list_ds, fill_value={"SCL": 0})
 
 
 def _fill_nan_slices(

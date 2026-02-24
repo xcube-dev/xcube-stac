@@ -23,10 +23,7 @@ import unittest
 
 from xcube.core.store import DataStoreError
 
-from xcube_stac.href_parse import (
-    assert_aws_s3_bucket,
-    decode_href,
-)
+from xcube_stac.href_parse import assert_aws_s3_bucket, decode_href
 
 
 class HrefParseTest(unittest.TestCase):
@@ -74,7 +71,6 @@ class HrefParseTest(unittest.TestCase):
             "download.geoservice.dlr.de",
             "sentinel2l2a01.blob.core.windows.net",
         ]
-        storage_options_region = dict(client_kwargs=dict(region_name="us-east-1"))
         expected_returns = [
             ("https", "s3.amazonaws.com", "bucket-name/filename"),
             ("s3", "bucket-name", "filename"),

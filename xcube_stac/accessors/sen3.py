@@ -18,42 +18,45 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import warnings
-from collections.abc import Sequence
+from collections import defaultdict
 
+import dask.array as da
 import numpy as np
+import planetary_computer
 import pystac
 import rasterio.session
 import rioxarray
-import planetary_computer
 import xarray as xr
-from scipy.interpolate import griddata
 from rasterio.errors import NotGeoreferencedWarning
-from xcube_resampling import rectify_dataset
+from scipy.interpolate import interp1d
 from xcube.util.jsonschema import (
     JsonArraySchema,
     JsonBooleanSchema,
     JsonObjectSchema,
     JsonStringSchema,
 )
+from xcube_resampling import rectify_dataset
 from xcube_resampling.gridmapping import GridMapping
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
+    MEAN_EARTH_RADIUS,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
-    MEAN_EARTH_RADIUS,
 )
 from xcube_stac.utils import (
     add_nominal_datetime,
     list_assets_from_item,
     mosaic_spatial_take_first,
 )
+
+warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
+
 
 _SENTINEL3_SYN_CDSE_ASSETS = [
     "syn_S1N_reflectance",
@@ -99,6 +102,16 @@ _SCHEMA_APPLY_GEO_ORTHORECTIFICATION = JsonBooleanSchema(
     ),
     default=True,
 )
+_SCHEMA_ADD_MASK = JsonBooleanSchema(
+    title="Add mask",
+    description=(
+        "If True, a confidence mask is generated from the product's quality flags. "
+        "The mask is derived from the 'confidence_in' variable by extracting "
+        "the 'summary_cloud', 'unfilled', and 'summary_pointing' bit and "
+        "converting it into a integer mask."
+    ),
+    default=True,
+)
 _SCHEMA_CDSE_ASSET_NAMES = JsonArraySchema(
     items=(JsonStringSchema(min_length=1, enum=_SENTINEL3_SYN_CDSE_ASSETS)),
     unique_items=True,
@@ -139,54 +152,35 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         # when plotting or writing the data
         self.env = self.env.__enter__()
 
-        warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
-
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
-        ds = rioxarray.open_rasterio(
-            asset.href,
-            chunks="auto",
-            band_as_variable=True,
-            driver="netCDF",
-        )
-        ds = ds.squeeze()
-        ds = ds.drop_vars(["band", "x", "y", "spatial_ref"])
-        if asset.href.endswith("geolocation.nc"):
-            ds_final = xr.Dataset()
-            ds_final.attrs = ds.attrs
-            for var_name in ["lon", "lat"]:
-                array = ds[var_name]
-                array = array.where(array != array.attrs["_FillValue"])
-                array *= array.attrs["scale_factor"]
-                ds_final[var_name] = array
-            return ds_final
+        return rioxarray.open_rasterio(asset.href, chunks={}, driver="netCDF").squeeze()
+
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+        asset_names = open_params.get("asset_names", self._asset_names)
+        assets = list_assets_from_item(item, asset_names=asset_names)
+        ds = None
+        for asset in assets:
+            ds_asset = self.open_asset(asset, **open_params)
+            if ds is None:
+                ds = ds_asset
+            else:
+                ds.update(ds_asset)
         var_names = list(ds.data_vars)
         if not open_params.get("add_error_bands", True):
             var_names = [
                 var_name for var_name in var_names if not var_name.endswith("_err")
             ]
             ds = ds[var_names]
-        for var_name in var_names:
-            ds[var_name] = ds[var_name].where(
-                ds[var_name] != ds[var_name].attrs["_FillValue"]
-            )
-            ds[var_name] *= ds[var_name].attrs["scale_factor"]
-        return ds
+        ds = _apply_scaling(ds)
 
-    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
-        coords = dict()
-        ds = self.open_asset(item.assets["geolocation"])
-        coords["lon"] = ds["lon"]
-        coords["lat"] = ds["lat"]
-        ds_item = xr.Dataset(coords=coords, attrs=ds.attrs)
-        asset_names = open_params.get("asset_names", self._asset_names)
-        assets = list_assets_from_item(item, asset_names=asset_names)
-        for asset in assets:
-            ds = self.open_asset(asset, **open_params)
-            ds_item.update(ds)
+        geo = self.open_asset(item.assets["geolocation"])
+        geo = _apply_scaling(geo[["lon", "lat"]])
+        ds = ds.assign_coords(dict(lat=geo["lat"], lon=geo["lon"]))
 
+        ds = ds.drop_vars(["band", "x", "y", "spatial_ref"])
         if open_params.get("apply_rectification", True):
-            ds_item = rectify_dataset(ds_item)
-        return ds_item
+            ds = rectify_dataset(ds, prevent_nan_propagations=True)
+        return ds
 
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
@@ -213,6 +207,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         self._geo_asset = "geodetic_in"
         self._angles = "geometry_tn"
         self._angles_geo = "geodetic_tx"
+        self._flags = "flags_in"
 
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
         ds = rioxarray.open_rasterio(
@@ -228,10 +223,11 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         # get LST data
         ds = self.open_asset(item.assets[self._lst_asset])
-        ds = ds[["LST"]]
+        ds = _apply_scaling(ds[["LST"]])
 
         # get geolocation
         geo = self.open_asset(item.assets[self._geo_asset])
+        geo = _apply_scaling(geo[["latitude_in", "longitude_in", "elevation_in"]])
         ds = ds.assign_coords(
             dict(
                 lat=geo["latitude_in"],
@@ -241,17 +237,18 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         )
         if open_params.get("apply_geo_orthorectification", True):
             angles = self.open_asset(item.assets[self._angles])
+            angles = angles[["sat_azimuth_tn", "sat_zenith_tn"]]
             angles_geo = self.open_asset(item.assets[self._angles_geo])
-            ds = orthorectify_geolocation(
-                ds,
-                angles_geo["latitude_tx"],
-                angles_geo["longitude_tx"],
-                angles["sat_zenith_tn"],
-                angles["sat_azimuth_tn"],
-            )
-        ds = ds.drop_vars(("x", "y", "band", "spatial_ref"))
+            angles = angles.assign_coords(dict(lon=angles_geo["longitude_tx"]))
+            ds = orthorectify_geolocation(ds, angles)
+        if open_params.get("add_mask", True):
+            ds_flags = self.open_asset(item.assets[self._flags])
+            ds = _add_mask(ds_flags, ds)
+        ds = ds.drop_vars(("x", "y", "band", "spatial_ref", "elev"), errors="ignore")
         if open_params.get("apply_rectification", True):
-            ds = rectify_dataset(ds)
+            ds = rectify_dataset(
+                ds, fill_values={"mask": 0}, prevent_nan_propagations=True
+            )
         return ds
 
     def get_open_data_params_schema(
@@ -261,6 +258,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             properties=dict(
                 apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
                 apply_geo_orthorectification=_SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
+                add_mask=_SCHEMA_ADD_MASK,
             ),
             required=[],
             additional_properties=True,
@@ -271,9 +269,12 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
     """Provides methods for access multiple Sentinel-3 STAC Items from the
     CDSE STAC API and build an analysis ready data cube."""
 
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        super().__init__(catalog, **storage_options_s3)
+
     def open_ardc(
         self,
-        items: Sequence[pystac.Item],
+        items: list[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
 
@@ -334,16 +335,24 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                     asset_names=open_params.get("asset_names"),
                     apply_rectification=False,
                 )
-                ds = rectify_dataset(ds, target_gm=target_gm)
+                ds = rectify_dataset(
+                    ds,
+                    target_gm=target_gm,
+                    fill_values={"mask": 0},
+                    prevent_nan_propagations=True,
+                )
                 if ds is None:
                     continue
                 dss_spatial.append(ds)
             if not dss_spatial:
                 continue
-            dss_time.append(mosaic_spatial_take_first(dss_spatial))
+            dss_time.append(self._mosaic_spatial(dss_spatial))
         ds_final = xr.concat(dss_time, dim="time", join="override")
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
         return ds_final
+
+    def _mosaic_spatial(self, list_ds: list[xr.Dataset]) -> xr.Dataset:
+        return mosaic_spatial_take_first(list_ds)
 
 
 class Sen3LstCdseStacArdcAccessor(
@@ -352,6 +361,9 @@ class Sen3LstCdseStacArdcAccessor(
     """Provides methods for access multiple Sentinel-3 SLSTR Level-2 Land Surface
     Temperature STAC Items from the CDSE STAC API and build an analysis ready
     data cube."""
+
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        super().__init__(catalog, **storage_options_s3)
 
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
@@ -368,6 +380,39 @@ class Sen3LstCdseStacArdcAccessor(
             additional_properties=False,
         )
 
+    def _mosaic_spatial(self, list_ds: list[xr.Dataset]) -> xr.Dataset:
+        if len(list_ds) == 1:
+            return list_ds[0]
+
+        ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
+
+        # get indices based on mask
+        da_mask = da.stack([ds["mask"].data for ds in list_ds], axis=0)
+        valid_mask = da_mask == 1
+        first_valid_index = valid_mask.argmax(axis=0)
+
+        # apply to data variable mask
+        da_arr_select = da.choose(first_valid_index, da_mask)
+        ds_mosaic["mask"] = xr.DataArray(
+            da_arr_select,
+            dims=list_ds[0]["mask"].dims,
+            coords=list_ds[0]["mask"].coords,
+            attrs=list_ds[0]["mask"].attrs,
+        )
+
+        # apply to LST
+        da_lst = da.stack([ds["LST"].data for ds in list_ds], axis=0)
+        lst_mask = da.concatenate((valid_mask, ~da.isnan(da_lst)), axis=0)
+        first_lst_index = lst_mask.argmax(axis=0) % da_lst.shape[0]
+        lst_select = da.choose(first_lst_index, da_lst)
+        ds_mosaic["LST"] = xr.DataArray(
+            lst_select,
+            dims=list_ds[0]["LST"].dims,
+            coords=list_ds[0]["LST"].coords,
+            attrs=list_ds[0]["LST"].attrs,
+        )
+        return ds_mosaic
+
 
 class Sen3PlanetaryComputerStacItemAccessor(Sen3CdseStacItemAccessor):
     """Provides methods for accessing the data of a Planetary Computer
@@ -378,7 +423,6 @@ class Sen3PlanetaryComputerStacItemAccessor(Sen3CdseStacItemAccessor):
         self._catalog = catalog
         self._asset_names = _SENTINEL3_SYN_PC_ASSETS
         self._asset_names_schema = _SCHEMA_PC_ASSET_NAMES
-        warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         if not self._is_pc_signed(item):
@@ -406,6 +450,7 @@ class Sen3LstPlanetaryComputerStacItemAccessor(
         self._geo_asset = "slstr-geodetic-in"
         self._angles = "slstr-geometry-tn"
         self._angles_geo = "slstr-geodetic-tx"
+        self._flags = "slstr-flags-in"
 
 
 class Sen3PlanetaryComputerStacArdcAccessor(
@@ -422,144 +467,168 @@ class Sen3LstPlanetaryComputerStacArdcAccessor(
     Planetary Computer STAC API and build an analysis ready data cube."""
 
 
-def _group_items(items: Sequence[pystac.Item]) -> xr.DataArray:
+def _group_items(items: list[pystac.Item]) -> xr.DataArray:
     items = add_nominal_datetime(items)
 
-    # get dates and tile IDs of the items
-    dates = []
+    groups = defaultdict(list)
+
     for item in items:
-        dates.append(item.properties["datetime_nominal"].date())
-    dates = np.unique(dates)
+        dt = item.properties["datetime_nominal"]
+        date = dt.date()
+        orbit = item.properties["sat:orbit_state"]
 
-    # sort items by date and tile ID into a data array
-    grouped_items = np.full(len(dates), None, dtype=object)
-    for idx, item in enumerate(items):
-        date = item.properties["datetime_nominal"].date()
-        idx_date = np.where(dates == date)[0][0]
-        if grouped_items[idx_date] is None:
-            grouped_items[idx_date] = [item]
-        else:
-            grouped_items[idx_date].append(item)
+        key = (date, orbit)
+        groups[key].append(item)
 
-    grouped_items = xr.DataArray(grouped_items, dims=("time",), coords=dict(time=dates))
+    # Sort keys chronologically and descending before ascending
+    orbit_order = {"descending": 0, "ascending": 1}
+    sorted_keys = sorted(groups.keys(), key=lambda k: (k[0], orbit_order[k[1]]))
 
-    # replace date by datetime from first item
-    dts = []
-    for date in grouped_items.time.values:
-        item = np.sum(grouped_items.sel(time=date).values)[0]
-        dts.append(item.datetime.replace(tzinfo=None))
-    grouped_items = grouped_items.assign_coords(
-        time=np.array(dts, dtype="datetime64[ns]")
+    grouped_items = np.empty(len(sorted_keys), dtype=object)
+    for i, k in enumerate(sorted_keys):
+        grouped_items[i] = groups[k]
+
+    # Mean timestamp per group
+    dts = np.empty(len(grouped_items), dtype="datetime64[ns]")
+    for i, items in enumerate(grouped_items):
+        times = np.array(
+            [np.datetime64(item.datetime.replace(tzinfo=None)) for item in items]
+        )
+        mean_time = np.datetime64(int(times.view("int64").mean()), "us")
+        dts[i] = mean_time.astype("datetime64[ns]")
+
+    da = xr.DataArray(
+        grouped_items,
+        dims=("time",),
+        coords=dict(time=np.array(dts, dtype="datetime64[ns]")),
     )
-    grouped_items["time"].encoding["units"] = "seconds since 1970-01-01"
-    grouped_items["time"].encoding["calendar"] = "standard"
 
-    return grouped_items
+    da["time"].encoding["units"] = "seconds since 1970-01-01"
+    da["time"].encoding["calendar"] = "standard"
+
+    return da
 
 
 def orthorectify_geolocation(
     dataset: xr.Dataset,
-    lat: xr.DataArray,
-    lon: xr.DataArray,
-    sat_zenith: xr.DataArray,
-    sat_azimuth: xr.DataArray,
+    angles: xr.Dataset,
 ) -> xr.Dataset:
     """
     Apply terrain-induced parallax correction to satellite geolocation coordinates.
 
-    Args:
-        dataset: Dataset containing geolocation coordinates to be corrected. Must
-            include `latitude` and `longitude` coordinates.
-        elev: Surface elevation in meters above the reference ellipsoid or sphere.
-        lat: Latitude values defining the source grid for satellite angle variables.
-        lon: Longitude values defining the source grid for satellite angle variables.
-        sat_zenith: Viewing zenith angle in degrees.
-        sat_azimuth: Viewing azimuth angle in degrees. Sentinel-3 convention is
-            clockwise from North.
-
-    Returns:
-        A new dataset with corrected `latitude` and `longitude` coordinates.
-
     Notes:
-    This function adjusts latitude and longitude coordinates in the input dataset to
-    compensate for horizontal displacement effects caused by viewing elevated terrain
-    from an oblique angle. The correction accounts for local surface height and
-    satellite viewing geometry, estimating the apparent pixel shift under the
-    assumption of a spherical Earth.
-
-    Satellite zenith and azimuth angles are first interpolated from their native
-    grid to the geolocation grid of the dataset using `scipy.interpolate.griddata`.
-    Displacements are computed in radians and then applied to produce corrected
-    latitude and longitude coordinates.
-
     The following assumptions are made:
 
         - Assumes a spherical Earth with a fixed radius of 6,370,997 meters.
         - Atmospheric refraction and ellipsoidal geometry effects are not considered.
         - Accuracy may degrade near the poles where `cos(latitude) → 0`.
     """
-    # load coordinates and elevation of dataset
-    ds_lat = dataset.lat
-    ds_lat = ds_lat.where(ds_lat != ds_lat.attrs["_FillValue"], np.nan)
-    ds_lat *= ds_lat.attrs["scale_factor"]
-    ds_lat = ds_lat.values
-    ds_lon = dataset.lon
-    ds_lon = ds_lon.where(ds_lon != ds_lon.attrs["_FillValue"], np.nan)
-    ds_lon *= ds_lon.attrs["scale_factor"]
-    ds_lon = ds_lon.values
-    elev = dataset.elev
-    elev = elev.where(elev != elev.attrs["_FillValue"], np.nan)
-    elev *= elev.attrs["scale_factor"]
-    elev = elev.values
 
-    # interpolate satellite zenith and azimuth angle
-    def _interpolate(
-        angle: np.ndarray,
-        lat_source: np.ndarray,
-        lon_source: np.ndarray,
-        lat_target: np.ndarray,
-        lon_target: np.ndarray,
-    ) -> np.ndarray:
-        pts_source = np.stack([lat_source.ravel(), lon_source.ravel()], axis=-1)
-        pts_target = np.stack([lat_target.ravel(), lon_target.ravel()], axis=-1)
-        angle_interp = np.asarray(
-            griddata(pts_source, angle.ravel(), pts_target, method="linear")
-        )
-
-        # Identify NaNs (outside convex hull)
-        mask = np.isnan(angle_interp)
-        if np.any(mask):
-            # Second pass: nearest fill for NaNs only
-            angle_interp[mask] = griddata(
-                pts_source, angle.ravel(), pts_target[mask], method="nearest"
+    def _interp_rowwise(lon_t, lon_s, angle_s):
+        out = np.empty_like(lon_t)
+        for i in range(lon_s.shape[0]):
+            f = interp1d(
+                lon_s[i, :],
+                angle_s[i, :],
+                kind="linear",
+                bounds_error=False,
+                fill_value="extrapolate",
             )
+            out[i, :] = f(lon_t[i, :])
+        return out
 
-        return angle_interp.reshape(lat_target.shape)
+    ds_lat = dataset.lat.data.rechunk((100, -1))
+    ds_lon = dataset.lon.data.rechunk((100, -1))
+    elev = dataset.elev.fillna(0).data.rechunk((100, -1))
+    sat_zenith = angles.sat_zenith_tn.data.rechunk((100, -1))
+    sat_azimuth = angles.sat_azimuth_tn.data.rechunk((100, -1))
+    angles_lon = angles.lon.data.rechunk((100, -1))
 
-    sat_zenith_interp = _interpolate(
-        sat_zenith.values, lat.values, lon.values, ds_lat, ds_lon
+    sat_zenith_interp = da.map_blocks(
+        _interp_rowwise,
+        ds_lon,
+        angles_lon,
+        sat_zenith,
+        dtype=ds_lon.dtype,
+        chunks=ds_lon.chunks,
     )
-    sat_azimuth_interp = _interpolate(
-        sat_azimuth.values, lat.values, lon.values, ds_lat, ds_lon
+    sat_azimuth_interp = da.map_blocks(
+        _interp_rowwise,
+        ds_lon,
+        angles_lon,
+        sat_azimuth,
+        dtype=ds_lon.dtype,
+        chunks=ds_lon.chunks,
     )
 
-    # Convert everything to rad
     phi_true = np.deg2rad(ds_lat)
     theta_v = np.deg2rad(sat_zenith_interp)
     phi_v = np.deg2rad(sat_azimuth_interp)
 
-    # Horizontal displacement
+    # Parallax correction
     t = elev * np.tan(theta_v)
     delta_phi = t * np.cos(phi_v) / MEAN_EARTH_RADIUS
     delta_lam = t * np.sin(phi_v) / (MEAN_EARTH_RADIUS * np.cos(phi_true))
 
-    # convert back to degree
     lat_diff = np.rad2deg(delta_phi)
     lon_diff = np.rad2deg(delta_lam)
 
-    return dataset.assign_coords(
-        dict(
-            latitude=(dataset.latitude.dims, ds_lat - lat_diff),
-            longitude=(dataset.latitude.dims, ds_lon - lon_diff),
-        )
+    final_lat = xr.DataArray(
+        (ds_lat - lat_diff).rechunk(dataset.lat.chunks),
+        dims=dataset.lat.dims,
+        attrs=dataset.lat.attrs,
     )
+    final_lon = xr.DataArray(
+        (ds_lon - lon_diff).rechunk(dataset.lon.chunks),
+        dims=dataset.lon.dims,
+        attrs=dataset.lon.attrs,
+    )
+    return dataset.assign_coords(lat=final_lat, lon=final_lon)
+
+
+def _apply_scaling(ds: xr.Dataset) -> xr.Dataset:
+    ds_out = ds.copy()
+    for var, array in ds_out.data_vars.items():
+        fill_value = array.attrs.get("_FillValue")
+        if fill_value is not None:
+            ds_out[var] = array.where(array != fill_value, np.nan)
+        scale_factor = array.attrs.get("scale_factor")
+        if scale_factor is not None:
+            ds_out[var] = ds_out[var] * scale_factor
+        offset = array.attrs.get("add_offset")
+        if offset is not None:
+            ds_out[var] = ds_out[var] + offset
+
+    return ds_out
+
+
+def _add_mask(ds_flags: xr.Dataset, ds: xr.Dataset) -> xr.Dataset:
+    # resolve bit mask
+    flags = ds_flags.confidence_in
+    meanings = flags.attrs["flag_meanings"].split()
+    masks = flags.attrs["flag_masks"]
+
+    cloud_bit = int(masks[meanings.index("summary_cloud")])
+    unfilled_bit = int(masks[meanings.index("unfilled")])
+    pointing_bit = int(masks[meanings.index("summary_pointing")])
+
+    # Initialize mask: default 1 = valid
+    mask = xr.ones_like(flags, dtype=np.uint8)
+
+    # Assign categories
+    mask = mask.where((flags & unfilled_bit) == 0, 0)
+    mask = mask.where((flags & cloud_bit) == 0, 2)
+    mask = mask.where((flags & pointing_bit) == 0, 3)
+
+    # Assign to dataset
+    ds["mask"] = mask
+    ds["mask"].attrs = {
+        "flag_values": [0, 1, 2, 3],
+        "flag_meanings": "unfilled valid cloud bad_pointing",
+        "history": (
+            "Derived from 'confidence_in' flags by mapping 'unfilled', "
+            "'summary_cloud', and 'summary_pointing' to categorical mask."
+        ),
+    }
+
+    return ds
