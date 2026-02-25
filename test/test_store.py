@@ -767,7 +767,6 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
 
-    @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
     def test_open_data_pc_sen3_lst_rect(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
