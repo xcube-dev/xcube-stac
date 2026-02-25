@@ -700,7 +700,7 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], fill_values: dict | int | float = np.nan
+    list_ds: list[xr.Dataset], var_ref: str, fill_value: int | float
 ) -> xr.Dataset:
     """Creates a spatial mosaic from a list of datasets by taking the first
     non-fill value encountered across datasets at each pixel location.
@@ -712,9 +712,8 @@ def mosaic_spatial_take_first(
 
     Args:
         list_ds: A list of datasets to be mosaicked.
-        fill_values: The value considered as missing data. Can be a mapping from
-            variable name to fill_value, where defaults to NaN if variable name not
-            specified. Defaults to NaN.
+        var_ref: reference variable used for the index selection
+        fill_value: The value considered as missing data in the reference variable
 
     Returns:
         A new dataset representing the mosaicked result, using the first valid
@@ -723,17 +722,18 @@ def mosaic_spatial_take_first(
     if len(list_ds) == 1:
         return list_ds[0]
 
+    arr_ref = da.stack([ds[var_ref].data for ds in list_ds], axis=0)
+    if np.isnan(fill_value):
+        nonnan_mask = ~da.isnan(arr_ref)
+    else:
+        nonnan_mask = arr_ref != fill_value
+    first_non_nan_index = nonnan_mask.argmax(axis=0)
+
     ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
     for key in list_ds[0]:
         # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
         if list_ds[0][key].ndim >= 2:
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            fill_value = _get_fill_value(fill_values, key, list_ds[0][key])
-            if np.isnan(fill_value):
-                nonnan_mask = ~da.isnan(da_arr)
-            else:
-                nonnan_mask = da_arr != fill_value
-            first_non_nan_index = nonnan_mask.argmax(axis=0)
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
                 da_arr_select,
