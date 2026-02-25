@@ -39,8 +39,6 @@ from xcube_stac.utils import (
     do_bboxes_intersect,
     get_format_from_path,
     get_format_id,
-    get_grid_mapping_name,
-    get_spatial_dims,
     is_collection_in_time_range,
     is_item_in_time_range,
     list_assets_from_item,
@@ -48,7 +46,6 @@ from xcube_stac.utils import (
     mosaic_spatial_take_first,
     normalize_crs,
     rename_dataset,
-    reproject_bbox,
     search_collections,
     search_nonsearchable_catalog,
     update_dict,
@@ -431,43 +428,6 @@ class UtilsTest(unittest.TestCase):
         dic_expected = dict(a=1, d=1, b=dict(c=5, e=8))
         self.assertDictEqual(dic_expected, update_dict(dic, dic_update))
 
-    def test_reproject_bbox(self):
-        bbox_wgs84 = [2, 50, 3, 51]
-        crs_wgs84 = "EPSG:4326"
-        crs_3035 = "EPSG:3035"
-        bbox_3035 = [3748675.9529771, 3011432.8944597, 3830472.1359979, 3129432.4914285]
-        self.assertEqual(bbox_wgs84, reproject_bbox(bbox_wgs84, crs_wgs84, crs_wgs84))
-        self.assertEqual(bbox_3035, reproject_bbox(bbox_3035, crs_3035, crs_3035))
-        np.testing.assert_almost_equal(
-            reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035), bbox_3035
-        )
-        np.testing.assert_almost_equal(
-            reproject_bbox(
-                reproject_bbox(bbox_wgs84, crs_wgs84, crs_3035, buffer=0.0),
-                crs_3035,
-                crs_wgs84,
-                buffer=0.0,
-            ),
-            [
-                1.829619451017442,
-                49.93464594063249,
-                3.1462425554926226,
-                51.06428203128216,
-            ],
-        )
-
-        crs_utm = "EPSG:32601"
-        bbox_utm = [
-            213372.0489639729,
-            5540547.369934658,
-            362705.63410562894,
-            5768595.563692021,
-        ]
-        np.testing.assert_almost_equal(
-            reproject_bbox(bbox_utm, crs_utm, crs_wgs84, buffer=0.02),
-            [178.77930769, 49.90632759, -178.87064939, 52.09298731],
-        )
-
     def test_normalize_crs(self):
         crs_str = "EPSG:4326"
         crs_pyproj = pyproj.CRS.from_string(crs_str)
@@ -487,8 +447,8 @@ class UtilsTest(unittest.TestCase):
             data=da.ones((5, 5)),
             dims=("y", "x"),
             coords=dict(
-                x=[995, 1005, 1015, 1025, 1035],
-                y=[995, 1005, 1015, 1025, 1035],
+                x=[1000, 1010, 1020, 1030, 1040],
+                y=[1000, 1010, 1020, 1030, 1040],
             ),
         )
         ds3 = xr.Dataset()
@@ -496,8 +456,8 @@ class UtilsTest(unittest.TestCase):
             data=da.ones((5, 5)),
             dims=("y", "x"),
             coords=dict(
-                x=[995, 1005, 1015, 1025, 1035],
-                y=[995, 1005, 1015, 1025, 1035],
+                x=[1000, 1010, 1020, 1030, 1040],
+                y=[1000, 1010, 1020, 1030, 1040],
             ),
         )
         ds_list = [ds1, ds2, ds3]
@@ -530,38 +490,12 @@ class UtilsTest(unittest.TestCase):
                 },
             )
         ds_merged = merge_datasets(ds_list)
-        ds_merged = ds_merged.drop_vars("crs")
+        ds_merged = ds_merged.drop_vars("spatial_ref")
         ds_merged_expected = xr.Dataset()
         ds_merged_expected["B01"] = ds3["B03"]
         ds_merged_expected["B02"] = ds3["B03"]
         ds_merged_expected["B03"] = ds3["B03"]
-        xr.testing.assert_allclose(ds_merged_expected.B01, ds_merged.B01)
-
-    def test_get_spatial_dims(self):
-        ds = xr.Dataset()
-        ds["var"] = xr.DataArray(
-            data=np.ones((2, 2)), dims=("y", "x"), coords=dict(y=[0, 10], x=[0, 10])
-        )
-        self.assertEqual(("y", "x"), get_spatial_dims(ds))
-        ds = xr.Dataset()
-        ds["var"] = xr.DataArray(
-            data=np.ones((2, 2)),
-            dims=("lat", "lon"),
-            coords=dict(lat=[0, 10], lon=[0, 10]),
-        )
-        self.assertEqual(("lat", "lon"), get_spatial_dims(ds))
-        ds = xr.Dataset()
-        ds["var"] = xr.DataArray(
-            data=np.ones((2, 2)),
-            dims=("dim_false0", "dim_false1"),
-            coords=dict(dim_false0=[0, 10], dim_false1=[0, 10]),
-        )
-        with self.assertRaises(DataStoreError) as cm:
-            get_spatial_dims(ds)
-        self.assertEqual(
-            "No spatial dimensions found in dataset.",
-            f"{cm.exception}",
-        )
+        xr.testing.assert_allclose(ds_merged_expected, ds_merged)
 
     @staticmethod
     def test_mosaic_spatial_take_first():
@@ -641,15 +575,6 @@ class UtilsTest(unittest.TestCase):
         ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
         ds_test = mosaic_spatial_take_first(list_ds, fill_value=0)
         xr.testing.assert_allclose(ds_test, ds_expected)
-
-    def test_get_grid_mapping_name(self):
-        ds = xr.Dataset(
-            data_vars={
-                "var1": (("x", "y"), np.random.rand(2, 2)),
-                "crs": xr.DataArray(0, attrs={}),
-            }
-        )
-        self.assertEqual(get_grid_mapping_name(ds), "crs")
 
     @patch("xcube_stac.utils.requests.get")
     def test_access_item_invalid_json(self, mock_get):

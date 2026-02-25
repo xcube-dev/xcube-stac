@@ -21,7 +21,8 @@ dependencies:
   - rioxarray
   - xarray
   - xmltodict
-  - xcube >=1.13.0
+  - xcube >=1.13.1
+  - xcube-resampling >=0.3.0
   # Development Dependencies - Tools
   - black
   - isort

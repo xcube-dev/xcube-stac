@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.5
     method: GET
     uri: https://stac.dataspace.copernicus.eu/v1
   response:
@@ -39,7 +39,7 @@ interactions:
       Content-Type:
       - application/json
       Date:
-      - Fri, 11 Jul 2025 14:02:09 GMT
+      - Tue, 24 Feb 2026 19:02:14 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:
@@ -59,7 +59,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.32.5
     method: GET
     uri: https://stac.dataspace.copernicus.eu/v1/collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T233058_20250706T233358_20250708T043306_0179_108_258_3420_ESA_O_NT_002
   response:
@@ -225,7 +225,7 @@ interactions:
       Content-Type:
       - application/geo+json
       Date:
-      - Fri, 11 Jul 2025 14:02:09 GMT
+      - Tue, 24 Feb 2026 19:02:15 GMT
       Strict-Transport-Security:
       - max-age=15724800; includeSubDomains
       content-encoding:

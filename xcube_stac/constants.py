@@ -50,10 +50,11 @@ PC_STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
 DATA_STORE_ID_XCUBE = "stac-xcube"
 
 # other constants
-TILE_SIZE = 1024
+TILE_SIZE = 2048
 LOG = logging.getLogger("xcube.stac")
 FloatInt = float | int
 CONVERSION_FACTOR_DEG_METER = 111320
+MEAN_EARTH_RADIUS = 6370997  # meter
 
 # constants for data access
 PROTOCOLS = ["https", "s3"]

@@ -36,8 +36,6 @@ import rioxarray
 import xarray as xr
 import xmltodict
 from xcube.core.chunk import chunk_dataset
-from xcube.core.gridmapping import GridMapping
-from xcube.core.resampling import affine_transform_dataset, reproject_dataset
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import (
     JsonArraySchema,
@@ -47,6 +45,9 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
+from xcube_resampling import resample_in_space
+from xcube_resampling.gridmapping import GridMapping
+from xcube_resampling.utils import reproject_bbox
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
@@ -61,16 +62,12 @@ from xcube_stac.constants import (
 )
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
-    add_nominal_datetime,
-    get_gridmapping,
-    get_spatial_dims,
     _get_tile_size,
+    add_nominal_datetime,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
-    normalize_grid_mapping,
     rename_dataset,
-    reproject_bbox,
 )
 from xcube_stac.version import version
 
@@ -291,20 +288,24 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         if apply_scaling:
             raster_version = get_stac_extension(item)
             dss = [
-                apply_offset_scaling(ds, asset, raster_version)
-                for (ds, asset) in zip(dss, assets)
+                (
+                    apply_offset_scaling(ds, asset, raster_version)
+                    if "SCL" not in asset.title
+                    else ds
+                )
+                for ds, asset in zip(dss, assets)
             ]
         if "spatial_res" in open_params:
-            target_gm = get_gridmapping(
+            target_gm = GridMapping.regular_from_bbox(
                 bbox=assets[0].extra_fields["proj:bbox"],
-                spatial_res=open_params["spatial_res"],
+                xy_res=open_params["spatial_res"],
                 crs=assets[0].extra_fields["proj:code"],
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
-            ds = merge_datasets(dss, target_gm=target_gm)
+            ds = merge_datasets(dss, target_gm=target_gm, fill_values={"SCL": 0})
         else:
-            ds = merge_datasets(dss)
-        return normalize_grid_mapping(ds)
+            ds = merge_datasets(dss, fill_values={"SCL": 0})
+        return ds
 
     def _add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
         """Extract Sentinel-2 solar and viewing angle information from the granule
@@ -326,10 +327,11 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         """
         target_gm = _get_angle_target_gm(ds)
         ds_angles = self.get_sen2_angles(item, ds)
-        ds_angles = _resample_dataset_soft(
+        ds_angles = resample_in_space(
             ds_angles,
-            target_gm,
-            interpolation="bilinear",
+            target_gm=target_gm,
+            interp_methods="bilinear",
+            prevent_nan_propagations=True,
         )
         ds = _add_angles(ds, ds_angles)
         return ds
@@ -511,8 +513,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             if not multi_tiles:
                 idx_remove_dt.append(dt_idx)
                 continue
-            dss.append(mosaic_spatial_take_first(multi_tiles))
-        ds_final = xr.concat(dss, dim="time", join="exact")
+            dss.append(mosaic_spatial_take_first(multi_tiles, fill_value={"SCL": 0}))
+        ds_final = xr.concat(dss, dim="time", join="override")
         np_datetimes_sel = [
             value
             for idx, value in enumerate(grouped_items.time.values)
@@ -683,7 +685,9 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                     multi_tiles.append(ds)
                 if not multi_tiles:
                     continue
-                mosaicked_ds = mosaic_spatial_take_first(multi_tiles)
+                mosaicked_ds = mosaic_spatial_take_first(
+                    multi_tiles, fill_value={"SCL": 0}
+                )
                 if final_ds is None:
                     final_ds = _create_empty_dataset(
                         mosaicked_ds,
@@ -736,17 +740,18 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 else:
                     ds_time = mosaic_spatial_take_first(multi_tiles)
                     list_ds_time.append(ds_time)
-            ds_tile = xr.concat(list_ds_time, dim="time", join="exact").chunk(-1)
+            ds_tile = xr.concat(list_ds_time, dim="time", join="override").chunk(-1)
             np_datetimes_sel = [
                 value
                 for idx, value in enumerate(grouped_items.time.values)
                 if idx not in idx_remove_dt
             ]
             ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
-            ds_tile = _resample_dataset_soft(
+            ds_tile = resample_in_space(
                 ds_tile,
-                target_gm,
-                interpolation="bilinear",
+                target_gm=target_gm,
+                interp_methods="bilinear",
+                prevent_nan_propagations=True,
             )
             ds_tile = ds_tile.chunk(dict(time=1))
             if len(idx_remove_dt) > 0:
@@ -802,16 +807,16 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
                 self._apply_offset_scaling(ds, item) for (ds, asset) in zip(dss, assets)
             ]
         if "spatial_res" in open_params:
-            target_gm = get_gridmapping(
+            target_gm = GridMapping.regular_from_bbox(
                 bbox=assets[0].extra_fields["proj:bbox"],
-                spatial_res=open_params["spatial_res"],
+                xy_res=open_params["spatial_res"],
                 crs=item.properties["proj:code"],
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
             ds = merge_datasets(dss, target_gm=target_gm)
         else:
             ds = merge_datasets(dss)
-        return normalize_grid_mapping(ds)
+        return ds
 
     @staticmethod
     def _list_assets_from_item(item: pystac.Item, **open_params) -> list[pystac.Asset]:
@@ -918,26 +923,17 @@ def _get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
         is 5000 meters. This resolution is preserved in the resulting target grid
         mapping used during datacube generation.
     """
-    crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
-    y_coord, x_coord = get_spatial_dims(ds_final)
-    if crs.is_geographic:
+    gm_final = GridMapping.from_dataset(ds_final)
+    x_name, y_name = gm_final.xy_var_names
+    if gm_final.crs.is_geographic:
         y_res = 5000 / 111320
-        y_center = (ds_final[x_coord][0].item() + ds_final[x_coord][-1].item()) / 2
+        y_center = (ds_final[y_name][0].item() + ds_final[y_name][-1].item()) / 2
         x_res = 5000 / (111320 * np.cos(np.radians(y_center)))
     else:
         y_res = 5000
         x_res = 5000
 
-    bbox = [
-        ds_final[x_coord][0].item(),
-        ds_final[y_coord][0].item(),
-        ds_final[x_coord][-1].item(),
-        ds_final[y_coord][-1].item(),
-    ]
-    if bbox[3] < bbox[1]:
-        y_min, y_max = bbox[3], bbox[1]
-        bbox[1], bbox[3] = y_min, y_max
-    return get_gridmapping(bbox, (x_res, y_res), crs)
+    return GridMapping.regular_from_bbox(gm_final.xy_bbox, (x_res, y_res), gm_final.crs)
 
 
 def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
@@ -1099,7 +1095,8 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
         - Renames spatial coordinates in `ds_angles` to avoid conflicts.
         - The angle dimension contains 'zenith' and 'azimuth'
     """
-    x_coord, y_coord = get_spatial_dims(ds_angles)
+    gm = GridMapping.from_dataset(ds_angles)
+    x_coord, y_coord = gm.xy_var_names
     ds_angles = ds_angles.rename(
         {y_coord: f"angle_{y_coord}", x_coord: f"angle_{x_coord}"}
     )
@@ -1191,52 +1188,6 @@ def _get_spatial_res(open_params: dict) -> int:
         spatial_res = int(_SEN2_SPATIAL_RES[idxs[0]])
 
     return spatial_res
-
-
-def _resample_dataset_soft(
-    ds: xr.Dataset,
-    target_gm: GridMapping,
-    interpolation: str = "nearest",
-) -> xr.Dataset:
-    """Resample a dataset to a target grid mapping, using either affine transform
-    or reprojection.
-
-    If the source and target grid mappings are close, the dataset is returned unchanged.
-    If they share the same CRS but differ spatially, an affine transformation is applied.
-    Otherwise, the dataset is reprojected to the target grid, with optional fill value
-    and interpolation.
-
-    Parameters:
-        ds: The source xarray Dataset to be resampled.
-        target_gm: The target grid mapping
-        interpolation: Interpolation method to use during reprojection
-            (see reproject_dataset function in xcube).
-
-    Returns:
-        The resampled dataset aligned with the target grid mapping.
-    """
-    source_gm = GridMapping.from_dataset(ds)
-    if source_gm.is_close(target_gm):
-        return ds
-    if target_gm.crs == source_gm.crs:
-        var_configs = {}
-        for var in ds.data_vars:
-            var_configs[var] = dict(recover_nan=True)
-        ds = affine_transform_dataset(
-            ds,
-            source_gm=source_gm,
-            target_gm=target_gm,
-            gm_name="spatial_ref",
-            var_configs=var_configs,
-        )
-    else:
-        ds = reproject_dataset(
-            ds,
-            source_gm=source_gm,
-            target_gm=target_gm,
-            interpolation=interpolation,
-        )
-    return ds
 
 
 def _create_empty_dataset(
@@ -1375,14 +1326,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
             ds.x[1] - ds.x[0] != spatial_res[0]
             or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
         ):
-            target_gm = get_gridmapping(
+            target_gm = GridMapping.regular_from_bbox(
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
     else:
-        target_gm = get_gridmapping(
+        target_gm = GridMapping.regular_from_bbox(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
@@ -1391,11 +1342,20 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
 
     resampled_list_ds = []
     for ds in list_ds_utm:
-        resampled_list_ds.append(_resample_dataset_soft(ds, target_gm))
-    return mosaic_spatial_take_first(resampled_list_ds)
+        resampled_list_ds.append(
+            resample_in_space(
+                ds,
+                target_gm=target_gm,
+                fill_values={"SCL": 0},
+                prevent_nan_propagations=True,
+            )
+        )
+    return mosaic_spatial_take_first(resampled_list_ds, fill_value={"SCL": 0})
 
 
-def _fill_nan_slices(ds: xr.Dataset, times: np.array, idx_nan: list[int]) -> xr.Dataset:
+def _fill_nan_slices(
+    ds: xr.Dataset, times: np.ndarray, idx_nan: list[int]
+) -> xr.Dataset:
     """Insert NaN-filled time slices into a dataset at specified indices along
     the time axis.
 
@@ -1424,7 +1384,7 @@ def _fill_nan_slices(ds: xr.Dataset, times: np.array, idx_nan: list[int]) -> xr.
             list_ds.append(ds.isel(time=slice(idx - i, idx_nan[i + 1] - i - 1)))
     if idx_nan[-1] < len(times) - 1:
         list_ds.append(ds.isel(time=slice(idx_nan[-1] - (len(idx_nan) - 1), None)))
-    return xr.concat(list_ds, dim="time", join="exact")
+    return xr.concat(list_ds, dim="time", join="override")
 
 
 def _create_nan_slice(ds: xr.Dataset) -> xr.Dataset:

@@ -1,3 +1,35 @@
+## Changes in 1.2.0
+
+- Switched spatial resampling to the new `xcube_resampling` library, replacing the
+  deprecated `xcube.core.resampling` module.
+- Added support for Sentinel-3 SYNERGY Level-2 NTC (`sentinel-3-syn-2-syn-ntc`) 
+  via the Copernicus Data Space Ecosystem (CDSE) STAC API.
+- Added support for Sentinel-3 SLSTR Level-2 Land Surface Temperature NTC 
+  (`sentinel-3-sl-2-lst-ntc`) via the CDSE STAC API.
+- Added support for Sentinel-3 SYNERGY Level-2 NetCDF 
+  (`sentinel-3-synergy-syn-l2-netcdf`) via the Microsoft Planetary Computer STAC API.
+- Added support for Sentinel-3 SLSTR Level-2 Land Surface Temperature NetCDF 
+  (`sentinel-3-slstr-lst-l2-netcdf`) via the Microsoft Planetary Computer STAC API.
+- Fixed an issue in `stac-cdse-ardc` and `stac-pc-ardc` when generating ARDC from 
+  Sentinel-2 Level-2A (`sentinel-2-l2a`) products; mosaicking of integer arrays 
+  now works correctly when requesting the Scene Classification Layer (SCL).
+
+## Changes in 1.2.0
+
+- Switched spatial resampling to the new `xcube_resampling` library,
+  replacing `xcube.core.resampling`.
+- Added support for Sentinel-3 SYNERGY [`sentinel-3-syn-2-syn-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-syn-2-syn-ntc) via CDSE
+  STAC API
+- Added support for Sentinel-3 SLSTR Land Surface Temperature
+  [`sentinel-3-sl-2-lst-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-sl-2-lst-ntc) via CDSE STAC API
+- Added support for Sentinel-3 SYNERGY [`sentinel-3-synergy-syn-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-synergy-syn-l2-netcdf) via
+  Planetary Computer STAC API
+- Added support for Sentinel-3 SLSTR Land Surface Temperature
+  [`sentinel-3-slstr-lst-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-slstr-lst-l2-netcdf) via Planetary Computer STAC API
+- Fixed a bug in `stac-cdse-ardc` and `stac-pc-ardc` when generating ARDC from 
+  Sentinel-2 L2A products `sentinel-2-l2a`; when requesting SCL, moaicing for integer
+  values array now works.
+
 ## Changes in 1.1.2
 
 - Improved robustness of Sentinel-2 time series cube generation by fixing an issue

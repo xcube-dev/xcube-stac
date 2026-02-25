@@ -36,24 +36,39 @@ from .sen2 import (
     Sen2PlanetaryComputerStacArdcAccessor,
     Sen2PlanetaryComputerStacItemAccessor,
 )
-from .sen3 import Sen3CdseStacArdcAccessor, Sen3CdseStacItemAccessor
+from .sen3 import (
+    Sen3CdseStacArdcAccessor,
+    Sen3CdseStacItemAccessor,
+    Sen3LstCdseStacArdcAccessor,
+    Sen3LstCdseStacItemAccessor,
+    Sen3LstPlanetaryComputerStacArdcAccessor,
+    Sen3LstPlanetaryComputerStacItemAccessor,
+    Sen3PlanetaryComputerStacArdcAccessor,
+    Sen3PlanetaryComputerStacItemAccessor,
+)
 
 ACCESSOR_MAPPING = {
     DATA_STORE_ID_CDSE: {
         "sentinel-2-l2a": Sen2CdseStacItemAccessor,
         "sentinel-2-l1c": Sen2CdseStacItemAccessor,
         "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
+        "sentinel-3-sl-2-lst-ntc": Sen3LstCdseStacItemAccessor,
     },
     DATA_STORE_ID_CDSE_ARDC: {
         "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
         "sentinel-2-l1c": Sen2CdseStacArdcAccessor,
         "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
+        "sentinel-3-sl-2-lst-ntc": Sen3LstCdseStacArdcAccessor,
     },
     DATA_STORE_ID_PC: {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacItemAccessor,
+        "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacItemAccessor,
+        "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacItemAccessor,
     },
     DATA_STORE_ID_PC_ARDC: {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacArdcAccessor,
+        "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacArdcAccessor,
+        "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacArdcAccessor,
     },
 }
 

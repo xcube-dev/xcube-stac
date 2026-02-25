@@ -1,0 +1,163 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://planetarycomputer.microsoft.com/api/stac/v1
+  response:
+    body:
+      string: '{"type":"Catalog","id":"microsoft-pc","title":"Microsoft Planetary
+        Computer STAC API","description":"Searchable spatiotemporal metadata describing
+        Earth science datasets hosted by the Microsoft Planetary Computer","stac_version":"1.0.0","conformsTo":["http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2","http://www.opengis.net/spec/cql2/1.0/conf/cql2-json","http://www.opengis.net/spec/cql2/1.0/conf/cql2-text","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson","http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/oas30","http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/filter","https://api.stacspec.org/v1.0.0-rc.2/item-search#filter","https://api.stacspec.org/v1.0.0/collections","https://api.stacspec.org/v1.0.0/core","https://api.stacspec.org/v1.0.0/item-search","https://api.stacspec.org/v1.0.0/item-search#fields","https://api.stacspec.org/v1.0.0/item-search#query","https://api.stacspec.org/v1.0.0/item-search#sort","https://api.stacspec.org/v1.0.0/ogcapi-features"],"links":[{"rel":"self","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"data","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections"},{"rel":"conformance","type":"application/json","title":"STAC/OGC
+        conformance classes implemented by this server","href":"https://planetarycomputer.microsoft.com/api/stac/v1/conformance"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"GET"},{"rel":"search","type":"application/geo+json","title":"STAC
+        search","href":"https://planetarycomputer.microsoft.com/api/stac/v1/search","method":"POST"},{"rel":"http://www.opengis.net/def/rel/ogc/1.0/queryables","type":"application/schema+json","title":"Queryables
+        available for this Catalog","href":"https://planetarycomputer.microsoft.com/api/stac/v1/queryables","method":"GET"},{"rel":"service-desc","type":"application/vnd.oai.openapi+json;version=3.0","title":"OpenAPI
+        service description","href":"https://planetarycomputer.microsoft.com/api/stac/v1/openapi.json"},{"rel":"service-doc","type":"text/html","title":"OpenAPI
+        service documentation","href":"https://planetarycomputer.microsoft.com/api/stac/v1/docs"}],"stac_extensions":[]}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - X-PC-Request-Entity,DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+      Access-Control-Allow-Methods:
+      - PUT, GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '640'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 25 Feb 2026 07:22:03 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Cache:
+      - CONFIG_NOCACHE
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
+      x-azure-ref:
+      - 20260225T072203Z-16c8fcdb9fb7lrtdhC1FRAbww40000000w4g00000000h15b
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-lst-l2-netcdf/items/S3A_SL_2_LST_20200705T094658_20200705T094958_0179_060_136_2160
+  response:
+    body:
+      string: '{"id":"S3A_SL_2_LST_20200705T094658_20200705T094958_0179_060_136_2160","bbox":[-1.7734,39.1027,20.6113,52.4606],"type":"Feature","links":[{"rel":"collection","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-lst-l2-netcdf"},{"rel":"parent","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-lst-l2-netcdf"},{"rel":"root","type":"application/json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/"},{"rel":"self","type":"application/geo+json","href":"https://planetarycomputer.microsoft.com/api/stac/v1/collections/sentinel-3-slstr-lst-l2-netcdf/items/S3A_SL_2_LST_20200705T094658_20200705T094958_0179_060_136_2160"}],"assets":{"lst-in":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/LST_in.nc","s3:shape":[1200,1500],"file:size":2810449,"file:checksum":"3e7974a7fd9be817b90d2c68d5eb25f2","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"eo:bands":[{"name":"S8","description":"Band
+        8 - SST, LST, Active fire","center_wavelength":10.854,"full_width_half_max":0.776},{"name":"S9","description":"Band
+        9 - SST, LST","center_wavelength":12.0225,"full_width_half_max":0.905}],"description":"Land
+        Surface Temperature (LST) values"},"slstr-met-tx":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/met_tx.nc","s3:shape":[1200,1500],"file:size":36344597,"file:checksum":"aaf2ef1fa03cb804d494f63093bdb896","s3:spatial_resolution":[1000,16000],"type":"application/x-netcdf","roles":["data"],"description":"Meteorological
+        parameters regridded onto the 16km tie points"},"safe-manifest":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/xfdumanifest.xml","file:size":121973,"file:checksum":"7a6d7e1d783f66111bc6d66f0238d4f8","type":"application/xml","roles":["metadata"],"description":"SAFE
+        product manifest"},"slstr-time-in":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/time_in.nc","s3:shape":[1200,1500],"file:size":64618,"file:checksum":"b235f09b0c89783dbd81ceb82796155f","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"description":"Time
+        annotations for the 1km grid"},"slstr-flags-in":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/flags_in.nc","s3:shape":[1200,1500],"file:size":904059,"file:checksum":"02852e7fd01bdf3fa71c71b94bc70b3c","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"description":"Global
+        flags for the 1km TIR grid, nadir view"},"lst-ancillary-ds":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/LST_ancillary_ds.nc","s3:shape":[1200,1500],"file:size":7105895,"file:checksum":"a0de9b9ea71bbaa94bd42d1653208378","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"description":"LST
+        ancillary measurement dataset"},"slstr-indices-in":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/indices_in.nc","s3:shape":[1200,1500],"file:size":1010914,"file:checksum":"bebd1516ad5c53e333ec68eefdb42bea","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"description":"Scan,
+        pixel and detector indices annotations for the 1km TIR grid, nadir view"},"slstr-geodetic-in":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/geodetic_in.nc","s3:shape":[1200,1500],"file:size":9184912,"file:checksum":"55929965c0aec400054f6028ae2906a7","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"description":"Full
+        resolution geodetic coordinates for the 1km TIR grid, nadir view"},"slstr-geodetic-tx":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/geodetic_tx.nc","s3:shape":[1200,1500],"file:size":1766006,"file:checksum":"6986e1d7dd17c1fa10740d1ef7f2d278","s3:spatial_resolution":[1000,16000],"type":"application/x-netcdf","roles":["data"],"description":"16km
+        geodetic coordinates"},"slstr-geometry-tn":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/geometry_tn.nc","s3:shape":[1200,1500],"file:size":3427800,"file:checksum":"d8b7606ba728233dc7385e928eb202d4","s3:spatial_resolution":[1000,16000],"type":"application/x-netcdf","roles":["data"],"description":"16km
+        solar and satellite geometry annotations, nadir view"},"slstr-cartesian-in":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/cartesian_in.nc","s3:shape":[1200,1500],"file:size":4939220,"file:checksum":"d960fb51f42ae33ed1486111a828f2a6","s3:spatial_resolution":[1000,1000],"type":"application/x-netcdf","roles":["data"],"description":"Full
+        resolution cartesian coordinates for the 1km TIR grid, nadir view"},"slstr-cartesian-tx":{"href":"https://sentinel3euwest.blob.core.windows.net/sentinel-3/SLSTR/SL_2_LST___/2020/07/05/S3A_SL_2_LST____20200705T094658_20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004.SEN3/cartesian_tx.nc","s3:shape":[1200,1500],"file:size":41983,"file:checksum":"f377c2fd857412dba19768866dac9eff","s3:spatial_resolution":[1000,16000],"type":"application/x-netcdf","roles":["data"],"description":"16km
+        cartesian coordinates"}},"geometry":{"type":"Polygon","coordinates":[[[-1.7734,41.9898],[-1.1683,41.9391],[-0.5494,41.8728],[0.0594,41.8218],[0.6659,41.7611],[1.2665,41.6932],[1.8778,41.6111],[2.4844,41.5435],[3.0764,41.4674],[3.6849,41.3814],[4.2821,41.3057],[4.8845,41.2196],[5.469,41.1287],[6.0651,41.0346],[6.6659,40.9451],[7.251,40.8469],[7.8444,40.7418],[8.4269,40.6376],[9.0127,40.5283],[9.6052,40.4223],[10.1806,40.3079],[10.7666,40.1879],[11.3431,40.0665],[11.915,39.951],[12.4913,39.8226],[13.0554,39.6993],[13.6289,39.5635],[14.194,39.4317],[14.7668,39.2963],[15.3278,39.1544],[15.5467,39.1027],[16.6461,41.6548],[17.8542,44.2384],[19.1693,46.8083],[20.6113,49.3621],[20.3541,49.4263],[19.6978,49.5928],[19.0256,49.752],[18.3636,49.9055],[17.6991,50.0548],[17.0131,50.1991],[16.3447,50.3455],[15.6536,50.4877],[14.9632,50.6175],[14.2761,50.7501],[13.5874,50.8784],[12.8784,51.0062],[12.1714,51.1181],[11.469,51.2345],[10.7675,51.3443],[10.0488,51.4531],[9.3374,51.5537],[8.6137,51.6532],[7.8977,51.7415],[7.173,51.8254],[6.4443,51.9142],[5.7068,51.9878],[4.967,52.0733],[4.2372,52.142],[3.5062,52.2086],[2.7653,52.2678],[2.0251,52.3214],[1.2704,52.3676],[0.5281,52.4196],[-0.2144,52.4606],[-0.5936,49.8343],[-0.9812,47.2065],[-1.3768,44.577],[-1.7734,41.9898]]]},"collection":"sentinel-3-slstr-lst-l2-netcdf","properties":{"s3:gsd":{"S1-S6":500,"S7-S9
+        and F1-F2":1000},"s3:land":78.392722,"datetime":"2020-07-05T09:48:27.969633Z","platform":"Sentinel-3A","s3:coastal":0.200944,"instruments":["SLSTR"],"s3:cosmetic":21.796611,"end_datetime":"2020-07-05T09:49:57.969633Z","s3:saturated":0.0,"constellation":"Sentinel-3","s3:duplicated":5.435944,"eo:cloud_cover":25.040222,"start_datetime":"2020-07-05T09:46:57.969633Z","s3:out_of_range":0.0,"s3:product_name":"slstr-lst","s3:product_type":"SL_2_LST___","s3:saline_water":21.607278,"s3:tidal_region":1.410389,"sat:orbit_state":"descending","sat:absolute_orbit":22824,"sat:relative_orbit":136,"s3:fresh_inland_water":0.684167,"s3:processing_timeliness":"NT","sat:platform_international_designator":"2016-011A"},"stac_extensions":["https://stac-extensions.github.io/file/v2.1.0/schema.json","https://stac-extensions.github.io/sat/v1.0.0/schema.json","https://stac-extensions.github.io/eo/v1.0.0/schema.json"],"stac_version":"1.0.0"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Credentials:
+      - 'true'
+      Access-Control-Allow-Headers:
+      - X-PC-Request-Entity,DNT,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Authorization
+      Access-Control-Allow-Methods:
+      - PUT, GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Max-Age:
+      - '1728000'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '2415'
+      Content-Type:
+      - application/geo+json
+      Date:
+      - Wed, 25 Feb 2026 07:22:04 GMT
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Cache:
+      - CONFIG_NOCACHE
+      content-encoding:
+      - br
+      vary:
+      - Accept-Encoding
+      x-azure-ref:
+      - 20260225T072203Z-16c8fcdb9fbw7w2khC1FRAz0y80000000w6g00000000mw8x
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - python-requests/2.32.5
+    method: GET
+    uri: https://planetarycomputer.microsoft.com/api/sas/v1/token/sentinel3euwest/sentinel-3
+  response:
+    body:
+      string: '{"msft:expiry":"2026-02-25T08:07:04Z","token":"st=2026-02-24T07%3A22%3A04Z&se=2026-02-25T08%3A07%3A04Z&sp=rl&sv=2025-07-05&sr=c&skoid=9c8ff44a-6a2c-4dfb-b298-1c9212f64d9a&sktid=72f988bf-86f1-41af-91ab-2d7cd011db47&skt=2026-02-23T08%3A30%3A53Z&ske=2026-03-02T08%3A30%3A53Z&sks=b&skv=2025-07-05&sig=UvHWbHoaPtsyuMU0o%2BHZg5GaLbwFm78ns6CwmDWybJM%3D"}'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '347'
+      Content-Type:
+      - application/json
+      Date:
+      - Wed, 25 Feb 2026 07:22:04 GMT
+      Request-Context:
+      - appId=cid-v1:75161b1b-6883-4b66-9410-715040c44427
+      Strict-Transport-Security:
+      - max-age=31536000; includeSubDomains
+      X-Cache:
+      - CONFIG_NOCACHE
+      x-azure-ref:
+      - 20260225T072204Z-16c8fcdb9fbx2skghC1FRA04xg0000000xqg000000010fxh
+    status:
+      code: 200
+      message: OK
+version: 1

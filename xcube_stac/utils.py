@@ -37,10 +37,10 @@ import pystac_client
 import requests
 import xarray as xr
 from shapely.geometry import box
-from xcube.core.gridmapping import GridMapping
-from xcube.core.gridmapping.dataset import new_grid_mapping_from_dataset
-from xcube.core.resampling import affine_transform_dataset
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
+from xcube_resampling import affine_transform_dataset
+from xcube_resampling.constants import FillValues
+from xcube_resampling.gridmapping import GridMapping
 
 from .constants import (
     LOG,
@@ -366,65 +366,6 @@ def add_nominal_datetime(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
     return items
 
 
-def get_grid_mapping_name(ds: xr.Dataset) -> str | None:
-    """Extracts the name of the grid mapping variable from an xarray Dataset.
-
-    The function searches through the dataset's data variables for the "grid_mapping"
-    attribute, as well as for commonly used coordinate variables like "crs" and
-    "spatial_ref". It ensures that at most one unique grid mapping name is present.
-
-    Args:
-        ds: A dataset to inspect for grid mapping information.
-
-    Returns:
-        The name of the grid mapping variable if found, otherwise None.
-
-    Raises:
-        AssertionError: If more than one unique grid mapping name is detected.
-    """
-    gm_names = []
-    for var in ds.data_vars:
-        if "grid_mapping" in ds[var].attrs:
-            gm_names.append(ds[var].attrs["grid_mapping"])
-    if "crs" in ds:
-        gm_names.append("crs")
-    if "spatial_ref" in ds.coords:
-        gm_names.append("spatial_ref")
-    gm_names = np.unique(gm_names)
-    assert len(gm_names) <= 1, "Multiple grid mapping names found."
-    if len(gm_names) == 1:
-        return str(gm_names[0])
-    else:
-        return None
-
-
-def normalize_grid_mapping(ds: xr.Dataset) -> xr.Dataset:
-    """Normalizes the grid mapping in a dataset to use a standard "spatial_ref"
-    coordinate.
-
-    This function replaces any existing grid mapping references in the dataset with a
-    unified "spatial_ref" coordinate. It updates the "grid_mapping" attribute of all
-    data variables to reference "spatial_ref", removes the original grid mapping
-    variable (if present), and adds a new "spatial_ref" coordinate with CF-compliant
-    CRS attributes.
-
-    Args:
-        ds: A dataset containing geospatial data with grid mapping metadata.
-
-    Returns:
-        A dataset with a standardized "spatial_ref" coordinate used for grid mapping.
-    """
-    gm_name = get_grid_mapping_name(ds)
-    if gm_name is None:
-        return ds
-    for var in ds.data_vars:
-        ds[var].attrs["grid_mapping"] = "spatial_ref"
-    gm = new_grid_mapping_from_dataset(ds)
-    ds = ds.drop_vars(gm_name)
-    ds = ds.assign_coords(spatial_ref=xr.DataArray(0, attrs=gm.crs.to_cf()))
-    return ds
-
-
 def update_dict(dic: dict, dic_update: dict, inplace: bool = True) -> dict:
     """It updates a dictionary recursively.
 
@@ -602,59 +543,9 @@ def list_protocols(item: pystac.Item, asset_names: Sequence[str] = None) -> list
     assets = list_assets_from_item(item, asset_names=asset_names)
     protocols = []
     for asset in assets:
-        protocol, _, _, _ = decode_href(asset.href)
+        protocol, _, _ = decode_href(asset.href)
         protocols.append(protocol)
     return list(np.unique(protocols))
-
-
-def reproject_bbox(
-    source_bbox: tuple[int] | tuple[float] | list[int] | list[float],
-    source_crs: pyproj.CRS | str,
-    target_crs: pyproj.CRS | str,
-    buffer: float = 0.0,
-) -> tuple[int] | tuple[float]:
-    """Reprojects a bounding box from a source CRS to a target CRS, with optional
-    buffering.
-
-    The function transforms a bounding box defined in the source coordinate reference
-    system (CRS) to the target CRS using `pyproj`. If the source and target CRS are
-    the same, no transformation is performed. An optional buffer (as a fraction of
-    width/height) can be applied to expand the resulting bounding box.
-
-    Args:
-        source_bbox: The bounding box to reproject, in the form
-            (min_x, min_y, max_x, max_y).
-        source_crs: The source CRS, as a `pyproj.CRS` or string.
-        target_crs: The target CRS, as a `pyproj.CRS` or string.
-        buffer: Optional buffer to apply to the transformed bounding box, expressed as
-                a fraction (e.g., 0.1 for 10% padding). Default is 0.0 (no buffer).
-
-    Returns:
-        A tuple representing the reprojected (and optionally buffered) bounding box:
-        (min_x, min_y, max_x, max_y).
-    """
-    source_crs = normalize_crs(source_crs)
-    target_crs = normalize_crs(target_crs)
-    if source_crs != target_crs:
-        t = pyproj.Transformer.from_crs(source_crs, target_crs, always_xy=True)
-        target_bbox = t.transform_bounds(*source_bbox, densify_pts=21)
-    else:
-        target_bbox = source_bbox
-    if buffer > 0.0:
-        x_min = target_bbox[0]
-        x_max = target_bbox[2]
-        if target_crs.is_geographic and x_min > x_max:
-            x_max += 360
-        buffer_x = abs(x_max - x_min) * buffer
-        buffer_y = abs(target_bbox[3] - target_bbox[1]) * buffer
-        target_bbox = (
-            target_bbox[0] - buffer_x,
-            target_bbox[1] - buffer_y,
-            target_bbox[2] + buffer_x,
-            target_bbox[3] + buffer_y,
-        )
-
-    return target_bbox
 
 
 def convert_to_solar_time(
@@ -736,42 +627,10 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
     return ds.rename_vars(name_dict=name_dict)
 
 
-def get_gridmapping(
-    bbox: tuple[float] | tuple[int] | list[float] | list[int],
-    spatial_res: float | int | tuple[float | int, float | int],
-    crs: str | pyproj.crs.CRS,
-    tile_size: int | tuple[int, int] = TILE_SIZE,
-) -> GridMapping:
-    """Creates a regular GridMapping object based on a bounding box, spatial resolution,
-    and CRS.
-
-    Args:
-        bbox: The bounding box in the form (min_x, min_y, max_x, max_y).
-        spatial_res: Spatial resolution as a single value or a (x_res, y_res) tuple.
-        crs: Coordinate reference system as a `pyproj.CRS` or a string
-            (e.g., "EPSG:4326").
-        tile_size: Optional tile size as a single integer or a (width, height) tuple.
-            Defaults to `TILE_SIZE`.
-
-    Returns:
-        A xcube `GridMapping` object representing the regular grid layout defined
-        by the input parameters.
-    """
-    if not isinstance(spatial_res, tuple):
-        spatial_res = (spatial_res, spatial_res)
-    x_size = np.ceil((bbox[2] - bbox[0]) / spatial_res[0]) + 1
-    y_size = np.ceil(abs(bbox[3] - bbox[1]) / spatial_res[1]) + 1
-    return GridMapping.regular(
-        size=(x_size, y_size),
-        xy_min=(bbox[0], bbox[1]),
-        xy_res=spatial_res,
-        crs=crs,
-        tile_size=tile_size,
-    )
-
-
 def merge_datasets(
-    datasets: list[xr.Dataset], target_gm: GridMapping = None
+    datasets: list[xr.Dataset],
+    target_gm: GridMapping = None,
+    fill_values: FillValues = None,
 ) -> xr.Dataset:
     """Merges a list of datasets into a single dataset, optionally resampling
     to a target grid mapping.
@@ -785,12 +644,14 @@ def merge_datasets(
         target_gm: Optional `GridMapping` to which all datasets will be resampled.
                    If not provided, the grid mapping from the dataset with the
                    highest resolution (smallest x spacing) is used.
+        fill_values: fill values propagated to xcube_resampling.affine_transform
 
     Returns:
         A single dataset resulting from merging all input datasets,
         resampled to a common grid if necessary.
     """
-    y_coord, x_coord = get_spatial_dims(datasets[0])
+    sourcce_gm = GridMapping.from_dataset(datasets[0])
+    x_coord, y_coord = sourcce_gm.xy_var_names
     x_ress = [abs(float(ds[x_coord][1] - ds[x_coord][0])) for ds in datasets]
     y_ress = [abs(float(ds[y_coord][1] - ds[y_coord][0])) for ds in datasets]
     if (
@@ -815,34 +676,12 @@ def merge_datasets(
         datasets_resampled = []
         for ds in datasets_grouped:
             datasets_resampled.append(
-                affine_transform_dataset(ds, target_gm=target_gm, encode_cf=False)
+                affine_transform_dataset(
+                    ds, target_gm=target_gm, fill_values=fill_values
+                )
             )
         ds = _update_datasets(datasets_resampled)
     return ds
-
-
-def get_spatial_dims(ds: xr.Dataset) -> (str, str):
-    """Identifies the spatial coordinate names in a dataset.
-
-    The function checks for common spatial dimension naming conventions: ("lat", "lon")
-    or ("y", "x"). If neither pair is found, it raises a DataStoreError.
-
-    Args:
-        ds: The dataset to inspect.
-
-    Returns:
-        A tuple of strings representing the names of the spatial dimensions.
-
-    Raises:
-        DataStoreError: If no recognizable spatial dimensions are found.
-    """
-    if "lat" in ds and "lon" in ds:
-        y_coord, x_coord = "lat", "lon"
-    elif "y" in ds and "x" in ds:
-        y_coord, x_coord = "y", "x"
-    else:
-        raise DataStoreError("No spatial dimensions found in dataset.")
-    return y_coord, x_coord
 
 
 def _get_tile_size(open_params: dict) -> tuple[int, int]:
@@ -860,7 +699,7 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], fill_value: int | float = np.nan
+    list_ds: list[xr.Dataset], fill_value: dict | int | float = np.nan
 ) -> xr.Dataset:
     """Creates a spatial mosaic from a list of datasets by taking the first
     non-fill value encountered across datasets at each pixel location.
@@ -872,7 +711,9 @@ def mosaic_spatial_take_first(
 
     Args:
         list_ds: A list of datasets to be mosaicked.
-        fill_value: The value considered as missing data. Defaults to NaN.
+        fill_value: The value considered as missing data. Can be a mapping from
+            variable name to fill_value, where defaults to NaN if variable name not
+            specified. Defaults to NaN.
 
     Returns:
         A new dataset representing the mosaicked result, using the first valid
@@ -881,21 +722,26 @@ def mosaic_spatial_take_first(
     if len(list_ds) == 1:
         return list_ds[0]
 
-    ds_mosaic = xr.Dataset()
+    ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
     for key in list_ds[0]:
         # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
         if list_ds[0][key].ndim >= 2:
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            if np.isnan(fill_value):
+            if isinstance(fill_value, dict):
+                array_fv = fill_value.get(key, np.nan)
+            else:
+                array_fv = fill_value
+            if np.isnan(array_fv):
                 nonnan_mask = ~da.isnan(da_arr)
             else:
-                nonnan_mask = da_arr != fill_value
+                nonnan_mask = da_arr != array_fv
             first_non_nan_index = nonnan_mask.argmax(axis=0)
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(
                 da_arr_select,
                 dims=list_ds[0][key].dims,
                 coords=list_ds[0][key].coords,
+                attrs=list_ds[0][key].attrs,
             )
 
     return ds_mosaic

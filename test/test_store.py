@@ -34,6 +34,7 @@ from xcube.core.store import (
     new_data_store,
 )
 from xcube.util.jsonschema import JsonComplexSchema, JsonObjectSchema
+from xcube_resampling.utils import reproject_bbox
 
 # noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
@@ -45,13 +46,17 @@ from xcube_stac.constants import (
     DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
 )
-from xcube_stac.utils import reproject_bbox
 
 from .sampledata import (
     sentinel_2_band_data_10m,
     sentinel_2_band_data_60m,
-    sentinel_3_data,
-    sentinel_3_geolocation_data,
+    sentinel_3_angles_data,
+    sentinel_3_angles_geolocation_data,
+    sentinel_3_lst_data,
+    sentinel_3_lst_geolocation_data,
+    sentinel_3_lst_mask_data,
+    sentinel_3_syn_data,
+    sentinel_3_syn_geolocation_data,
 )
 
 SKIP_HELP = (
@@ -221,14 +226,27 @@ class StacDataStoreTest(unittest.TestCase):
         )
         data_ids = store.list_data_ids()
         self.assertCountEqual(
-            ["sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc"], data_ids
+            [
+                "sentinel-2-l2a",
+                "sentinel-2-l1c",
+                "sentinel-3-syn-2-syn-ntc",
+                "sentinel-3-sl-2-lst-ntc",
+            ],
+            data_ids,
         )
 
     @pytest.mark.vcr()
     def test_get_data_ids_pc_ardc(self):
         store = new_data_store(DATA_STORE_ID_PC_ARDC)
         data_ids = store.list_data_ids()
-        self.assertCountEqual(["sentinel-2-l2a"], data_ids)
+        self.assertCountEqual(
+            [
+                "sentinel-2-l2a",
+                "sentinel-3-synergy-syn-l2-netcdf",
+                "sentinel-3-slstr-lst-l2-netcdf",
+            ],
+            data_ids,
+        )
 
     @pytest.mark.vcr()
     def test_get_data_ids_include_attrs(self):
@@ -299,13 +317,13 @@ class StacDataStoreTest(unittest.TestCase):
             opener_ids, store.get_data_opener_ids(data_type="mldataset")
         )
         opener_ids = (
-            "mldataset:geotiff:s3",
-            "dataset:geotiff:s3",
+            "mldataset:geotiff:https",
+            "dataset:geotiff:https",
         )
         self.assertCountEqual(
             opener_ids, store.get_data_opener_ids(data_id=self.data_id_nonsearchable)
         )
-        opener_ids = ("dataset:geotiff:s3",)
+        opener_ids = ("dataset:geotiff:https",)
         self.assertCountEqual(
             opener_ids,
             store.get_data_opener_ids(
@@ -448,7 +466,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
-            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+            [11264, 11264], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
         # open data where multiple assets are stored in one mldataset
@@ -462,7 +480,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual(["blue_p25", "blue_p75"], list(ds.data_vars))
         self.assertCountEqual([151000, 188000], [ds.sizes["y"], ds.sizes["x"]])
         self.assertCountEqual(
-            [1024, 1024], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
+            [11264, 11264], [ds.chunksizes["x"][0], ds.chunksizes["y"][0]]
         )
 
     @pytest.mark.vcr()
@@ -636,7 +654,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertCountEqual(
-            [10980, 10980, 23, 23, 2, 12],
+            [10980, 10980, 22, 22, 2, 12],
             [
                 ds.sizes["y"],
                 ds.sizes["x"],
@@ -659,10 +677,10 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     @patch("rioxarray.open_rasterio")
-    def test_open_data_cdse_sen3(self, mock_rioxarray_open):
+    def test_open_data_cdse_sen3_syn(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
-            sentinel_3_geolocation_data(),
-            sentinel_3_data(),
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
         ]
 
         store = new_data_store(
@@ -684,22 +702,95 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["SDR_Oa01", "SDR_Oa01_err"], list(ds.data_vars))
-        self.assertCountEqual([4091, 4865], [ds.sizes["y"], ds.sizes["x"]])
+        self.assertCountEqual([1023, 1217], [ds.sizes["y"], ds.sizes["x"]])
         self.assertEqual(2, ds.lat.ndim)
         self.assertEqual(2, ds.lon.ndim)
 
-        # TODO add test with rectification
-        # # open data as dataset with rectification
-        # ds = store.open_data(
-        #     data_id=data_id,
-        #     asset_names=["syn_Oa01_reflectance"],
-        #     apply_rectification=True,
-        # )
-        # self.assertIsInstance(ds, xr.Dataset)
-        # self.assertCountEqual(["SDR_Oa01"], list(ds.data_vars))
-        # self.assertCountEqual([4091, 4865], [ds.sizes["lat"], ds.sizes["lon"]])
-        # self.assertEqual(1, ds.lat.ndim)
-        # self.assertEqual(1, ds.lon.ndim)
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen3_syn_rect(self, mock_rioxarray_open):
+        mock_rioxarray_open.side_effect = [
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
+        ]
+
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+
+        data_id = (
+            "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T233058_"
+            "20250706T233358_20250708T043306_0179_108_258_3420_ESA_O_NT_002"
+        )
+
+        # open data as dataset with rectification
+        ds = store.open_data(
+            data_id=data_id,
+            asset_names=["syn_Oa01_reflectance"],
+            apply_rectification=True,
+            add_error_bands=False,
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["SDR_Oa01"], list(ds.data_vars))
+        self.assertCountEqual([2544, 1591], [ds.sizes["lat"], ds.sizes["lon"]])
+        self.assertEqual(1, ds.lat.ndim)
+        self.assertEqual(1, ds.lon.ndim)
+
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen3_lst_rect(self, mock_rioxarray_open):
+        mock_rioxarray_open.side_effect = [
+            sentinel_3_lst_data(),
+            sentinel_3_lst_geolocation_data(),
+            sentinel_3_angles_data(),
+            sentinel_3_angles_geolocation_data(),
+            sentinel_3_lst_mask_data(),
+        ]
+
+        store = new_data_store(
+            DATA_STORE_ID_CDSE,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+        data_id = (
+            "collections/sentinel-3-sl-2-lst-ntc/items/S3A_SL_2_LST____20200705T094658_"
+            "20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004"
+        )
+
+        # open data as dataset with rectification
+        ds = store.open_data(data_id=data_id)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["LST", "mask"], list(ds.data_vars))
+        self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
+        self.assertEqual(1, ds.lat.ndim)
+        self.assertEqual(1, ds.lon.ndim)
+
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_pc_sen3_lst_rect(self, mock_rioxarray_open):
+        mock_rioxarray_open.side_effect = [
+            sentinel_3_lst_data(),
+            sentinel_3_lst_geolocation_data(),
+            sentinel_3_angles_data(),
+            sentinel_3_angles_geolocation_data(),
+            sentinel_3_lst_mask_data(),
+        ]
+
+        store = new_data_store(DATA_STORE_ID_PC)
+        data_id = (
+            "collections/sentinel-3-slstr-lst-l2-netcdf/items/"
+            "S3A_SL_2_LST_20200705T094658_20200705T094958_0179_060_136_2160"
+        )
+
+        # open data as dataset with rectification
+        ds = store.open_data(data_id=data_id)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["LST", "mask"], list(ds.data_vars))
+        self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
+        self.assertEqual(1, ds.lat.ndim)
+        self.assertEqual(1, ds.lon.ndim)
 
     @pytest.mark.vcr()
     def test_open_data_cdse_ardc_no_items_found(self):
@@ -763,7 +854,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 11, 12, 2, 1],
+            [4, 759, 903, 10, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -775,7 +866,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 11, 12, 2, 1],
+            [1, 759, 903, 10, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -808,7 +899,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 11, 12, 2, 1],
+            [4, 759, 903, 10, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -820,7 +911,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 11, 12, 2, 1],
+            [1, 759, 903, 10, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -849,7 +940,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [2, 100, 100, 23, 23, 2, 1],
+            [2, 100, 100, 22, 22, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["x"],
@@ -861,7 +952,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 100, 100, 23, 23, 2, 1],
+            [1, 100, 100, 22, 22, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["x"][0],
@@ -891,7 +982,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 742, 1483, 10, 19, 2, 1],
+            [4, 741, 1482, 9, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -903,7 +994,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 742, 1024, 10, 19, 2, 1],
+            [1, 741, 1482, 9, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -959,7 +1050,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 11, 12, 2, 1],
+            [4, 759, 903, 10, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -971,7 +1062,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 11, 12, 2, 1],
+            [1, 759, 903, 10, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -1001,7 +1092,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 742, 1483, 10, 19, 2, 1],
+            [4, 741, 1482, 9, 11, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -1013,7 +1104,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 742, 1024, 10, 19, 2, 1],
+            [1, 741, 1482, 9, 11, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -1025,48 +1116,102 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
-    # TODO add test for Sen3 ardc
-    # @pytest.mark.vcr()
-    # @patch("rioxarray.open_rasterio")
-    # def test_open_data_cdse_sen3_ardc(self, mock_rioxarray_open):
-    #     mock_rioxarray_open.side_effect = [
-    #         sentinel_3_geolocation_data(),
-    #         sentinel_3_data(),
-    #         sentinel_3_geolocation_data(),
-    #         sentinel_3_data(),
-    #         sentinel_3_geolocation_data(),
-    #         sentinel_3_data(),
-    #         sentinel_3_geolocation_data(),
-    #         sentinel_3_data(),
-    #         sentinel_3_geolocation_data(),
-    #         sentinel_3_data(),
-    #     ]
-    #     store = new_data_store(
-    #         DATA_STORE_ID_CDSE_ARDC,
-    #         key=CDSE_CREDENTIALS["key"],
-    #         secret=CDSE_CREDENTIALS["secret"],
-    #     )
-    #
-    #     ds = store.open_data(
-    #         data_id="sentinel-3-syn-2-syn-ntc",
-    #         bbox=[8, 52, 12, 55],
-    #         time_range=["2020-07-31", "2020-08-01"],
-    #         spatial_res=300 / 111320,  # meter in degree
-    #         crs="EPSG:4326",
-    #         asset_names=["syn_Oa01_reflectance"],
-    #     )
-    #     ds
-    #     self.assertIsInstance(ds, xr.Dataset)
-    #
-    #     self.assertCountEqual(["syn_Oa01_reflectance"], list(ds.data_vars))
-    #     self.assertEqual(
-    #         [2, 1115, 1486],
-    #         [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]],
-    #     )
-    #     self.assertEqual(
-    #         [2, 1115, 1486],
-    #         [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
-    #     )
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen3_ardc(self, mock_rioxarray_open):
+        mock_rioxarray_open.side_effect = [
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
+            sentinel_3_syn_data(),
+            sentinel_3_syn_geolocation_data(),
+        ]
+        store = new_data_store(
+            DATA_STORE_ID_CDSE_ARDC,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+
+        ds = store.open_data(
+            data_id="sentinel-3-syn-2-syn-ntc",
+            bbox=[8, 52, 12, 55],
+            time_range=["2020-07-31", "2020-08-01"],
+            spatial_res=300 / 111320,  # meter in degree
+            crs="EPSG:4326",
+            asset_names=["syn_Oa01_reflectance"],
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["SDR_Oa01", "SDR_Oa01_err"], list(ds.data_vars))
+        self.assertEqual(
+            [2, 1114, 1485],
+            [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
+        )
+        self.assertEqual(
+            [1, 1114, 1485],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+            ],
+        )
+
+    @pytest.mark.vcr()
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_cdse_sen3_lst_ardc(self, mock_rioxarray_open):
+        mock_rioxarray_open.side_effect = [
+            sentinel_3_lst_data(),
+            sentinel_3_lst_geolocation_data(),
+            sentinel_3_angles_data(),
+            sentinel_3_angles_geolocation_data(),
+            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_data(),
+            sentinel_3_lst_geolocation_data(),
+            sentinel_3_angles_data(),
+            sentinel_3_angles_geolocation_data(),
+            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_data(),
+            sentinel_3_lst_geolocation_data(),
+            sentinel_3_angles_data(),
+            sentinel_3_angles_geolocation_data(),
+            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_data(),
+            sentinel_3_lst_geolocation_data(),
+            sentinel_3_angles_data(),
+            sentinel_3_angles_geolocation_data(),
+            sentinel_3_lst_mask_data(),
+        ]
+        store = new_data_store(
+            DATA_STORE_ID_CDSE_ARDC,
+            key=CDSE_CREDENTIALS["key"],
+            secret=CDSE_CREDENTIALS["secret"],
+        )
+
+        ds = store.open_data(
+            data_id="sentinel-3-sl-2-lst-ntc",
+            bbox=[8.0, 52, 8.1, 52.1],
+            time_range=["2020-08-01", "2020-08-01"],
+            spatial_res=300 / 111320,  # meter in degree
+            crs="EPSG:4326",
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["LST", "mask"], list(ds.data_vars))
+        self.assertEqual(
+            [2, 38, 38],
+            [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
+        )
+        self.assertEqual(
+            [1, 38, 38],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+            ],
+        )
 
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):

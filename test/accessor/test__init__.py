@@ -107,9 +107,22 @@ class AccessorInitTest(unittest.TestCase):
     def test_list_ardc_data_ids_cdse(self):
         result = list_ardc_data_ids(DATA_STORE_ID_CDSE_ARDC)
         self.assertCountEqual(
-            result, ["sentinel-2-l2a", "sentinel-2-l1c", "sentinel-3-syn-2-syn-ntc"]
+            result,
+            [
+                "sentinel-2-l2a",
+                "sentinel-2-l1c",
+                "sentinel-3-syn-2-syn-ntc",
+                "sentinel-3-sl-2-lst-ntc",
+            ],
         )
 
     def test_list_ardc_data_ids_pc(self):
         result = list_ardc_data_ids(DATA_STORE_ID_PC_ARDC)
-        self.assertEqual(result, ["sentinel-2-l2a"])
+        self.assertEqual(
+            result,
+            [
+                "sentinel-2-l2a",
+                "sentinel-3-synergy-syn-l2-netcdf",
+                "sentinel-3-slstr-lst-l2-netcdf",
+            ],
+        )
