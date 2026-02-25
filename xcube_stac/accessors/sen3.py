@@ -102,14 +102,9 @@ _SCHEMA_APPLY_GEO_ORTHORECTIFICATION = JsonBooleanSchema(
     ),
     default=True,
 )
-_SCHEMA_ADD_MASK = JsonBooleanSchema(
-    title="Add mask",
-    description=(
-        "If True, a confidence mask is generated from the product's quality flags. "
-        "The mask is derived from the 'confidence_in' variable by extracting "
-        "the 'summary_cloud', 'unfilled', and 'summary_pointing' bit and "
-        "converting it into a integer mask."
-    ),
+_SCHEMA_ADD_FLAGS = JsonBooleanSchema(
+    title="Add flags",
+    description="If True, flags are added.",
     default=True,
 )
 _SCHEMA_CDSE_ASSET_NAMES = JsonArraySchema(
@@ -138,6 +133,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         self._catalog = catalog
         self._asset_names = _SENTINEL3_SYN_CDSE_ASSETS
         self._asset_names_schema = _SCHEMA_CDSE_ASSET_NAMES
+        self._flags = "flags"
         self._storage_option_s3 = storage_options_s3
         self.session = rasterio.session.AWSSession(
             aws_unsigned=storage_options_s3["anon"],
@@ -173,6 +169,12 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             ds = ds[var_names]
         ds = _apply_scaling(ds)
 
+        # add flags
+        if open_params.get("add_flags", True):
+            flags = self.open_asset(item.assets[self._flags])
+            ds.update(flags)
+
+        # add geolocation
         geo = self.open_asset(item.assets["geolocation"])
         geo = _apply_scaling(geo[["lon", "lat"]])
         ds = ds.assign_coords(dict(lat=geo["lat"], lon=geo["lon"]))
@@ -190,6 +192,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 asset_names=self._asset_names_schema,
                 apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
                 add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
+                add_flags=_SCHEMA_ADD_FLAGS,
             ),
             required=[],
             additional_properties=True,
@@ -208,6 +211,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         self._angles = "geometry_tn"
         self._angles_geo = "geodetic_tx"
         self._flags = "flags_in"
+        self._asset_names = None
 
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
         ds = rioxarray.open_rasterio(
@@ -241,9 +245,9 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             angles_geo = self.open_asset(item.assets[self._angles_geo])
             angles = angles.assign_coords(dict(lon=angles_geo["longitude_tx"]))
             ds = orthorectify_geolocation(ds, angles)
-        if open_params.get("add_mask", True):
-            ds_flags = self.open_asset(item.assets[self._flags])
-            ds = _add_mask(ds_flags, ds)
+        if open_params.get("add_flags", True):
+            flags = self.open_asset(item.assets[self._flags])
+            ds.update(flags)
         ds = ds.drop_vars(("x", "y", "band", "spatial_ref", "elev"), errors="ignore")
         if open_params.get("apply_rectification", True):
             ds = rectify_dataset(
@@ -258,7 +262,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             properties=dict(
                 apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
                 apply_geo_orthorectification=_SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
-                add_mask=_SCHEMA_ADD_MASK,
+                add_flags=_SCHEMA_ADD_FLAGS,
             ),
             required=[],
             additional_properties=True,
@@ -271,6 +275,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         super().__init__(catalog, **storage_options_s3)
+        self._flags = "flags"
 
     def open_ardc(
         self,
@@ -313,6 +318,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
                 add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
+                add_flags=_SCHEMA_ADD_FLAGS,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
@@ -332,8 +338,9 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
             for item in items:
                 ds = self.open_item(
                     item,
-                    asset_names=open_params.get("asset_names"),
+                    asset_names=open_params.get("asset_names", self._asset_names),
                     add_error_bands=open_params.get("add_error_bands", True),
+                    add_flags=open_params.get("add_flags", True),
                     apply_rectification=False,
                 )
                 ds = rectify_dataset(
@@ -347,13 +354,10 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 dss_spatial.append(ds)
             if not dss_spatial:
                 continue
-            dss_time.append(self._mosaic_spatial(dss_spatial))
+            dss_time.append(mosaic_spatial_take_first(dss_spatial))
         ds_final = xr.concat(dss_time, dim="time", join="override")
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
         return ds_final
-
-    def _mosaic_spatial(self, list_ds: list[xr.Dataset]) -> xr.Dataset:
-        return mosaic_spatial_take_first(list_ds)
 
 
 class Sen3LstCdseStacArdcAccessor(
@@ -365,6 +369,8 @@ class Sen3LstCdseStacArdcAccessor(
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         super().__init__(catalog, **storage_options_s3)
+        self._asset_names = None
+        self._flags = "flags_in"
 
     def get_open_data_params_schema(
         self, data_id: str = None, opener_id: str = None
@@ -376,43 +382,11 @@ class Sen3LstCdseStacArdcAccessor(
                 spatial_res=SCHEMA_SPATIAL_RES,
                 crs=SCHEMA_CRS,
                 query=SCHEMA_ADDITIONAL_QUERY,
+                add_flags=_SCHEMA_ADD_FLAGS,
             ),
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
-
-    def _mosaic_spatial(self, list_ds: list[xr.Dataset]) -> xr.Dataset:
-        if len(list_ds) == 1:
-            return list_ds[0]
-
-        ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
-
-        # get indices based on mask
-        da_mask = da.stack([ds["mask"].data for ds in list_ds], axis=0)
-        valid_mask = da_mask == 1
-        first_valid_index = valid_mask.argmax(axis=0)
-
-        # apply to data variable mask
-        da_arr_select = da.choose(first_valid_index, da_mask)
-        ds_mosaic["mask"] = xr.DataArray(
-            da_arr_select,
-            dims=list_ds[0]["mask"].dims,
-            coords=list_ds[0]["mask"].coords,
-            attrs=list_ds[0]["mask"].attrs,
-        )
-
-        # apply to LST
-        da_lst = da.stack([ds["LST"].data for ds in list_ds], axis=0)
-        lst_mask = da.concatenate((valid_mask, ~da.isnan(da_lst)), axis=0)
-        first_lst_index = lst_mask.argmax(axis=0) % da_lst.shape[0]
-        lst_select = da.choose(first_lst_index, da_lst)
-        ds_mosaic["LST"] = xr.DataArray(
-            lst_select,
-            dims=list_ds[0]["LST"].dims,
-            coords=list_ds[0]["LST"].coords,
-            attrs=list_ds[0]["LST"].attrs,
-        )
-        return ds_mosaic
 
 
 class Sen3PlanetaryComputerStacItemAccessor(Sen3CdseStacItemAccessor):
@@ -424,6 +398,7 @@ class Sen3PlanetaryComputerStacItemAccessor(Sen3CdseStacItemAccessor):
         self._catalog = catalog
         self._asset_names = _SENTINEL3_SYN_PC_ASSETS
         self._asset_names_schema = _SCHEMA_PC_ASSET_NAMES
+        self._flags = "syn-flags"
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         if not self._is_pc_signed(item):
@@ -452,6 +427,7 @@ class Sen3LstPlanetaryComputerStacItemAccessor(
         self._angles = "slstr-geometry-tn"
         self._angles_geo = "slstr-geodetic-tx"
         self._flags = "slstr-flags-in"
+        self._asset_names = None
 
 
 class Sen3PlanetaryComputerStacArdcAccessor(
@@ -460,12 +436,29 @@ class Sen3PlanetaryComputerStacArdcAccessor(
     """Provides methods for access multiple Sentinel-3 STAC Items from the
     Planetary Computer STAC API and build an analysis ready data cube."""
 
+    # noinspection PyMissingConstructor
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        self._catalog = catalog
+        self._asset_names = _SENTINEL3_SYN_PC_ASSETS
+        self._asset_names_schema = _SCHEMA_PC_ASSET_NAMES
+        self._flags = "syn-flags"
+
 
 class Sen3LstPlanetaryComputerStacArdcAccessor(
     Sen3LstCdseStacArdcAccessor, Sen3LstPlanetaryComputerStacItemAccessor
 ):
     """Provides methods for access multiple Sentinel-3 LST STAC Items from the
     Planetary Computer STAC API and build an analysis ready data cube."""
+
+    # noinspection PyMissingConstructor
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        self._catalog = catalog
+        self._lst_asset = "lst-in"
+        self._geo_asset = "slstr-geodetic-in"
+        self._angles = "slstr-geometry-tn"
+        self._angles_geo = "slstr-geodetic-tx"
+        self._flags = "slstr-flags-in"
+        self._asset_names = None
 
 
 def _group_items(items: list[pystac.Item]) -> xr.DataArray:
@@ -490,19 +483,15 @@ def _group_items(items: list[pystac.Item]) -> xr.DataArray:
         grouped_items[i] = groups[k]
 
     # Mean timestamp per group
-    dts = np.empty(len(grouped_items), dtype="datetime64[ns]")
+    dts = np.empty(len(grouped_items), dtype="datetime64[s]")
     for i, items in enumerate(grouped_items):
         times = np.array(
             [np.datetime64(item.datetime.replace(tzinfo=None)) for item in items]
         )
         mean_time = np.datetime64(int(times.view("int64").mean()), "us")
-        dts[i] = mean_time.astype("datetime64[ns]")
+        dts[i] = mean_time.astype("datetime64[s]")
 
-    da = xr.DataArray(
-        grouped_items,
-        dims=("time",),
-        coords=dict(time=np.array(dts, dtype="datetime64[ns]")),
-    )
+    da = xr.DataArray(grouped_items, dims=("time",), coords=dict(time=dts))
 
     da["time"].encoding["units"] = "seconds since 1970-01-01"
     da["time"].encoding["calendar"] = "standard"
@@ -601,35 +590,3 @@ def _apply_scaling(ds: xr.Dataset) -> xr.Dataset:
             ds_out[var] = ds_out[var] + offset
 
     return ds_out
-
-
-def _add_mask(ds_flags: xr.Dataset, ds: xr.Dataset) -> xr.Dataset:
-    # resolve bit mask
-    flags = ds_flags.confidence_in
-    meanings = flags.attrs["flag_meanings"].split()
-    masks = flags.attrs["flag_masks"]
-
-    cloud_bit = int(masks[meanings.index("summary_cloud")])
-    unfilled_bit = int(masks[meanings.index("unfilled")])
-    pointing_bit = int(masks[meanings.index("summary_pointing")])
-
-    # Initialize mask: default 1 = valid
-    mask = xr.ones_like(flags, dtype=np.uint8)
-
-    # Assign categories
-    mask = mask.where((flags & unfilled_bit) == 0, 0)
-    mask = mask.where((flags & cloud_bit) == 0, 2)
-    mask = mask.where((flags & pointing_bit) == 0, 3)
-
-    # Assign to dataset
-    ds["mask"] = mask
-    ds["mask"].attrs = {
-        "flag_values": [0, 1, 2, 3],
-        "flag_meanings": "unfilled valid cloud bad_pointing",
-        "history": (
-            "Derived from 'confidence_in' flags by mapping 'unfilled', "
-            "'summary_cloud', and 'summary_pointing' to categorical mask."
-        ),
-    }
-
-    return ds

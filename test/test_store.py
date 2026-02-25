@@ -54,9 +54,10 @@ from .sampledata import (
     sentinel_3_angles_geolocation_data,
     sentinel_3_lst_data,
     sentinel_3_lst_geolocation_data,
-    sentinel_3_lst_mask_data,
+    sentinel_3_lst_flag_data,
     sentinel_3_syn_data,
     sentinel_3_syn_geolocation_data,
+    sentinel_3_syn_cloud_data,
 )
 
 SKIP_HELP = (
@@ -680,6 +681,7 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_cdse_sen3_syn(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
         ]
 
@@ -701,8 +703,10 @@ class StacDataStoreTest(unittest.TestCase):
             apply_rectification=False,
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["SDR_Oa01", "SDR_Oa01_err"], list(ds.data_vars))
-        self.assertCountEqual([1023, 1217], [ds.sizes["y"], ds.sizes["x"]])
+        self.assertCountEqual(
+            ["SDR_Oa01", "SDR_Oa01_err", "CLOUD_flags"], list(ds.data_vars)
+        )
+        self.assertCountEqual([150, 200], [ds.sizes["y"], ds.sizes["x"]])
         self.assertEqual(2, ds.lat.ndim)
         self.assertEqual(2, ds.lon.ndim)
 
@@ -711,6 +715,7 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_cdse_sen3_syn_rect(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
         ]
 
@@ -733,8 +738,8 @@ class StacDataStoreTest(unittest.TestCase):
             add_error_bands=False,
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["SDR_Oa01"], list(ds.data_vars))
-        self.assertCountEqual([2544, 1591], [ds.sizes["lat"], ds.sizes["lon"]])
+        self.assertCountEqual(["SDR_Oa01", "CLOUD_flags"], list(ds.data_vars))
+        self.assertCountEqual([261, 372], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
 
@@ -746,7 +751,7 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_flag_data(),
         ]
 
         store = new_data_store(
@@ -762,7 +767,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset with rectification
         ds = store.open_data(data_id=data_id)
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["LST", "mask"], list(ds.data_vars))
+        self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
@@ -774,7 +779,7 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_flag_data(),
         ]
 
         store = new_data_store(DATA_STORE_ID_PC)
@@ -786,7 +791,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset with rectification
         ds = store.open_data(data_id=data_id)
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["LST", "mask"], list(ds.data_vars))
+        self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
@@ -1120,14 +1125,19 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_cdse_sen3_ardc(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
             sentinel_3_syn_data(),
+            sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
         ]
         store = new_data_store(
@@ -1145,7 +1155,9 @@ class StacDataStoreTest(unittest.TestCase):
             asset_names=["syn_Oa01_reflectance"],
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["SDR_Oa01", "SDR_Oa01_err"], list(ds.data_vars))
+        self.assertCountEqual(
+            ["SDR_Oa01", "SDR_Oa01_err", "CLOUD_flags"], list(ds.data_vars)
+        )
         self.assertEqual(
             [2, 1114, 1485],
             [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
@@ -1167,22 +1179,22 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_mask_data(),
+            sentinel_3_lst_flag_data(),
         ]
         store = new_data_store(
             DATA_STORE_ID_CDSE_ARDC,
@@ -1198,7 +1210,7 @@ class StacDataStoreTest(unittest.TestCase):
             crs="EPSG:4326",
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["LST", "mask"], list(ds.data_vars))
+        self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
         self.assertEqual(
             [2, 38, 38],
             [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],

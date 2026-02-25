@@ -41,6 +41,7 @@ from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeL
 from xcube_resampling import affine_transform_dataset
 from xcube_resampling.constants import FillValues
 from xcube_resampling.gridmapping import GridMapping
+from xcube_resampling.utils import _get_fill_value
 
 from .constants import (
     LOG,
@@ -699,7 +700,7 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], fill_value: dict | int | float = np.nan
+    list_ds: list[xr.Dataset], fill_values: dict | int | float = np.nan
 ) -> xr.Dataset:
     """Creates a spatial mosaic from a list of datasets by taking the first
     non-fill value encountered across datasets at each pixel location.
@@ -711,7 +712,7 @@ def mosaic_spatial_take_first(
 
     Args:
         list_ds: A list of datasets to be mosaicked.
-        fill_value: The value considered as missing data. Can be a mapping from
+        fill_values: The value considered as missing data. Can be a mapping from
             variable name to fill_value, where defaults to NaN if variable name not
             specified. Defaults to NaN.
 
@@ -727,14 +728,11 @@ def mosaic_spatial_take_first(
         # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
         if list_ds[0][key].ndim >= 2:
             da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            if isinstance(fill_value, dict):
-                array_fv = fill_value.get(key, np.nan)
-            else:
-                array_fv = fill_value
-            if np.isnan(array_fv):
+            fill_value = _get_fill_value(fill_values, key, list_ds[0][key])
+            if np.isnan(fill_value):
                 nonnan_mask = ~da.isnan(da_arr)
             else:
-                nonnan_mask = da_arr != array_fv
+                nonnan_mask = da_arr != fill_value
             first_non_nan_index = nonnan_mask.argmax(axis=0)
             da_arr_select = da.choose(first_non_nan_index, da_arr)
             ds_mosaic[key] = xr.DataArray(

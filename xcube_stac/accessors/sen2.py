@@ -513,7 +513,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             if not multi_tiles:
                 idx_remove_dt.append(dt_idx)
                 continue
-            dss.append(mosaic_spatial_take_first(multi_tiles, fill_value={"SCL": 0}))
+            dss.append(mosaic_spatial_take_first(multi_tiles, fill_values={"SCL": 0}))
         ds_final = xr.concat(dss, dim="time", join="override")
         np_datetimes_sel = [
             value
@@ -686,7 +686,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 if not multi_tiles:
                     continue
                 mosaicked_ds = mosaic_spatial_take_first(
-                    multi_tiles, fill_value={"SCL": 0}
+                    multi_tiles, fill_values={"SCL": 0}
                 )
                 if final_ds is None:
                     final_ds = _create_empty_dataset(
@@ -1350,7 +1350,7 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 prevent_nan_propagations=True,
             )
         )
-    return mosaic_spatial_take_first(resampled_list_ds, fill_value={"SCL": 0})
+    return mosaic_spatial_take_first(resampled_list_ds, fill_values={"SCL": 0})
 
 
 def _fill_nan_slices(
