@@ -333,6 +333,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 ds = self.open_item(
                     item,
                     asset_names=open_params.get("asset_names"),
+                    add_error_bands=open_params.get("add_error_bands", True),
                     apply_rectification=False,
                 )
                 ds = rectify_dataset(
