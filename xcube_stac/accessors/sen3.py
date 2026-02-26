@@ -260,9 +260,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             ds.update(flags)
         ds = ds.drop_vars(("x", "y", "band", "spatial_ref", "elev"), errors="ignore")
         if open_params.get("apply_rectification", True):
-            ds = rectify_dataset(
-                ds, fill_values={"mask": 0}, prevent_nan_propagations=True
-            )
+            ds = rectify_dataset(ds, prevent_nan_propagations=True)
         return ds
 
     def get_open_data_params_schema(
@@ -359,7 +357,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 ds = rectify_dataset(
                     ds,
                     target_gm=target_gm,
-                    fill_values={"mask": 0},
                     prevent_nan_propagations=True,
                 )
                 if ds is None:
