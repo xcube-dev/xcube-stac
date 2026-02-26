@@ -193,6 +193,14 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         ds = ds.drop_vars(["band", "x", "y", "spatial_ref"])
         if open_params.get("apply_rectification", True):
             ds = rectify_dataset(ds, prevent_nan_propagations=True)
+
+        for var in ds.data_vars:
+            # Remove CF scaling attributes if present
+            ds[var].attrs.pop("scale_factor", None)
+            ds[var].attrs.pop("add_offset", None)
+            fill = ds[var].attrs.pop("_FillValue", None)
+            if fill is not None:
+                ds[var].encoding["_FillValue"] = fill
         return ds
 
     def get_open_data_params_schema(
@@ -261,6 +269,14 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         ds = ds.drop_vars(("x", "y", "band", "spatial_ref", "elev"), errors="ignore")
         if open_params.get("apply_rectification", True):
             ds = rectify_dataset(ds, prevent_nan_propagations=True)
+
+        for var in ds.data_vars:
+            # Remove CF scaling attributes if present
+            ds[var].attrs.pop("scale_factor", None)
+            ds[var].attrs.pop("add_offset", None)
+            fill = ds[var].attrs.pop("_FillValue", None)
+            if fill is not None:
+                ds[var].encoding["_FillValue"] = fill
         return ds
 
     def get_open_data_params_schema(
@@ -367,6 +383,14 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
             dss_time.append(mosaic_spatial_take_first(dss_spatial, var_ref, np.nan))
         ds_final = xr.concat(dss_time, dim="time", join="override")
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
+
+        for var in ds_final.data_vars:
+            # Remove CF scaling attributes if present
+            ds_final[var].attrs.pop("scale_factor", None)
+            ds_final[var].attrs.pop("add_offset", None)
+            fill = ds_final[var].attrs.pop("_FillValue", None)
+            if fill is not None:
+                ds_final[var].encoding["_FillValue"] = fill
         return ds_final
 
 
