@@ -21,6 +21,7 @@ dependencies = [
     "boto3==1.37.3",
     "cftime",
     "dask",
+    "h5netcdf",
     "libgdal-jp2openjpeg",
     "libgdal-netcdf",
     "numpy",
@@ -35,7 +36,7 @@ dependencies = [
     "xarray",
     "xmltodict",
     "xcube-core>=1.13.1",
-    "xcube-resampling>=0.3.0",
+    "xcube-resampling>=0.3.1",
 ]
 
 [tool.setuptools.dynamic]

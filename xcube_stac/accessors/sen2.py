@@ -274,6 +274,16 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         return assets_sel
 
     @staticmethod
+    def _list_assets_names(item: pystac.Item, **open_params) -> list[str]:
+        asset_names = open_params.get("asset_names")
+        if not asset_names:
+            if item.collection_id == "sentinel-2-l2a":
+                asset_names = _SENTINEL2_L2A_BANDS
+            elif item.collection_id == "sentinel-2-l1c":
+                asset_names = _SENTINEL2_BANDS
+        return asset_names
+
+    @staticmethod
     def _combiner_function(
         dss: Sequence[xr.Dataset],
         item: pystac.Item = None,
@@ -504,6 +514,18 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         )
         dss = []
         idx_remove_dt = []
+        var_names = self._list_assets_names(
+            grouped_items.isel(time=0).item()[0], **open_item_open_params
+        )
+        fill_value = np.nan
+        var_ref = var_names[0]
+        if var_names[0] == "SCL":
+            if len(var_names) == 1:
+                fill_value = 0
+            else:
+                fill_value = np.nan
+                var_ref = var_names[1]
+
         for dt_idx, dt in enumerate(grouped_items.time.values):
             items = grouped_items.isel(time=dt_idx).item()
             multi_tiles = []
@@ -513,7 +535,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             if not multi_tiles:
                 idx_remove_dt.append(dt_idx)
                 continue
-            dss.append(mosaic_spatial_take_first(multi_tiles, fill_value={"SCL": 0}))
+            dss.append(mosaic_spatial_take_first(multi_tiles, var_ref, fill_value))
         ds_final = xr.concat(dss, dim="time", join="override")
         np_datetimes_sel = [
             value
@@ -670,6 +692,19 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             tile_size=open_params.get("tile_size", TILE_SIZE),
         )
         final_ds = None
+
+        var_names = self._list_assets_names(
+            np.sum(grouped_items.isel(time=0).values)[0], **open_item_open_params
+        )
+        fill_value = np.nan
+        var_ref = var_names[0]
+        if var_names[0] == "SCL":
+            if len(var_names) == 1:
+                fill_value = 0
+            else:
+                fill_value = np.nan
+                var_ref = var_names[1]
+
         for dt_idx, dt in enumerate(grouped_items.time.values):
             for tile_id in grouped_items.tile_id.values:
                 items = grouped_items.sel(tile_id=tile_id, time=dt).item()
@@ -686,7 +721,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 if not multi_tiles:
                     continue
                 mosaicked_ds = mosaic_spatial_take_first(
-                    multi_tiles, fill_value={"SCL": 0}
+                    multi_tiles, var_ref, fill_value
                 )
                 if final_ds is None:
                     final_ds = _create_empty_dataset(
@@ -738,7 +773,14 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                     idx_remove_dt.append(dt_idx)
                     continue
                 else:
-                    ds_time = mosaic_spatial_take_first(multi_tiles)
+                    var_ref = [
+                        var_name
+                        for var_name in ds.keys()
+                        if var_name.startswith("viewing_angle")
+                    ][0]
+                    ds_time = mosaic_spatial_take_first(
+                        multi_tiles, str(var_ref), np.nan
+                    )
                     list_ds_time.append(ds_time)
             ds_tile = xr.concat(list_ds_time, dim="time", join="override").chunk(-1)
             np_datetimes_sel = [
@@ -759,8 +801,10 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                     ds_tile, grouped_items.time.values, idx_remove_dt
                 )
             list_ds_tiles.append(ds_tile)
-
-        ds_angles = mosaic_spatial_take_first(list_ds_tiles)
+        var_ref = [
+            var_name for var_name in ds.keys() if var_name.startswith("viewing_angle")
+        ][0]
+        ds_angles = mosaic_spatial_take_first(list_ds_tiles, str(var_ref), np.nan)
         ds_final = _add_angles(ds_final, ds_angles)
         return ds_final
 
@@ -1350,7 +1394,18 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 prevent_nan_propagations=True,
             )
         )
-    return mosaic_spatial_take_first(resampled_list_ds, fill_value={"SCL": 0})
+
+    var_names = list(resampled_list_ds[0].keys())
+    fill_value = np.nan
+    var_ref = var_names[0]
+    if var_names[0] == "SCL":
+        if len(var_names) == 1:
+            fill_value = 0
+        else:
+            fill_value = np.nan
+            var_ref = var_names[1]
+
+    return mosaic_spatial_take_first(resampled_list_ds, var_ref, fill_value)
 
 
 def _fill_nan_slices(

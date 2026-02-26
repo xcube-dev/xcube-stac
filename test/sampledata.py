@@ -146,18 +146,18 @@ def sentinel_3_syn_data():
     mock_data = {
         "SDR_Oa01": (
             ("band", "y", "x"),
-            da.ones((1, 1023, 1217), chunks=(1, 1023, 1217), dtype=np.float32),
+            da.ones((1, 150, 200), chunks=(1, 150, 200), dtype=np.float32),
         ),
         "SDR_Oa01_err": (
             ("band", "y", "x"),
-            da.ones((1, 1023, 1217), chunks=(1, 1023, 1217), dtype=np.float32),
+            da.ones((1, 150, 200), chunks=(1, 150, 200), dtype=np.float32),
         ),
     }
     coords = {
         "spatial_ref": np.array([0]),
         "band": np.array([0]),
-        "x": np.arange(1217),
-        "y": np.arange(1023),
+        "x": np.arange(200),
+        "y": np.arange(150),
     }
     ds = xr.Dataset(mock_data, coords=coords)
     ds["SDR_Oa01"].attrs = {"_FillValue": -10000, "scale_factor": 0.0001}
@@ -165,9 +165,38 @@ def sentinel_3_syn_data():
     return ds
 
 
+def sentinel_3_syn_cloud_data():
+    flag_meanings = "a b c d"
+    flag_masks = np.array([1, 2, 4, 8], dtype=np.uint8)
+
+    # Create flags array
+    data = np.zeros((1, 200, 150), dtype=np.uint8)
+    data[:, 0:50, 0:50] = 1
+    data[:, 100:150, 100:150] = 2
+    data[:, 150:200, 100:150] = 3
+    data[:, 50:100, 50:100] = 4
+    confidence_in = da.from_array(data, chunks=(1, 200, 150))
+
+    ds_flags = xr.Dataset(
+        {"CLOUD_flags": (("band", "y", "x"), confidence_in)},
+        coords={
+            "band": [0],
+            "y": np.arange(200),
+            "x": np.arange(150),
+            "spatial_ref": 0,
+        },
+    )
+    ds_flags["CLOUD_flags"].attrs = {
+        "flag_meanings": flag_meanings,
+        "flag_masks": flag_masks,
+    }
+
+    return ds_flags
+
+
 def sentinel_3_syn_geolocation_data():
-    lon = da.linspace(0, 15, 1217, chunks=1217, dtype=np.float64)
-    lat = da.linspace(50, 60, 1023, chunks=1023, dtype=np.float64)
+    lon = da.linspace(0, 15, 200, chunks=200, dtype=np.float64)
+    lat = da.linspace(50, 60, 150, chunks=150, dtype=np.float64)
     lon, lat = da.meshgrid(lon, lat, indexing="xy")
     lon /= da.cos(da.radians(lat))
 
@@ -190,8 +219,8 @@ def sentinel_3_syn_geolocation_data():
     coords = {
         "spatial_ref": np.array([0]),
         "band": np.array([0]),
-        "x": np.arange(1217),
-        "y": np.arange(1023),
+        "x": np.arange(200),
+        "y": np.arange(150),
     }
     mock_data = {
         "lon": (("band", "y", "x"), da.expand_dims(lon_final, axis=0)),
@@ -226,7 +255,7 @@ def sentinel_3_lst_data():
     return ds
 
 
-def sentinel_3_lst_mask_data():
+def sentinel_3_lst_flag_data():
     # Define bit positions like real Sentinel-3
     flag_meanings = (
         "coastline ocean tidal land inland_water unfilled spare spare "

@@ -540,11 +540,11 @@ class UtilsTest(unittest.TestCase):
         list_ds.append(xr.Dataset({"B01": data_array}))
 
         # test only one tile
-        ds_test = mosaic_spatial_take_first(list_ds[:1], fill_value=0)
+        ds_test = mosaic_spatial_take_first(list_ds[:1], "B01", 0)
         xr.testing.assert_allclose(ds_test, list_ds[0])
 
         # test two tiles
-        ds_test = mosaic_spatial_take_first(list_ds, fill_value=0)
+        ds_test = mosaic_spatial_take_first(list_ds, "B01", 0)
         data = np.array(
             [
                 [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
@@ -573,7 +573,7 @@ class UtilsTest(unittest.TestCase):
             list_ds[i] = ds
         ds_expected = xr.Dataset({"B01": data_array})
         ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
-        ds_test = mosaic_spatial_take_first(list_ds, fill_value=0)
+        ds_test = mosaic_spatial_take_first(list_ds, "B01", 0)
         xr.testing.assert_allclose(ds_test, ds_expected)
 
     @patch("xcube_stac.utils.requests.get")
