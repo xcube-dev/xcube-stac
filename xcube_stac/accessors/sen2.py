@@ -501,7 +501,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             (centers[0] - open_params["point"][0]) ** 2
             + (centers[1] - open_params["point"][1]) ** 2
         )
-        grouped_items = grouped_items[:, idx_min]
+        grouped_items = grouped_items[:, [idx_min]]
 
         # Open data and stack along time axis
         tile_size = _get_tile_size(open_params)
@@ -509,7 +509,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             asset_names=open_params.get("asset_names"),
             spatial_res=open_params.get("spatial_res", 10),
             apply_scaling=open_params.get("apply_scaling", True),
-            add_angles=open_params.get("add_angles", False),
+            add_angles=False,
             tile_size=tile_size,
         )
         dss = []
@@ -527,7 +527,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 var_ref = var_names[1]
 
         for dt_idx, dt in enumerate(grouped_items.time.values):
-            items = grouped_items.isel(time=dt_idx).item()
+            items = grouped_items.isel(time=dt_idx, tile_id=0).item()
             multi_tiles = []
             for item in items:
                 ds = self.open_item(item, **open_item_open_params)
@@ -545,7 +545,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         ds_final = ds_final.assign_coords(coords=dict(time=np_datetimes_sel))
 
         # clip dataset
-        item = np.sum(grouped_items.values)[0]
+        item = np.sum(grouped_items.isel(tile_id=0).values)[0]
         asset = next(iter(item.assets.values()))
         crs_data = asset.extra_fields.get(
             self._stac_item_properties["crs"],
@@ -569,6 +569,9 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             chunk_sizes=dict(x=tile_size[0], y=tile_size[1]),
             format_name="zarr",
         )
+
+        if open_params.get("add_angles", False):
+            ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
         return ds_final
 
     def _group_items(self, items: Sequence[pystac.Item]) -> xr.DataArray:
@@ -976,8 +979,10 @@ def _get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
     else:
         y_res = 5000
         x_res = 5000
+    bbox = gm_final.xy_bbox
+    bbox = [bbox[0] - x_res, bbox[1] - y_res, bbox[2] + x_res, bbox[3] + y_res]
 
-    return GridMapping.regular_from_bbox(gm_final.xy_bbox, (x_res, y_res), gm_final.crs)
+    return GridMapping.regular_from_bbox(bbox, (x_res, y_res), gm_final.crs)
 
 
 def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:

@@ -1,3 +1,10 @@
+## Changes in 1.2.1
+
+- STAC searches via `pystac_client` now use `limit=100` to enforce paging and improve
+  robustness against 429 errors (notably with the CDSE STAC API).
+- Fixed mosaicking logic for Sentinel-2 angles, resolving issues in single-tile time 
+  series cube generation by handling angle cubes separately due to their coarser grid.
+
 ## Changes in 1.2.0
 
 - Switched spatial resampling to the new `xcube_resampling` library, replacing the
