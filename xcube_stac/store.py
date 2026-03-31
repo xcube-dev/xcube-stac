@@ -251,6 +251,7 @@ class StacDataStore(DataStore):
         self._assert_valid_data_type(data_type)
         schema = self.get_search_params_schema()
         schema.validate_instance(search_params)
+        search_params.update(dict(limit=100))
         items = search_items(self._catalog, self._searchable, **search_params)
 
         for item in items:
@@ -592,6 +593,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
                 intersects=intersect_geojson,
                 time_range=open_params["time_range"],
                 query=open_params.get("query"),
+                limit=100,
             )
         )
 
