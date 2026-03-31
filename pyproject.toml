@@ -43,10 +43,7 @@ dependencies = [
 version = {attr = "xcube_stac.__version__"}
 
 [tool.setuptools.packages.find]
-exclude = [
-  "test*",
-  "doc*"
-]
+include = ["xcube_stac*"]
 
 [project.optional-dependencies]
 dev = [
