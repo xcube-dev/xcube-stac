@@ -66,10 +66,15 @@ SKIP_HELP = (
 )
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
-CDSE_CREDENTIALS = {
-    "key": "xxx",
-    "secret": "xxx",
-}
+
+import os
+
+os.environ.update(
+    {
+        "AWS_ACCESS_KEY_ID": "xxx",
+        "AWS_SECRET_ACCESS_KEY": "xxx",
+    }
+)
 
 
 def is_server_running() -> bool:
@@ -147,11 +152,7 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID, url=self.url_searchable)
         self.assertEqual(("dataset", "mldataset"), store.get_data_types())
         # CDSE STAC API Sentinel-2
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
         self.assertEqual(("dataset",), store.get_data_types())
 
     @pytest.mark.vcr()
@@ -167,11 +168,7 @@ class StacDataStoreTest(unittest.TestCase):
             store.get_data_types_for_data(self.data_id_netcdf),
         )
         # CDSE STAC API Sentinel-2
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
         self.assertEqual(
             ("dataset",),
             store.get_data_types_for_data(self.data_id_cdse_sen2),
@@ -220,11 +217,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_get_data_ids_cdse_ardc(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         data_ids = store.list_data_ids()
         self.assertCountEqual(
             [
@@ -388,11 +381,7 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("overview_level", schema.properties)
 
         # CDSE STAC API Sentinel-2
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
         schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen2)
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
@@ -407,11 +396,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     # noinspection PyUnresolvedReferences
     def test_get_open_data_params_schema_cdse_ardc(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         data_ids = ("sentinel-2-l2a", "sentinel-2-l1c")
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
@@ -632,11 +617,7 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_cdse_sen2(self, mock_rioxarray_open):
         mock_rioxarray_open.return_value = sentinel_2_band_data_10m()
 
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
 
         data_id = (
             "collections/sentinel-2-l2a/items/S2A_MSIL2A_20200301T090901"
@@ -685,11 +666,7 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_syn_geolocation_data(),
         ]
 
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
 
         data_id = (
             "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T233058_"
@@ -719,11 +696,7 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_syn_geolocation_data(),
         ]
 
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
 
         data_id = (
             "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T233058_"
@@ -739,7 +712,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["SDR_Oa01", "CLOUD_flags"], list(ds.data_vars))
-        self.assertCountEqual([261, 372], [ds.sizes["lat"], ds.sizes["lon"]])
+        self.assertCountEqual([262, 372], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
 
@@ -748,17 +721,13 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_cdse_sen3_lst_rect(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_lst_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_flag_data(),
         ]
 
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
         data_id = (
             "collections/sentinel-3-sl-2-lst-ntc/items/S3A_SL_2_LST____20200705T094658_"
             "20200705T094958_20200706T155921_0179_060_136_2160_LN2_O_NT_004"
@@ -776,10 +745,10 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_pc_sen3_lst_rect(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_lst_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_flag_data(),
         ]
 
         store = new_data_store(DATA_STORE_ID_PC)
@@ -798,11 +767,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_open_data_cdse_ardc_no_items_found(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
 
         # get warning, if no tiles are found
         with self.assertLogs("xcube.stac", level="WARNING") as cm:
@@ -831,11 +796,7 @@ class StacDataStoreTest(unittest.TestCase):
     @patch("rioxarray.open_rasterio")
     def test_open_data_cdse_sen2_ardc(self, mock_rioxarray_open):
         mock_rioxarray_open.return_value = sentinel_2_band_data_60m()
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
 
         # open Level-1C data in UTM crs
         bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
@@ -1140,11 +1101,7 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_syn_cloud_data(),
             sentinel_3_syn_geolocation_data(),
         ]
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
 
         ds = store.open_data(
             data_id="sentinel-3-syn-2-syn-ntc",
@@ -1176,31 +1133,27 @@ class StacDataStoreTest(unittest.TestCase):
     def test_open_data_cdse_sen3_lst_ardc(self, mock_rioxarray_open):
         mock_rioxarray_open.side_effect = [
             sentinel_3_lst_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_flag_data(),
             sentinel_3_lst_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_flag_data(),
             sentinel_3_lst_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_flag_data(),
             sentinel_3_lst_data(),
+            sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
             sentinel_3_angles_data(),
             sentinel_3_angles_geolocation_data(),
-            sentinel_3_lst_flag_data(),
         ]
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
 
         ds = store.open_data(
             data_id="sentinel-3-sl-2-lst-ntc",
@@ -1320,11 +1273,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_search_data_cdse_sentinel_2(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE)
         descriptors = list(
             store.search_data(
                 collections=["sentinel-2-l2a"],
@@ -1360,11 +1309,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_search_data_cdse_ardc(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         descriptors = list(
             store.search_data(
                 data_type="dataset",
@@ -1433,11 +1378,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_get_search_params_schema_cdse_ardc(self):
-        store = new_data_store(
-            DATA_STORE_ID_CDSE_ARDC,
-            key=CDSE_CREDENTIALS["key"],
-            secret=CDSE_CREDENTIALS["secret"],
-        )
+        store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         schema = store.get_search_params_schema()
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("time_range", schema.properties)

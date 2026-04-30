@@ -19,18 +19,17 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
+import os
 import re
 from collections import defaultdict
 from collections.abc import Sequence
 
 import boto3
-import dask
 import dask.array as da
 import numpy as np
 import planetary_computer
 import pyproj
 import pystac
-import rasterio.session
 import requests
 import rioxarray
 import xarray as xr
@@ -59,6 +58,7 @@ from xcube_stac.constants import (
     SCHEMA_TILE_SIZE,
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
+    CDSE_S3_ENDPOINT,
 )
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
@@ -139,27 +139,12 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
-        self.session = rasterio.session.AWSSession(
-            aws_unsigned=storage_options_s3["anon"],
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"].split(
-                "//"
-            )[1],
-            aws_access_key_id=storage_options_s3["key"],
-            aws_secret_access_key=storage_options_s3["secret"],
-        )
-        self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
-        # keep the rasterio environment open so that the data can be accessed
-        # when plotting or writing the data
-        self.env = self.env.__enter__()
-        # dask multi-threading needs to be turned off, otherwise the GDAL
-        # reader for JP2 raises error.
-        dask.config.set(scheduler="single-threaded")
         # need boto2 client to read xml metadata remotely
         self.s3_boto = boto3.client(
             "s3",
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"],
-            aws_access_key_id=storage_options_s3["key"],
-            aws_secret_access_key=storage_options_s3["secret"],
+            endpoint_url=CDSE_S3_ENDPOINT,
+            aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+            aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
             region_name="default",
         )
         # define field names in STAC item
@@ -173,10 +158,13 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
         tile_size = _get_tile_size(open_params)
-        return rioxarray.open_rasterio(
-            asset.href,
-            chunks=dict(x=tile_size[0], y=tile_size[1]),
-            band_as_variable=True,
+        chunks = dict(x=tile_size[0], y=tile_size[1])
+        return xr.Dataset(
+            {
+                "band_1": rioxarray.open_rasterio(asset.href, chunks=chunks).squeeze(
+                    drop=True
+                )
+            },
         )
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:

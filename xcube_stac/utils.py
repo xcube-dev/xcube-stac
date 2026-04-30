@@ -27,6 +27,7 @@ import json
 import os
 from collections.abc import Container, Iterator, Sequence
 from typing import Any
+import time
 
 import dask.array as da
 import numpy as np
@@ -37,11 +38,11 @@ import pystac_client
 import requests
 import xarray as xr
 from shapely.geometry import box
+from scipy.interpolate import RBFInterpolator
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
 from xcube_resampling import affine_transform_dataset
 from xcube_resampling.constants import FillValues
 from xcube_resampling.gridmapping import GridMapping
-from xcube_resampling.utils import _get_fill_value
 
 from .constants import (
     LOG,
@@ -50,6 +51,8 @@ from .constants import (
     MLDATASET_FORMATS,
     TILE_SIZE,
     FloatInt,
+    _CRS_WGS84,
+    CDSE_S3_ENDPOINT,
 )
 from .href_parse import decode_href
 
@@ -466,7 +469,7 @@ def modify_catalog_url(url: str) -> str:
     return url
 
 
-def access_item(url: str, catalog: pystac.Catalog) -> pystac.Item:
+def access_item(url: str, catalog: pystac.Catalog, max_retries: int = 5) -> pystac.Item:
     """Retrieves and parses a STAC item associated with the given data ID.
 
     Args:
@@ -480,21 +483,38 @@ def access_item(url: str, catalog: pystac.Catalog) -> pystac.Item:
         DataStoreError: If the item cannot be retrieved from the catalog or
         if the response cannot be parsed into a valid STAC item.
     """
-    try:
-        response = requests.get(url)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        raise DataStoreError(f"Failed to access STAC item at {url}: {e}")
+    headers = {"User-Agent": "my-stac-client/1.0"}
 
-    try:
-        return pystac.Item.from_dict(
-            json.loads(response.text),
-            href=url,
-            root=catalog,
-            preserve_dict=False,
-        )
-    except Exception as e:
-        raise DataStoreError(f"Failed to parse STAC item JSON at {url}: {e}")
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(url, headers=headers)
+
+            if response.status_code == 429:
+                # Respect server hint if available
+                retry_after = response.headers.get("Retry-After")
+                wait_time = int(retry_after) if retry_after else 2**attempt
+
+                time.sleep(wait_time)
+                continue
+
+            response.raise_for_status()
+            data = response.json()
+
+            return pystac.Item.from_dict(
+                data,
+                href=url,
+                root=catalog,
+                preserve_dict=False,
+            )
+
+        except requests.RequestException as e:
+            if attempt == max_retries - 1:
+                raise DataStoreError(f"Failed to access STAC item at {url}: {e}")
+
+            # backoff for other transient errors
+            time.sleep(2**attempt)
+
+    raise DataStoreError(f"Exceeded retries for STAC item at {url}")
 
 
 def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
@@ -743,3 +763,141 @@ def mosaic_spatial_take_first(
             )
 
     return ds_mosaic
+
+
+def build_footprint_uv_mapping(
+    points: np.ndarray,
+    orbit_state: str,
+) -> tuple[np.ndarray, np.ndarray]:
+    """Create geometry control points and normalized image coordinates.
+
+    Args:
+        points: Boundary coordinates in ring order.
+        orbit_state: Orbit direction, either "ascending" or "descending".
+
+    Returns:
+        A tuple `(control_xy, control_uv)` where `control_xy` are boundary
+        coordinates and `control_uv` are corresponding normalized image
+        coordinates.
+    """
+    if np.allclose(points[0], points[-1]):
+        points = points[:-1]
+    lon = points[:, 0]
+    lat = points[:, 1]
+
+    idx_ll = int(np.argmin(lat + lon))
+    idx_ur = int(np.argmax(lat + lon))
+    idx_ul = int(np.argmax(lat - lon))
+    idx_lr = int(np.argmin(lat - lon))
+
+    control_xy = np.array(
+        [
+            [lon[idx_ll], lat[idx_ll]],
+            [lon[idx_lr], lat[idx_lr]],
+            [lon[idx_ul], lat[idx_ul]],
+            [lon[idx_ur], lat[idx_ur]],
+        ]
+    )
+
+    if orbit_state == "ascending":
+        control_uv = np.array([[1.0, 1.0], [0.0, 1.0], [1.0, 0.0], [0.0, 0.0]])
+    else:
+        control_uv = np.array([[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0]])
+
+    return control_xy, control_uv
+
+
+def find_relative_bbox(
+    item: pystac.Item, bbox: Sequence[float | int]
+) -> Sequence[float]:
+    points = np.array(item.geometry["coordinates"][0])
+    orbit_state = item.properties["sat:orbit_state"]
+
+    # convert to utm
+    center = np.mean(points, axis=0)
+    utm_zone = int(np.floor((center[0] + 180) / 6) + 1)
+    if center[1] >= 0:
+        utm_epsg = f"EPSG:326{utm_zone}"
+    else:
+        utm_epsg = f"EPSG:327{utm_zone}"
+    transformer = pyproj.Transformer.from_crs(_CRS_WGS84, utm_epsg, always_xy=True)
+    utm_points = transformer.transform(points[:, 0], points[:, 1])
+    utm_points = np.stack(utm_points).transpose()
+    utm_bbox = transformer.transform_bounds(*bbox, densify_pts=21)
+
+    control_xy, control_uv = build_footprint_uv_mapping(utm_points, orbit_state)
+    u_model = RBFInterpolator(control_xy, control_uv[:, 0], kernel="thin_plate_spline")
+    v_model = RBFInterpolator(control_xy, control_uv[:, 1], kernel="thin_plate_spline")
+
+    corners = np.array(
+        [
+            [utm_bbox[0], utm_bbox[1]],
+            [utm_bbox[2], utm_bbox[1]],
+            [utm_bbox[0], utm_bbox[3]],
+            [utm_bbox[2], utm_bbox[3]],
+        ]
+    )
+    us = u_model(corners)
+    vs = v_model(corners)
+
+    u_min = np.clip(np.min(us), 0, 1)
+    u_max = np.clip(np.max(us), 0, 1)
+    v_min = np.clip(np.min(vs), 0, 1)
+    v_max = np.clip(np.max(vs), 0, 1)
+
+    return u_min, v_min, u_max, v_max
+
+
+def clip_dataset_relative_bbox(
+    rel_bbox: Sequence[float], ds: xr.Dataset, buffer: int | tuple[int, int] = 20
+) -> tuple[xr.Dataset, tuple[int, int, int, int]] | tuple[None, None]:
+    if isinstance(buffer, int):
+        buffer = (buffer, buffer)
+
+    w, h = ds.sizes["x"] - 1, ds.sizes["y"] - 1
+    col_min = int(np.clip((rel_bbox[0] * w) - buffer[0], 0, w))
+    row_min = int(np.clip((rel_bbox[1] * h) - buffer[1], 0, h))
+    col_max = int(np.clip((rel_bbox[2] * w) + buffer[0], 0, w))
+    row_max = int(np.clip((rel_bbox[3] * h) + buffer[1], 0, h))
+
+    ds_sub = ds.isel(y=slice(row_min, row_max), x=slice(col_min, col_max))
+
+    if any(size <= 1 for size in ds_sub.sizes.values()):
+        LOG.info(
+            "Clipping with the specified bounding box resulted in a "
+            "dataset too small to compute a valid grid mapping. Returning None.",
+        )
+        return None, None
+
+    return ds_sub, (col_min, row_min, col_max, row_max)
+
+
+def _set_cdse_env_vars(key: str = None, secret: str = None) -> None:
+    import os
+
+    if key is not None:
+        os.environ.update({"AWS_ACCESS_KEY_ID": key})
+    if secret is not None:
+        os.environ.update({"AWS_SECRET_ACCESS_KEY": secret})
+
+    missing = [
+        name
+        for name in ("AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY")
+        if not os.environ.get(name)
+    ]
+    if missing:
+        raise ValueError(
+            f"Missing AWS credentials for DEM download: {missing}."
+            "Set these environment variables for CDSE DEM access "
+            "(https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets) "
+            "or provide a DEM directly."
+        )
+    os.environ.update(
+        {
+            "AWS_S3_ENDPOINT": CDSE_S3_ENDPOINT.split("//")[1],
+            "AWS_VIRTUAL_HOSTING": "FALSE",
+            "AWS_DEFAULT_REGION": "default",
+        }
+    )
+    os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "5")
+    os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "1")

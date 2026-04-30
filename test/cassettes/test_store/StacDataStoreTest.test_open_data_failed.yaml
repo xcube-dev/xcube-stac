@@ -9,7 +9,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - python-requests/2.33.1
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -41,13 +41,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 09 Jul 2025 10:19:05 GMT
+      - Thu, 30 Apr 2026 13:46:57 GMT
       ETag:
       - W/"acb7a8d6636e24e32f4018c14f1c4ff418a82567b2746560f9eae6ad97a48a54"
       Expires:
-      - Wed, 09 Jul 2025 10:24:05 GMT
+      - Thu, 30 Apr 2026 13:51:57 GMT
       Source-Age:
-      - '0'
+      - '20'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -55,21 +55,21 @@ interactions:
       Via:
       - 1.1 varnish
       X-Cache:
-      - MISS
+      - HIT
       X-Cache-Hits:
-      - '0'
+      - '1'
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - 946d0eac9c6b558e4bb5706b7a107fbc0b7b4d12
+      - e32c238f30e53189c2d40ca1ea11208be2654bbb
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 2A0D:16496:875584:9B0AD2:686E4218
+      - AAA8:27D764:B4980F5:C95443A:69F35D3D
       X-Served-By:
-      - cache-rtm-ehrd2290043-RTM
+      - cache-fra-etou8220052-FRA
       X-Timer:
-      - S1752056345.184019,VS0,VE130
+      - S1777556818.721155,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -78,12 +78,8 @@ interactions:
 - request:
     body: null
     headers:
-      Connection:
-      - close
-      Host:
-      - raw.githubusercontent.com
       User-Agent:
-      - Python-urllib/3.13
+      - pystac/1.14.3
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/catalog.json
   response:
@@ -103,7 +99,7 @@ interactions:
       Cache-Control:
       - max-age=300
       Connection:
-      - close
+      - keep-alive
       Content-Length:
       - '436'
       Content-Security-Policy:
@@ -113,13 +109,13 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 09 Jul 2025 10:19:05 GMT
+      - Thu, 30 Apr 2026 13:46:57 GMT
       ETag:
       - '"e74ebcbc46d43c5b693ecb995381fbeba03583627e6d65b21ed7678a10d94729"'
       Expires:
-      - Wed, 09 Jul 2025 10:24:05 GMT
+      - Thu, 30 Apr 2026 13:51:57 GMT
       Source-Age:
-      - '47'
+      - '19'
       Strict-Transport-Security:
       - max-age=31536000
       Vary:
@@ -133,15 +129,15 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - f624c2f123ad3dc83241f079c3f9118f228d73fa
+      - 58d1b0c79a8c210633460d0f7163b371883b4bb1
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 8563:1E91D9:8A9182:9E4034:686E41E9
+      - AAA8:27D764:B498196:C9544F2:69F35D3E
       X-Served-By:
-      - cache-rtm-ehrd2290043-RTM
+      - cache-fra-eddf8230216-FRA
       X-Timer:
-      - S1752056345.453525,VS0,VE1
+      - S1777556818.779521,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:
@@ -157,7 +153,7 @@ interactions:
       Connection:
       - keep-alive
       User-Agent:
-      - python-requests/2.32.4
+      - my-stac-client/1.0
     method: GET
     uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/sansibar/sns001.json
   response:
@@ -179,9 +175,9 @@ interactions:
       Cross-Origin-Resource-Policy:
       - cross-origin
       Date:
-      - Wed, 09 Jul 2025 10:19:05 GMT
+      - Thu, 30 Apr 2026 13:46:57 GMT
       Expires:
-      - Wed, 09 Jul 2025 10:24:05 GMT
+      - Thu, 30 Apr 2026 13:51:57 GMT
       Source-Age:
       - '0'
       Strict-Transport-Security:
@@ -197,15 +193,271 @@ interactions:
       X-Content-Type-Options:
       - nosniff
       X-Fastly-Request-ID:
-      - e76e6a8d372c8e7c31edfe63aed7b067b8821ea8
+      - ea1eb05e468d3f361996229842ba2eafaecd63b7
       X-Frame-Options:
       - deny
       X-GitHub-Request-Id:
-      - 4DBD:17FD64:865433:9A08E5:686E4217
+      - FE46:67E7A:B5AAC9C:C9F7536:69F35D51
       X-Served-By:
-      - cache-rtm-ehrd2290031-RTM
+      - cache-fra-eddf8230110-FRA
       X-Timer:
-      - S1752056346.588131,VS0,VE152
+      - S1777556818.840488,VS0,VE129
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - my-stac-client/1.0
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/sansibar/sns001.json
+  response:
+    body:
+      string: '404: Not Found'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '14'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 30 Apr 2026 13:46:59 GMT
+      Expires:
+      - Thu, 30 Apr 2026 13:51:59 GMT
+      Source-Age:
+      - '1'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 81c84d85352591eeaec7e26884b43e5e4caa2864
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - FE46:67E7A:B5AAC9C:C9F7536:69F35D51
+      X-Served-By:
+      - cache-fra-eddf8230158-FRA
+      X-Timer:
+      - S1777556819.044769,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - my-stac-client/1.0
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/sansibar/sns001.json
+  response:
+    body:
+      string: '404: Not Found'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '14'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 30 Apr 2026 13:47:01 GMT
+      Expires:
+      - Thu, 30 Apr 2026 13:52:01 GMT
+      Source-Age:
+      - '3'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - e350a705ba3abc85a94702621158d164ac3b7e53
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - FE46:67E7A:B5AAC9C:C9F7536:69F35D51
+      X-Served-By:
+      - cache-fra-eddf8230119-FRA
+      X-Timer:
+      - S1777556821.111653,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - my-stac-client/1.0
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/sansibar/sns001.json
+  response:
+    body:
+      string: '404: Not Found'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '14'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 30 Apr 2026 13:47:05 GMT
+      Expires:
+      - Thu, 30 Apr 2026 13:52:05 GMT
+      Source-Age:
+      - '7'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 9c1d892742faa0e950fa20eea8384dfd10459c00
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - FE46:67E7A:B5AAC9C:C9F7536:69F35D51
+      X-Served-By:
+      - cache-fra-eddf8230156-FRA
+      X-Timer:
+      - S1777556825.183308,VS0,VE1
+      X-XSS-Protection:
+      - 1; mode=block
+    status:
+      code: 404
+      message: Not Found
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate, br, zstd
+      Connection:
+      - keep-alive
+      User-Agent:
+      - my-stac-client/1.0
+    method: GET
+    uri: https://raw.githubusercontent.com/stac-extensions/label/main/examples/multidataset/sansibar/sns001.json
+  response:
+    body:
+      string: '404: Not Found'
+    headers:
+      Accept-Ranges:
+      - bytes
+      Access-Control-Allow-Origin:
+      - '*'
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '14'
+      Content-Security-Policy:
+      - default-src 'none'; style-src 'unsafe-inline'; sandbox
+      Content-Type:
+      - text/plain; charset=utf-8
+      Cross-Origin-Resource-Policy:
+      - cross-origin
+      Date:
+      - Thu, 30 Apr 2026 13:47:13 GMT
+      Expires:
+      - Thu, 30 Apr 2026 13:52:13 GMT
+      Source-Age:
+      - '15'
+      Strict-Transport-Security:
+      - max-age=31536000
+      Vary:
+      - Authorization,Accept-Encoding
+      Via:
+      - 1.1 varnish
+      X-Cache:
+      - HIT
+      X-Cache-Hits:
+      - '1'
+      X-Content-Type-Options:
+      - nosniff
+      X-Fastly-Request-ID:
+      - 81d491c5e7ff4f344c9f72349701a048d421c0fe
+      X-Frame-Options:
+      - deny
+      X-GitHub-Request-Id:
+      - FE46:67E7A:B5AAC9C:C9F7536:69F35D51
+      X-Served-By:
+      - cache-fra-eddf8230221-FRA
+      X-Timer:
+      - S1777556833.257421,VS0,VE1
       X-XSS-Protection:
       - 1; mode=block
     status:

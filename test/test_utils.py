@@ -580,15 +580,17 @@ class UtilsTest(unittest.TestCase):
     def test_access_item_invalid_json(self, mock_get):
         mock_response = Mock()
         mock_response.status_code = 200
-        mock_response.text = "INVALID JSON"
+        mock_response.json.side_effect = requests.exceptions.JSONDecodeError(
+            "Expecting value", "INVALID JSON", 0
+        )
         mock_get.return_value = mock_response
 
         catalog = Mock(spec=pystac.Catalog)
         url = "https://example.com/item.json"
 
         with self.assertRaises(DataStoreError) as cm:
-            access_item(url, catalog)
-        self.assertIn("Failed to parse STAC item JSON", str(cm.exception))
+            access_item(url, catalog, max_retries=1)
+        self.assertIn("Failed to access STAC item", str(cm.exception))
 
     @patch("xcube_stac.utils.requests.get")
     def test_access_collection_request_failure(self, mock_get):

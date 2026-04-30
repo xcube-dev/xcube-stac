@@ -18,6 +18,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+
 import warnings
 from collections import defaultdict
 
@@ -25,7 +26,6 @@ import dask.array as da
 import numpy as np
 import planetary_computer
 import pystac
-import rasterio.session
 import rioxarray
 import xarray as xr
 from rasterio.errors import NotGeoreferencedWarning
@@ -38,6 +38,7 @@ from xcube.util.jsonschema import (
 )
 from xcube_resampling import rectify_dataset
 from xcube_resampling.gridmapping import GridMapping
+from xcube_resampling.utils import reproject_bbox
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
@@ -48,15 +49,17 @@ from xcube_stac.constants import (
     SCHEMA_SPATIAL_RES,
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
+    _CRS_WGS84,
 )
 from xcube_stac.utils import (
     add_nominal_datetime,
     list_assets_from_item,
     mosaic_spatial_take_first,
+    clip_dataset_relative_bbox,
+    find_relative_bbox,
 )
 
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
-
 
 _SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME = {
     "syn_S1N_reflectance": "SDR_S1N",
@@ -146,23 +149,11 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         self._asset_names_schema = _SCHEMA_CDSE_ASSET_NAMES
         self._flags = "flags"
         self._storage_option_s3 = storage_options_s3
-        self.session = rasterio.session.AWSSession(
-            aws_unsigned=storage_options_s3["anon"],
-            endpoint_url=storage_options_s3["client_kwargs"]["endpoint_url"].split(
-                "//"
-            )[1],
-            aws_access_key_id=storage_options_s3["key"],
-            aws_secret_access_key=storage_options_s3["secret"],
-        )
-        self.env = rasterio.env.Env(session=self.session, AWS_VIRTUAL_HOSTING=False)
-        # keep the rasterio environment open so that the data can be accessed
-        # when plotting or writing the data
-        self.env = self.env.__enter__()
 
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
         return rioxarray.open_rasterio(asset.href, chunks={}, driver="netCDF").squeeze()
 
-    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
         asset_names = open_params.get("asset_names", list(self._asset_var_names.keys()))
         assets = list_assets_from_item(item, asset_names=asset_names)
         ds = None
@@ -175,7 +166,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         var_names = list(ds.data_vars)
         if not open_params.get("add_error_bands", True):
             var_names = [
-                var_name for var_name in var_names if not var_name.endswith("_err")
+                var_name for var_name in var_names if not str(var_name).endswith("_err")
             ]
             ds = ds[var_names]
         ds = _apply_scaling(ds)
@@ -190,9 +181,31 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         geo = _apply_scaling(geo[["lon", "lat"]])
         ds = ds.assign_coords(dict(lat=geo["lat"], lon=geo["lon"]))
 
+        # clip dataset based on STAC items geometry footprint
+        crs = open_params.get("crs", _CRS_WGS84)
+        bbox = open_params.get("bbox", None)
+        if bbox:
+            bbox_wgs84 = reproject_bbox(bbox, crs, _CRS_WGS84)
+            rel_bbox = find_relative_bbox(item, bbox_wgs84)
+            ds, _ = clip_dataset_relative_bbox(rel_bbox, ds, buffer=50)
+        if ds is None:
+            return ds
+
         ds = ds.drop_vars(["band", "x", "y", "spatial_ref"])
+
         if open_params.get("apply_rectification", True):
-            ds = rectify_dataset(ds, prevent_nan_propagations=True)
+            source_gm = GridMapping.from_dataset(ds)
+            if bbox is None:
+                bbox = source_gm.xy_bbox
+            spatial_res = open_params.get("spatial_res", source_gm.xy_res)
+            target_gm = GridMapping.regular_from_bbox(
+                bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=TILE_SIZE
+            )
+            ds = rectify_dataset(
+                ds,
+                source_gm=source_gm,
+                target_gm=target_gm,
+            )
 
         for var in ds.data_vars:
             # Remove CF scaling attributes if present
@@ -212,6 +225,9 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
                 add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
                 add_flags=_SCHEMA_ADD_FLAGS,
+                bbox=SCHEMA_BBOX,
+                spatial_res=SCHEMA_SPATIAL_RES,
+                crs=SCHEMA_CRS,
             ),
             required=[],
             additional_properties=True,
@@ -232,20 +248,20 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         self._flags = "flags_in"
 
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
-        ds = rioxarray.open_rasterio(
-            asset.href,
-            chunks={},
-            driver="netCDF",
-        )
+        ds = rioxarray.open_rasterio(asset.href, chunks={}, driver="netCDF")
         if isinstance(ds, list):
             ds = ds[0]
         ds = ds.squeeze()
         return ds
 
-    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
+    def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
         # get LST data
         ds = self.open_asset(item.assets[list(self._asset_var_names.keys())[0]])
         ds = _apply_scaling(ds[["LST"]])
+
+        if open_params.get("add_flags", True):
+            flags = self.open_asset(item.assets[self._flags])
+            ds.update(flags)
 
         # get geolocation
         geo = self.open_asset(item.assets[self._geo_asset])
@@ -257,18 +273,44 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
                 elev=geo["elevation_in"],
             )
         )
+
+        # clip dataset based on STAC items geometry footprint
+        crs = open_params.get("crs", _CRS_WGS84)
+        bbox = open_params.get("bbox", None)
+        bbox_idx = None
+        if bbox:
+            bbox_wgs84 = reproject_bbox(bbox, crs, _CRS_WGS84)
+            rel_bbox = find_relative_bbox(item, bbox_wgs84)
+            ds, bbox_idx = clip_dataset_relative_bbox(rel_bbox, ds, buffer=20)
+
+        if ds is None:
+            return ds
+
+        # apply orthorectification
         if open_params.get("apply_geo_orthorectification", True):
             angles = self.open_asset(item.assets[self._angles])
             angles = angles[["sat_azimuth_tn", "sat_zenith_tn"]]
             angles_geo = self.open_asset(item.assets[self._angles_geo])
             angles = angles.assign_coords(dict(lon=angles_geo["longitude_tx"]))
+            if bbox_idx:
+                angles = angles.isel(y=slice(bbox_idx[1], bbox_idx[3]))
             ds = orthorectify_geolocation(ds, angles)
-        if open_params.get("add_flags", True):
-            flags = self.open_asset(item.assets[self._flags])
-            ds.update(flags)
+
         ds = ds.drop_vars(("x", "y", "band", "spatial_ref", "elev"), errors="ignore")
+
         if open_params.get("apply_rectification", True):
-            ds = rectify_dataset(ds, prevent_nan_propagations=True)
+            source_gm = GridMapping.from_dataset(ds)
+            if bbox is None:
+                bbox = source_gm.xy_bbox
+            spatial_res = open_params.get("spatial_res", source_gm.xy_res)
+            target_gm = GridMapping.regular_from_bbox(
+                bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=TILE_SIZE
+            )
+            ds = rectify_dataset(
+                ds,
+                source_gm=source_gm,
+                target_gm=target_gm,
+            )
 
         for var in ds.data_vars:
             # Remove CF scaling attributes if present
@@ -287,6 +329,9 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
                 apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
                 apply_geo_orthorectification=_SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
                 add_flags=_SCHEMA_ADD_FLAGS,
+                bbox=SCHEMA_BBOX,
+                spatial_res=SCHEMA_SPATIAL_RES,
+                crs=SCHEMA_CRS,
             ),
             required=[],
             additional_properties=True,
@@ -350,12 +395,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         )
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
-        target_gm = GridMapping.regular_from_bbox(
-            open_params["bbox"],
-            open_params["spatial_res"],
-            open_params["crs"],
-            TILE_SIZE,
-        )
         dss_time = []
         asset_names = open_params.get("asset_names", list(self._asset_var_names.keys()))
         var_ref = self._asset_var_names[asset_names[0]]
@@ -368,12 +407,10 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                     asset_names=asset_names,
                     add_error_bands=open_params.get("add_error_bands", True),
                     add_flags=open_params.get("add_flags", True),
-                    apply_rectification=False,
-                )
-                ds = rectify_dataset(
-                    ds,
-                    target_gm=target_gm,
-                    prevent_nan_propagations=True,
+                    apply_rectification=True,
+                    crs=open_params.get("crs", _CRS_WGS84),
+                    spatial_res=open_params["spatial_res"],
+                    bbox=open_params["bbox"],
                 )
                 if ds is None:
                     continue
@@ -523,12 +560,12 @@ def _group_items(items: list[pystac.Item]) -> xr.DataArray:
         mean_time = np.datetime64(int(times.view("int64").mean()), "us")
         dts[i] = mean_time.astype("datetime64[s]")
 
-    da = xr.DataArray(grouped_items, dims=("time",), coords=dict(time=dts))
+    array = xr.DataArray(grouped_items, dims=("time",), coords=dict(time=dts))
 
-    da["time"].encoding["units"] = "seconds since 1970-01-01"
-    da["time"].encoding["calendar"] = "standard"
+    array["time"].encoding["units"] = "seconds since 1970-01-01"
+    array["time"].encoding["calendar"] = "standard"
 
-    return da
+    return array
 
 
 def orthorectify_geolocation(

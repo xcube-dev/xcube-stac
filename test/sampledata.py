@@ -25,12 +25,6 @@ import xarray as xr
 
 
 def sentinel_2_band_data_10m():
-    mock_data = {
-        "band_1": (
-            ("y", "x"),
-            da.ones((10980, 10980), chunks=(1024, 1024), dtype=np.uint16),
-        ),
-    }
     spatial_ref = xr.DataArray(
         np.array(0),
         attrs={
@@ -77,20 +71,19 @@ def sentinel_2_band_data_10m():
         },
     )
     coords = {
+        "band": [1],
         "x": np.arange(600005.0, 709796.0, 10.0),
         "y": np.arange(5900035.0, 5790244.0, -10.0),
         "spatial_ref": spatial_ref,
     }
-    return xr.Dataset(mock_data, coords=coords)
+    return xr.DataArray(
+        da.ones((1, 10980, 10980), chunks=(1, 1024, 1024), dtype=np.uint16),
+        dims=("band", "y", "x"),
+        coords=coords,
+    )
 
 
 def sentinel_2_band_data_60m():
-    mock_data = {
-        "band_1": (
-            ("y", "x"),
-            da.ones((1830, 1830), chunks=(1024, 1024), dtype=np.uint16),
-        ),
-    }
     spatial_ref = xr.DataArray(
         np.array(0),
         attrs={
@@ -135,11 +128,16 @@ def sentinel_2_band_data_60m():
         },
     )
     coords = {
+        "band": [1],
         "x": np.arange(500010.0, 609751.0, 60.0),
         "y": np.arange(5999970.0, 5890229.0, -60.0),
         "spatial_ref": spatial_ref,
     }
-    return xr.Dataset(mock_data, coords=coords)
+    return xr.DataArray(
+        da.ones((1, 1830, 1830), chunks=(1, 1024, 1024), dtype=np.uint16),
+        dims=("band", "y", "x"),
+        coords=coords,
+    )
 
 
 def sentinel_3_syn_data():

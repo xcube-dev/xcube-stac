@@ -45,7 +45,6 @@ from xcube_resampling.utils import reproject_bbox
 from .accessors import guess_ardc_accessor, guess_item_accessor, list_ardc_data_ids
 from .accessors.base import XcubeStacItemAccessor
 from .constants import (
-    CDSE_S3_ENDPOINT,
     CDSE_STAC_URL,
     DATA_OPENER_IDS,
     DATA_STORE_ID,
@@ -79,7 +78,7 @@ from .utils import (
     modify_catalog_url,
     search_collections,
     search_items,
-    update_dict,
+    _set_cdse_env_vars,
 )
 from .version import version
 
@@ -429,12 +428,9 @@ class StacXcubeDataStore(StacDataStore):
 class StacCdseDataStore(StacDataStore):
     """STAC implementation of the data store for CDSE STAC API."""
 
-    def __init__(self, **storage_options_s3):
-        storage_options_s3 = update_dict(
-            storage_options_s3,
-            dict(anon=False, client_kwargs=dict(endpoint_url=CDSE_S3_ENDPOINT)),
-        )
-        super().__init__(url=CDSE_STAC_URL, **storage_options_s3)
+    def __init__(self, key: str = None, secret: str = None):
+        _set_cdse_env_vars(key=key, secret=secret)
+        super().__init__(url=CDSE_STAC_URL, key=key, secret=secret)
         self._store_id = DATA_STORE_ID_CDSE
 
     @classmethod
@@ -445,19 +441,23 @@ class StacCdseDataStore(StacDataStore):
                 key=JsonStringSchema(
                     title="AWS S3 key to access CDSE EO data.",
                     description=(
-                        "To get key and secret, follow https://documentation."
-                        "dataspace.copernicus.eu/APIs/S3.html#generate-secrets"
+                        "To get key and secret, follow "
+                        "https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets."
+                        "Can be also set via the environment variable "
+                        "AWS_ACCESS_KEY_ID."
                     ),
                 ),
                 secret=JsonStringSchema(
                     title="AWS S3 secret to access CDSE EO data.",
                     description=(
-                        "To get key and secret, follow https://documentation."
-                        "dataspace.copernicus.eu/APIs/S3.html#generate-secrets"
+                        "To get key and secret, follow "
+                        "https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets. "
+                        "Can be also set via the environment variable "
+                        "AWS_SECRET_ACCESS_KEY."
                     ),
                 ),
             ),
-            required=["key", "secret"],
+            required=[],
             additional_properties=False,
         )
 
@@ -522,8 +522,8 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
     using the CDSE STAC API.
     """
 
-    def __init__(self, **storage_options_s3):
-        super().__init__(**storage_options_s3)
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         self._store_id = DATA_STORE_ID_CDSE_ARDC
 
     def get_data_ids(

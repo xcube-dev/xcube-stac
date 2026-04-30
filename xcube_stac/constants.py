@@ -21,6 +21,7 @@
 
 import logging
 
+import pyproj
 from xcube.core.store.fs.impl.fs import S3FsAccessor
 from xcube.util.jsonschema import (
     JsonArraySchema,
@@ -50,6 +51,8 @@ PC_STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
 DATA_STORE_ID_XCUBE = "stac-xcube"
 
 # other constants
+_CRS_WGS84_STR = "EPSG:4326"
+_CRS_WGS84 = pyproj.CRS("EPSG:4326")
 TILE_SIZE = 2048
 LOG = logging.getLogger("xcube.stac")
 FloatInt = float | int
@@ -141,7 +144,9 @@ SCHEMA_APPLY_SCALING = JsonBooleanSchema(
     title="Apply scaling, offset, and no-data values to data.", default=False
 )
 SCHEMA_SPATIAL_RES = JsonNumberSchema(title="Spatial Resolution", exclusive_minimum=0.0)
-SCHEMA_CRS = JsonStringSchema(title="Coordinate reference system", default="EPSG:4326")
+SCHEMA_CRS = JsonStringSchema(
+    title="Coordinate reference system", default=_CRS_WGS84_STR
+)
 SCHEMA_TILE_SIZE = JsonComplexSchema(
     title="Spatial chunk size",
     description=(
