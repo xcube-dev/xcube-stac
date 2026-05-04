@@ -198,9 +198,16 @@ then installs xcube-stac into this environment from the repository.
 ### Getting S3 credentials for CDSE data access
 Note, this step is only needed, if the [CDSE STAC API](https://browser.stac.dataspace.copernicus.eu/?.language=en)
 wants to be used. In order to access [EO data via S3 from CDSE](https://documentation.dataspace.copernicus.eu/APIs/S3.html)
-one needs to [generate S3 credentials](https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets),
-which are required to initiate a `"stac-cdse"` data store. So far, only Sentinel-2 L2A
-is supported. An example is shown in a [notebook](examples/notebooks/cdse_senitnel_2.ipynb).
+one needs to [generate S3 credentials](https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets). You can either set the environement
+varibales 
+
+```bash
+export AWS_ACCESS_KEY_ID="xxx"
+export AWS_SECRET_ACCESS_KEY="xxx"
+```
+
+or pass the credentials to the `new_data_store("stac-cdse", key="xxx", secret="xxx")` 
+when creating the data store instance. 
 
 
 ## Introduction to xcube-stac
