@@ -1,3 +1,10 @@
+## CHanges in 1.2.2
+
+- Added footprint-based subsetting for Sentinel-3 OLCI and SLSTR LST using STAC 
+  metadata, improving performance by avoiding full latitude/longitude grid downloads 
+  during subsetting.
+- Updated year in the headers.
+
 ## Changes in 1.2.1
 
 - STAC searches via `pystac_client` now use `limit=100` to enforce paging and improve
