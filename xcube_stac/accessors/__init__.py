@@ -46,6 +46,12 @@ from .sen3 import (
     Sen3PlanetaryComputerStacArdcAccessor,
     Sen3PlanetaryComputerStacItemAccessor,
 )
+from .hls import (
+    Sen2HlsStacItemAccessor,
+    Sen2HlsStacArdcAccessor,
+    LandsatHlsStacItemAccessor,
+    LandsatHlsStacArdcAccessor,
+)
 
 ACCESSOR_MAPPING = {
     DATA_STORE_ID_CDSE: {
@@ -64,11 +70,15 @@ ACCESSOR_MAPPING = {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacItemAccessor,
         "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacItemAccessor,
         "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacItemAccessor,
+        "hls2-l30": LandsatHlsStacItemAccessor,
+        "hls2-s30": Sen2HlsStacItemAccessor,
     },
     DATA_STORE_ID_PC_ARDC: {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacArdcAccessor,
         "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacArdcAccessor,
         "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacArdcAccessor,
+        "hls2-l30": LandsatHlsStacArdcAccessor,
+        "hls2-s30": Sen2HlsStacArdcAccessor,
     },
 }
 

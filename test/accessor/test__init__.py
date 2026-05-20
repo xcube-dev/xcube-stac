@@ -27,6 +27,8 @@ from xcube_stac.accessors import (
     Sen2CdseStacItemAccessor,
     Sen2PlanetaryComputerStacArdcAccessor,
     Sen2PlanetaryComputerStacItemAccessor,
+    LandsatHlsStacItemAccessor,
+    LandsatHlsStacArdcAccessor,
     Sen3CdseStacArdcAccessor,
     Sen3CdseStacItemAccessor,
     guess_ardc_accessor,
@@ -58,9 +60,13 @@ class AccessorInitTest(unittest.TestCase):
         result = guess_item_accessor(DATA_STORE_ID_CDSE, "sentinel-3-syn-2-syn-ntc")
         self.assertIs(result, Sen3CdseStacItemAccessor)
 
-    def test_guess_item_accessor_pc(self):
+    def test_guess_item_accessor_pc_sen2(self):
         result = guess_item_accessor(DATA_STORE_ID_PC, "sentinel-2-l2a")
         self.assertIs(result, Sen2PlanetaryComputerStacItemAccessor)
+
+    def test_guess_item_accessor_pc_hls(self):
+        result = guess_item_accessor(DATA_STORE_ID_PC, "hls2-l30")
+        self.assertIs(result, LandsatHlsStacItemAccessor)
 
     def test_guess_item_accessor_base_for_unknown_store(self):
         result = guess_item_accessor("unknown-store", "random-data-id")
@@ -92,6 +98,10 @@ class AccessorInitTest(unittest.TestCase):
         result = guess_ardc_accessor(DATA_STORE_ID_PC_ARDC, "sentinel-2-l2a")
         self.assertIs(result, Sen2PlanetaryComputerStacArdcAccessor)
 
+    def test_guess_ardc_accessor_pc_hls(self):
+        result = guess_ardc_accessor(DATA_STORE_ID_PC_ARDC, "hls2-l30")
+        self.assertIs(result, LandsatHlsStacArdcAccessor)
+
     def test_guess_ardc_accessor_raises_for_unknown_store(self):
         with self.assertRaises(NotImplementedError):
             guess_ardc_accessor("unknown-store", "sentinel-2-l2a")
@@ -118,11 +128,13 @@ class AccessorInitTest(unittest.TestCase):
 
     def test_list_ardc_data_ids_pc(self):
         result = list_ardc_data_ids(DATA_STORE_ID_PC_ARDC)
-        self.assertEqual(
-            result,
+        self.assertCountEqual(
             [
                 "sentinel-2-l2a",
                 "sentinel-3-synergy-syn-l2-netcdf",
                 "sentinel-3-slstr-lst-l2-netcdf",
+                "hls2-l30",
+                "hls2-s30",
             ],
+            result,
         )

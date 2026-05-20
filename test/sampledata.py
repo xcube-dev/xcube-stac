@@ -83,6 +83,66 @@ def sentinel_2_band_data_10m():
     )
 
 
+def sentinel_2_band_data_30m():
+    spatial_ref = xr.DataArray(
+        np.array(0),
+        attrs={
+            "crs_wkt": (
+                'PROJCS["WGS 84 / UTM zone 35N",GEOGCS["WGS 84",DATUM["WGS_1984",'
+                'SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],'
+                'AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG"'
+                ',"8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG",'
+                '"9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_'
+                'Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central'
+                '_meridian",27],PARAMETER["scale_factor",0.9996],PARAMETER["false'
+                '_easting",500000],PARAMETER["false_northing",0],UNIT["metre"'
+                ',1,AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing"'
+                ',NORTH],AUTHORITY["EPSG","32635"]]'
+            ),
+            "semi_major_axis": 6378137.0,
+            "semi_minor_axis": 6356752.314245179,
+            "inverse_flattening": 298.257223563,
+            "reference_ellipsoid_name": "WGS 84",
+            "longitude_of_prime_meridian": 0.0,
+            "prime_meridian_name": "Greenwich",
+            "geographic_crs_name": "WGS 84",
+            "horizontal_datum_name": "World Geodetic System 1984",
+            "projected_crs_name": "WGS 84 / UTM zone 35N",
+            "grid_mapping_name": "transverse_mercator",
+            "latitude_of_projection_origin": 0.0,
+            "longitude_of_central_meridian": 27.0,
+            "false_easting": 500000.0,
+            "false_northing": 0.0,
+            "scale_factor_at_central_meridian": 0.9996,
+            "spatial_ref": (
+                'PROJCS["WGS 84 / UTM zone 35N",GEOGCS["WGS 84",DATUM["WGS_1984",'
+                'SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]]'
+                ',AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG"'
+                ',"8901"]],UNIT["degree",0.0174532925199433,AUTHORITY["EPSG",'
+                '"9122"]],AUTHORITY["EPSG","4326"]],PROJECTION["Transverse_'
+                'Mercator"],PARAMETER["latitude_of_origin",0],PARAMETER["central_'
+                'meridian",27],PARAMETER["scale_factor",0.9996],PARAMETER["false_'
+                'easting",500000],PARAMETER["false_northing",0],UNIT["metre",1,'
+                'AUTHORITY["EPSG","9001"]],AXIS["Easting",EAST],AXIS["Northing",'
+                'NORTH],AUTHORITY["EPSG","32635"]]'
+            ),
+            "GeoTransform": "600000.0 10.0 0.0 5900040.0 0.0 -10.0",
+        },
+    )
+    coords = {
+        "band": [1],
+        "x": np.arange(600015.0, 709786.0, 30.0),
+        "y": np.arange(5900045.0, 5790254.0, -30.0),
+        "spatial_ref": spatial_ref,
+    }
+    return xr.DataArray(
+        da.ones((1, 3660, 3660), chunks=(1, 2048, 2048), dtype=np.uint16),
+        dims=("band", "y", "x"),
+        coords=coords,
+        attrs={"_FillValue": -9999, "scale_factor": 0.01, "add_offset": 0.0},
+    )
+
+
 def sentinel_2_band_data_60m():
     spatial_ref = xr.DataArray(
         np.array(0),
