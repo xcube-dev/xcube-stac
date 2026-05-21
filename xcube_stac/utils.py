@@ -25,9 +25,9 @@ import datetime
 import itertools
 import json
 import os
+import time
 from collections.abc import Container, Iterator, Sequence
 from typing import Any
-import time
 
 import dask.array as da
 import numpy as np
@@ -37,22 +37,22 @@ import pystac
 import pystac_client
 import requests
 import xarray as xr
-from shapely.geometry import box
 from scipy.interpolate import RBFInterpolator
+from shapely.geometry import box
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
 from xcube_resampling import affine_transform_dataset
 from xcube_resampling.constants import FillValues
 from xcube_resampling.gridmapping import GridMapping
 
 from .constants import (
+    _CRS_WGS84,
+    CDSE_S3_ENDPOINT,
     LOG,
     MAP_FILE_EXTENSION_FORMAT,
     MAP_MIME_TYP_FORMAT,
     MLDATASET_FORMATS,
     TILE_SIZE,
     FloatInt,
-    _CRS_WGS84,
-    CDSE_S3_ENDPOINT,
 )
 from .href_parse import decode_href
 

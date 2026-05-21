@@ -135,6 +135,8 @@ Currently, we support the following collections and data IDs:
 - [`sentinel-2-l2a`](https://planetarycomputer.microsoft.com/dataset/sentinel-2-l2a)
 - [`sentinel-3-synergy-syn-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-synergy-syn-l2-netcdf)
 - [`sentinel-3-slstr-lst-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-slstr-lst-l2-netcdf)
+- [`hls2-l30`](https://planetarycomputer.microsoft.com/dataset/hls2-l30)
+- [`hls2-s30`](https://planetarycomputer.microsoft.com/dataset/hls2-s30)
 
 ---
 
@@ -189,6 +191,11 @@ do so as follows:
 mamba create --name xcube-stac --channel conda-forge --only-deps xcube-stac
 mamba activate xcube-stac
 git clone https://github.com/xcube-dev/xcube-stac.git
+python -m pip install --no-deps xcube-stac/
+```
+
+or in editable mode
+```bash
 python -m pip install --no-deps --editable xcube-stac/
 ```
 
@@ -221,6 +228,11 @@ The following Jupyter notebooks provide some examples:
 * `example/notebooks/geotiff_searchable_catalog.ipynb`:
   This notebook shows an example how to load a GeoTIFF file from a searchable
   STAC catalog.
+* `example/notebooks/hls_planetary_computer.ipynb`:
+  This notebook shows an example of how to access Harmonized Landsat Sentinel-2 (HLS) 
+  Version 2.0 data using the [Planetary Computer STAC API](planetarycomputer.microsoft.com). It shows how to 
+  access individual observation tiles and how to generate spatiotemporal 3d 
+  analysis-ready data cubes from multiple STAC items.  
 * `example/notebooks/netcdf_searchable_catalog.ipynb`:
   This notebook shows an example of how to load a NetCDF file from a searchable
   STAC catalog.

@@ -47,6 +47,11 @@ DATA_STORE_ID_PC = "stac-pc"
 DATA_STORE_ID_PC_ARDC = "stac-pc-ardc"
 PC_STAC_URL = "https://planetarycomputer.microsoft.com/api/stac/v1"
 
+# cmr specfici constants
+DATA_STORE_ID_CMR = "stac-cmr"
+DATA_STORE_ID_CMR_ARDC = "stac-cmr-ardc"
+CMR_STAC_URL = "https://cmr.earthdata.nasa.gov/stac/LPCLOUD"
+
 # xcube specific constants
 DATA_STORE_ID_XCUBE = "stac-xcube"
 

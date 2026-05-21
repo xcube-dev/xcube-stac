@@ -65,6 +65,7 @@ from .constants import (
     SCHEMA_URL,
 )
 from .utils import (
+    _set_cdse_env_vars,
     access_collection,
     access_item,
     bbox_to_geojson,
@@ -78,7 +79,6 @@ from .utils import (
     modify_catalog_url,
     search_collections,
     search_items,
-    _set_cdse_env_vars,
 )
 from .version import version
 

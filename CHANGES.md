@@ -1,4 +1,12 @@
-## CHanges in 1.2.2
+## CHanges in 1.3.0 (under development)
+
+- Added support for the Harmonized Landsat Sentinel-2 (HLS) Version 2.0 via 
+  [Planetary Computer](https://planetarycomputer.microsoft.com/dataset/group/hls2) 
+  STAC API.
+  - Landsat data is available with the data_id `hls2-l30`
+  - Sentinel-2 data is available with the data_id `hls2-s30`
+
+## Changes in 1.2.2
 
 - Added footprint-based subsetting for Sentinel-3 OLCI and SLSTR LST using STAC 
   metadata, improving performance by avoiding full latitude/longitude grid downloads 

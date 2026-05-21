@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 import itertools
+import os
 import unittest
 import urllib.request
 from unittest.mock import patch
@@ -36,6 +37,8 @@ from xcube.core.store import (
 from xcube.util.jsonschema import JsonComplexSchema, JsonObjectSchema
 from xcube_resampling.utils import reproject_bbox
 
+from xcube_stac.accessors.hls import _LANDSAT_BANDS, _SENTINEL2_BANDS
+
 # noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
 from xcube_stac.constants import (
@@ -49,15 +52,16 @@ from xcube_stac.constants import (
 
 from .sampledata import (
     sentinel_2_band_data_10m,
+    sentinel_2_band_data_30m,
     sentinel_2_band_data_60m,
     sentinel_3_angles_data,
     sentinel_3_angles_geolocation_data,
     sentinel_3_lst_data,
-    sentinel_3_lst_geolocation_data,
     sentinel_3_lst_flag_data,
+    sentinel_3_lst_geolocation_data,
+    sentinel_3_syn_cloud_data,
     sentinel_3_syn_data,
     sentinel_3_syn_geolocation_data,
-    sentinel_3_syn_cloud_data,
 )
 
 SKIP_HELP = (
@@ -66,8 +70,6 @@ SKIP_HELP = (
 )
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
-
-import os
 
 os.environ.update(
     {
@@ -125,6 +127,12 @@ class StacDataStoreTest(unittest.TestCase):
         self.data_id_cdse_sen3 = (
             "collections/sentinel-3-syn-2-syn-ntc/items/S3B_SY_2_SYN____20250706T"
             "233058_20250706T233358_20250708T043306_0179_108_258_3420_ESA_O_NT_002"
+        )
+        self.data_id_pc_hls_sen2 = (
+            "collections/hls2-s30/items/HLS.S30.T32TNT.2024201T102021.v2.0"
+        )
+        self.data_id_pc_hls_landsat = (
+            "collections/hls2-l30/items/HLS.L30.T32UNE.2024186T101957.v2.0"
         )
 
     @pytest.mark.vcr()
@@ -238,6 +246,8 @@ class StacDataStoreTest(unittest.TestCase):
                 "sentinel-2-l2a",
                 "sentinel-3-synergy-syn-l2-netcdf",
                 "sentinel-3-slstr-lst-l2-netcdf",
+                "hls2-l30",
+                "hls2-s30",
             ],
             data_ids,
         )
@@ -355,7 +365,6 @@ class StacDataStoreTest(unittest.TestCase):
             store.get_data_opener_ids("collections/datacubes/items/local_ts"),
         )
 
-    @pytest.mark.vcr()
     def test_get_open_data_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         schema = store.get_open_data_params_schema()
@@ -393,6 +402,17 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(schema, JsonObjectSchema)
         self.assertIn("asset_names", schema.properties)
         self.assertIn("apply_rectification", schema.properties)
+
+        # PC HLS
+        store = new_data_store(DATA_STORE_ID_PC)
+        schema = store.get_open_data_params_schema(data_id=self.data_id_pc_hls_sen2)
+        self.assertIn("asset_names", schema.properties)
+        self.assertIn("spatial_res", schema.properties)
+        self.assertIn("apply_scaling", schema.properties)
+        self.assertIn("crs", schema.properties)
+        self.assertIn("bbox", schema.properties)
+        self.assertIn("tile_size", schema.properties)
+        self.assertNotIn("add_angles", schema.properties)
 
     # noinspection PyUnresolvedReferences
     def test_get_open_data_params_schema_cdse_ardc(self):
@@ -435,6 +455,19 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("bbox_width", schema.one_of[1].properties)
             self.assertIn("spatial_res", schema.one_of[1].properties)
             self.assertIn("query", schema.one_of[1].properties)
+
+        data_ids = ["hls2-l30", "hls2-s30"]
+        for data_id in data_ids:
+            schema = store.get_open_data_params_schema(data_id=data_id)
+            self.assertIsInstance(schema, JsonObjectSchema)
+            self.assertIn("asset_names", schema.properties)
+            self.assertIn("time_range", schema.properties)
+            self.assertIn("bbox", schema.properties)
+            self.assertIn("crs", schema.properties)
+            self.assertIn("bbox", schema.properties)
+            self.assertIn("query", schema.properties)
+            self.assertIn("apply_scaling", schema.properties)
+            self.assertNotIn("add_anlges", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -764,6 +797,21 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
+
+    @patch("rioxarray.open_rasterio")
+    def test_open_data_pc_hls_sen2(self, mock_rioxarray_open):
+        mock_rioxarray_open.return_value = sentinel_2_band_data_30m()
+        store = new_data_store(DATA_STORE_ID_PC)
+
+        ds = store.open_data(data_id=self.data_id_pc_hls_sen2, apply_scaling=True)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(_SENTINEL2_BANDS, list(ds.data_vars))
+        self.assertCountEqual([3660, 3660], [ds.sizes["y"], ds.sizes["x"]])
+
+        ds = store.open_data(data_id=self.data_id_pc_hls_landsat, apply_scaling=True)
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(_LANDSAT_BANDS, list(ds.data_vars))
+        self.assertCountEqual([3660, 3660], [ds.sizes["y"], ds.sizes["x"]])
 
     @pytest.mark.vcr()
     def test_open_data_cdse_ardc_no_items_found(self):
@@ -1177,6 +1225,79 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
 
+    def test_open_data_pc_hls_ardc(self):
+        store = new_data_store(DATA_STORE_ID_PC_ARDC)
+
+        # open Sentinel-2 data in UTM crs
+        bbox_wgs84 = [9.9, 53.1, 10.7, 53.5]
+        crs_target = "EPSG:32632"
+        bbox_utm = reproject_bbox(bbox_wgs84, "EPSG:4326", crs_target)
+        ds = store.open_data(
+            data_id="hls2-s30",
+            bbox=bbox_utm,
+            time_range=["2020-08-25", "2020-09-01"],
+            spatial_res=30,
+            crs=crs_target,
+            asset_names=["B04", "B03", "B02"],
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
+        self.assertEqual(
+            [4, 1515, 1804], [ds.sizes["time"], ds.sizes["y"], ds.sizes["x"]]
+        )
+        self.assertEqual(
+            [1, 1515, 1804],
+            [ds.chunksizes["time"][0], ds.chunksizes["y"][0], ds.chunksizes["x"][0]],
+        )
+
+        # open Sentinel-2 dataset in WGS84
+        ds = store.open_data(
+            data_id="hls2-s30",
+            asset_names=["B04", "B03", "B02"],
+            bbox=bbox_wgs84,
+            time_range=["2020-08-25", "2020-09-01"],
+            spatial_res=0.00054,
+            crs="EPSG:4326",
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
+        self.assertEqual(
+            [4, 741, 1482],
+            [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
+        )
+        self.assertEqual(
+            [1, 741, 1482],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+            ],
+        )
+
+        # open Landsat dataset in WGS84
+        ds = store.open_data(
+            data_id="hls2-l30",
+            asset_names=["B04", "B03", "B02"],
+            bbox=bbox_wgs84,
+            time_range=["2020-08-20", "2020-09-01"],
+            spatial_res=0.00054,
+            crs="EPSG:4326",
+        )
+        self.assertIsInstance(ds, xr.Dataset)
+        self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
+        self.assertEqual(
+            [2, 741, 1482],
+            [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
+        )
+        self.assertEqual(
+            [1, 741, 1482],
+            [
+                ds.chunksizes["time"][0],
+                ds.chunksizes["lat"][0],
+                ds.chunksizes["lon"][0],
+            ],
+        )
+
     @pytest.mark.vcr()
     def test_open_data_wrong_opener_id(self):
         self.maxDiff = None
@@ -1366,7 +1487,6 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
 
-    @pytest.mark.vcr()
     def test_get_search_params_schema(self):
         store = new_data_store(DATA_STORE_ID, url=self.url_nonsearchable)
         schema = store.get_search_params_schema()
@@ -1376,7 +1496,6 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIn("query", schema.properties)
         self.assertIn("collections", schema.properties)
 
-    @pytest.mark.vcr()
     def test_get_search_params_schema_cdse_ardc(self):
         store = new_data_store(DATA_STORE_ID_CDSE_ARDC)
         schema = store.get_search_params_schema()
