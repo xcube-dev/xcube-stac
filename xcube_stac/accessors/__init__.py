@@ -30,6 +30,12 @@ from xcube_stac.constants import (
 )
 
 from .base import BaseStacItemAccessor
+from .hls import (
+    LandsatHlsStacArdcAccessor,
+    LandsatHlsStacItemAccessor,
+    Sen2HlsStacArdcAccessor,
+    Sen2HlsStacItemAccessor,
+)
 from .sen2 import (
     Sen2CdseStacArdcAccessor,
     Sen2CdseStacItemAccessor,
@@ -45,12 +51,6 @@ from .sen3 import (
     Sen3LstPlanetaryComputerStacItemAccessor,
     Sen3PlanetaryComputerStacArdcAccessor,
     Sen3PlanetaryComputerStacItemAccessor,
-)
-from .hls import (
-    Sen2HlsStacItemAccessor,
-    Sen2HlsStacArdcAccessor,
-    LandsatHlsStacItemAccessor,
-    LandsatHlsStacArdcAccessor,
 )
 
 ACCESSOR_MAPPING = {

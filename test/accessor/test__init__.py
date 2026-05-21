@@ -23,12 +23,12 @@ import unittest
 
 from xcube_stac.accessors import (
     BaseStacItemAccessor,
+    LandsatHlsStacArdcAccessor,
+    LandsatHlsStacItemAccessor,
     Sen2CdseStacArdcAccessor,
     Sen2CdseStacItemAccessor,
     Sen2PlanetaryComputerStacArdcAccessor,
     Sen2PlanetaryComputerStacItemAccessor,
-    LandsatHlsStacItemAccessor,
-    LandsatHlsStacArdcAccessor,
     Sen3CdseStacArdcAccessor,
     Sen3CdseStacItemAccessor,
     guess_ardc_accessor,

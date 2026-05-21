@@ -46,11 +46,8 @@ from .accessors import guess_ardc_accessor, guess_item_accessor, list_ardc_data_
 from .accessors.base import XcubeStacItemAccessor
 from .constants import (
     CDSE_STAC_URL,
-    CMR_STAC_URL,
     DATA_OPENER_IDS,
     DATA_STORE_ID,
-    DATA_STORE_ID_CMR,
-    DATA_STORE_ID_CMR_ARDC,
     DATA_STORE_ID_CDSE,
     DATA_STORE_ID_CDSE_ARDC,
     DATA_STORE_ID_PC,
@@ -68,6 +65,7 @@ from .constants import (
     SCHEMA_URL,
 )
 from .utils import (
+    _set_cdse_env_vars,
     access_collection,
     access_item,
     bbox_to_geojson,
@@ -81,7 +79,6 @@ from .utils import (
     modify_catalog_url,
     search_collections,
     search_items,
-    _set_cdse_env_vars,
 )
 from .version import version
 

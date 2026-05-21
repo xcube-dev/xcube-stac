@@ -50,6 +50,7 @@ from xcube_resampling.utils import reproject_bbox
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
+    CDSE_S3_ENDPOINT,
     CONVERSION_FACTOR_DEG_METER,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_APPLY_SCALING,
@@ -58,7 +59,6 @@ from xcube_stac.constants import (
     SCHEMA_TILE_SIZE,
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
-    CDSE_S3_ENDPOINT,
 )
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (

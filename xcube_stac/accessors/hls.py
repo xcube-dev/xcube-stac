@@ -22,7 +22,6 @@
 from collections import defaultdict
 from collections.abc import Sequence
 
-import dask.array as da
 import numpy as np
 import planetary_computer
 import pyproj
@@ -37,10 +36,7 @@ from xcube.util.jsonschema import (
 )
 from xcube_resampling import resample_in_space
 from xcube_resampling.gridmapping import GridMapping
-from xcube_resampling.utils import (
-    reproject_bbox,
-    resolution_meters_to_degrees,
-)
+from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
@@ -50,7 +46,6 @@ from xcube_stac.constants import (
     SCHEMA_SPATIAL_RES,
     SCHEMA_TILE_SIZE,
     SCHEMA_TIME_RANGE,
-    TILE_SIZE,
 )
 from xcube_stac.utils import (
     add_nominal_datetime,
@@ -73,6 +68,11 @@ _SENTINEL2_BANDS = [
     "B10",
     "B11",
     "B12",
+    "SAA",
+    "SZA",
+    "VAA",
+    "VZA",
+    "Fmask",
 ]
 _LANDSAT_BANDS = [
     "B01",
@@ -85,6 +85,11 @@ _LANDSAT_BANDS = [
     "B09",
     "B10",
     "B11",
+    "SAA",
+    "SZA",
+    "VAA",
+    "VZA",
+    "Fmask",
 ]
 _CHUNK_SIZE = dict(x=2048, y=2048)
 _SPATIAL_RES = 30  # meters
@@ -206,9 +211,9 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
+        dss = [rename_dataset(ds, asset.title) for (ds, asset) in zip(dss, assets)]
         if apply_scaling:
             dss = [(self._apply_offset_scaling(ds)) for ds, asset in zip(dss, assets)]
-        dss = [rename_dataset(ds, asset.title) for (ds, asset) in zip(dss, assets)]
         ds = dss[0].copy()
         for ds_asset in dss[1:]:
             ds.update(ds_asset)
@@ -238,14 +243,19 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         target_gm = GridMapping.regular_from_bbox(
             bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=tile_size
         )
-        return resample_in_space(ds, source_gm=source_gm, target_gm=target_gm)
+        return resample_in_space(
+            ds, source_gm=source_gm, target_gm=target_gm, prevent_nan_propagations=True
+        )
 
     @staticmethod
     def _apply_offset_scaling(ds: xr.Dataset) -> xr.Dataset:
-        attrs = ds["band_1"].attrs
-        ds["band_1"] = ds["band_1"].where(ds["band_1"] != attrs["_FillValue"])
-        ds["band_1"] *= attrs["scale_factor"]
-        ds["band_1"] += attrs["add_offset"]
+        var = list(ds.keys())[0]
+        if var == "Fmask":
+            return ds
+        attrs = ds[var].attrs
+        ds[var] = ds[var].where(ds[var] != attrs["_FillValue"])
+        ds[var] *= attrs["scale_factor"]
+        ds[var] += attrs["add_offset"]
         return ds
 
 
@@ -452,8 +462,14 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             apply_scaling=open_params.get("apply_scaling", True),
         )
 
-        var_ref = open_params.get("asset_names", ["B01"])[0]
+        var_names = open_params.get("asset_names", ["B01"])
         fill_value = np.nan
+        var_ref = var_names[0]
+        if var_names[0] == "Fmask":
+            if len(var_names) == 1:
+                fill_value = 0
+            else:
+                var_ref = var_names[1]
         dss = []
         for dt_idx, dt in enumerate(grouped_items.time.values):
             dss_dt = []
@@ -469,9 +485,11 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
                     mosaic_spatial_take_first(multi_tiles, var_ref, fill_value)
                 )
             dss.append(
-                xr.merge(dss_dt, compat="override", join="outer", fill_value=np.nan)
+                xr.merge(
+                    dss_dt, compat="override", join="outer", fill_value={"Fmask": 255}
+                )
             )
-        ds_final = xr.concat(dss, dim="time", join="outer", fill_value=np.nan)
+        ds_final = xr.concat(dss, dim="time", join="outer", fill_value={"Fmask": 255})
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
         ds_final = ds_final.sortby("y", ascending=False)
         ds_final = ds_final.sel(
@@ -552,6 +570,11 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
     var_names = list(resampled_list_ds[0].keys())
     var_ref = var_names[0]
     fill_value = np.nan
+    if var_names[0] == "Fmask":
+        if len(var_names) == 1:
+            fill_value = 0
+        else:
+            var_ref = var_names[1]
 
     ds_final = mosaic_spatial_take_first(resampled_list_ds, var_ref, fill_value)
     x_dim, y_dim = target_gm.xy_var_names

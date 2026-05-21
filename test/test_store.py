@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 import itertools
+import os
 import unittest
 import urllib.request
 from unittest.mock import patch
@@ -36,9 +37,10 @@ from xcube.core.store import (
 from xcube.util.jsonschema import JsonComplexSchema, JsonObjectSchema
 from xcube_resampling.utils import reproject_bbox
 
+from xcube_stac.accessors.hls import _LANDSAT_BANDS, _SENTINEL2_BANDS
+
 # noinspection PyProtectedMember
 from xcube_stac.accessors.sen2 import _SENTINEL2_L2A_BANDS
-from xcube_stac.accessors.hls import _SENTINEL2_BANDS, _LANDSAT_BANDS
 from xcube_stac.constants import (
     DATA_STORE_ID,
     DATA_STORE_ID_CDSE,
@@ -55,11 +57,11 @@ from .sampledata import (
     sentinel_3_angles_data,
     sentinel_3_angles_geolocation_data,
     sentinel_3_lst_data,
-    sentinel_3_lst_geolocation_data,
     sentinel_3_lst_flag_data,
+    sentinel_3_lst_geolocation_data,
+    sentinel_3_syn_cloud_data,
     sentinel_3_syn_data,
     sentinel_3_syn_geolocation_data,
-    sentinel_3_syn_cloud_data,
 )
 
 SKIP_HELP = (
@@ -68,8 +70,6 @@ SKIP_HELP = (
 )
 SERVER_URL = "http://localhost:8080"
 SERVER_ENDPOINT_URL = f"{SERVER_URL}/s3"
-
-import os
 
 os.environ.update(
     {

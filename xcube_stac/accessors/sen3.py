@@ -42,6 +42,7 @@ from xcube_resampling.utils import reproject_bbox
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
+    _CRS_WGS84,
     MEAN_EARTH_RADIUS,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_BBOX,
@@ -49,14 +50,13 @@ from xcube_stac.constants import (
     SCHEMA_SPATIAL_RES,
     SCHEMA_TIME_RANGE,
     TILE_SIZE,
-    _CRS_WGS84,
 )
 from xcube_stac.utils import (
     add_nominal_datetime,
-    list_assets_from_item,
-    mosaic_spatial_take_first,
     clip_dataset_relative_bbox,
     find_relative_bbox,
+    list_assets_from_item,
+    mosaic_spatial_take_first,
 )
 
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
