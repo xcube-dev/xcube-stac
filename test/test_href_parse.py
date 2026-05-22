@@ -59,7 +59,7 @@ class HrefParseTest(unittest.TestCase):
 
         expected_fs_paths = [
             (
-                "eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999"
+                "lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999"
                 ".12.02..2000.03.20_eumap_epsg3035_v1.1.tif"
             ),
             (
@@ -74,11 +74,6 @@ class HrefParseTest(unittest.TestCase):
                 "T55XEJ_20240522T032519_B01_60m.tif"
             ),
         ]
-        expected_roots = [
-            "s3.eu-central-1.wasabisys.com",
-            "download.geoservice.dlr.de",
-            "sentinel2l2a01.blob.core.windows.net",
-        ]
         storage_options_region = dict(client_kwargs=dict(region_name="us-east-1"))
         expected_returns = [
             ("s3", "bucket-name", "filename", {}),
@@ -87,9 +82,19 @@ class HrefParseTest(unittest.TestCase):
             ("s3", "bucket-name", "filename", storage_options_region),
             ("s3", "bucket-name", "filename", storage_options_region),
             ("s3", "bucket-name", "filename", storage_options_region),
-            ("https", expected_roots[0], expected_fs_paths[0], {}),
-            ("https", expected_roots[1], expected_fs_paths[1], {}),
-            ("https", expected_roots[2], expected_fs_paths[2], {}),
+            (
+                "s3",
+                "eumap",
+                expected_fs_paths[0],
+                {
+                    "anon": True,
+                    "client_kwargs": {
+                        "endpoint_url": "https://s3.eu-central-1.wasabisys.com"
+                    },
+                },
+            ),
+            ("https", "download.geoservice.dlr.de", expected_fs_paths[1], {}),
+            ("https", "sentinel2l2a01.blob.core.windows.net", expected_fs_paths[2], {}),
         ]
 
         for expected, href in zip(expected_returns, hrefs):
