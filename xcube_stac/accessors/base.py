@@ -50,11 +50,16 @@ class BaseStacItemAccessor(StacItemAccessor):
     def open_asset(
         self, asset: pystac.Asset, **open_params
     ) -> xr.Dataset | MultiLevelDataset:
-        protocol, root, fs_path = decode_href(asset.href)
+        protocol, root, fs_path, storage_options = decode_href(asset.href)
         if protocol == "https":
             store = self._get_store(protocol, root=root)
         elif protocol == "s3":
-            store = self._get_store(protocol, root=root, **self._storage_options_s3)
+            storage_options = update_dict(
+                self._storage_options_s3,
+                storage_options,
+                inplace=False,
+            )
+            store = self._get_store(protocol, root=root, **storage_options)
         else:
             raise DataStoreError(
                 f"Neither 's3' nor 'https' could be derived from href {asset.href!r}."
