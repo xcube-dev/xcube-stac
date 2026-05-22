@@ -321,8 +321,8 @@ class StacDataStoreTest(unittest.TestCase):
             opener_ids, store.get_data_opener_ids(data_type="mldataset")
         )
         opener_ids = (
-            "mldataset:geotiff:https",
-            "dataset:geotiff:https",
+            "mldataset:geotiff:s3",
+            "dataset:geotiff:s3",
         )
         self.assertCountEqual(
             opener_ids, store.get_data_opener_ids(data_id=self.data_id_nonsearchable)

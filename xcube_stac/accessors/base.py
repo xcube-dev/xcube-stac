@@ -50,7 +50,9 @@ class BaseStacItemAccessor(StacItemAccessor):
     def open_asset(
         self, asset: pystac.Asset, **open_params
     ) -> xr.Dataset | MultiLevelDataset:
-        protocol, root, fs_path, storage_options = decode_href(asset.href)
+        protocol, root, fs_path, storage_options = decode_href(
+            asset.href, self._storage_options_s3
+        )
         if protocol == "https":
             store = self._get_store(protocol, root=root)
         elif protocol == "s3":

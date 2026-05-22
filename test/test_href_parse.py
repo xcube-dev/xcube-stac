@@ -95,6 +95,34 @@ class HrefParseTest(unittest.TestCase):
         for expected, href in zip(expected_returns, hrefs):
             self.assertEqual(expected, decode_href(href), msg=href)
 
+    def test_decode_href_endpoint(self):
+        href = "https://s3.gfz-potsdam.de/root/data_id.zarr"
+        expected = (
+            "s3",
+            "root",
+            "data_id.zarr",
+            {
+                "anon": True,
+                "client_kwargs": {"endpoint_url": "https://s3.gfz-potsdam.de"},
+            },
+        )
+        self.assertEqual(expected, decode_href(href))
+
+        expected = (
+            "s3",
+            "root",
+            "data_id.zarr",
+            {
+                "key": "key",
+                "secret": "secret",
+                "client_kwargs": {"endpoint_url": "https://s3.gfz-potsdam.de"},
+            },
+        )
+        self.assertEqual(
+            expected,
+            decode_href(href, storage_options={"key": "key", "secret": "secret"}),
+        )
+
     def test_assert_aws_s3_bucket(self):
         with self.assertRaises(DataStoreError) as cm:
             bucket = "test_123-s3alias"

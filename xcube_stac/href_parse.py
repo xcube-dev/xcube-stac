@@ -67,7 +67,7 @@ AWS_REGION_NAMES = [
 ]
 
 
-def decode_href(href: str) -> tuple[str, str, str, dict]:
+def decode_href(href: str, storage_options: dict = None) -> tuple[str, str, str, dict]:
     """Decodes a href into protocol, root, remaining file path,
     and region name if given.
 
@@ -91,17 +91,16 @@ def decode_href(href: str) -> tuple[str, str, str, dict]:
         DataStoreError: Error, AWS S3 root cannot be decoded since
             it does not follow the uri pattern mentioned in Note.
     """
-    protocol, root, fs_path, storage_options = decode_aws_s3_href(href)
+    protocol, root, fs_path, storage_options = decode_aws_s3_href(href, storage_options)
     if root is None:
         protocol, remain = href.split("://")
         root = remain.split("/")[0]
         fs_path = remain.replace(f"{root}/", "")
-        storage_options = {}
 
     return protocol, root, fs_path, storage_options
 
 
-def decode_aws_s3_href(href: str):
+def decode_aws_s3_href(href: str, storage_options: dict = None):
     """Decodes an AWS S3 href into protocol, root, remaining file path,
     and storage options needed for the S3 data store. If href does not fit to
     the AWS S3 pattern, root, fs_path and region_name will be None.
@@ -131,6 +130,8 @@ def decode_aws_s3_href(href: str):
     fs_path = None
     region_name = None
     root = None
+    if storage_options is None:
+        storage_options = {}
     if re.search(r"^https://s3\.amazonaws\.com/.{3,63}/", href) is not None:
         tmp = href[8:].split("/")
         root = tmp[1]
@@ -158,16 +159,28 @@ def decode_aws_s3_href(href: str):
         region_name = tmp[0].split(".s3.")[-1][:-14]
         root = tmp[0].replace(f".s3.{region_name}.amazonaws.com", "")
         fs_path = "/".join(tmp[1:])
+    elif re.search(r"^https://s3\.[^/]+/.{3,63}/", href) is not None:
+        tmp = href[8:].split("/")
+        endpoint = tmp[0]
+        root = tmp[1]
+        fs_path = "/".join(tmp[2:])
+        if "client_kwargs" in storage_options:
+            storage_options["client_kwargs"]["endpoint_url"] = f"https://{endpoint}"
+        else:
+            storage_options["client_kwargs"] = {"endpoint_url": f"https://{endpoint}"}
+        if not "key" in storage_options and not "secret" in storage_options:
+            storage_options["anon"] = True
 
     if root is not None:
         assert_aws_s3_bucket(root, href)
     if region_name is not None:
         assert_aws_s3_region_name(region_name, href)
 
-    if region_name is None:
-        storage_options = {}
-    else:
-        storage_options = {"client_kwargs": {"region_name": region_name}}
+    if region_name:
+        if "client_kwargs" in storage_options:
+            storage_options["client_kwargs"]["region_name"] = region_name
+        else:
+            storage_options["client_kwargs"] = {"region_name": region_name}
 
     return protocol, root, fs_path, storage_options
 
