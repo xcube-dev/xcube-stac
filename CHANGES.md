@@ -1,10 +1,12 @@
-## CHanges in 1.3.0 (under development)
+## CHanges in 1.3.0
 
 - Added support for the Harmonized Landsat Sentinel-2 (HLS) Version 2.0 via 
   [Planetary Computer](https://planetarycomputer.microsoft.com/dataset/group/hls2) 
   STAC API.
   - Landsat data is available with the data_id `hls2-l30`
   - Sentinel-2 data is available with the data_id `hls2-s30`
+- Added support for custom S3 endpoint URLs, automatically inferred from the asset 
+  URL when not explicitly provided.
 
 ## Changes in 1.2.2
 

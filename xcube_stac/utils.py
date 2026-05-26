@@ -564,7 +564,7 @@ def list_protocols(item: pystac.Item, asset_names: Sequence[str] = None) -> list
     assets = list_assets_from_item(item, asset_names=asset_names)
     protocols = []
     for asset in assets:
-        protocol, _, _ = decode_href(asset.href)
+        protocol, _, _, _ = decode_href(asset.href)
         protocols.append(protocol)
     return list(np.unique(protocols))
 

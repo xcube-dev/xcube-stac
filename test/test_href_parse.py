@@ -23,7 +23,11 @@ import unittest
 
 from xcube.core.store import DataStoreError
 
-from xcube_stac.href_parse import assert_aws_s3_bucket, decode_href
+from xcube_stac.href_parse import (
+    assert_aws_s3_bucket,
+    assert_aws_s3_region_name,
+    decode_href,
+)
 
 
 class HrefParseTest(unittest.TestCase):
@@ -31,6 +35,10 @@ class HrefParseTest(unittest.TestCase):
         hrefs = [
             "https://s3.amazonaws.com/bucket-name/filename",
             "s3://bucket-name/filename",
+            "https://bucket-name.s3.amazonaws.com/filename",
+            "https://s3-us-east-1.amazonaws.com/bucket-name/filename",
+            "https://bucket-name.s3-us-east-1.amazonaws.com/filename",
+            "https://bucket-name.s3.us-east-1.amazonaws.com/filename",
             (
                 "https://s3.eu-central-1.wasabisys.com/eumap/lcv/"
                 "lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999.12."
@@ -51,7 +59,7 @@ class HrefParseTest(unittest.TestCase):
 
         expected_fs_paths = [
             (
-                "eumap/lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999"
+                "lcv/lcv_blue_landsat.glad.ard_p50_30m_0..0cm_1999"
                 ".12.02..2000.03.20_eumap_epsg3035_v1.1.tif"
             ),
             (
@@ -66,21 +74,62 @@ class HrefParseTest(unittest.TestCase):
                 "T55XEJ_20240522T032519_B01_60m.tif"
             ),
         ]
-        expected_roots = [
-            "s3.eu-central-1.wasabisys.com",
-            "download.geoservice.dlr.de",
-            "sentinel2l2a01.blob.core.windows.net",
-        ]
+        storage_options_region = dict(
+            anon=True,
+            client_kwargs=dict(region_name="us-east-1"),
+        )
         expected_returns = [
-            ("https", "s3.amazonaws.com", "bucket-name/filename"),
-            ("s3", "bucket-name", "filename"),
-            ("https", expected_roots[0], expected_fs_paths[0]),
-            ("https", expected_roots[1], expected_fs_paths[1]),
-            ("https", expected_roots[2], expected_fs_paths[2]),
+            ("s3", "bucket-name", "filename", {"anon": True}),
+            ("s3", "bucket-name", "filename", {"anon": True}),
+            ("s3", "bucket-name", "filename", {"anon": True}),
+            ("s3", "bucket-name", "filename", storage_options_region),
+            ("s3", "bucket-name", "filename", storage_options_region),
+            ("s3", "bucket-name", "filename", storage_options_region),
+            (
+                "s3",
+                "eumap",
+                expected_fs_paths[0],
+                {
+                    "anon": True,
+                    "client_kwargs": {
+                        "endpoint_url": "https://s3.eu-central-1.wasabisys.com"
+                    },
+                },
+            ),
+            ("https", "download.geoservice.dlr.de", expected_fs_paths[1], {}),
+            ("https", "sentinel2l2a01.blob.core.windows.net", expected_fs_paths[2], {}),
         ]
 
         for expected, href in zip(expected_returns, hrefs):
             self.assertEqual(expected, decode_href(href), msg=href)
+
+    def test_decode_href_endpoint(self):
+        href = "https://s3.gfz-potsdam.de/root/data_id.zarr"
+        expected = (
+            "s3",
+            "root",
+            "data_id.zarr",
+            {
+                "anon": True,
+                "client_kwargs": {"endpoint_url": "https://s3.gfz-potsdam.de"},
+            },
+        )
+        self.assertEqual(expected, decode_href(href))
+
+        expected = (
+            "s3",
+            "root",
+            "data_id.zarr",
+            {
+                "key": "key",
+                "secret": "secret",
+                "client_kwargs": {"endpoint_url": "https://s3.gfz-potsdam.de"},
+            },
+        )
+        self.assertEqual(
+            expected,
+            decode_href(href, storage_options={"key": "key", "secret": "secret"}),
+        )
 
     def test_assert_aws_s3_bucket(self):
         with self.assertRaises(DataStoreError) as cm:
@@ -102,6 +151,19 @@ class HrefParseTest(unittest.TestCase):
             (
                 f"Bucket name {bucket!r} extracted from the href {href!r} "
                 f"does not follow the AWS S3 bucket naming rules."
+            ),
+            f"{cm.exception}",
+        )
+
+    def test_assert_aws_s3_region_name(self):
+        with self.assertRaises(DataStoreError) as cm:
+            region_name = "us-east-5"
+            href = "https://s3-us-east-5.amazonaws.com/bucket-name/filename"
+            assert_aws_s3_region_name(region_name, href)
+        self.assertEqual(
+            (
+                f"Region name {region_name!r} extracted from the href {href!r} "
+                "is not supported by AWS S3"
             ),
             f"{cm.exception}",
         )
