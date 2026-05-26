@@ -1,4 +1,4 @@
-## CHanges in 1.3.0
+## Changes in 1.3.0
 
 - Added support for the Harmonized Landsat Sentinel-2 (HLS) Version 2.0 via 
   [Planetary Computer](https://planetarycomputer.microsoft.com/dataset/group/hls2) 
