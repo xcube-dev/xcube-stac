@@ -132,6 +132,7 @@ def decode_aws_s3_href(href: str, storage_options: dict = None):
     root = None
     if storage_options is None:
         storage_options = {}
+
     if re.search(r"^https://s3\.amazonaws\.com/.{3,63}/", href) is not None:
         tmp = href[8:].split("/")
         root = tmp[1]
@@ -168,10 +169,10 @@ def decode_aws_s3_href(href: str, storage_options: dict = None):
             storage_options["client_kwargs"]["endpoint_url"] = f"https://{endpoint}"
         else:
             storage_options["client_kwargs"] = {"endpoint_url": f"https://{endpoint}"}
-        if not "key" in storage_options and not "secret" in storage_options:
-            storage_options["anon"] = True
 
     if root is not None:
+        if "key" not in storage_options and "secret" not in storage_options:
+            storage_options["anon"] = True
         assert_aws_s3_bucket(root, href)
     if region_name is not None:
         assert_aws_s3_region_name(region_name, href)

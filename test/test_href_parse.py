@@ -74,11 +74,14 @@ class HrefParseTest(unittest.TestCase):
                 "T55XEJ_20240522T032519_B01_60m.tif"
             ),
         ]
-        storage_options_region = dict(client_kwargs=dict(region_name="us-east-1"))
+        storage_options_region = dict(
+            anon=True,
+            client_kwargs=dict(region_name="us-east-1"),
+        )
         expected_returns = [
-            ("s3", "bucket-name", "filename", {}),
-            ("s3", "bucket-name", "filename", {}),
-            ("s3", "bucket-name", "filename", {}),
+            ("s3", "bucket-name", "filename", {"anon": True}),
+            ("s3", "bucket-name", "filename", {"anon": True}),
+            ("s3", "bucket-name", "filename", {"anon": True}),
             ("s3", "bucket-name", "filename", storage_options_region),
             ("s3", "bucket-name", "filename", storage_options_region),
             ("s3", "bucket-name", "filename", storage_options_region),
