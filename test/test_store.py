@@ -190,7 +190,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_get_data_types_for_data_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://localhost:8080/ogc")
         self.assertEqual(
             ("dataset", "mldataset"),
             store.get_data_types_for_data("collections/datacubes/items/local_ts"),
@@ -359,7 +359,7 @@ class StacDataStoreTest(unittest.TestCase):
 
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_get_data_opener_ids_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://localhost:8080/ogc")
         self.assertCountEqual(
             ("dataset:zarr:s3", "dataset:levels:s3", "mldataset:levels:s3"),
             store.get_data_opener_ids("collections/datacubes/items/local_ts"),
@@ -558,7 +558,7 @@ class StacDataStoreTest(unittest.TestCase):
     # "xcube serve --verbose -c examples/serve/demo/config.yml" in the terminal
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_open_data_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://localhost:8080/ogc")
 
         # open data in zarr format
         ds = store.open_data("collections/datacubes/items/local_ts")
@@ -1474,7 +1474,7 @@ class StacDataStoreTest(unittest.TestCase):
     # "xcube serve --verbose -c examples/serve/demo/config.yml" in the terminal
     @unittest.skipUnless(XCUBE_SERVER_IS_RUNNING, SKIP_HELP)
     def test_describe_data_xcube_server(self):
-        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://127.0.0.1:8080/ogc")
+        store = new_data_store(DATA_STORE_ID_XCUBE, url="http://localhost:8080/ogc")
         data_id = "collections/datacubes/items/local"
         descriptor = store.describe_data(data_id, data_type="mldataset")
         expected_descriptor = dict(
