@@ -1,3 +1,9 @@
+## Changes in 1.3.1
+
+- Removed unused dependencies  
+- Relaxed `boto3` version constraint from `==1.37.3` to `>=1.37.3`  
+- Updated all notebook examples 
+
 ## Changes in 1.3.0
 
 - Added support for the Harmonized Landsat Sentinel-2 (HLS) Version 2.0 via 
