@@ -471,6 +471,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             else:
                 var_ref = var_names[1]
         dss = []
+        idxs_dt = []
         for dt_idx, dt in enumerate(grouped_items.time.values):
             dss_dt = []
             for tile_id in grouped_items.tile_id.values:
@@ -484,13 +485,16 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
                 dss_dt.append(
                     mosaic_spatial_take_first(multi_tiles, var_ref, fill_value)
                 )
+            if not dss_dt:
+                continue
             dss.append(
                 xr.merge(
                     dss_dt, compat="override", join="outer", fill_value={"Fmask": 255}
                 )
             )
+            idxs_dt.append(dt_idx)
         ds_final = xr.concat(dss, dim="time", join="outer", fill_value={"Fmask": 255})
-        ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
+        ds_final = ds_final.assign_coords(dict(time=grouped_items.time[idxs_dt]))
         ds_final = ds_final.sortby("y", ascending=False)
         ds_final = ds_final.sel(
             x=slice(final_bbox[0], final_bbox[2]),
