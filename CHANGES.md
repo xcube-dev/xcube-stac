@@ -1,3 +1,10 @@
+## Changes in 1.3.2 (under development)
+
+- Fixed an issue in HLS STAC metadata where an incorrect UTM hemisphere CRS 
+  (north/south) could be assigned. Added a validation and correction step that checks 
+  the item bounding box against the CRS and automatically updates the EPSG code when 
+  a hemisphere mismatch is detected.
+
 ## Changes in 1.3.1
 
 - Removed unused dependencies  

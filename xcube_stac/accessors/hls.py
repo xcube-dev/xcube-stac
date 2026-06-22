@@ -285,6 +285,15 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
+
+        for item in items:
+            print(item.id, item.datetime, item.bbox, item.properties["proj:code"])
+
+        items = fix_utm_hemisphere(items)
+
+        for item in items:
+            print(item.id, item.datetime, item.bbox, item.properties["proj:code"])
+
         # get STAC assets grouped by solar day
         grouped_items = self._group_items(items)
 
@@ -509,6 +518,43 @@ class LandsatHlsStacArdcAccessor(LandsatHlsStacItemAccessor, Sen2HlsStacArdcAcce
     Planetary Computer STAC API for the Harmonized Landsat Sentinel-2 (HLS) Collection
     Version 2.0, and to assemble them into an analysis-ready data cube.
     """
+
+
+def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
+    """
+    Correct STAC proj:code UTM hemisphere based on item bbox.
+
+    If bbox center latitude >= 0 -> use EPSG:326xx (UTM North)
+    If bbox center latitude < 0  -> use EPSG:327xx (UTM South)
+
+    Keeps the UTM zone and only fixes the hemisphere.
+
+    Parameters:
+        items: Sequence containing items
+
+    Returns:
+        Sequence containing corrected items
+    """
+    for item in items:
+        bbox = item.bbox
+        minx, miny, maxx, maxy = bbox
+        center_lat = (miny + maxy) / 2
+
+        proj_code = item.properties.get("proj:code")
+        epsg = int(proj_code.split(":")[1])
+
+        # extract UTM zone (last two digits)
+        zone = epsg % 100
+
+        if center_lat >= 0:
+            correct_epsg = f"EPSG:{32600 + zone}"
+        else:
+            correct_epsg = f"EPSG:{32700 + zone}"
+
+        if proj_code != correct_epsg:
+            item.properties["proj:code"] = correct_epsg
+
+    return items
 
 
 def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
