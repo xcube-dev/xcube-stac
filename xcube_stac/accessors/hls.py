@@ -285,14 +285,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
-
-        for item in items:
-            print(item.id, item.datetime, item.bbox, item.properties["proj:code"])
-
         items = fix_utm_hemisphere(items)
-
-        for item in items:
-            print(item.id, item.datetime, item.bbox, item.properties["proj:code"])
 
         # get STAC assets grouped by solar day
         grouped_items = self._group_items(items)

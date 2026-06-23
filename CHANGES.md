@@ -1,4 +1,4 @@
-## Changes in 1.3.2 (under development)
+## Changes in 1.3.2
 
 - Fixed an issue in HLS STAC metadata where an incorrect UTM hemisphere CRS 
   (north/south) could be assigned. Added a validation and correction step that checks 
