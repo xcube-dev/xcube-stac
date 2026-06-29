@@ -489,12 +489,14 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
                 )
             if not dss_dt:
                 continue
-            mosaic = dss_dt[-1]
 
+            # apply mosiacking in spatial domain
+            mosaic = dss_dt[-1]
             for ds in reversed(dss_dt[:-1]):
                 mosaic = ds.combine_first(mosaic)
             dss.append(mosaic)
             idxs_dt.append(dt_idx)
+
         ds_final = xr.concat(dss, dim="time", join="outer", fill_value={"Fmask": 255})
         ds_final = ds_final.assign_coords(dict(time=grouped_items.time[idxs_dt]))
         ds_final = ds_final.sortby("y", ascending=False)
