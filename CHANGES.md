@@ -1,4 +1,4 @@
-## Changes in 1.3.3 (under construction)
+## Changes in 1.3.3 (under development)
 
 - Fixed an issue with mosaicking the Harmonized Landsat Sentinel-2 (HLS) dataset (#59).
 
