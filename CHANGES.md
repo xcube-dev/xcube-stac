@@ -1,3 +1,7 @@
+## Changes in 1.3.3 (under construction)
+
+- Fixed an issue with mosaicking the Harmonized Landsat Sentinel-2 (HLS) dataset (#59).
+
 ## Changes in 1.3.2
 
 - Fixed an issue in HLS STAC metadata where an incorrect UTM hemisphere CRS 
