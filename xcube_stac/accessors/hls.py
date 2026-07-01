@@ -244,7 +244,11 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=tile_size
         )
         return resample_in_space(
-            ds, source_gm=source_gm, target_gm=target_gm, prevent_nan_propagations=True
+            ds,
+            source_gm=source_gm,
+            target_gm=target_gm,
+            prevent_nan_propagations=True,
+            fill_values={"Fmask": 255},
         )
 
     @staticmethod
@@ -469,7 +473,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         var_ref = var_names[0]
         if var_names[0] == "Fmask":
             if len(var_names) == 1:
-                fill_value = 0
+                fill_value = 255
             else:
                 var_ref = var_names[1]
         dss = []
@@ -504,6 +508,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             x=slice(final_bbox[0], final_bbox[2]),
             y=slice(final_bbox[3], final_bbox[1]),
         )
+        ds_final = ds_final.reindex(time=grouped_items.time, fill_value={"Fmask": 255})
 
         return ds_final
 
@@ -609,7 +614,12 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
     resampled_list_ds = []
     for ds in list_ds_utm:
         resampled_list_ds.append(
-            resample_in_space(ds, target_gm=target_gm, prevent_nan_propagations=True)
+            resample_in_space(
+                ds,
+                target_gm=target_gm,
+                prevent_nan_propagations=True,
+                fill_values={"Fmask": 255},
+            )
         )
 
     var_names = list(resampled_list_ds[0].keys())
@@ -617,7 +627,7 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
     fill_value = np.nan
     if var_names[0] == "Fmask":
         if len(var_names) == 1:
-            fill_value = 0
+            fill_value = 255
         else:
             var_ref = var_names[1]
 
