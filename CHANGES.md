@@ -1,6 +1,9 @@
 ## Changes in 1.3.3 (under development)
 
 - Fixed an issue with mosaicking the Harmonized Landsat Sentinel-2 (HLS) dataset (#59).
+- Fixed an issue when requesting a bounding box spanning multiple UTM zones, which
+  resulted in cubes with inconsistent time axes. The affected cubes now have their
+  temporal dimensions properly aligned during merging.
 
 ## Changes in 1.3.2
 

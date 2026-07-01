@@ -138,6 +138,14 @@ Currently, we support the following collections and data IDs:
 - [`hls2-l30`](https://planetarycomputer.microsoft.com/dataset/hls2-l30)
 - [`hls2-s30`](https://planetarycomputer.microsoft.com/dataset/hls2-s30)
 
+> **Note:** The `hls2-l30` and `hls2-s30` products may contain tile gaps. Tiles 
+> located entirely outside the shoreline are not processed by the HLS processor 
+> [reference](https://lpdaac.usgs.gov/documents/1698/HLS_User_Guide_V2.pdf). 
+> Additionally, tiles with a mean solar zenith angle greater than 76° are filtered
+> out [reference](https://www.sciencedirect.com/science/article/pii/S0034425725001270?ref=pdf_download&fr=RR-2&rr=a144e7390dde7552). 
+> Tiles consisting entirely of cloud-covered pixels may also be removed if the HLS
+> processing workflow fails to generate a valid product.
+
 ---
 
 ## Setup
