@@ -1,5 +1,9 @@
 ## Changes in 1.3.3 (under development)
 
+- Fixed an issue in Sentinel-2 time series cube generation (single-tile mode) where 
+  the first timestamp could be empty if the requested point was assigned to a 
+  neighboring tile. The first available observation for the selected tile is now 
+  used instead.
 - Fixed an issue with mosaicking the Harmonized Landsat Sentinel-2 (HLS) dataset (#59).
 - Fixed an issue when requesting a bounding box spanning multiple UTM zones, which
   resulted in cubes with inconsistent time axes. The affected cubes now have their
