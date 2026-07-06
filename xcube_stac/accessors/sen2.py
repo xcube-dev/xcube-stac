@@ -500,11 +500,10 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             add_angles=False,
             tile_size=tile_size,
         )
+        item_ref = np.sum(grouped_items.values)[0]
         dss = []
         idx_remove_dt = []
-        var_names = self._list_assets_names(
-            grouped_items.isel(time=0).item()[0], **open_item_open_params
-        )
+        var_names = self._list_assets_names(item_ref, **open_item_open_params)
         fill_value = np.nan
         var_ref = var_names[0]
         if var_names[0] == "SCL":
@@ -533,11 +532,10 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         ds_final = ds_final.assign_coords(coords=dict(time=np_datetimes_sel))
 
         # clip dataset
-        item = np.sum(grouped_items.isel(tile_id=0).values)[0]
-        asset = next(iter(item.assets.values()))
+        asset = next(iter(item_ref.assets.values()))
         crs_data = asset.extra_fields.get(
             self._stac_item_properties["crs"],
-            item.properties.get(self._stac_item_properties["crs"]),
+            item_ref.properties.get(self._stac_item_properties["crs"]),
         )
         t = pyproj.Transformer.from_crs("EPSG:4326", crs_data, always_xy=True)
         point_data = t.transform(open_params["point"][0], open_params["point"][1])
