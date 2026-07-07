@@ -392,6 +392,11 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 for dt in grouped_items.time.values
             }
         )
+        ds["time"].encoding = {
+            "units": "days since 1970-01-01T00:00:00",
+            "calendar": "standard",
+            "dtype": "float32",
+        }
 
         return ds
 
@@ -639,9 +644,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         grouped_items = grouped_items.assign_coords(
             time=np.array(dts, dtype="datetime64[ns]")
         )
-        grouped_items = grouped_items.assign_coords(time=dts)
-        grouped_items["time"].encoding["units"] = "seconds since 1970-01-01"
-        grouped_items["time"].encoding["calendar"] = "standard"
 
         return grouped_items
 
