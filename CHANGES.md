@@ -1,5 +1,7 @@
 ## Changes in 1.3.3 (under development)
 
+- Set the correct time-axis encoding for ARDC requests, mitigating Zarr serialization
+  warnings during data writing.
 - Fixed an issue in Sentinel-2 time series cube generation (single-tile mode) where 
   the first timestamp could be empty if the requested point was assigned to a 
   neighboring tile. The first available observation for the selected tile is now 

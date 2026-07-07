@@ -374,6 +374,12 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
             }
         )
 
+        ds["time"].encoding = {
+            "units": "days since 1970-01-01T00:00:00",
+            "calendar": "standard",
+            "dtype": "float32",
+        }
+
         return ds
 
     def get_open_data_params_schema(
@@ -561,9 +567,6 @@ def _group_items(items: list[pystac.Item]) -> xr.DataArray:
         dts[i] = mean_time.astype("datetime64[s]")
 
     array = xr.DataArray(grouped_items, dims=("time",), coords=dict(time=dts))
-
-    array["time"].encoding["units"] = "seconds since 1970-01-01"
-    array["time"].encoding["calendar"] = "standard"
 
     return array
 
