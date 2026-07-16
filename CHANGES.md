@@ -1,4 +1,4 @@
-## Changes in 1.3.3 (under development)
+## Changes in 1.3.3
 
 - Set the correct time-axis encoding for ARDC requests, mitigating Zarr serialization
   warnings during data writing.
