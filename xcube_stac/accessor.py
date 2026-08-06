@@ -67,6 +67,7 @@ class StacArdcAccessor(StacItemAccessor):
     @abstractmethod
     def open_ardc(
         self,
+        data_id: str,
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:

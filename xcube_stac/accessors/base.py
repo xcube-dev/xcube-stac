@@ -78,8 +78,8 @@ class BaseStacItemAccessor(StacItemAccessor):
         if isinstance(dss[0], xr.Dataset):
             return self._combiner_function(
                 dss,
-                item=item,
-                catalog=self._catalog,
+                item,
+                self._catalog,
                 assets=assets,
                 apply_scaling=apply_scaling,
             )
@@ -142,8 +142,8 @@ class BaseStacItemAccessor(StacItemAccessor):
     @staticmethod
     def _combiner_function(
         dss: Sequence[xr.Dataset | MultiLevelDataset],
-        item: pystac.Item = None,
-        catalog: pystac.Catalog = None,
+        item: pystac.Item,
+        catalog: pystac.Catalog,
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = False,
     ) -> xr.Dataset:
@@ -161,11 +161,13 @@ class BaseStacItemAccessor(StacItemAccessor):
         combined_ds = dss[0].copy()
         for ds in dss[1:]:
             combined_ds.update(ds)
-        combined_ds.attrs = dict(
-            stac_catalog_url=catalog.get_self_href(),
+
+        combined_ds.attrs.update(
+            stac_url=catalog.get_self_href(),
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+
         return combined_ds
 
 

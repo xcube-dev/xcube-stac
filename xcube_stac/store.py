@@ -212,12 +212,10 @@ class StacDataStore(DataStore):
         accessor = guess_item_accessor(self._store_id, data_id)(
             self._catalog, **self._storage_options_s3
         )
-        return accessor.open_item(
-            item,
-            opener_id=opener_id,
-            data_type=data_type,
-            **open_params,
+        ds = accessor.open_item(
+            item, opener_id=opener_id, data_type=data_type, **open_params
         )
+        return ds
 
     def describe_data(
         self, data_id: str, data_type: DataTypeLike = None
@@ -611,13 +609,12 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             self._catalog, **self._storage_options_s3
         )
         ds = accessor.open_ardc(
+            data_id,
             items,
             opener_id=opener_id,
             data_type=data_type,
             **open_params,
         )
-        ds.attrs["stac_catalog_url"] = self._catalog.get_self_href()
-        ds.attrs["xcube_stac_version"] = version
         return ds
 
     def describe_data(

@@ -34,6 +34,7 @@ from xcube.core.store import DataStoreError
 from xcube_stac.utils import (
     access_collection,
     access_item,
+    add_attributes,
     convert_datetime2str,
     convert_str2datetime,
     do_bboxes_intersect,
@@ -45,6 +46,7 @@ from xcube_stac.utils import (
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
+    make_json_serializable,
     rename_dataset,
     search_collections,
     search_nonsearchable_catalog,
@@ -433,6 +435,89 @@ class UtilsTest(unittest.TestCase):
         crs_pyproj = pyproj.CRS.from_string(crs_str)
         self.assertEqual(crs_pyproj, normalize_crs(crs_str))
         self.assertEqual(crs_pyproj, normalize_crs(crs_pyproj))
+
+    def test_make_json_serializable(self):
+        crs = pyproj.CRS.from_string("EPSG:4326")
+        payload = {
+            "crs": crs,
+            "int_scalar": np.int64(7),
+            "float_scalar": np.float32(3.5),
+            "tuple_value": (np.int32(1), "x"),
+            "nested": {
+                "list_value": [np.float64(4.25), {"inner": np.int16(9)}],
+            },
+        }
+
+        result = make_json_serializable(payload)
+
+        self.assertEqual(
+            {
+                "crs": "EPSG:4326",
+                "int_scalar": 7,
+                "float_scalar": 3.5,
+                "tuple_value": [1, "x"],
+                "nested": {"list_value": [4.25, {"inner": 9}]},
+            },
+            result,
+        )
+
+    def test_add_attributes(self):
+        ds = xr.Dataset(attrs={"existing": "preserved"})
+        item_a1 = Mock(id="item-a1")
+        item_a2 = Mock(id="item-a2")
+        item_b1 = Mock(id="item-b1")
+
+        grouped_items = xr.DataArray(
+            data=np.array(
+                [
+                    [ [item_a1], [item_a2] ],
+                    [ [item_b1], [] ],
+                ],
+                dtype=object,
+            ),
+            dims=("time", "tile"),
+            coords={
+                "time": np.array(
+                    ["2024-01-01T00:00:00", "2024-01-02T00:00:00"],
+                    dtype="datetime64[ns]",
+                ),
+                "tile": ["t1", "t2"],
+            },
+        )
+
+        result = add_attributes(
+            "test-data-id",
+            "https://example.com/stac",
+            ds,
+            grouped_items,
+            foo="bar",
+            crs=pyproj.CRS.from_string("EPSG:4326"),
+            thresholds=(np.int64(2), np.float32(0.5)),
+        )
+
+        self.assertIs(result, ds)
+        self.assertEqual("preserved", result.attrs["existing"])
+        self.assertEqual("https://example.com/stac", result.attrs["stac_url"])
+        self.assertEqual(
+            "https://example.com/stac/collections/test-data-id",
+            result.attrs["stac_collection_url"],
+        )
+        self.assertEqual(
+            {
+                "2024-01-01T00:00:00": ["item-a1", "item-a2"],
+                "2024-01-02T00:00:00": ["item-b1"],
+            },
+            result.attrs["stac_items"],
+        )
+        self.assertEqual(
+            {
+                "foo": "bar",
+                "crs": "EPSG:4326",
+                "thresholds": [2, 0.5],
+            },
+            result.attrs["open_params"],
+        )
+        self.assertIn("xcube_stac_version", result.attrs)
 
     @staticmethod
     def test_merge_datasets():

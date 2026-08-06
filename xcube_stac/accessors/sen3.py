@@ -52,12 +52,14 @@ from xcube_stac.constants import (
     TILE_SIZE,
 )
 from xcube_stac.utils import (
+    add_attributes,
     add_nominal_datetime,
     clip_dataset_relative_bbox,
     find_relative_bbox,
     list_assets_from_item,
     mosaic_spatial_take_first,
 )
+from xcube_stac.version import version
 
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
@@ -93,6 +95,23 @@ _SENTINEL3_SYN_PC_ASSETS_VAR_NAME = {
     key.replace("_", "-").lower(): value
     for (key, value) in _SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME.items()
 }
+_ATTRS_TOBE_REMOVED = [
+    "absolute_orbit_number",
+    "comment",
+    "creation_time",
+    "history",
+    "netCDF_version",
+    "processing_baseline",
+    "product_name",
+    "references",
+    "resolution",
+    "start_offset",
+    "start_time",
+    "stop_time",
+    "track_offset",
+    "title",
+]
+
 
 _SENTINEL3_SLSTR_LST_CDSE_ASSETS_VAR_NAME = {"LST_in": "LST"}
 _SENTINEL3_SLSTR_LST_PC_ASSETS_VAR_NAME = {"lst-in": "LST"}
@@ -171,10 +190,15 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             ds = ds[var_names]
         ds = _apply_scaling(ds)
 
-        # add flags
+        # add flags and attributes
         if open_params.get("add_flags", True):
             flags = self.open_asset(item.assets[self._flags])
             ds.update(flags)
+        ds.attrs.update(
+            stac_url=self._catalog.get_self_href(),
+            stac_item_id=item.id,
+            xcube_stac_version=version,
+        )
 
         # add geolocation
         geo = self.open_asset(item.assets["geolocation"])
@@ -262,6 +286,11 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         if open_params.get("add_flags", True):
             flags = self.open_asset(item.assets[self._flags])
             ds.update(flags)
+        ds.attrs.update(
+            stac_url=self._catalog.get_self_href(),
+            stac_item_id=item.id,
+            xcube_stac_version=version,
+        )
 
         # get geolocation
         geo = self.open_asset(item.assets[self._geo_asset])
@@ -349,6 +378,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
 
     def open_ardc(
         self,
+        data_id: str,
         items: list[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
@@ -359,26 +389,10 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
 
-        # add attributes
-        # Gather all used STAC item IDs used in the data cube for each time step
-        # and organize them in a dictionary. The dictionary keys are datetime
-        # strings, and the values are lists of corresponding item IDs.
-        ds.attrs["stac_item_ids"] = dict(
-            {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
-                    item.id for item in np.sum(grouped_items.sel(time=dt).values)
-                ]
-                for dt in grouped_items.time.values
-            }
+        ds.attrs.pop("stac_item_id", None)
+        ds = add_attributes(
+            data_id, self._catalog.get_self_href(), ds, grouped_items, **open_params
         )
-
-        ds["time"].encoding = {
-            "units": "days since 1970-01-01T00:00:00",
-            "calendar": "standard",
-            "dtype": "float32",
-        }
 
         return ds
 
@@ -420,6 +434,8 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 )
                 if ds is None:
                     continue
+                for key in _ATTRS_TOBE_REMOVED:
+                    ds.attrs.pop(key, None)
                 dss_spatial.append(ds)
             if not dss_spatial:
                 continue
@@ -434,6 +450,12 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
             fill = ds_final[var].attrs.pop("_FillValue", None)
             if fill is not None:
                 ds_final[var].encoding["_FillValue"] = fill
+
+        ds_final["time"].encoding = {
+            "units": "days since 1970-01-01T00:00:00",
+            "calendar": "standard",
+            "dtype": "float32",
+        }
         return ds_final
 
 
