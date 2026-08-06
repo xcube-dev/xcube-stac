@@ -63,6 +63,7 @@ from xcube_stac.constants import (
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
     _get_tile_size,
+    add_attributes,
     add_nominal_datetime,
     merge_datasets,
     mosaic_spatial_take_first,
@@ -173,18 +174,14 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         dss = [self.open_asset(asset, **open_params) for asset in assets]
         ds = self._combiner_function(
             dss,
-            item=item,
+            item,
+            self._catalog,
             assets=assets,
             apply_scaling=apply_scaling,
             **open_params,
         )
         if open_params.get("add_angles", False):
             ds = self._add_sen2_angles(item, ds)
-        ds.attrs = dict(
-            stac_catalog_url=self._catalog.get_self_href(),
-            stac_item_id=item.id,
-            xcube_stac_version=version,
-        )
         return ds
 
     def get_open_data_params_schema(
@@ -274,7 +271,8 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     @staticmethod
     def _combiner_function(
         dss: Sequence[xr.Dataset],
-        item: pystac.Item = None,
+        item: pystac.Item,
+        catalog: pystac.Catalog,
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = True,
         **open_params,
@@ -303,6 +301,12 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             ds = merge_datasets(dss, target_gm=target_gm, fill_values={"SCL": 0})
         else:
             ds = merge_datasets(dss, fill_values={"SCL": 0})
+
+        ds.attrs.update(
+            stac_url=catalog.get_self_href(),
+            stac_item_id=item.id,
+            xcube_stac_version=version,
+        )
         return ds
 
     def _add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
@@ -357,6 +361,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
 
     def open_ardc(
         self,
+        data_id: str,
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
@@ -377,26 +382,16 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         else:
             # apply mosaicking and stacking
             ds = self._generate_cube(grouped_items, **open_params)
-
-        # add attributes
-        # Gather all used STAC item IDs used in the data cube for each time step
-        # and organize them in a dictionary. The dictionary keys are datetime
-        # strings, and the values are lists of corresponding item IDs.
-        ds.attrs["stac_item_ids"] = dict(
-            {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
-                    item.id for item in np.sum(grouped_items.sel(time=dt).values)
-                ]
-                for dt in grouped_items.time.values
-            }
-        )
         ds["time"].encoding = {
             "units": "days since 1970-01-01T00:00:00",
             "calendar": "standard",
             "dtype": "float32",
         }
+
+        ds.attrs.pop("stac_item_id", None)
+        ds = add_attributes(
+            data_id, self._catalog.get_self_href(), ds, grouped_items, **open_params
+        )
 
         return ds
 
@@ -828,7 +823,8 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
     def _combiner_function(
         self,
         dss: Sequence[xr.Dataset],
-        item: pystac.Item = None,
+        item: pystac.Item,
+        catalog: pystac.Catalog,
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = True,
         **open_params,
@@ -851,6 +847,12 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             ds = merge_datasets(dss, target_gm=target_gm)
         else:
             ds = merge_datasets(dss)
+
+        ds.attrs.update(
+            stac_url=catalog.get_self_href(),
+            stac_item_id=item.id,
+            xcube_stac_version=version,
+        )
         return ds
 
     @staticmethod

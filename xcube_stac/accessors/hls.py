@@ -48,6 +48,7 @@ from xcube_stac.constants import (
     SCHEMA_TIME_RANGE,
 )
 from xcube_stac.utils import (
+    add_attributes,
     add_nominal_datetime,
     mosaic_spatial_take_first,
     rename_dataset,
@@ -146,15 +147,11 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         dss = [self.open_asset(asset, **open_params) for asset in assets]
         ds = self._combiner_function(
             dss,
-            item=item,
+            item,
+            self._catalog,
             assets=assets,
             apply_scaling=apply_scaling,
             **open_params,
-        )
-        ds.attrs = dict(
-            stac_catalog_url=self._catalog.get_self_href(),
-            stac_item_id=item.id,
-            xcube_stac_version=version,
         )
         return ds
 
@@ -207,6 +204,8 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
     def _combiner_function(
         self,
         dss: Sequence[xr.Dataset],
+        item: pystac.Item,
+        catalog: pystac.Catalog,
         assets: Sequence[pystac.Asset] = None,
         apply_scaling: bool = True,
         **open_params,
@@ -217,6 +216,11 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         ds = dss[0].copy()
         for ds_asset in dss[1:]:
             ds.update(ds_asset)
+        ds.attrs.update(
+            stac_url=catalog.get_self_href(),
+            stac_item_id=item.id,
+            xcube_stac_version=version,
+        )
 
         # resample dataset if requested
         crs = open_params.get("crs")
@@ -243,13 +247,14 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         target_gm = GridMapping.regular_from_bbox(
             bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=tile_size
         )
-        return resample_in_space(
+        ds = resample_in_space(
             ds,
             source_gm=source_gm,
             target_gm=target_gm,
             prevent_nan_propagations=True,
             fill_values={"Fmask": 255},
         )
+        return ds
 
     @staticmethod
     def _apply_offset_scaling(ds: xr.Dataset) -> xr.Dataset:
@@ -286,6 +291,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
 
     def open_ardc(
         self,
+        data_id: str,
         items: Sequence[pystac.Item],
         **open_params,
     ) -> xr.Dataset:
@@ -297,25 +303,10 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
 
-        # add attributes
-        # Gather all used STAC item IDs used in the data cube for each time step
-        # and organize them in a dictionary. The dictionary keys are datetime
-        # strings, and the values are lists of corresponding item IDs.
-        ds.attrs["stac_item_ids"] = dict(
-            {
-                dt.astype("datetime64[ms]")
-                .astype("O")
-                .isoformat(): [
-                    item.id for item in np.sum(grouped_items.sel(time=dt).values)
-                ]
-                for dt in grouped_items.time.values
-            }
+        ds.attrs.pop("stac_item_id", None)
+        ds = add_attributes(
+            data_id, self._catalog.get_self_href(), ds, grouped_items, **open_params
         )
-        ds["time"].encoding = {
-            "units": "days since 1970-01-01T00:00:00",
-            "calendar": "standard",
-            "dtype": "float32",
-        }
 
         return ds
 
@@ -371,6 +362,12 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         # Reproject datasets from different UTM zones to a common grid reference system
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
+
+        ds_final["time"].encoding = {
+            "units": "days since 1970-01-01T00:00:00",
+            "calendar": "standard",
+            "dtype": "float32",
+        }
 
         return ds_final
 

@@ -55,6 +55,7 @@ from .constants import (
     FloatInt,
 )
 from .href_parse import decode_href
+from .version import version
 
 _CATALOG_JSON = "catalog.json"
 
@@ -901,3 +902,72 @@ def _set_cdse_env_vars(key: str = None, secret: str = None) -> None:
     )
     os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "5")
     os.environ.setdefault("GDAL_HTTP_RETRY_DELAY", "1")
+
+
+def add_attributes(
+    data_id: str,
+    stac_url: str,
+    ds: xr.Dataset,
+    grouped_items: xr.DataArray,
+    **open_params,
+) -> xr.Dataset:
+    """Adds metadata attributes to the final dataset.
+
+    This function enriches the input dataset with additional metadata attributes:
+    - 'stac_url': A predefined URL for the EOPF STAC API.
+    - 'stac_items': A mapping from time steps to lists of STAC item IDs.
+    - 'open_params': Opening parameters.
+    - 'xcube_stac_version': The version of the xcube-eopf package being used.
+
+    Parameters:
+        data_id: data ID within the xcube data store
+        stac_url: url to STAC catalog
+        ds: The input dataset to which attributes will be added.
+        grouped_items: An array containing STAC items grouped by time and tile ID.
+        **open_params: Opening parameters that are stored as a metadata attribute.
+
+    Returns:
+        The modified dataset with added metadata attributes.
+    """
+    ds.attrs["stac_url"] = stac_url
+    ds.attrs["stac_collection_url"] = f"{stac_url}/collections/{data_id}"
+
+    # Gather all used STAC item IDs used in the data cube for each time step
+    # and organize them in a dictionary. The dictionary keys are datetime
+    # strings, and the values are lists of corresponding item IDs.
+    ds.attrs["stac_items"] = dict(
+        {
+            dt.astype("datetime64[ms]")
+            .astype("O")
+            .isoformat(): [
+                item.id for item in np.sum(grouped_items.sel(time=dt).values)
+            ]
+            for dt in grouped_items.time.values
+        }
+    )
+
+    ds.attrs["open_params"] = make_json_serializable(open_params)
+    ds.attrs["xcube_stac_version"] = version
+
+    return ds
+
+
+def make_json_serializable(obj: Any) -> Any:
+    """Recursively convert Python objects into JSON-serializable objects."""
+
+    if isinstance(obj, pyproj.CRS):
+        return obj.to_string()  # e.g. "EPSG:4326"
+
+    if isinstance(obj, np.generic):
+        return obj.item()  # np.float64 -> float, np.int64 -> int
+
+    if isinstance(obj, tuple):
+        return [make_json_serializable(v) for v in obj]
+
+    if isinstance(obj, list):
+        return [make_json_serializable(v) for v in obj]
+
+    if isinstance(obj, dict):
+        return {k: make_json_serializable(v) for k, v in obj.items()}
+
+    return obj
