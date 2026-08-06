@@ -43,10 +43,10 @@ from xcube_stac.utils import (
     is_collection_in_time_range,
     is_item_in_time_range,
     list_assets_from_item,
+    make_json_serializable,
     merge_datasets,
     mosaic_spatial_take_first,
     normalize_crs,
-    make_json_serializable,
     rename_dataset,
     search_collections,
     search_nonsearchable_catalog,
@@ -470,8 +470,8 @@ class UtilsTest(unittest.TestCase):
         grouped_items = xr.DataArray(
             data=np.array(
                 [
-                    [ [item_a1], [item_a2] ],
-                    [ [item_b1], [] ],
+                    [[item_a1], [item_a2]],
+                    [[item_b1], []],
                 ],
                 dtype=object,
             ),

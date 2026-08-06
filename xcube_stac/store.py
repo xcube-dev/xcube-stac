@@ -80,7 +80,6 @@ from .utils import (
     search_collections,
     search_items,
 )
-from .version import version
 
 
 # Data Stores for accessing single STAC items

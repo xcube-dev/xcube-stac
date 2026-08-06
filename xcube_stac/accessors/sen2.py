@@ -62,8 +62,8 @@ from xcube_stac.constants import (
 )
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
-    add_attributes,
     _get_tile_size,
+    add_attributes,
     add_nominal_datetime,
     merge_datasets,
     mosaic_spatial_take_first,

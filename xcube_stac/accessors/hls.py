@@ -48,10 +48,10 @@ from xcube_stac.constants import (
     SCHEMA_TIME_RANGE,
 )
 from xcube_stac.utils import (
+    add_attributes,
     add_nominal_datetime,
     mosaic_spatial_take_first,
     rename_dataset,
-    add_attributes,
 )
 from xcube_stac.version import version
 
