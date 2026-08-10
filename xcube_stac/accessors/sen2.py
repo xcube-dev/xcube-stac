@@ -668,6 +668,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             (time, y, x) for all assets within the specified UTM zone.
         """
         items_bbox = _get_bounding_box(grouped_items)
+        print(open_params)
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
         spatial_res = _get_spatial_res(open_params)
         open_item_open_params = dict(

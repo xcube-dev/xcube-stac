@@ -540,6 +540,7 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
         center_lat = (miny + maxy) / 2
 
         proj_code = item.properties.get("proj:code")
+        print(item.properties)
         epsg = int(proj_code.split(":")[1])
 
         # extract UTM zone (last two digits)
