@@ -1236,7 +1236,7 @@ class StacDataStoreTest(unittest.TestCase):
         ds = store.open_data(
             data_id="hls2-s30",
             bbox=bbox_utm,
-            time_range=["2020-08-25", "2020-09-01"],
+            time_range=["2024-08-25", "2024-09-01"],
             spatial_res=30,
             crs=crs_target,
             asset_names=["B04", "B03", "B02"],
@@ -1256,7 +1256,7 @@ class StacDataStoreTest(unittest.TestCase):
             data_id="hls2-s30",
             asset_names=["B04", "B03", "B02"],
             bbox=bbox_wgs84,
-            time_range=["2020-08-25", "2020-09-01"],
+            time_range=["2024-08-25", "2024-09-01"],
             spatial_res=0.00054,
             crs="EPSG:4326",
         )
@@ -1280,7 +1280,7 @@ class StacDataStoreTest(unittest.TestCase):
             data_id="hls2-l30",
             asset_names=["B04", "B03", "B02"],
             bbox=bbox_wgs84,
-            time_range=["2020-08-20", "2020-09-01"],
+            time_range=["2024-08-25", "2024-09-01"],
             spatial_res=0.00054,
             crs="EPSG:4326",
         )
