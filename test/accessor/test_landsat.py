@@ -134,22 +134,28 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         target_gm = object()
         geographic_crs = pyproj.CRS.from_epsg(4326)
 
-        with patch(
-            "xcube_stac.accessors.landsat.GridMapping.from_dataset",
-            return_value=source_gm,
-        ) as from_dataset_mock, patch(
-            "xcube_stac.accessors.landsat.reproject_bbox",
-            return_value=(1.0, 2.0, 3.0, 4.0),
-        ) as reproject_bbox_mock, patch(
-            "xcube_stac.accessors.landsat.resolution_meters_to_degrees",
-            return_value=0.25,
-        ) as res_to_deg_mock, patch(
-            "xcube_stac.accessors.landsat.GridMapping.regular_from_bbox",
-            return_value=target_gm,
-        ) as regular_from_bbox_mock, patch(
-            "xcube_stac.accessors.landsat.resample_in_space",
-            side_effect=lambda ds, **kwargs: ds,
-        ) as resample_mock:
+        with (
+            patch(
+                "xcube_stac.accessors.landsat.GridMapping.from_dataset",
+                return_value=source_gm,
+            ) as from_dataset_mock,
+            patch(
+                "xcube_stac.accessors.landsat.reproject_bbox",
+                return_value=(1.0, 2.0, 3.0, 4.0),
+            ) as reproject_bbox_mock,
+            patch(
+                "xcube_stac.accessors.landsat.resolution_meters_to_degrees",
+                return_value=0.25,
+            ) as res_to_deg_mock,
+            patch(
+                "xcube_stac.accessors.landsat.GridMapping.regular_from_bbox",
+                return_value=target_gm,
+            ) as regular_from_bbox_mock,
+            patch(
+                "xcube_stac.accessors.landsat.resample_in_space",
+                side_effect=lambda ds, **kwargs: ds,
+            ) as resample_mock,
+        ):
             ds = self.accessor._combiner_function(
                 [raw_ds],
                 item,
@@ -203,16 +209,20 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         )()
         target_gm = object()
 
-        with patch(
-            "xcube_stac.accessors.landsat.GridMapping.from_dataset",
-            return_value=source_gm,
-        ), patch(
-            "xcube_stac.accessors.landsat.GridMapping.regular_from_bbox",
-            return_value=target_gm,
-        ) as regular_from_bbox_mock, patch(
-            "xcube_stac.accessors.landsat.resample_in_space",
-            side_effect=lambda ds, **kwargs: ds,
-        ) as resample_mock:
+        with (
+            patch(
+                "xcube_stac.accessors.landsat.GridMapping.from_dataset",
+                return_value=source_gm,
+            ),
+            patch(
+                "xcube_stac.accessors.landsat.GridMapping.regular_from_bbox",
+                return_value=target_gm,
+            ) as regular_from_bbox_mock,
+            patch(
+                "xcube_stac.accessors.landsat.resample_in_space",
+                side_effect=lambda ds, **kwargs: ds,
+            ) as resample_mock,
+        ):
             ds = self.accessor._combiner_function(
                 [raw_ds],
                 item,
@@ -250,14 +260,18 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         ds = xr.Dataset(attrs={"stac_item_id": "should-be-removed"})
         returned = xr.Dataset(attrs={"stac_item_id": "should-be-removed"})
 
-        with patch.object(
-            self.ardc_accessor, "_group_items", return_value=grouped_items
-        ) as group_items_mock, patch.object(
-            self.ardc_accessor, "_generate_cube", return_value=ds
-        ) as generate_cube_mock, patch(
-            "xcube_stac.accessors.landsat.add_attributes",
-            return_value=returned,
-        ) as add_attributes_mock:
+        with (
+            patch.object(
+                self.ardc_accessor, "_group_items", return_value=grouped_items
+            ) as group_items_mock,
+            patch.object(
+                self.ardc_accessor, "_generate_cube", return_value=ds
+            ) as generate_cube_mock,
+            patch(
+                "xcube_stac.accessors.landsat.add_attributes",
+                return_value=returned,
+            ) as add_attributes_mock,
+        ):
             result = self.ardc_accessor.open_ardc(
                 "landsat-data",
                 [self.make_item(("lwir11",))],

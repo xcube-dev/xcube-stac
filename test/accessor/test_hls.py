@@ -208,22 +208,28 @@ class HlsStacCoverageTest(unittest.TestCase):
         target_gm = Mock()
         geographic_crs = pyproj.CRS.from_epsg(4326)
 
-        with patch(
-            "xcube_stac.accessors.hls.GridMapping.from_dataset",
-            return_value=source_gm,
-        ) as from_dataset_mock, patch(
-            "xcube_stac.accessors.hls.reproject_bbox",
-            return_value=(1.0, 2.0, 3.0, 4.0),
-        ) as reproject_bbox_mock, patch(
-            "xcube_stac.accessors.hls.resolution_meters_to_degrees",
-            return_value=0.25,
-        ) as res_to_deg_mock, patch(
-            "xcube_stac.accessors.hls.GridMapping.regular_from_bbox",
-            return_value=target_gm,
-        ) as regular_from_bbox_mock, patch(
-            "xcube_stac.accessors.hls.resample_in_space",
-            side_effect=lambda ds, **kwargs: ds,
-        ) as resample_mock:
+        with (
+            patch(
+                "xcube_stac.accessors.hls.GridMapping.from_dataset",
+                return_value=source_gm,
+            ) as from_dataset_mock,
+            patch(
+                "xcube_stac.accessors.hls.reproject_bbox",
+                return_value=(1.0, 2.0, 3.0, 4.0),
+            ) as reproject_bbox_mock,
+            patch(
+                "xcube_stac.accessors.hls.resolution_meters_to_degrees",
+                return_value=0.25,
+            ) as res_to_deg_mock,
+            patch(
+                "xcube_stac.accessors.hls.GridMapping.regular_from_bbox",
+                return_value=target_gm,
+            ) as regular_from_bbox_mock,
+            patch(
+                "xcube_stac.accessors.hls.resample_in_space",
+                side_effect=lambda ds, **kwargs: ds,
+            ) as resample_mock,
+        ):
             result = self.item_accessor._combiner_function(
                 [raw_ds],
                 item,
@@ -300,15 +306,19 @@ class HlsStacCoverageTest(unittest.TestCase):
         bbox = (0.0, 0.0, 1.0, 1.0)
         crs_utm = pyproj.CRS.from_epsg(32632)
 
-        with patch(
-            "xcube_stac.accessors.hls.reproject_bbox",
-            return_value=bbox,
-        ) as reproject_bbox_mock, patch.object(
-            self.ardc_accessor, "open_item", return_value=raw_ds
-        ) as open_item_mock, patch(
-            "xcube_stac.accessors.hls.mosaic_spatial_take_first",
-            side_effect=lambda dss, var_ref, fill_value: dss[0],
-        ) as mosaic_mock:
+        with (
+            patch(
+                "xcube_stac.accessors.hls.reproject_bbox",
+                return_value=bbox,
+            ) as reproject_bbox_mock,
+            patch.object(
+                self.ardc_accessor, "open_item", return_value=raw_ds
+            ) as open_item_mock,
+            patch(
+                "xcube_stac.accessors.hls.mosaic_spatial_take_first",
+                side_effect=lambda dss, var_ref, fill_value: dss[0],
+            ) as mosaic_mock,
+        ):
             result_single = self.ardc_accessor._generate_utm_cube(
                 grouped_items,
                 crs_utm,
@@ -345,23 +355,31 @@ class HlsStacCoverageTest(unittest.TestCase):
         target_gm.xy_var_names = ("x", "y")
 
         def run_merge(var_names):
-            ds = self.make_time_cube_dataset(var_names=var_names, x=(0.0, 5.0), y=(5.0, 0.0))
-            with patch(
-                "xcube_stac.accessors.hls.pyproj.CRS.from_cf",
-                side_effect=[target_crs],
-            ), patch(
-                "xcube_stac.accessors.hls.GridMapping.from_dataset",
-                return_value=source_gm,
-            ) as from_dataset_mock, patch(
-                "xcube_stac.accessors.hls.GridMapping.regular_from_bbox",
-                return_value=target_gm,
-            ) as regular_from_bbox_mock, patch(
-                "xcube_stac.accessors.hls.resample_in_space",
-                side_effect=lambda ds, **kwargs: ds,
-            ) as resample_mock, patch(
-                "xcube_stac.accessors.hls.mosaic_spatial_take_first",
-                side_effect=lambda dss, var_ref, fill_value: dss[0],
-            ) as mosaic_mock:
+            ds = self.make_time_cube_dataset(
+                var_names=var_names, x=(0.0, 5.0), y=(5.0, 0.0)
+            )
+            with (
+                patch(
+                    "xcube_stac.accessors.hls.pyproj.CRS.from_cf",
+                    side_effect=[target_crs],
+                ),
+                patch(
+                    "xcube_stac.accessors.hls.GridMapping.from_dataset",
+                    return_value=source_gm,
+                ) as from_dataset_mock,
+                patch(
+                    "xcube_stac.accessors.hls.GridMapping.regular_from_bbox",
+                    return_value=target_gm,
+                ) as regular_from_bbox_mock,
+                patch(
+                    "xcube_stac.accessors.hls.resample_in_space",
+                    side_effect=lambda ds, **kwargs: ds,
+                ) as resample_mock,
+                patch(
+                    "xcube_stac.accessors.hls.mosaic_spatial_take_first",
+                    side_effect=lambda dss, var_ref, fill_value: dss[0],
+                ) as mosaic_mock,
+            ):
                 result = _merge_utm_zones(
                     [ds],
                     bbox=bbox,

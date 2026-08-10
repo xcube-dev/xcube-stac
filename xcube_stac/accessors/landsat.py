@@ -29,9 +29,9 @@ from xcube_resampling import resample_in_space
 from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
+from xcube_stac.stac_extension.raster import apply_offset_scaling
 from xcube_stac.utils import add_attributes, add_nominal_datetime, rename_dataset
 from xcube_stac.version import version
-from xcube_stac.stac_extension.raster import apply_offset_scaling
 
 from .hls import Sen2HlsStacArdcAccessor, Sen2HlsStacItemAccessor
 

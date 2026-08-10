@@ -30,13 +30,13 @@ from xcube_stac.constants import (
 )
 
 from .base import BaseStacItemAccessor
-from .landsat import LandsatC2L2StacArdcAccessor, LandsatC2L2StacItemAccessor
 from .hls import (
     LandsatHlsStacArdcAccessor,
     LandsatHlsStacItemAccessor,
     Sen2HlsStacArdcAccessor,
     Sen2HlsStacItemAccessor,
 )
+from .landsat import LandsatC2L2StacArdcAccessor, LandsatC2L2StacItemAccessor
 from .sen2 import (
     Sen2CdseStacArdcAccessor,
     Sen2CdseStacItemAccessor,
