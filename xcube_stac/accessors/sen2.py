@@ -63,6 +63,7 @@ from xcube_stac.constants import (
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
     _get_tile_size,
+    _remove_fill_value_encoding,
     add_attributes,
     add_nominal_datetime,
     merge_datasets,
@@ -149,17 +150,17 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             region_name="default",
         )
         # define field names in STAC item
-        self._stac_item_properties = dict(
-            tile_id="grid:code",
-            crs="proj:code",
-            processing_version="processing:version",
-        )
+        self._stac_item_properties = {
+            "tile_id": "grid:code",
+            "crs": "proj:code",
+            "processing_version": "processing:version",
+        }
 
     @staticmethod
     # noinspection PyUnusedLocal
     def open_asset(asset: pystac.Asset, **open_params) -> xr.Dataset:
         tile_size = _get_tile_size(open_params)
-        chunks = dict(x=tile_size[0], y=tile_size[1])
+        chunks = {"x": tile_size[0], "y": tile_size[1]}
         return xr.Dataset(
             {
                 "band_1": rioxarray.open_rasterio(asset.href, chunks=chunks).squeeze(
@@ -185,16 +186,16 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         return ds
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                asset_names=_SCHEMA_ASSET_NAMES,
-                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
-                spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
-                add_angles=_SCHEMA_ANGLES_SENTINEL2,
-                tile_size=SCHEMA_TILE_SIZE,
-            ),
+            properties={
+                "asset_names": _SCHEMA_ASSET_NAMES,
+                "apply_scaling": _SCHEMA_APPLY_SCALING_SENTINEL2,
+                "spatial_res": _SCHEMA_SPATIAL_RES_SEN2_ITEM,
+                "add_angles": _SCHEMA_ANGLES_SENTINEL2,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
             required=[],
             additional_properties=False,
         )
@@ -273,7 +274,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         dss: Sequence[xr.Dataset],
         item: pystac.Item,
         catalog: pystac.Catalog,
-        assets: Sequence[pystac.Asset] = None,
+        assets: Sequence[pystac.Asset] | None = None,
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
@@ -307,6 +308,8 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
         return ds
 
     def _add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
@@ -341,7 +344,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
     def get_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
         # read xml file and parse to dict
         href = item.assets["granule_metadata"].href
-        protocol, remain = href.split("://")
+        _protocol, remain = href.split("://")
         root = "eodata"
         fs_path = "/".join(remain.split("/")[1:])
         response = self.s3_boto.get_object(Bucket=root, Key=fs_path)
@@ -396,37 +399,37 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         return ds
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         bbox_schema = JsonObjectSchema(
             title="Open parameters to open via a user-defined bounding box.",
-            properties=dict(
-                asset_names=_SCHEMA_ASSET_NAMES,
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=_SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                crs=SCHEMA_CRS,
-                query=SCHEMA_ADDITIONAL_QUERY,
-                add_angles=_SCHEMA_ANGLES_SENTINEL2,
-                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
-                tile_size=SCHEMA_TILE_SIZE,
-            ),
+            properties={
+                "asset_names": _SCHEMA_ASSET_NAMES,
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": _SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+                "add_angles": _SCHEMA_ANGLES_SENTINEL2,
+                "apply_scaling": _SCHEMA_APPLY_SCALING_SENTINEL2,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
         point_schema = JsonObjectSchema(
             title="Open parameters to generate a cube cutout around a given `point`.",
-            properties=dict(
-                asset_names=_SCHEMA_ASSET_NAMES,
-                time_range=SCHEMA_TIME_RANGE,
-                point=_SCHEMA_POINT,
-                bbox_width=_SCHEMA_BBOX_WIDTH,
-                spatial_res=_SCHEMA_SPATIAL_RES_SEN2_ITEM,
-                query=SCHEMA_ADDITIONAL_QUERY,
-                add_angles=_SCHEMA_ANGLES_SENTINEL2,
-                apply_scaling=_SCHEMA_APPLY_SCALING_SENTINEL2,
-                tile_size=SCHEMA_TILE_SIZE,
-            ),
+            properties={
+                "asset_names": _SCHEMA_ASSET_NAMES,
+                "time_range": SCHEMA_TIME_RANGE,
+                "point": _SCHEMA_POINT,
+                "bbox_width": _SCHEMA_BBOX_WIDTH,
+                "spatial_res": _SCHEMA_SPATIAL_RES_SEN2_ITEM,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+                "add_angles": _SCHEMA_ANGLES_SENTINEL2,
+                "apply_scaling": _SCHEMA_APPLY_SCALING_SENTINEL2,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
             required=["time_range", "point", "spatial_res", "bbox_width"],
             additional_properties=False,
         )
@@ -457,6 +460,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 self._stac_item_properties["crs"],
                 item.properties.get(self._stac_item_properties["crs"]),
             )
+            if isinstance(crs, int):
+                crs = f"EPSG:{crs}"
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -493,13 +498,13 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
 
         # Open data and stack along time axis
         tile_size = _get_tile_size(open_params)
-        open_item_open_params = dict(
-            asset_names=open_params.get("asset_names"),
-            spatial_res=open_params.get("spatial_res", 10),
-            apply_scaling=open_params.get("apply_scaling", True),
-            add_angles=False,
-            tile_size=tile_size,
-        )
+        open_item_open_params = {
+            "asset_names": open_params.get("asset_names"),
+            "spatial_res": open_params.get("spatial_res", 10),
+            "apply_scaling": open_params.get("apply_scaling", True),
+            "add_angles": False,
+            "tile_size": tile_size,
+        }
         item_ref = np.sum(grouped_items.values)[0]
         dss = []
         idx_remove_dt = []
@@ -529,7 +534,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             for idx, value in enumerate(grouped_items.time.values)
             if idx not in idx_remove_dt
         ]
-        ds_final = ds_final.assign_coords(coords=dict(time=np_datetimes_sel))
+        ds_final = ds_final.assign_coords(coords={"time": np_datetimes_sel})
 
         # clip dataset
         asset = next(iter(item_ref.assets.values()))
@@ -552,7 +557,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         )
         ds_final = chunk_dataset(
             ds_final,
-            chunk_sizes=dict(x=tile_size[0], y=tile_size[1]),
+            chunk_sizes={"x": tile_size[0], "y": tile_size[1]},
             format_name="zarr",
         )
 
@@ -628,7 +633,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         grouped_items = xr.DataArray(
             grouped_items,
             dims=("time", "tile_id"),
-            coords=dict(time=dates, tile_id=tile_ids),
+            coords={"time": dates, "tile_id": tile_ids},
         )
 
         # replace date by datetime from first item
@@ -670,13 +675,13 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         items_bbox = _get_bounding_box(grouped_items)
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
         spatial_res = _get_spatial_res(open_params)
-        open_item_open_params = dict(
-            asset_names=open_params.get("asset_names"),
-            spatial_res=spatial_res,
-            apply_scaling=open_params.get("apply_scaling", True),
-            add_angles=False,
-            tile_size=open_params.get("tile_size", TILE_SIZE),
-        )
+        open_item_open_params = {
+            "asset_names": open_params.get("asset_names"),
+            "spatial_res": spatial_res,
+            "apply_scaling": open_params.get("apply_scaling", True),
+            "add_angles": False,
+            "tile_size": open_params.get("tile_size", TILE_SIZE),
+        }
         final_ds = None
 
         var_names = self._list_assets_names(
@@ -759,11 +764,11 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                     idx_remove_dt.append(dt_idx)
                     continue
                 else:
-                    var_ref = [
+                    var_ref = next(
                         var_name
-                        for var_name in ds.keys()
+                        for var_name in ds
                         if var_name.startswith("viewing_angle")
-                    ][0]
+                    )
                     ds_time = mosaic_spatial_take_first(
                         multi_tiles, str(var_ref), np.nan
                     )
@@ -774,22 +779,22 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 for idx, value in enumerate(grouped_items.time.values)
                 if idx not in idx_remove_dt
             ]
-            ds_tile = ds_tile.assign_coords(coords=dict(time=np_datetimes_sel))
+            ds_tile = ds_tile.assign_coords(coords={"time": np_datetimes_sel})
             ds_tile = resample_in_space(
                 ds_tile,
                 target_gm=target_gm,
                 interp_methods="bilinear",
                 prevent_nan_propagations=True,
             )
-            ds_tile = ds_tile.chunk(dict(time=1))
+            ds_tile = ds_tile.chunk({"time": 1})
             if len(idx_remove_dt) > 0:
                 ds_tile = _fill_nan_slices(
                     ds_tile, grouped_items.time.values, idx_remove_dt
                 )
             list_ds_tiles.append(ds_tile)
-        var_ref = [
-            var_name for var_name in ds.keys() if var_name.startswith("viewing_angle")
-        ][0]
+        var_ref = next(
+            var_name for var_name in ds if var_name.startswith("viewing_angle")
+        )
         ds_angles = mosaic_spatial_take_first(list_ds_tiles, str(var_ref), np.nan)
         ds_final = _add_angles(ds_final, ds_angles)
         return ds_final
@@ -802,11 +807,11 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
         # define field names in STAC items
-        self._stac_item_properties = dict(
-            tile_id="s2:mgrs_tile",
-            crs="proj:code",
-            processing_version="s2:processing_baseline",
-        )
+        self._stac_item_properties = {
+            "tile_id": "s2:mgrs_tile",
+            "crs": "proj:epsg",
+            "processing_version": "s2:processing_baseline",
+        }
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         if not self._is_pc_signed(item):
@@ -825,7 +830,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
         dss: Sequence[xr.Dataset],
         item: pystac.Item,
         catalog: pystac.Catalog,
-        assets: Sequence[pystac.Asset] = None,
+        assets: Sequence[pystac.Asset] | None = None,
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
@@ -841,7 +846,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             target_gm = GridMapping.regular_from_bbox(
                 bbox=assets[0].extra_fields["proj:bbox"],
                 xy_res=open_params["spatial_res"],
-                crs=item.properties["proj:code"],
+                crs=f"EPSG:{item.properties["proj:epsg"]}",
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
             ds = merge_datasets(dss, target_gm=target_gm)
@@ -853,6 +858,8 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
         return ds
 
     @staticmethod
@@ -961,7 +968,7 @@ def _get_angle_target_gm(ds_final: xr.Dataset) -> GridMapping:
         mapping used during datacube generation.
     """
     gm_final = GridMapping.from_dataset(ds_final)
-    x_name, y_name = gm_final.xy_var_names
+    _x_name, y_name = gm_final.xy_var_names
     if gm_final.crs.is_geographic:
         y_res = 5000 / 111320
         y_center = (ds_final[y_name][0].item() + ds_final[y_name][-1].item()) / 2
@@ -989,7 +996,7 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
         A list of valid Sentinel-2 band names found in the dataset.
     """
     band_names = [
-        str(key).split("_")[0] for key in ds.keys() if str(key).startswith("B")
+        str(key).split("_")[0] for key in ds if str(key).startswith("B")
     ]
     return [name for name in _SENTINEL2_BANDS if name in band_names]
 
@@ -1047,13 +1054,13 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
             dtype=np.float32,
         ),
         dims=["angle", "band", "detector_id", "y", "x"],
-        coords=dict(
-            angle=["Zenith", "Azimuth"],
-            band=band_names,
-            detector_id=detector_ids,
-            x=x,
-            y=y,
-        ),
+        coords={
+            "angle": ["Zenith", "Azimuth"],
+            "band": band_names,
+            "detector_id": detector_ids,
+            "x": x,
+            "y": y,
+        },
     )
 
     # Each band has multiple detectors, so we have to go through all of them
@@ -1086,7 +1093,7 @@ def _get_sen2_angles(xml_dict: dict, band_names: list[str]) -> xr.Dataset:
                 band=band, angle=angle
             ).drop_vars(["band", "angle"])
     crs = pyproj.CRS.from_epsg(geocode["HORIZONTAL_CS_CODE"].replace("EPSG:", ""))
-    ds = ds.assign_coords(dict(spatial_ref=xr.DataArray(0, attrs=crs.to_cf())))
+    ds = ds.assign_coords({"spatial_ref": xr.DataArray(0, attrs=crs.to_cf())})
     ds = ds.chunk()
 
     return ds
@@ -1147,21 +1154,21 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
     ds_temp = xr.Dataset()
     bands = [
         str(k).replace("viewing_angle_zenith_", "")
-        for k in ds_angles.keys()
+        for k in ds_angles
         if "viewing_angle_zenith" in k
     ]
-    keys = [k for k in ds_angles.keys() if "viewing_angle_zenith" in k]
+    keys = [k for k in ds_angles if "viewing_angle_zenith" in k]
     ds_temp["zenith"] = (
         ds_angles[keys].to_dataarray(dim="band").assign_coords(band=bands)
     )
-    keys = [k for k in ds_angles.keys() if "viewing_angle_azimuth" in k]
+    keys = [k for k in ds_angles if "viewing_angle_azimuth" in k]
     ds_temp["azimuth"] = (
         ds_angles[keys].to_dataarray(dim="band").assign_coords(band=bands)
     )
     ds["viewing_angle"] = (
         ds_temp[["zenith", "azimuth"]].to_dataarray(dim="angle").astype(np.float32)
     )
-    ds = ds.chunk(dict(angle=-1, band=-1))
+    ds = ds.chunk({"angle": -1, "band": -1})
 
     return ds
 
@@ -1187,14 +1194,10 @@ def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
         item = np.sum(items.sel(tile_id=tile_id).values)[0]
         asset = next(iter(item.assets.values()))
         bbox = asset.extra_fields["proj:bbox"]
-        if xmin > bbox[0]:
-            xmin = bbox[0]
-        if ymin > bbox[1]:
-            ymin = bbox[1]
-        if xmax < bbox[2]:
-            xmax = bbox[2]
-        if ymax < bbox[3]:
-            ymax = bbox[3]
+        xmin = min(xmin, bbox[0])
+        ymin = min(ymin, bbox[1])
+        xmax = max(xmax, bbox[2])
+        ymax = max(ymax, bbox[3])
     return [xmin, ymin, xmax, ymax]
 
 
@@ -1234,7 +1237,7 @@ def _create_empty_dataset(
     grouped_items: xr.DataArray,
     items_bbox: list[float | int] | tuple[float | int],
     final_bbox: list[float | int] | tuple[float | int],
-    spatial_res: int | float,
+    spatial_res: float,
     tile_size: int | tuple[int] | None = None,
 ) -> xr.Dataset:
     """Create an empty xarray Dataset with spatial and temporal dimensions matching
@@ -1429,7 +1432,7 @@ def _fill_nan_slices(
     if idx_nan[0] > 0:
         list_ds.append(ds.isel(time=slice(None, idx_nan[0])))
     for i, idx in enumerate(idx_nan):
-        list_ds.append(ds_nan.assign_coords(coords=dict(time=[times[idx]])))
+        list_ds.append(ds_nan.assign_coords(coords={"time": [times[idx]]}))
         if i < len(idx_nan) - 1:
             list_ds.append(ds.isel(time=slice(idx - i, idx_nan[i + 1] - i - 1)))
     if idx_nan[-1] < len(times) - 1:

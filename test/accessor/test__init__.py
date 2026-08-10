@@ -23,6 +23,8 @@ import unittest
 
 from xcube_stac.accessors import (
     BaseStacItemAccessor,
+    LandsatC2L2StacArdcAccessor,
+    LandsatC2L2StacItemAccessor,
     LandsatHlsStacArdcAccessor,
     LandsatHlsStacItemAccessor,
     Sen2CdseStacArdcAccessor,
@@ -68,6 +70,10 @@ class AccessorInitTest(unittest.TestCase):
         result = guess_item_accessor(DATA_STORE_ID_PC, "hls2-l30")
         self.assertIs(result, LandsatHlsStacItemAccessor)
 
+    def test_guess_item_accessor_pc_landsat(self):
+        result = guess_item_accessor(DATA_STORE_ID_PC, "landsat-c2-l2")
+        self.assertIs(result, LandsatC2L2StacItemAccessor)
+
     def test_guess_item_accessor_base_for_unknown_store(self):
         result = guess_item_accessor("unknown-store", "random-data-id")
         self.assertIs(result, BaseStacItemAccessor)
@@ -102,6 +108,10 @@ class AccessorInitTest(unittest.TestCase):
         result = guess_ardc_accessor(DATA_STORE_ID_PC_ARDC, "hls2-l30")
         self.assertIs(result, LandsatHlsStacArdcAccessor)
 
+    def test_guess_ardc_accessor_pc_landsat(self):
+        result = guess_ardc_accessor(DATA_STORE_ID_PC_ARDC, "landsat-c2-l2")
+        self.assertIs(result, LandsatC2L2StacArdcAccessor)
+
     def test_guess_ardc_accessor_raises_for_unknown_store(self):
         with self.assertRaises(NotImplementedError):
             guess_ardc_accessor("unknown-store", "sentinel-2-l2a")
@@ -133,6 +143,7 @@ class AccessorInitTest(unittest.TestCase):
                 "sentinel-2-l2a",
                 "sentinel-3-synergy-syn-l2-netcdf",
                 "sentinel-3-slstr-lst-l2-netcdf",
+                "landsat-c2-l2",
                 "hls2-l30",
                 "hls2-s30",
             ],

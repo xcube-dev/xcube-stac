@@ -217,8 +217,8 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, len(data_ids))
         self.assertEqual(
             [
-                "collections/ENMAP_HSI_L2A/items/ENMAP01-____L2A-DT0000140097_20250708"
-                "T104407Z_001_V010502_20250709T035921Z?f=application%2Fgeo%2Bjson"
+                ("collections/ENMAP_HSI_L2A/items/ENMAP01-____L2A-DT0000140097_20250708"
+                "T104407Z_001_V010502_20250709T035921Z?f=application%2Fgeo%2Bjson")
             ],
             data_ids,
         )
@@ -246,6 +246,7 @@ class StacDataStoreTest(unittest.TestCase):
                 "sentinel-2-l2a",
                 "sentinel-3-synergy-syn-l2-netcdf",
                 "sentinel-3-slstr-lst-l2-netcdf",
+                "landsat-c2-l2",
                 "hls2-l30",
                 "hls2-s30",
             ],
@@ -456,7 +457,7 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("spatial_res", schema.one_of[1].properties)
             self.assertIn("query", schema.one_of[1].properties)
 
-        data_ids = ["hls2-l30", "hls2-s30"]
+        data_ids = ["landsat-c2-l2", "hls2-l30", "hls2-s30"]
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonObjectSchema)
@@ -467,7 +468,7 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("bbox", schema.properties)
             self.assertIn("query", schema.properties)
             self.assertIn("apply_scaling", schema.properties)
-            self.assertNotIn("add_anlges", schema.properties)
+            self.assertNotIn("add_angles", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -1325,17 +1326,17 @@ class StacDataStoreTest(unittest.TestCase):
             )
         )
 
-        expected_descriptor = dict(
-            data_id="zanzibar/znz001.json",
-            data_type="dataset",
-            bbox=[
+        expected_descriptor = {
+            "data_id": "zanzibar/znz001.json",
+            "data_type": "dataset",
+            "bbox": [
                 39.28919876472999,
                 -5.743028283012867,
                 39.31302874892266,
                 -5.722212794937691,
             ],
-            time_range=("2019-04-23T00:00:00Z", None),
-        )
+            "time_range": ("2019-04-23T00:00:00Z", None),
+        }
 
         self.assertEqual(1, len(descriptors))
         self.assertIsInstance(descriptors[0], DatasetDescriptor)
@@ -1374,17 +1375,17 @@ class StacDataStoreTest(unittest.TestCase):
         ]
         data_ids_expected = [prefix + data_id for data_id in data_ids_expected]
 
-        expected_descriptor = dict(
-            data_id=data_ids_expected[0],
-            data_type="dataset",
-            bbox=[
+        expected_descriptor = {
+            "data_id": data_ids_expected[0],
+            "data_type": "dataset",
+            "bbox": [
                 7.662878883910047,
                 46.85818510451771,
                 9.130456971519783,
                 47.85361872923358,
             ],
-            time_range=("2020-03-05T10:37:41.587000Z", None),
-        )
+            "time_range": ("2020-03-05T10:37:41.587000Z", None),
+        }
 
         self.assertEqual(16, len(descriptors))
         for d in descriptors:
@@ -1413,19 +1414,19 @@ class StacDataStoreTest(unittest.TestCase):
 
         data_ids_expected = [prefix + data_id for data_id in data_ids_expected]
 
-        expected_descriptor = dict(
-            data_id=data_ids_expected[0],
-            data_type="dataset",
-            bbox=[8.999733, 46.85664, 10.467277, 47.853702],
-            time_range=("2020-07-05T10:15:59.024Z", "2020-07-05T10:15:59.024Z"),
-        )
+        expected_descriptor = {
+            "data_id": data_ids_expected[0],
+            "data_type": "dataset",
+            "bbox": [8.999733, 46.85664, 10.467277, 47.853702],
+            "time_range": ("2020-07-05T10:15:59.024Z", "2020-07-05T10:15:59.024Z"),
+        }
 
         for d in descriptors:
             self.assertIsInstance(d, DatasetDescriptor)
         self.assertCountEqual(data_ids_expected, [d.data_id for d in descriptors])
-        selected_descriptor = [
+        selected_descriptor = next(
             d for d in descriptors if d.data_id == data_ids_expected[0]
-        ][0]
+        )
         self.assertEqual(expected_descriptor, selected_descriptor.to_dict())
 
     @pytest.mark.vcr()
@@ -1439,12 +1440,12 @@ class StacDataStoreTest(unittest.TestCase):
             )
         )
 
-        expected_descriptor = dict(
-            data_id="sentinel-1-global-mosaics",
-            data_type="dataset",
-            bbox=[-180, -90, 180, 90],
-            time_range=("2020-01-01T00:00:00+00:00", None),
-        )
+        expected_descriptor = {
+            "data_id": "sentinel-1-global-mosaics",
+            "data_type": "dataset",
+            "bbox": [-180, -90, 180, 90],
+            "time_range": ("2020-01-01T00:00:00+00:00", None),
+        }
         self.assertEqual(expected_descriptor, descriptors[0].to_dict())
 
     @pytest.mark.vcr()
@@ -1455,18 +1456,18 @@ class StacDataStoreTest(unittest.TestCase):
             "20231031T030822_051003_062646_8C53?f=application%2Fgeo%2Bjson"
         )
         descriptor = store.describe_data(data_id, data_type="mldataset")
-        expected_descriptor = dict(
-            data_id=data_id,
-            data_type="mldataset",
-            num_levels=7,
-            bbox=[
+        expected_descriptor = {
+            "data_id": data_id,
+            "data_type": "mldataset",
+            "num_levels": 7,
+            "bbox": [
                 36.211544470664904,
                 -15.48028,
                 37.86349678056911,
                 -14.169830229695073,
             ],
-            time_range=("2023-10-31T00:00:00.000+00:00", None),
-        )
+            "time_range": ("2023-10-31T00:00:00.000+00:00", None),
+        }
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
 
@@ -1477,13 +1478,13 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID_XCUBE, url="http://localhost:8080/ogc")
         data_id = "collections/datacubes/items/local"
         descriptor = store.describe_data(data_id, data_type="mldataset")
-        expected_descriptor = dict(
-            data_id=data_id,
-            data_type="mldataset",
-            num_levels=3,
-            bbox=[0, 50, 5, 52.5],
-            time_range=("2017-01-16T10:09:21Z", "2017-01-30T10:46:33Z"),
-        )
+        expected_descriptor = {
+            "data_id": data_id,
+            "data_type": "mldataset",
+            "num_levels": 3,
+            "bbox": [0, 50, 5, 52.5],
+            "time_range": ("2017-01-16T10:09:21Z", "2017-01-30T10:46:33Z"),
+        }
         self.assertIsInstance(descriptor, MultiLevelDatasetDescriptor)
         self.assertDictEqual(expected_descriptor, descriptor.to_dict())
 

@@ -51,13 +51,13 @@ def create_raster_stac_item_v1() -> pystac.Item:
     asset_href = "https://example.com/data/B01.tif"
     asset = pystac.Asset(href=asset_href, media_type="image/tiff", roles=["data"])
     asset.extra_fields["raster:bands"] = [
-        dict(
-            nodata=0,
-            scale=0.1,
-            offset=-0.05,
-            spatial_resolution=10.0,
-            unit="meters",
-        )
+        {
+            "nodata": 0,
+            "scale": 0.1,
+            "offset": -0.05,
+            "spatial_resolution": 10.0,
+            "unit": "meters",
+        }
     ]
     item.add_asset("B01", asset)
     return item
@@ -115,7 +115,7 @@ class RasterTest(unittest.TestCase):
         da_v1 = xr.DataArray(
             data=np.array([[0, 3, 3], [1, 1, 1], [2, 2, 2]]),
             dims=("y", "x"),
-            coords=dict(y=[5000, 5010, 5020], x=[7430, 7440, 7450]),
+            coords={"y": [5000, 5010, 5020], "x": [7430, 7440, 7450]},
         )
         da_v2 = da_v1.copy()
         da_mod_v1 = apply_offset_scaling(da_v1, item_v1.assets["B01"], "v1")
@@ -125,7 +125,7 @@ class RasterTest(unittest.TestCase):
                 [[np.nan, 0.25, 0.25], [0.05, 0.05, 0.05], [0.15, 0.15, 0.15]]
             ),
             dims=("y", "x"),
-            coords=dict(y=[5000, 5010, 5020], x=[7430, 7440, 7450]),
+            coords={"y": [5000, 5010, 5020], "x": [7430, 7440, 7450]},
         )
         xr.testing.assert_allclose(da_mod_v1, da_mod_expected)
         xr.testing.assert_allclose(da_mod_v2, da_mod_expected)

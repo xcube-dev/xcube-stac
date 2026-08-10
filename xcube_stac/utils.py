@@ -155,11 +155,10 @@ def search_collections(
 
     for collection in catalog.get_collections():
         # test if collection's bbox intersects with the desired bbox
-        if "bbox" in search_params:
-            if not do_bboxes_intersect(
-                collection.extent.spatial.bboxes[0], **search_params
-            ):
-                continue
+        if "bbox" in search_params and not do_bboxes_intersect(
+            collection.extent.spatial.bboxes[0], **search_params
+        ):
+            continue
         # test if collection fit to desired time range
         if "time_range" in search_params:
             if not is_collection_in_time_range(collection, **search_params):
@@ -170,9 +169,8 @@ def search_collections(
 
 def get_format_id(asset: pystac.Asset) -> str:
     format_id = get_format_from_path(asset.href)
-    if format_id is None:
-        if isinstance(asset.media_type, str):
-            format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
+    if format_id is None and isinstance(asset.media_type, str):
+        format_id = MAP_MIME_TYP_FORMAT.get(asset.media_type.split("; ")[0])
     return format_id
 
 
@@ -344,8 +342,7 @@ def list_assets_from_item(
 
     if not assets:
         raise DataStoreError(
-            "No valid assets found in item '%s' for asset_names=%s."
-            % (item.id, asset_names)
+            f"No valid assets found in item '{item.id}' for asset_names={asset_names}."
         )
 
     return assets
@@ -550,18 +547,18 @@ def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
 
 
 def is_mldataset_available(
-    item: pystac.Item, asset_names: Sequence[int] = None
+    item: pystac.Item, asset_names: Sequence[int] | None = None
 ) -> bool:
     format_ids = list_format_ids(item, asset_names=asset_names)
     return all(format_id in MLDATASET_FORMATS for format_id in format_ids)
 
 
-def list_format_ids(item: pystac.Item, asset_names: Sequence[str] = None) -> list[str]:
+def list_format_ids(item: pystac.Item, asset_names: Sequence[str] | None = None) -> list[str]:
     assets = list_assets_from_item(item, asset_names=asset_names)
     return list(np.unique([asset.extra_fields["xcube:format_id"] for asset in assets]))
 
 
-def list_protocols(item: pystac.Item, asset_names: Sequence[str] = None) -> list[str]:
+def list_protocols(item: pystac.Item, asset_names: Sequence[str] | None = None) -> list[str]:
     assets = list_assets_from_item(item, asset_names=asset_names)
     protocols = []
     for asset in assets:
@@ -641,10 +638,10 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
         A modified dataset with renamed data variables.
     """
     if len(list(ds.keys())) == 1:
-        name_dict = {var_name: f"{asset}" for var_name in ds.data_vars.keys()}
+        name_dict = {var_name: f"{asset}" for var_name in ds.data_vars}
     else:
         name_dict = {
-            var_name: f"{asset}_{var_name}" for var_name in ds.data_vars.keys()
+            var_name: f"{asset}_{var_name}" for var_name in ds.data_vars
         }
     return ds.rename_vars(name_dict=name_dict)
 
@@ -690,8 +687,8 @@ def merge_datasets(
         for idx, (x_res, y_res) in enumerate(zip(x_ress, y_ress)):
             grouped[x_res][y_res].append(idx)
         datasets_grouped = []
-        for _, val in grouped.items():
-            for _, idxs in val.items():
+        for val in grouped.values():
+            for idxs in val.values():
                 datasets_grouped.append(
                     _update_datasets([datasets[idx] for idx in idxs])
                 )
@@ -721,7 +718,7 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
 
 
 def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], var_ref: str, fill_value: int | float
+    list_ds: list[xr.Dataset], var_ref: str, fill_value: float
 ) -> xr.Dataset:
     """Creates a spatial mosaic from a list of datasets by taking the first
     non-fill value encountered across datasets at each pixel location.
@@ -873,7 +870,7 @@ def clip_dataset_relative_bbox(
     return ds_sub, (col_min, row_min, col_max, row_max)
 
 
-def _set_cdse_env_vars(key: str = None, secret: str = None) -> None:
+def _set_cdse_env_vars(key: str | None = None, secret: str | None = None) -> None:
     import os
 
     if key is not None:
@@ -888,10 +885,9 @@ def _set_cdse_env_vars(key: str = None, secret: str = None) -> None:
     ]
     if missing:
         raise ValueError(
-            f"Missing AWS credentials for DEM download: {missing}."
-            "Set these environment variables for CDSE DEM access "
-            "(https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets) "
-            "or provide a DEM directly."
+            f"Missing AWS credentials for CDSE: {missing}."
+            "Set these environment variables for CDSE access "
+            "(https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets)."
         )
     os.environ.update(
         {
@@ -935,8 +931,7 @@ def add_attributes(
     # Gather all used STAC item IDs used in the data cube for each time step
     # and organize them in a dictionary. The dictionary keys are datetime
     # strings, and the values are lists of corresponding item IDs.
-    ds.attrs["stac_items"] = dict(
-        {
+    ds.attrs["stac_items"] = {
             dt.astype("datetime64[ms]")
             .astype("O")
             .isoformat(): [
@@ -944,7 +939,6 @@ def add_attributes(
             ]
             for dt in grouped_items.time.values
         }
-    )
 
     ds.attrs["open_params"] = make_json_serializable(open_params)
     ds.attrs["xcube_stac_version"] = version
@@ -971,3 +965,17 @@ def make_json_serializable(obj: Any) -> Any:
         return {k: make_json_serializable(v) for k, v in obj.items()}
 
     return obj
+
+
+def _remove_fill_value_encoding(ds: xr.Dataset) -> xr.Dataset:
+    """Remove _FillValue from integer variables.
+
+    Integer variables with a _FillValue can be decoded as floating-point
+    arrays when the dataset is written to and subsequently read from Zarr.
+    """
+    for variable in ds.variables.values():
+        if np.issubdtype(variable.dtype, np.integer):
+            variable.encoding.pop("_FillValue", None)
+            variable.attrs.pop("_FillValue", None)
+
+    return ds

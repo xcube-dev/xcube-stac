@@ -158,7 +158,7 @@ class StacDataStore(DataStore):
         return False
 
     def get_data_opener_ids(
-        self, data_id: str = None, data_type: DataTypeLike = None
+        self, data_id: str | None = None, data_type: DataTypeLike = None
     ) -> tuple[str, ...]:
         self._assert_valid_data_type(data_type)
 
@@ -174,7 +174,7 @@ class StacDataStore(DataStore):
         return self._filter_opener_ids(protocols, format_ids, data_type=data_type)
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         self._assert_valid_opener_id(opener_id)
         # noinspection PyArgumentList
@@ -194,7 +194,7 @@ class StacDataStore(DataStore):
     def open_data(
         self,
         data_id: str,
-        opener_id: str = None,
+        opener_id: str | None = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
@@ -214,6 +214,7 @@ class StacDataStore(DataStore):
         ds = accessor.open_item(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
+
         return ds
 
     def describe_data(
@@ -247,7 +248,7 @@ class StacDataStore(DataStore):
         self._assert_valid_data_type(data_type)
         schema = self.get_search_params_schema()
         schema.validate_instance(search_params)
-        search_params.update(dict(limit=100))
+        search_params.update({"limit": 100})
         items = search_items(self._catalog, self._searchable, **search_params)
 
         for item in items:
@@ -258,12 +259,12 @@ class StacDataStore(DataStore):
         self, data_type: DataTypeLike = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
-                collections=SCHEMA_COLLECTIONS,
-                query=SCHEMA_ADDITIONAL_QUERY,
-            ),
+            properties={
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": SCHEMA_BBOX,
+                "collections": SCHEMA_COLLECTIONS,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+            },
             required=[],
             additional_properties=False,
         )
@@ -362,7 +363,7 @@ class StacXcubeDataStore(StacDataStore):
         )
 
     def get_data_opener_ids(
-        self, data_id: str = None, data_type: DataTypeLike = None
+        self, data_id: str | None = None, data_type: DataTypeLike = None
     ) -> tuple[str, ...]:
         self._assert_valid_data_type(data_type)
         protocols = ["s3"]
@@ -373,7 +374,7 @@ class StacXcubeDataStore(StacDataStore):
     def open_data(
         self,
         data_id: str,
-        opener_id: str = None,
+        opener_id: str | None = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
@@ -394,9 +395,9 @@ class StacXcubeDataStore(StacDataStore):
         else:
             opener_id_data_type = None
         if asset_names is None:
-            if is_valid_ml_data_type(data_type):
-                asset_names = ["analytic_multires"]
-            elif is_valid_ml_data_type(opener_id_data_type):
+            if is_valid_ml_data_type(data_type) or is_valid_ml_data_type(
+                opener_id_data_type
+            ):
                 asset_names = ["analytic_multires"]
             else:
                 asset_names = ["analytic"]
@@ -415,6 +416,7 @@ class StacXcubeDataStore(StacDataStore):
             asset_names=asset_names,
             **open_params,
         )
+
         return ds
 
     @staticmethod
@@ -425,7 +427,7 @@ class StacXcubeDataStore(StacDataStore):
 class StacCdseDataStore(StacDataStore):
     """STAC implementation of the data store for CDSE STAC API."""
 
-    def __init__(self, key: str = None, secret: str = None):
+    def __init__(self, key: str | None = None, secret: str | None = None):
         _set_cdse_env_vars(key=key, secret=secret)
         super().__init__(url=CDSE_STAC_URL, key=key, secret=secret)
         self._store_id = DATA_STORE_ID_CDSE
@@ -434,8 +436,8 @@ class StacCdseDataStore(StacDataStore):
     def get_data_store_params_schema(cls) -> JsonObjectSchema:
         return JsonObjectSchema(
             description="Parameters to initiate the data store.",
-            properties=dict(
-                key=JsonStringSchema(
+            properties={
+                "key": JsonStringSchema(
                     title="AWS S3 key to access CDSE EO data.",
                     description=(
                         "To get key and secret, follow "
@@ -444,7 +446,7 @@ class StacCdseDataStore(StacDataStore):
                         "AWS_ACCESS_KEY_ID."
                     ),
                 ),
-                secret=JsonStringSchema(
+                "secret": JsonStringSchema(
                     title="AWS S3 secret to access CDSE EO data.",
                     description=(
                         "To get key and secret, follow "
@@ -453,7 +455,7 @@ class StacCdseDataStore(StacDataStore):
                         "AWS_SECRET_ACCESS_KEY."
                     ),
                 ),
-            ),
+            },
             required=[],
             additional_properties=False,
         )
@@ -463,7 +465,7 @@ class StacCdseDataStore(StacDataStore):
         return (DATASET_TYPE.alias,)
 
     def get_data_opener_ids(
-        self, data_id: str = None, data_type: DataTypeLike = None
+        self, data_id: str | None = None, data_type: DataTypeLike = None
     ) -> tuple[str, ...]:
         LOG.info(
             f"In the {self._store_id!r} data store, data openers are specific to each "
@@ -497,7 +499,7 @@ class StacPlanetaryComputerDataStore(StacCdseDataStore):
     # noinspection PyMissingConstructor
     def __init__(self):
         self._url = modify_catalog_url(PC_STAC_URL)
-        self._storage_options_s3 = dict()
+        self._storage_options_s3 = {}
         self._store_id = DATA_STORE_ID_PC
         self._catalog = pystac_client.Client.open(
             PC_STAC_URL, modifier=planetary_computer.sign_inplace, timeout=3600
@@ -544,7 +546,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         return False
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         self._assert_valid_opener_id(opener_id)
         if data_id is None:
@@ -563,7 +565,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
     def open_data(
         self,
         data_id: str,
-        opener_id: str = None,
+        opener_id: str | None = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
@@ -614,6 +616,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             data_type=data_type,
             **open_params,
         )
+
         return ds
 
     def describe_data(
@@ -648,10 +651,10 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         self, data_type: DataTypeLike = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
-            ),
+            properties={
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": SCHEMA_BBOX,
+            },
             required=[],
             additional_properties=False,
         )
@@ -665,7 +668,7 @@ class ArdcStacPlanetaryComputerDataStore(ArdcStacCdseDataStore):
     # noinspection PyMissingConstructor
     def __init__(self):
         self._url = modify_catalog_url(PC_STAC_URL)
-        self._storage_options_s3 = dict()
+        self._storage_options_s3 = {}
         self._store_id = DATA_STORE_ID_PC_ARDC
         self._catalog = pystac_client.Client.open(
             PC_STAC_URL, modifier=planetary_computer.sign_inplace, timeout=3600

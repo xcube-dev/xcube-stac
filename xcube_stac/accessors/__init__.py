@@ -36,6 +36,7 @@ from .hls import (
     Sen2HlsStacArdcAccessor,
     Sen2HlsStacItemAccessor,
 )
+from .landsat import LandsatC2L2StacArdcAccessor, LandsatC2L2StacItemAccessor
 from .sen2 import (
     Sen2CdseStacArdcAccessor,
     Sen2CdseStacItemAccessor,
@@ -70,6 +71,7 @@ ACCESSOR_MAPPING = {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacItemAccessor,
         "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacItemAccessor,
         "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacItemAccessor,
+        "landsat-c2-l2": LandsatC2L2StacItemAccessor,
         "hls2-l30": LandsatHlsStacItemAccessor,
         "hls2-s30": Sen2HlsStacItemAccessor,
     },
@@ -77,24 +79,24 @@ ACCESSOR_MAPPING = {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacArdcAccessor,
         "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacArdcAccessor,
         "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacArdcAccessor,
+        "landsat-c2-l2": LandsatC2L2StacArdcAccessor,
         "hls2-l30": LandsatHlsStacArdcAccessor,
         "hls2-s30": Sen2HlsStacArdcAccessor,
     },
 }
 
 
-def guess_item_accessor(store_id: str, data_id: str = None) -> Type[StacItemAccessor]:
-    if store_id in ACCESSOR_MAPPING.keys():
-        if data_id is not None:
-            for key in ACCESSOR_MAPPING[store_id].keys():
-                if key in data_id:
-                    return ACCESSOR_MAPPING[store_id][key]
+def guess_item_accessor(store_id: str, data_id: str | None = None) -> type[StacItemAccessor]:
+    if store_id in ACCESSOR_MAPPING and data_id is not None:
+        for key in ACCESSOR_MAPPING[store_id]:
+            if key in data_id:
+                return ACCESSOR_MAPPING[store_id][key]
     return BaseStacItemAccessor
 
 
-def guess_ardc_accessor(store_id: str, data_id: str = None) -> Type[StacArdcAccessor]:
+def guess_ardc_accessor(store_id: str, data_id: str | None = None) -> type[StacArdcAccessor]:
     accesor = None
-    if store_id in ACCESSOR_MAPPING.keys():
+    if store_id in ACCESSOR_MAPPING:
         accesor = ACCESSOR_MAPPING[store_id].get(data_id)
     if accesor is None:
         raise NotImplementedError(

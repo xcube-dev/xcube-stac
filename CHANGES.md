@@ -1,8 +1,10 @@
-## Changes in 1.4.0 (in development)
+## Changes in 1.4.0
 
 - Added opening parameters to the attributes of returned datasets.
 - Improved attribute handling for Sentinel-3 data access.
-
+- Added support for Landsat Collection 2 Level-2 data from the Planetary Computer STAC.
+- Remove `_FillValue` encoding and attributes from integer variables to prevent 
+  them from being decoded as floating-point arrays when written to and read from Zarr.
 
 ## Changes in 1.3.3
 
