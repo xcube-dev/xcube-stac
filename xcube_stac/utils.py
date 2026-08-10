@@ -888,10 +888,9 @@ def _set_cdse_env_vars(key: str = None, secret: str = None) -> None:
     ]
     if missing:
         raise ValueError(
-            f"Missing AWS credentials for DEM download: {missing}."
-            "Set these environment variables for CDSE DEM access "
-            "(https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets) "
-            "or provide a DEM directly."
+            f"Missing AWS credentials for CDSE: {missing}."
+            "Set these environment variables for CDSE access "
+            "(https://documentation.dataspace.copernicus.eu/APIs/S3.html#generate-secrets)."
         )
     os.environ.update(
         {

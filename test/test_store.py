@@ -246,6 +246,7 @@ class StacDataStoreTest(unittest.TestCase):
                 "sentinel-2-l2a",
                 "sentinel-3-synergy-syn-l2-netcdf",
                 "sentinel-3-slstr-lst-l2-netcdf",
+                "landsat-c2-l2",
                 "hls2-l30",
                 "hls2-s30",
             ],
@@ -456,7 +457,7 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("spatial_res", schema.one_of[1].properties)
             self.assertIn("query", schema.one_of[1].properties)
 
-        data_ids = ["hls2-l30", "hls2-s30"]
+        data_ids = ["landsat-c2-l2", "hls2-l30", "hls2-s30"]
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonObjectSchema)
@@ -467,7 +468,7 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("bbox", schema.properties)
             self.assertIn("query", schema.properties)
             self.assertIn("apply_scaling", schema.properties)
-            self.assertNotIn("add_anlges", schema.properties)
+            self.assertNotIn("add_angles", schema.properties)
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):

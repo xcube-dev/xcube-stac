@@ -2,6 +2,7 @@
 
 - Added opening parameters to the attributes of returned datasets.
 - Improved attribute handling for Sentinel-3 data access.
+- Added support for Landsat Collection 2 Level-2 data from the Planetary Computer.
 
 
 ## Changes in 1.3.3

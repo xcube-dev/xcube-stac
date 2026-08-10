@@ -30,6 +30,7 @@ from xcube_stac.constants import (
 )
 
 from .base import BaseStacItemAccessor
+from .landsat import LandsatC2L2StacArdcAccessor, LandsatC2L2StacItemAccessor
 from .hls import (
     LandsatHlsStacArdcAccessor,
     LandsatHlsStacItemAccessor,
@@ -70,6 +71,7 @@ ACCESSOR_MAPPING = {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacItemAccessor,
         "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacItemAccessor,
         "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacItemAccessor,
+        "landsat-c2-l2": LandsatC2L2StacItemAccessor,
         "hls2-l30": LandsatHlsStacItemAccessor,
         "hls2-s30": Sen2HlsStacItemAccessor,
     },
@@ -77,6 +79,7 @@ ACCESSOR_MAPPING = {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacArdcAccessor,
         "sentinel-3-synergy-syn-l2-netcdf": Sen3PlanetaryComputerStacArdcAccessor,
         "sentinel-3-slstr-lst-l2-netcdf": Sen3LstPlanetaryComputerStacArdcAccessor,
+        "landsat-c2-l2": LandsatC2L2StacArdcAccessor,
         "hls2-l30": LandsatHlsStacArdcAccessor,
         "hls2-s30": Sen2HlsStacArdcAccessor,
     },

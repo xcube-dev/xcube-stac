@@ -463,11 +463,11 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         """
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
         open_item_open_params = dict(
-            asset_names=open_params.get("asset_names"),
+            asset_names=open_params.get("asset_names", self._asset_names_default),
             apply_scaling=open_params.get("apply_scaling", True),
         )
 
-        var_names = open_params.get("asset_names", ["B01"])
+        var_names = open_params.get("asset_names", [self._asset_names_default])
         fill_value = np.nan
         var_ref = var_names[0]
         if var_names[0] == "Fmask":
