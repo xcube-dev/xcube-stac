@@ -45,48 +45,48 @@ class HlsStacItemAccessorTest(unittest.TestCase):
             geometry=None,
             bbox=bbox,
             datetime=datetime.datetime.fromisoformat("20200101T11:23:23"),
-            properties={"proj:code": proj_code},
+            properties={"proj:epsg": proj_code},
         )
 
     def test_fix_utm_hemisphere_northern(self):
         item = self.make_item(
             bbox=[500000, 10, 600000, 20],  # center latitude = 15
-            proj_code="EPSG:32733",  # incorrectly southern
+            proj_code=32733,  # incorrectly southern
         )
         result = fix_utm_hemisphere([item])
-        self.assertEqual(result[0].properties["proj:code"], "EPSG:32633")
+        self.assertEqual(result[0].properties["proj:epsg"], 32633)
 
     def test_fix_utm_hemisphere_southern(self):
         item = self.make_item(
             bbox=[500000, -20, 600000, -10],  # center latitude = -15
-            proj_code="EPSG:32633",  # incorrectly northern
+            proj_code=32633,  # incorrectly northern
         )
         result = fix_utm_hemisphere([item])
-        self.assertEqual(result[0].properties["proj:code"], "EPSG:32733")
+        self.assertEqual(result[0].properties["proj:epsg"], 32733)
 
     def test_fix_utm_hemisphere_equator_is_northern(self):
         item = self.make_item(
             bbox=[500000, -1, 600000, 1],  # center latitude = 0
-            proj_code="EPSG:32733",
+            proj_code=32733,
         )
         result = fix_utm_hemisphere([item])
-        self.assertEqual(result[0].properties["proj:code"], "EPSG:32633")
+        self.assertEqual(result[0].properties["proj:epsg"], 32633)
 
     def test_fix_utm_hemisphere_keeps_correct_code(self):
         item = self.make_item(
             bbox=[500000, 10, 600000, 20],
-            proj_code="EPSG:32633",
+            proj_code=32633,
         )
         result = fix_utm_hemisphere([item])
-        self.assertEqual(result[0].properties["proj:code"], "EPSG:32633")
+        self.assertEqual(result[0].properties["proj:epsg"], 32633)
 
     def test_fix_utm_hemisphere_preserves_zone(self):
         item = self.make_item(
             bbox=[500000, -10, 600000, -5],
-            proj_code="EPSG:32621",
+            proj_code=32621,
         )
         result = fix_utm_hemisphere([item])
-        self.assertEqual(result[0].properties["proj:code"], "EPSG:32721")
+        self.assertEqual(result[0].properties["proj:epsg"], 32721)
 
 
 class HlsStacCoverageTest(unittest.TestCase):

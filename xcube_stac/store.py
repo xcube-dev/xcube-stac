@@ -79,6 +79,7 @@ from .utils import (
     modify_catalog_url,
     search_collections,
     search_items,
+    _remove_fill_value_encoding,
 )
 
 
@@ -214,6 +215,10 @@ class StacDataStore(DataStore):
         ds = accessor.open_item(
             item, opener_id=opener_id, data_type=data_type, **open_params
         )
+
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
+
         return ds
 
     def describe_data(
@@ -415,6 +420,10 @@ class StacXcubeDataStore(StacDataStore):
             asset_names=asset_names,
             **open_params,
         )
+
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
+
         return ds
 
     @staticmethod
@@ -614,6 +623,10 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             data_type=data_type,
             **open_params,
         )
+
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
+
         return ds
 
     def describe_data(

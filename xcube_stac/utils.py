@@ -970,3 +970,17 @@ def make_json_serializable(obj: Any) -> Any:
         return {k: make_json_serializable(v) for k, v in obj.items()}
 
     return obj
+
+
+def _remove_fill_value_encoding(ds: xr.Dataset) -> xr.Dataset:
+    """Remove _FillValue from integer variables.
+
+    Integer variables with a _FillValue can be decoded as floating-point
+    arrays when the dataset is written to and subsequently read from Zarr.
+    """
+    for variable in ds.variables.values():
+        if np.issubdtype(variable.dtype, np.integer):
+            variable.encoding.pop("_FillValue", None)
+            variable.attrs.pop("_FillValue", None)
+
+    return ds

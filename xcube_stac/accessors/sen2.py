@@ -457,6 +457,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 self._stac_item_properties["crs"],
                 item.properties.get(self._stac_item_properties["crs"]),
             )
+            if isinstance(crs, int):
+                crs = f"EPSG:{crs}"
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -668,7 +670,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             (time, y, x) for all assets within the specified UTM zone.
         """
         items_bbox = _get_bounding_box(grouped_items)
-        print(open_params)
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
         spatial_res = _get_spatial_res(open_params)
         open_item_open_params = dict(
@@ -805,7 +806,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
         # define field names in STAC items
         self._stac_item_properties = dict(
             tile_id="s2:mgrs_tile",
-            crs="proj:code",
+            crs="proj:epsg",
             processing_version="s2:processing_baseline",
         )
 
@@ -842,7 +843,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             target_gm = GridMapping.regular_from_bbox(
                 bbox=assets[0].extra_fields["proj:bbox"],
                 xy_res=open_params["spatial_res"],
-                crs=item.properties["proj:code"],
+                crs=f"EPSG:{item.properties["proj:epsg"]}",
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
             ds = merge_datasets(dss, target_gm=target_gm)
