@@ -60,20 +60,20 @@ class UtilsTest(unittest.TestCase):
             href="https://example.com/data/test.tif",
             media_type="image/tiff",
             roles=["data"],
-            extra_fields=dict(id="test"),
+            extra_fields={"id": "test"},
         )
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
             href="https://example.com/data/test.tif",
             roles=["data"],
-            extra_fields=dict(id="test"),
+            extra_fields={"id": "test"},
         )
         self.assertEqual("geotiff", get_format_id(asset))
         asset = pystac.Asset(
             href="https://example.com/data/test.xml",
             title="Meta data",
             roles=["meta"],
-            extra_fields=dict(id="test"),
+            extra_fields={"id": "test"},
         )
         format_id = get_format_id(asset)
         self.assertIsNone(format_id)
@@ -95,25 +95,25 @@ class UtilsTest(unittest.TestCase):
             geometry=None,
             bbox=[0, 0, 1, 1],
             datetime=datetime.datetime(2024, 5, 1, 9, 19, 38),
-            properties=dict(datetime="2024-05-02T09:19:38.000000Z"),
+            properties={"datetime": "2024-05-02T09:19:38.000000Z"},
         )
         item2 = pystac.Item(
             "test_item",
             geometry=None,
             bbox=[0, 0, 1, 1],
             datetime=None,
-            properties=dict(
-                datetime="null",
-                start_datetime="2023-12-02T09:19:38.543000Z",
-                end_datetime="2024-05-02T09:19:38.543000Z",
-            ),
+            properties={
+                "datetime": "null",
+                "start_datetime": "2023-12-02T09:19:38.543000Z",
+                "end_datetime": "2024-05-02T09:19:38.543000Z",
+            },
         )
         item3 = pystac.Item(
             "test_item",
             geometry=None,
             bbox=[0, 0, 1, 1],
             datetime=datetime.datetime(2024, 5, 1, 9, 19, 38),
-            properties=dict(),
+            properties={},
         )
 
         item1_test_paramss = [
@@ -152,7 +152,7 @@ class UtilsTest(unittest.TestCase):
         catalog = pystac.Catalog(
             id="test-catalog",
             description="Test catalog",
-            extra_fields=dict(type="Catalog"),
+            extra_fields={"type": "Catalog"},
         )
 
         spatial_extent1 = pystac.SpatialExtent([[0.0, 0.0, 10.0, 10.0]])
@@ -169,7 +169,7 @@ class UtilsTest(unittest.TestCase):
             id="col1",
             description="Collection 1",
             extent=extent1,
-            extra_fields=dict(type="Collection"),
+            extra_fields={"type": "Collection"},
         )
 
         spatial_extent2 = pystac.SpatialExtent([[20.0, 20.0, 30.0, 30.0]])
@@ -186,7 +186,7 @@ class UtilsTest(unittest.TestCase):
             id="col2",
             description="Collection 2",
             extent=extent2,
-            extra_fields=dict(type="Collection"),
+            extra_fields={"type": "Collection"},
         )
         item1 = pystac.Item(
             id="item1",
@@ -425,9 +425,9 @@ class UtilsTest(unittest.TestCase):
         self.assertEqual("zarr", get_format_from_path(path))
 
     def test_update_nested_dict(self):
-        dic = dict(a=1, b=dict(c=3))
-        dic_update = dict(d=1, b=dict(c=5, e=8))
-        dic_expected = dict(a=1, d=1, b=dict(c=5, e=8))
+        dic = {"a": 1, "b": {"c": 3}}
+        dic_update = {"d": 1, "b": {"c": 5, "e": 8}}
+        dic_expected = {"a": 1, "d": 1, "b": {"c": 5, "e": 8}}
         self.assertDictEqual(dic_expected, update_dict(dic, dic_update))
 
     def test_normalize_crs(self):
@@ -525,25 +525,25 @@ class UtilsTest(unittest.TestCase):
         ds1["B01"] = xr.DataArray(
             data=da.ones((3, 3)),
             dims=("y", "x"),
-            coords=dict(x=[1000, 1020, 1040], y=[1000, 1020, 1040]),
+            coords={"x": [1000, 1020, 1040], "y": [1000, 1020, 1040]},
         )
         ds2 = xr.Dataset()
         ds2["B02"] = xr.DataArray(
             data=da.ones((5, 5)),
             dims=("y", "x"),
-            coords=dict(
-                x=[1000, 1010, 1020, 1030, 1040],
-                y=[1000, 1010, 1020, 1030, 1040],
-            ),
+            coords={
+                "x": [1000, 1010, 1020, 1030, 1040],
+                "y": [1000, 1010, 1020, 1030, 1040],
+            },
         )
         ds3 = xr.Dataset()
         ds3["B03"] = xr.DataArray(
             data=da.ones((5, 5)),
             dims=("y", "x"),
-            coords=dict(
-                x=[1000, 1010, 1020, 1030, 1040],
-                y=[1000, 1010, 1020, 1030, 1040],
-            ),
+            coords={
+                "x": [1000, 1010, 1020, 1030, 1040],
+                "y": [1000, 1010, 1020, 1030, 1040],
+            },
         )
         ds_list = [ds1, ds2, ds3]
         wkt = (
@@ -652,7 +652,7 @@ class UtilsTest(unittest.TestCase):
         xr.testing.assert_allclose(ds_test, ds_expected)
 
         # test two tiles, where spatial ref is given in spatial_ref coord
-        spatial_ref = xr.DataArray(np.array(0), attrs=dict(crs_wkt="testing"))
+        spatial_ref = xr.DataArray(np.array(0), attrs={"crs_wkt": "testing"})
         for i, ds in enumerate(list_ds):
             ds.coords["spatial_ref"] = spatial_ref
             list_ds[i] = ds

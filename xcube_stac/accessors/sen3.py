@@ -52,6 +52,7 @@ from xcube_stac.constants import (
     TILE_SIZE,
 )
 from xcube_stac.utils import (
+    _remove_fill_value_encoding,
     add_attributes,
     add_nominal_datetime,
     clip_dataset_relative_bbox,
@@ -199,11 +200,13 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
 
         # add geolocation
         geo = self.open_asset(item.assets["geolocation"])
         geo = _apply_scaling(geo[["lon", "lat"]])
-        ds = ds.assign_coords(dict(lat=geo["lat"], lon=geo["lon"]))
+        ds = ds.assign_coords({"lat": geo["lat"], "lon": geo["lon"]})
 
         # clip dataset based on STAC items geometry footprint
         crs = open_params.get("crs", _CRS_WGS84)
@@ -241,18 +244,18 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         return ds
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                asset_names=self._asset_names_schema,
-                apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
-                add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
-                add_flags=_SCHEMA_ADD_FLAGS,
-                bbox=SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                crs=SCHEMA_CRS,
-            ),
+            properties={
+                "asset_names": self._asset_names_schema,
+                "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
+                "add_error_bands": _SCHEMA_ADD_ERROR_BANDS,
+                "add_flags": _SCHEMA_ADD_FLAGS,
+                "bbox": SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+            },
             required=[],
             additional_properties=True,
         )
@@ -280,7 +283,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
         # get LST data
-        ds = self.open_asset(item.assets[list(self._asset_var_names.keys())[0]])
+        ds = self.open_asset(item.assets[next(iter(self._asset_var_names.keys()))])
         ds = _apply_scaling(ds[["LST"]])
 
         if open_params.get("add_flags", True):
@@ -291,16 +294,18 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
 
         # get geolocation
         geo = self.open_asset(item.assets[self._geo_asset])
         geo = _apply_scaling(geo[["latitude_in", "longitude_in", "elevation_in"]])
         ds = ds.assign_coords(
-            dict(
-                lat=geo["latitude_in"],
-                lon=geo["longitude_in"],
-                elev=geo["elevation_in"],
-            )
+            {
+                "lat": geo["latitude_in"],
+                "lon": geo["longitude_in"],
+                "elev": geo["elevation_in"],
+            }
         )
 
         # clip dataset based on STAC items geometry footprint
@@ -320,7 +325,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             angles = self.open_asset(item.assets[self._angles])
             angles = angles[["sat_azimuth_tn", "sat_zenith_tn"]]
             angles_geo = self.open_asset(item.assets[self._angles_geo])
-            angles = angles.assign_coords(dict(lon=angles_geo["longitude_tx"]))
+            angles = angles.assign_coords({"lon": angles_geo["longitude_tx"]})
             if bbox_idx:
                 angles = angles.isel(y=slice(bbox_idx[1], bbox_idx[3]))
             ds = orthorectify_geolocation(ds, angles)
@@ -351,17 +356,17 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         return ds
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                apply_rectification=_SCHEMA_APPLY_RECTIFICATION,
-                apply_geo_orthorectification=_SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
-                add_flags=_SCHEMA_ADD_FLAGS,
-                bbox=SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                crs=SCHEMA_CRS,
-            ),
+            properties={
+                "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
+                "apply_geo_orthorectification": _SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
+                "add_flags": _SCHEMA_ADD_FLAGS,
+                "bbox": SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+            },
             required=[],
             additional_properties=True,
         )
@@ -397,19 +402,19 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         return ds
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                asset_names=self._asset_names_schema,
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                crs=SCHEMA_CRS,
-                query=SCHEMA_ADDITIONAL_QUERY,
-                add_error_bands=_SCHEMA_ADD_ERROR_BANDS,
-                add_flags=_SCHEMA_ADD_FLAGS,
-            ),
+            properties={
+                "asset_names": self._asset_names_schema,
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+                "add_error_bands": _SCHEMA_ADD_ERROR_BANDS,
+                "add_flags": _SCHEMA_ADD_FLAGS,
+            },
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
@@ -441,7 +446,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 continue
             dss_time.append(mosaic_spatial_take_first(dss_spatial, var_ref, np.nan))
         ds_final = xr.concat(dss_time, dim="time", join="override")
-        ds_final = ds_final.assign_coords(dict(time=grouped_items.time))
+        ds_final = ds_final.assign_coords({"time": grouped_items.time})
 
         for var in ds_final.data_vars:
             # Remove CF scaling attributes if present
@@ -472,17 +477,17 @@ class Sen3LstCdseStacArdcAccessor(
         self._flags = "flags_in"
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                crs=SCHEMA_CRS,
-                query=SCHEMA_ADDITIONAL_QUERY,
-                add_flags=_SCHEMA_ADD_FLAGS,
-            ),
+            properties={
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+                "add_flags": _SCHEMA_ADD_FLAGS,
+            },
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
@@ -588,7 +593,7 @@ def _group_items(items: list[pystac.Item]) -> xr.DataArray:
         mean_time = np.datetime64(int(times.view("int64").mean()), "us")
         dts[i] = mean_time.astype("datetime64[s]")
 
-    array = xr.DataArray(grouped_items, dims=("time",), coords=dict(time=dts))
+    array = xr.DataArray(grouped_items, dims=("time",), coords={"time": dts})
 
     return array
 

@@ -37,7 +37,7 @@ class StacItemAccessor(ABC):
         self,
         item: pystac.Item,
         asset_name: str,
-        opener_id: str = None,
+        opener_id: str | None = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
@@ -47,7 +47,7 @@ class StacItemAccessor(ABC):
     def open_item(
         self,
         item: pystac.Item,
-        opener_id: str = None,
+        opener_id: str | None = None,
         data_type: DataTypeLike = None,
         **open_params,
     ) -> xr.Dataset | MultiLevelDataset:
@@ -55,7 +55,7 @@ class StacItemAccessor(ABC):
 
     @abstractmethod
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         """Return schema for open parameters."""
 

@@ -252,10 +252,10 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         grouped_items = xr.DataArray(
             grouped_data,
             dims=("time", "tile_id"),
-            coords=dict(
-                time=np.array(["2020-12-04"], dtype="datetime64[ns]"),
-                tile_id=["047027"],
-            ),
+            coords={
+                "time": np.array(["2020-12-04"], dtype="datetime64[ns]"),
+                "tile_id": ["047027"],
+            },
         )
         ds = xr.Dataset(attrs={"stac_item_id": "should-be-removed"})
         returned = xr.Dataset(attrs={"stac_item_id": "should-be-removed"})

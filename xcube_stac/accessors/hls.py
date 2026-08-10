@@ -48,6 +48,7 @@ from xcube_stac.constants import (
     SCHEMA_TIME_RANGE,
 )
 from xcube_stac.utils import (
+    _remove_fill_value_encoding,
     add_attributes,
     add_nominal_datetime,
     mosaic_spatial_take_first,
@@ -92,7 +93,7 @@ _LANDSAT_BANDS = [
     "VZA",
     "Fmask",
 ]
-_CHUNK_SIZE = dict(x=2048, y=2048)
+_CHUNK_SIZE = {"x": 2048, "y": 2048}
 _SPATIAL_RES = 30  # meters
 
 _SCHEMA_APPLY_SCALING_HLS = SCHEMA_APPLY_SCALING
@@ -163,17 +164,17 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         return False
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
-            properties=dict(
-                asset_names=self._schema_asset_names,
-                apply_scaling=SCHEMA_APPLY_SCALING,
-                crs=SCHEMA_CRS,
-                bbox=_SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                tile_size=SCHEMA_TILE_SIZE,
-            ),
+            properties={
+                "asset_names": self._schema_asset_names,
+                "apply_scaling": SCHEMA_APPLY_SCALING,
+                "crs": SCHEMA_CRS,
+                "bbox": _SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
             required=[],
             additional_properties=False,
         )
@@ -206,7 +207,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         dss: Sequence[xr.Dataset],
         item: pystac.Item,
         catalog: pystac.Catalog,
-        assets: Sequence[pystac.Asset] = None,
+        assets: Sequence[pystac.Asset] | None = None,
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
@@ -221,6 +222,8 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
 
         # resample dataset if requested
         crs = open_params.get("crs")
@@ -258,7 +261,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
 
     @staticmethod
     def _apply_offset_scaling(ds: xr.Dataset) -> xr.Dataset:
-        var = list(ds.keys())[0]
+        var = next(iter(ds.keys()))
         if var == "Fmask":
             return ds
         attrs = ds[var].attrs
@@ -311,20 +314,20 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         return ds
 
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         return JsonObjectSchema(
             title="Open parameters to open via a user-defined bounding box.",
-            properties=dict(
-                asset_names=self._schema_asset_names,
-                time_range=SCHEMA_TIME_RANGE,
-                bbox=_SCHEMA_BBOX,
-                spatial_res=SCHEMA_SPATIAL_RES,
-                crs=SCHEMA_CRS,
-                query=SCHEMA_ADDITIONAL_QUERY,
-                apply_scaling=_SCHEMA_APPLY_SCALING_HLS,
-                tile_size=SCHEMA_TILE_SIZE,
-            ),
+            properties={
+                "asset_names": self._schema_asset_names,
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": _SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+                "apply_scaling": _SCHEMA_APPLY_SCALING_HLS,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
         )
@@ -422,7 +425,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         grouped_items = xr.DataArray(
             grouped_items,
             dims=("time", "tile_id"),
-            coords=dict(time=dates, tile_id=tile_ids),
+            coords={"time": dates, "tile_id": tile_ids},
         )
 
         # replace date by datetime from first item
@@ -462,10 +465,10 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             (time, y, x) for all assets within the specified UTM zone.
         """
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
-        open_item_open_params = dict(
-            asset_names=open_params.get("asset_names", self._asset_names_default),
-            apply_scaling=open_params.get("apply_scaling", True),
-        )
+        open_item_open_params = {
+            "asset_names": open_params.get("asset_names", self._asset_names_default),
+            "apply_scaling": open_params.get("apply_scaling", True),
+        }
 
         var_names = open_params.get("asset_names", [self._asset_names_default])
         fill_value = np.nan
@@ -501,7 +504,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             idxs_dt.append(dt_idx)
 
         ds_final = xr.concat(dss, dim="time", join="outer", fill_value={"Fmask": 255})
-        ds_final = ds_final.assign_coords(dict(time=grouped_items.time[idxs_dt]))
+        ds_final = ds_final.assign_coords({"time": grouped_items.time[idxs_dt]})
         ds_final = ds_final.sortby("y", ascending=False)
         ds_final = ds_final.sel(
             x=slice(final_bbox[0], final_bbox[2]),
@@ -536,7 +539,7 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
     """
     for item in items:
         bbox = item.bbox
-        minx, miny, maxx, maxy = bbox
+        _minx, miny, _maxx, maxy = bbox
         center_lat = (miny + maxy) / 2
 
         epsg = item.properties.get("proj:epsg")

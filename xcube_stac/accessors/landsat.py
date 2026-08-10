@@ -30,7 +30,12 @@ from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
 from xcube_stac.stac_extension.raster import apply_offset_scaling
-from xcube_stac.utils import add_attributes, add_nominal_datetime, rename_dataset
+from xcube_stac.utils import (
+    _remove_fill_value_encoding,
+    add_attributes,
+    add_nominal_datetime,
+    rename_dataset,
+)
 from xcube_stac.version import version
 
 from .hls import Sen2HlsStacArdcAccessor, Sen2HlsStacItemAccessor
@@ -56,7 +61,7 @@ _LANDSAT_BANDS = [
     "qa_radsat",
     "qa_aerosol",
 ]
-_CHUNK_SIZE = dict(x=2048, y=2048)
+_CHUNK_SIZE = {"x": 2048, "y": 2048}
 
 
 class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
@@ -78,7 +83,7 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
         dss: Sequence[xr.Dataset],
         item: pystac.Item,
         catalog: pystac.Catalog,
-        assets: Sequence[pystac.Asset] = None,
+        assets: Sequence[pystac.Asset] | None = None,
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
@@ -99,6 +104,9 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        ds = _remove_fill_value_encoding(ds)
 
         # resample dataset if requested
         crs = open_params.get("crs")
@@ -192,7 +200,7 @@ class LandsatC2L2StacArdcAccessor(LandsatC2L2StacItemAccessor, Sen2HlsStacArdcAc
         grouped_items = xr.DataArray(
             grouped_items,
             dims=("time", "tile_id"),
-            coords=dict(time=dates, tile_id=tile_ids),
+            coords={"time": dates, "tile_id": tile_ids},
         )
 
         dts = []

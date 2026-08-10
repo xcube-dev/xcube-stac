@@ -67,7 +67,7 @@ AWS_REGION_NAMES = [
 ]
 
 
-def decode_href(href: str, storage_options: dict = None) -> tuple[str, str, str, dict]:
+def decode_href(href: str, storage_options: dict | None = None) -> tuple[str, str, str, dict]:
     """Decodes a href into protocol, root, remaining file path,
     and region name if given.
 
@@ -100,7 +100,7 @@ def decode_href(href: str, storage_options: dict = None) -> tuple[str, str, str,
     return protocol, root, fs_path, storage_options
 
 
-def decode_aws_s3_href(href: str, storage_options: dict = None):
+def decode_aws_s3_href(href: str, storage_options: dict | None = None):
     """Decodes an AWS S3 href into protocol, root, remaining file path,
     and storage options needed for the S3 data store. If href does not fit to
     the AWS S3 pattern, root, fs_path and region_name will be None.

@@ -86,18 +86,17 @@ ACCESSOR_MAPPING = {
 }
 
 
-def guess_item_accessor(store_id: str, data_id: str = None) -> Type[StacItemAccessor]:
-    if store_id in ACCESSOR_MAPPING.keys():
-        if data_id is not None:
-            for key in ACCESSOR_MAPPING[store_id].keys():
-                if key in data_id:
-                    return ACCESSOR_MAPPING[store_id][key]
+def guess_item_accessor(store_id: str, data_id: str | None = None) -> type[StacItemAccessor]:
+    if store_id in ACCESSOR_MAPPING and data_id is not None:
+        for key in ACCESSOR_MAPPING[store_id]:
+            if key in data_id:
+                return ACCESSOR_MAPPING[store_id][key]
     return BaseStacItemAccessor
 
 
-def guess_ardc_accessor(store_id: str, data_id: str = None) -> Type[StacArdcAccessor]:
+def guess_ardc_accessor(store_id: str, data_id: str | None = None) -> type[StacArdcAccessor]:
     accesor = None
-    if store_id in ACCESSOR_MAPPING.keys():
+    if store_id in ACCESSOR_MAPPING:
         accesor = ACCESSOR_MAPPING[store_id].get(data_id)
     if accesor is None:
         raise NotImplementedError(

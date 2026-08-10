@@ -31,7 +31,12 @@ from xcube_stac.accessor import StacItemAccessor
 from xcube_stac.constants import LOG, SCHEMA_APPLY_SCALING, SCHEMA_ASSET_NAMES
 from xcube_stac.href_parse import decode_href
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
-from xcube_stac.utils import list_assets_from_item, rename_dataset, update_dict
+from xcube_stac.utils import (
+    _remove_fill_value_encoding,
+    list_assets_from_item,
+    rename_dataset,
+    update_dict,
+)
 from xcube_stac.version import version
 
 
@@ -91,17 +96,17 @@ class BaseStacItemAccessor(StacItemAccessor):
             return CombinedMultiLevelDataset(
                 dss,
                 combiner_function=self._combiner_function,
-                combiner_params=dict(
-                    item=item,
-                    catalog=self._catalog,
-                    assets=assets,
-                    apply_scaling=apply_scaling,
-                ),
+                combiner_params={
+                    "item": item,
+                    "catalog": self._catalog,
+                    "assets": assets,
+                    "apply_scaling": apply_scaling,
+                },
             )
 
     # noinspection PyUnusedLocal
     def get_open_data_params_schema(
-        self, data_id: str = None, opener_id: str = None
+        self, data_id: str | None = None, opener_id: str | None = None
     ) -> JsonObjectSchema:
         if opener_id is not None:
             store = new_data_store("https")
@@ -144,7 +149,7 @@ class BaseStacItemAccessor(StacItemAccessor):
         dss: Sequence[xr.Dataset | MultiLevelDataset],
         item: pystac.Item,
         catalog: pystac.Catalog,
-        assets: Sequence[pystac.Asset] = None,
+        assets: Sequence[pystac.Asset] | None = None,
         apply_scaling: bool = False,
     ) -> xr.Dataset:
         if len(dss) > 1:
@@ -167,6 +172,8 @@ class BaseStacItemAccessor(StacItemAccessor):
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
+        # remove _FillValue from encoding and attrs for integer valued arrays
+        combined_ds = _remove_fill_value_encoding(combined_ds)
 
         return combined_ds
 

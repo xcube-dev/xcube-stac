@@ -149,11 +149,11 @@ class HlsStacCoverageTest(unittest.TestCase):
             data_vars[var_name] = (("y", "x"), data)
         return xr.Dataset(
             data_vars,
-            coords=dict(
-                x=np.array(x),
-                y=np.array(y),
-                spatial_ref=0,
-            ),
+            coords={
+                "x": np.array(x),
+                "y": np.array(y),
+                "spatial_ref": 0,
+            },
         )
 
     @staticmethod
@@ -174,12 +174,12 @@ class HlsStacCoverageTest(unittest.TestCase):
             data_vars[var_name] = (("time", "y", "x"), data)
         return xr.Dataset(
             data_vars,
-            coords=dict(
-                time=np.array([time], dtype="datetime64[ns]"),
-                x=np.array(x),
-                y=np.array(y),
-                spatial_ref=0,
-            ),
+            coords={
+                "time": np.array([time], dtype="datetime64[ns]"),
+                "x": np.array(x),
+                "y": np.array(y),
+                "spatial_ref": 0,
+            },
         )
 
     def test_apply_offset_scaling_scales_and_masks(self):
@@ -294,13 +294,13 @@ class HlsStacCoverageTest(unittest.TestCase):
         grouped_items = xr.DataArray(
             grouped_data,
             dims=("time", "tile_id"),
-            coords=dict(
-                time=np.array(
+            coords={
+                "time": np.array(
                     ["2020-12-04T10:15:00", "2020-12-05T10:15:00"],
                     dtype="datetime64[ns]",
                 ),
-                tile_id=["32TNS"],
-            ),
+                "tile_id": ["32TNS"],
+            },
         )
         raw_ds = self.make_data_array(("Fmask", "B01"))
         bbox = (0.0, 0.0, 1.0, 1.0)
