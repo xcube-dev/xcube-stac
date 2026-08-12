@@ -546,7 +546,7 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
 
         epsg = item.properties.get("proj:epsg", item.properties.get("proj:code"))
         if isinstance(epsg, str):
-            epsg = epsg.split(":")[1]
+            epsg = int(epsg.split(":")[-1])
         # extract UTM zone (last two digits)
         zone = epsg % 100
 
@@ -556,6 +556,7 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
             correct_epsg = 32700 + zone
 
         if epsg != correct_epsg:
+            item.properties["proj:epsg"] = correct_epsg
             item.properties["proj:code"] = f"EPSG:{correct_epsg}"
 
     return items
