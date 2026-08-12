@@ -1,8 +1,8 @@
 ## Changes in 1.4.1
 
-- Updated metadata handling for the Planetary Computer collections landsat-c2-l2, 
-  hls2-l30, and hls2-s30, covering Landsat Collection 2 Level-2 and Harmonized 
-  Landsat and Sentinel-2 data.
+- Updated metadata handling for the Planetary Computer collections `landsat-c2-l2`, 
+  `sentinel-2-l2a`, `hls2-l30`, and `hls2-s30` covering Landsat Collection 2 
+  Level-2, Sentinel-2 Level-2a, and Harmonized Landsat and Sentinel-2 data.
 
 ## Changes in 1.4.0
 
