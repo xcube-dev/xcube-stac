@@ -351,7 +351,9 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         utm_tile_id = defaultdict(list)
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
-            crs = f"EPSG:{item.properties["proj:epsg"]}"
+            crs = item.properties.get("proj:epsg", item.properties.get("proj:code"))
+            if isinstance(crs, int):
+                crs = f"EPSG:{crs}"
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -524,7 +526,7 @@ class LandsatHlsStacArdcAccessor(LandsatHlsStacItemAccessor, Sen2HlsStacArdcAcce
 
 def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
     """
-    Correct STAC proj:epsg UTM hemisphere based on item bbox.
+    Correct STAC CRS UTM hemisphere based on item bbox.
 
     If bbox center latitude >= 0 -> use EPSG:326xx (UTM North)
     If bbox center latitude < 0  -> use EPSG:327xx (UTM South)
@@ -542,7 +544,9 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
         _minx, miny, _maxx, maxy = bbox
         center_lat = (miny + maxy) / 2
 
-        epsg = item.properties.get("proj:epsg")
+        epsg = item.properties.get("proj:epsg", item.properties.get("proj:code"))
+        if isinstance(epsg, str):
+            epsg = int(epsg.split(":")[-1])
         # extract UTM zone (last two digits)
         zone = epsg % 100
 
@@ -553,6 +557,7 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
 
         if epsg != correct_epsg:
             item.properties["proj:epsg"] = correct_epsg
+            item.properties["proj:code"] = f"EPSG:{correct_epsg}"
 
     return items
 

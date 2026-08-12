@@ -152,7 +152,6 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         # define field names in STAC item
         self._stac_item_properties = {
             "tile_id": "grid:code",
-            "crs": "proj:code",
             "processing_version": "processing:version",
         }
 
@@ -312,6 +311,13 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
         ds = _remove_fill_value_encoding(ds)
         return ds
 
+    def _get_item_crs(self, item: pystac.Item) -> str | None:
+        asset = next(iter(item.assets.values()))
+        crs = asset.extra_fields.get("proj:code", asset.extra_fields.get("proj:epsg"))
+        if crs is None:
+            crs = item.properties.get("proj:code", item.properties.get("proj:epsg"))
+        return f"EPSG:{crs}" if isinstance(crs, int) else crs
+
     def _add_sen2_angles(self, item: pystac.Item, ds: xr.Dataset) -> xr.Dataset:
         """Extract Sentinel-2 solar and viewing angle information from the granule
         metadata and add it to the dataset `ds`.
@@ -455,13 +461,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         utm_tile_id = defaultdict(list)
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
-            asset = next(iter(item.assets.values()))
-            crs = asset.extra_fields.get(
-                self._stac_item_properties["crs"],
-                item.properties.get(self._stac_item_properties["crs"]),
-            )
-            if isinstance(crs, int):
-                crs = f"EPSG:{crs}"
+            crs = self._get_item_crs(item)
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone
@@ -537,11 +537,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         ds_final = ds_final.assign_coords(coords={"time": np_datetimes_sel})
 
         # clip dataset
-        asset = next(iter(item_ref.assets.values()))
-        crs_data = asset.extra_fields.get(
-            self._stac_item_properties["crs"],
-            item_ref.properties.get(self._stac_item_properties["crs"]),
-        )
+        crs_data = self._get_item_crs(item_ref)
         t = pyproj.Transformer.from_crs("EPSG:4326", crs_data, always_xy=True)
         point_data = t.transform(open_params["point"][0], open_params["point"][1])
         bbox_width = open_params["bbox_width"] / 2
@@ -809,7 +805,6 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
         # define field names in STAC items
         self._stac_item_properties = {
             "tile_id": "s2:mgrs_tile",
-            "crs": "proj:epsg",
             "processing_version": "s2:processing_baseline",
         }
 
@@ -846,7 +841,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             target_gm = GridMapping.regular_from_bbox(
                 bbox=assets[0].extra_fields["proj:bbox"],
                 xy_res=open_params["spatial_res"],
-                crs=f"EPSG:{item.properties["proj:epsg"]}",
+                crs=self._get_item_crs(item),
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
             ds = merge_datasets(dss, target_gm=target_gm)
@@ -995,9 +990,7 @@ def _get_band_names_from_dataset(ds: xr.Dataset) -> list[str]:
     Returns:
         A list of valid Sentinel-2 band names found in the dataset.
     """
-    band_names = [
-        str(key).split("_")[0] for key in ds if str(key).startswith("B")
-    ]
+    band_names = [str(key).split("_")[0] for key in ds if str(key).startswith("B")]
     return [name for name in _SENTINEL2_BANDS if name in band_names]
 
 

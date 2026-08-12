@@ -55,6 +55,7 @@ class HlsStacItemAccessorTest(unittest.TestCase):
         )
         result = fix_utm_hemisphere([item])
         self.assertEqual(result[0].properties["proj:epsg"], 32633)
+        self.assertEqual(result[0].properties["proj:code"], "EPSG:32633")
 
     def test_fix_utm_hemisphere_southern(self):
         item = self.make_item(
@@ -63,6 +64,7 @@ class HlsStacItemAccessorTest(unittest.TestCase):
         )
         result = fix_utm_hemisphere([item])
         self.assertEqual(result[0].properties["proj:epsg"], 32733)
+        self.assertEqual(result[0].properties["proj:code"], "EPSG:32733")
 
     def test_fix_utm_hemisphere_equator_is_northern(self):
         item = self.make_item(
@@ -71,6 +73,7 @@ class HlsStacItemAccessorTest(unittest.TestCase):
         )
         result = fix_utm_hemisphere([item])
         self.assertEqual(result[0].properties["proj:epsg"], 32633)
+        self.assertEqual(result[0].properties["proj:code"], "EPSG:32633")
 
     def test_fix_utm_hemisphere_keeps_correct_code(self):
         item = self.make_item(
@@ -87,6 +90,7 @@ class HlsStacItemAccessorTest(unittest.TestCase):
         )
         result = fix_utm_hemisphere([item])
         self.assertEqual(result[0].properties["proj:epsg"], 32721)
+        self.assertEqual(result[0].properties["proj:code"], "EPSG:32721")
 
 
 class HlsStacCoverageTest(unittest.TestCase):
