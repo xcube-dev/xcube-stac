@@ -217,8 +217,10 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertEqual(1, len(data_ids))
         self.assertEqual(
             [
-                ("collections/ENMAP_HSI_L2A/items/ENMAP01-____L2A-DT0000140097_20250708"
-                "T104407Z_001_V010502_20250709T035921Z?f=application%2Fgeo%2Bjson")
+                (
+                    "collections/ENMAP_HSI_L2A/items/ENMAP01-____L2A-DT0000140097_20250708"
+                    "T104407Z_001_V010502_20250709T035921Z?f=application%2Fgeo%2Bjson"
+                )
             ],
             data_ids,
         )
@@ -1194,8 +1196,6 @@ class StacDataStoreTest(unittest.TestCase):
             sentinel_3_lst_data(),
             sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
-            sentinel_3_angles_data(),
-            sentinel_3_angles_geolocation_data(),
             sentinel_3_lst_data(),
             sentinel_3_lst_flag_data(),
             sentinel_3_lst_geolocation_data(),
