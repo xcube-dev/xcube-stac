@@ -553,12 +553,16 @@ def is_mldataset_available(
     return all(format_id in MLDATASET_FORMATS for format_id in format_ids)
 
 
-def list_format_ids(item: pystac.Item, asset_names: Sequence[str] | None = None) -> list[str]:
+def list_format_ids(
+    item: pystac.Item, asset_names: Sequence[str] | None = None
+) -> list[str]:
     assets = list_assets_from_item(item, asset_names=asset_names)
     return list(np.unique([asset.extra_fields["xcube:format_id"] for asset in assets]))
 
 
-def list_protocols(item: pystac.Item, asset_names: Sequence[str] | None = None) -> list[str]:
+def list_protocols(
+    item: pystac.Item, asset_names: Sequence[str] | None = None
+) -> list[str]:
     assets = list_assets_from_item(item, asset_names=asset_names)
     protocols = []
     for asset in assets:
@@ -640,9 +644,7 @@ def rename_dataset(ds: xr.Dataset, asset: str) -> xr.Dataset:
     if len(list(ds.keys())) == 1:
         name_dict = {var_name: f"{asset}" for var_name in ds.data_vars}
     else:
-        name_dict = {
-            var_name: f"{asset}_{var_name}" for var_name in ds.data_vars
-        }
+        name_dict = {var_name: f"{asset}_{var_name}" for var_name in ds.data_vars}
     return ds.rename_vars(name_dict=name_dict)
 
 
@@ -849,6 +851,14 @@ def find_relative_bbox(
 def clip_dataset_relative_bbox(
     rel_bbox: Sequence[float], ds: xr.Dataset, buffer: int | tuple[int, int] = 20
 ) -> tuple[xr.Dataset, tuple[int, int, int, int]] | tuple[None, None]:
+    if (
+        rel_bbox[0] >= 1.0
+        or rel_bbox[1] >= 1.0
+        or rel_bbox[2] <= 0.0
+        or rel_bbox[3] <= 0.0
+    ):
+        return None, None
+
     if isinstance(buffer, int):
         buffer = (buffer, buffer)
 
@@ -932,13 +942,11 @@ def add_attributes(
     # and organize them in a dictionary. The dictionary keys are datetime
     # strings, and the values are lists of corresponding item IDs.
     ds.attrs["stac_items"] = {
-            dt.astype("datetime64[ms]")
-            .astype("O")
-            .isoformat(): [
-                item.id for item in np.sum(grouped_items.sel(time=dt).values)
-            ]
-            for dt in grouped_items.time.values
-        }
+        dt.astype("datetime64[ms]")
+        .astype("O")
+        .isoformat(): [item.id for item in np.sum(grouped_items.sel(time=dt).values)]
+        for dt in grouped_items.time.values
+    }
 
     ds.attrs["open_params"] = make_json_serializable(open_params)
     ds.attrs["xcube_stac_version"] = version

@@ -112,6 +112,10 @@ _ATTRS_TOBE_REMOVED = [
     "track_offset",
     "title",
 ]
+QUALITY_VARIABLES_TO_REMOVE = [
+    "probability_cloud_dual_in",
+    "probability_cloud_single_in",
+]
 
 
 _SENTINEL3_SLSTR_LST_CDSE_ASSETS_VAR_NAME = {"LST_in": "LST"}
@@ -288,6 +292,9 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
 
         if open_params.get("add_flags", True):
             flags = self.open_asset(item.assets[self._flags])
+            flags = flags.drop_vars(
+                [var for var in QUALITY_VARIABLES_TO_REMOVE if var in flags]
+            )
             ds.update(flags)
         ds.attrs.update(
             stac_url=self._catalog.get_self_href(),
