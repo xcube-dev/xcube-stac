@@ -1,5 +1,7 @@
 ## Changes in 1.4.3
 
+- Added access to the Sentinel-3 SLSTR LST near-real-time (`sentinel-3-sl-2-lst-nrt`) 
+  collection.
 - Enhanced metadata for Planetary Computer Landsat Level-2 products by adding 
   information from the `eo:bands` and `classification:bitfields` extensions.
 

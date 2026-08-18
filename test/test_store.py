@@ -235,6 +235,7 @@ class StacDataStoreTest(unittest.TestCase):
                 "sentinel-2-l1c",
                 "sentinel-3-syn-2-syn-ntc",
                 "sentinel-3-sl-2-lst-ntc",
+                "sentinel-3-sl-2-lst-nrt",
             ],
             data_ids,
         )

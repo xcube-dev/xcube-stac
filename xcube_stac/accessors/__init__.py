@@ -60,12 +60,14 @@ ACCESSOR_MAPPING = {
         "sentinel-2-l1c": Sen2CdseStacItemAccessor,
         "sentinel-3-syn-2-syn-ntc": Sen3CdseStacItemAccessor,
         "sentinel-3-sl-2-lst-ntc": Sen3LstCdseStacItemAccessor,
+        "sentinel-3-sl-2-lst-nrt": Sen3LstCdseStacItemAccessor,
     },
     DATA_STORE_ID_CDSE_ARDC: {
         "sentinel-2-l2a": Sen2CdseStacArdcAccessor,
         "sentinel-2-l1c": Sen2CdseStacArdcAccessor,
         "sentinel-3-syn-2-syn-ntc": Sen3CdseStacArdcAccessor,
         "sentinel-3-sl-2-lst-ntc": Sen3LstCdseStacArdcAccessor,
+        "sentinel-3-sl-2-lst-nrt": Sen3LstCdseStacArdcAccessor,
     },
     DATA_STORE_ID_PC: {
         "sentinel-2-l2a": Sen2PlanetaryComputerStacItemAccessor,
@@ -86,7 +88,9 @@ ACCESSOR_MAPPING = {
 }
 
 
-def guess_item_accessor(store_id: str, data_id: str | None = None) -> type[StacItemAccessor]:
+def guess_item_accessor(
+    store_id: str, data_id: str | None = None
+) -> type[StacItemAccessor]:
     if store_id in ACCESSOR_MAPPING and data_id is not None:
         for key in ACCESSOR_MAPPING[store_id]:
             if key in data_id:
@@ -94,7 +98,9 @@ def guess_item_accessor(store_id: str, data_id: str | None = None) -> type[StacI
     return BaseStacItemAccessor
 
 
-def guess_ardc_accessor(store_id: str, data_id: str | None = None) -> type[StacArdcAccessor]:
+def guess_ardc_accessor(
+    store_id: str, data_id: str | None = None
+) -> type[StacArdcAccessor]:
     accesor = None
     if store_id in ACCESSOR_MAPPING:
         accesor = ACCESSOR_MAPPING[store_id].get(data_id)
