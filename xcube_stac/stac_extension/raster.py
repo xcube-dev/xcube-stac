@@ -87,29 +87,35 @@ def apply_offset_scaling(
 
     if nodata is not None:
         ds = ds.where(ds != nodata)
+    if scale is not None:
+        ds *= scale
+    if offset is not None:
+        ds += offset
 
-    ds *= scale
-    ds += offset
     return ds
 
 
-def _get_scaling_v1(asset: pystac.Asset) -> tuple[int | float, int | float]:
+def _get_scaling_v1(
+    asset: pystac.Asset,
+) -> tuple[None | int | float, None | int | float]:
     raster_bands = asset.extra_fields.get("raster:bands")
-    scale = raster_bands[0].get("scale", 1)
-    offset = raster_bands[0].get("offset", 0)
+    scale = raster_bands[0].get("scale")
+    offset = raster_bands[0].get("offset")
     return scale, offset
 
 
 def _get_nodata_v1(asset: pystac.Asset) -> None | int | float:
     raster_bands = asset.extra_fields.get("raster:bands")
-    return raster_bands[0].get("nodata", None)
+    return raster_bands[0].get("nodata")
 
 
-def _get_scaling_v2(asset: pystac.Asset) -> tuple[int | float, int | float]:
-    scale = asset.extra_fields.get("raster:scale", 1)
-    offset = asset.extra_fields.get("raster:offset", 0)
+def _get_scaling_v2(
+    asset: pystac.Asset,
+) -> tuple[None | int | float, None | int | float]:
+    scale = asset.extra_fields.get("raster:scale")
+    offset = asset.extra_fields.get("raster:offset")
     return scale, offset
 
 
 def _get_nodata_v2(asset: pystac.Asset) -> None | int | float:
-    return asset.extra_fields.get("nodata", None)
+    return asset.extra_fields.get("nodata")

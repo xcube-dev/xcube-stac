@@ -32,6 +32,7 @@ from xcube_stac.accessors.landsat import (
     _CHUNK_SIZE,
     LandsatC2L2StacArdcAccessor,
     LandsatC2L2StacItemAccessor,
+    add_stac_asset_attributes,
 )
 
 
@@ -56,6 +57,7 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         asset.extra_fields["raster:bands"] = [
             {"scale": 0.1, "offset": 273.15, "nodata": 0}
         ]
+        asset.extra_fields["asset_name"] = name
         return asset
 
     @classmethod
@@ -245,6 +247,69 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
             tuple(_CHUNK_SIZE.values()),
         )
         resample_mock.assert_called_once()
+
+    def test_add_stac_asset_attributes_maps_eo_and_classification_metadata(self):
+        da = xr.DataArray(np.array([[1]], dtype=np.uint16), dims=("y", "x"))
+        asset = pystac.Asset(
+            href="https://example.com/red.tif",
+            media_type="image/tiff; application=geotiff",
+            roles=["data"],
+            title="Surface reflectance red",
+        )
+        asset.extra_fields["eo:bands"] = [
+            {
+                "name": "red",
+                "common_name": "red",
+                "description": "Red band",
+                "center_wavelength": 0.65,
+                "full_width_half_max": 0.03,
+            }
+        ]
+        asset.extra_fields["classification:bitfields"] = [
+            {
+                "name": "QA_PIXEL",
+                "offset": 0,
+                "length": 2,
+                "classes": [
+                    {"value": 0, "name": "clear"},
+                    {"value": 1, "name": "cloud"},
+                ],
+            },
+            {
+                "name": "QA_PIXEL",
+                "offset": 2,
+                "length": 1,
+                "classes": [
+                    {"value": 1, "name": "water"},
+                ],
+            },
+        ]
+
+        result = add_stac_asset_attributes(da, asset)
+
+        self.assertIs(result, da)
+        self.assertEqual(result.attrs["long_name"], "Surface reflectance red")
+        self.assertEqual(result.attrs["band_name"], "red")
+        self.assertEqual(result.attrs["common_name"], "red")
+        self.assertEqual(result.attrs["description"], "Red band")
+        self.assertEqual(result.attrs["center_wavelength"], 0.65)
+        self.assertEqual(result.attrs["full_width_half_max"], 0.03)
+        self.assertEqual(result.attrs["flag_masks"], [3, 3, 4])
+        self.assertEqual(result.attrs["flag_values"], [0, 1, 4])
+        self.assertEqual(result.attrs["flag_meanings"], "QA_PIXEL_clear QA_PIXEL_cloud QA_PIXEL_water")
+
+    def test_add_stac_asset_attributes_is_noop_without_optional_metadata(self):
+        da = xr.DataArray(np.array([[1]], dtype=np.uint16), dims=("y", "x"))
+        asset = pystac.Asset(
+            href="https://example.com/qa.tif",
+            media_type="image/tiff; application=geotiff",
+            roles=["data"],
+        )
+
+        result = add_stac_asset_attributes(da, asset)
+
+        self.assertIs(result, da)
+        self.assertEqual(result.attrs, {})
 
     def test_open_ardc_pops_stac_item_id_and_adds_attributes(self):
         grouped_data = np.empty((1, 1), dtype=object)

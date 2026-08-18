@@ -114,6 +114,7 @@ class HlsStacCoverageTest(unittest.TestCase):
         asset.extra_fields["raster:bands"] = [
             {"scale": 0.1, "offset": 1.0, "nodata": 0}
         ]
+        asset.extra_fields["asset_name"] = name
         return asset
 
     @classmethod
