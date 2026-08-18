@@ -1,3 +1,8 @@
+## Changes in 1.4.3
+
+- Added access to the Sentinel-3 SLSTR LST near-real-time (`sentinel-3-sl-2-lst-nrt`) 
+  collection.
+
 ## Changes in 1.4.2
 
 - Fixed a bug in Sentinel-3 SLSTR LST access via the CDSE STAC API, allowing products 
