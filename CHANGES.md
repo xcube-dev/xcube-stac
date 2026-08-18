@@ -1,3 +1,8 @@
+## Changes in 1.4.3
+
+- Enhanced metadata for Planetary Computer Landsat Level-2 products by adding 
+  information from the `eo:bands` and `classification:bitfields` extensions.
+
 ## Changes in 1.4.2
 
 - Fixed a bug in Sentinel-3 SLSTR LST access via the CDSE STAC API, allowing products 

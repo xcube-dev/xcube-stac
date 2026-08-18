@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 import pystac
@@ -87,18 +88,22 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
-        dss = [rename_dataset(ds, asset.title) for (ds, asset) in zip(dss, assets)]
-        if apply_scaling:
-            dss = [
-                (apply_offset_scaling(ds, asset, "v1"))
-                for ds, asset in zip(dss, assets)
-            ]
-            for ds in dss:
-                if "lwir11" in ds:
-                    ds["lwir11"].attrs["units"] = "K"
+        dss = [
+            rename_dataset(ds, asset.extra_fields["asset_name"])
+            for (ds, asset) in zip(dss, assets)
+        ]
         ds = dss[0].copy()
         for ds_asset in dss[1:]:
             ds.update(ds_asset)
+        for name, asset in item.assets.items():
+            if name in ds:
+                array = add_stac_asset_attributes(ds[name], asset)
+                if name == "lwir11":
+                    array.attrs["units"] = "K"
+                if apply_scaling:
+                    if "qa" not in name:
+                        array = apply_offset_scaling(array, asset, "v1")
+                ds[name] = array
         ds.attrs.update(
             stac_url=catalog.get_self_href(),
             stac_item_id=item.id,
@@ -156,6 +161,8 @@ class LandsatC2L2StacArdcAccessor(LandsatC2L2StacItemAccessor, Sen2HlsStacArdcAc
     ) -> xr.Dataset:
         grouped_items = self._group_items(items)
         ds = self._generate_cube(grouped_items, **open_params)
+        if "qa_pixel" in ds:
+            ds["qa_pixel"] = ds["qa_pixel"].fillna(1).astype(np.uint16)
         ds.attrs.pop("stac_item_id", None)
         ds = add_attributes(
             data_id, self._catalog.get_self_href(), ds, grouped_items, **open_params
@@ -212,3 +219,94 @@ class LandsatC2L2StacArdcAccessor(LandsatC2L2StacItemAccessor, Sen2HlsStacArdcAc
         )
 
         return grouped_items
+
+
+def add_stac_asset_attributes(
+    da: xr.DataArray,
+    asset: pystac.Asset,
+) -> xr.DataArray:
+    """Add CF-style metadata from a STAC asset to an xarray DataArray."""
+    attrs = da.attrs
+
+    # Asset title -> long_name
+    title = asset.title
+    if title:
+        attrs["long_name"] = title
+
+    # EO Bands extension
+    _add_eo_band_attributes(attrs, asset)
+
+    # Classification extension
+    _add_classification_bitfields(attrs, asset)
+
+    return da
+
+
+def _add_classification_bitfields(
+    attrs: dict[str, Any],
+    asset: pystac.Asset,
+) -> None:
+    """Add CF flag metadata from STAC classification bitfields."""
+    bitfields = asset.extra_fields.get("classification:bitfields")
+
+    if not bitfields:
+        return
+
+    flag_masks: list[int] = []
+    flag_values: list[int] = []
+    flag_meanings: list[str] = []
+
+    for bitfield in bitfields:
+        name = bitfield["name"]
+        offset = bitfield["offset"]
+        length = bitfield["length"]
+
+        # Mask covering the complete bit field.
+        mask = ((1 << length) - 1) << offset
+
+        classes = bitfield.get("classes", [])
+
+        for classification in classes:
+            value = classification["value"]
+
+            # Shift the class value into its actual bit position.
+            encoded_value = value << offset
+
+            meaning = classification["name"]
+
+            flag_masks.append(mask)
+            flag_values.append(encoded_value)
+            flag_meanings.append(f"{name}_{meaning}")
+
+    if flag_masks:
+        attrs["flag_masks"] = flag_masks
+        attrs["flag_values"] = flag_values
+        attrs["flag_meanings"] = " ".join(flag_meanings)
+
+
+def _add_eo_band_attributes(
+    attrs: dict[str, Any],
+    asset: pystac.Asset,
+) -> None:
+    """Add attributes from the STAC EO Band extension."""
+    eo_bands = asset.extra_fields.get("eo:bands")
+
+    if not eo_bands:
+        return
+
+    band = eo_bands[0]
+
+    if "name" in band:
+        attrs["band_name"] = band["name"]
+
+    if "common_name" in band:
+        attrs["common_name"] = band["common_name"]
+
+    if "description" in band:
+        attrs["description"] = band["description"]
+
+    if "center_wavelength" in band:
+        attrs["center_wavelength"] = band["center_wavelength"]
+
+    if "full_width_half_max" in band:
+        attrs["full_width_half_max"] = band["full_width_half_max"]

@@ -56,6 +56,7 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         asset.extra_fields["raster:bands"] = [
             {"scale": 0.1, "offset": 273.15, "nodata": 0}
         ]
+        asset.extra_fields["asset_name"] = name
         return asset
 
     @classmethod

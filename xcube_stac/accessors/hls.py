@@ -198,7 +198,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         assets_sel = []
         for asset_name in asset_names:
             asset = item.assets[asset_name]
-            asset.title = asset_name
+            asset.extra_fields["asset_name"] = asset_name
             assets_sel.append(asset)
         return assets_sel
 
@@ -211,7 +211,10 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         apply_scaling: bool = True,
         **open_params,
     ) -> xr.Dataset:
-        dss = [rename_dataset(ds, asset.title) for (ds, asset) in zip(dss, assets)]
+        dss = [
+            rename_dataset(ds, asset.extra_fields["asset_name"])
+            for (ds, asset) in zip(dss, assets)
+        ]
         if apply_scaling:
             dss = [(self._apply_offset_scaling(ds)) for ds, asset in zip(dss, assets)]
         ds = dss[0].copy()
