@@ -126,6 +126,7 @@ Currently, we support the following collections and data IDs:
 - [`sentinel-2-l2a`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-2-l2a)
 - [`sentinel-3-syn-2-syn-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-syn-2-syn-ntc)
 - [`sentinel-3-sl-2-lst-ntc`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-sl-2-lst-ntc)
+- [`sentinel-3-sl-2-lst-nrt`](https://browser.stac.dataspace.copernicus.eu/collections/sentinel-3-sl-2-lst-nrt)
 
 
 #### Special support for the [Planetary Computer STAC API](https://planetarycomputer.microsoft.com/)
