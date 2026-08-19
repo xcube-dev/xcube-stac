@@ -3,6 +3,11 @@
 - Fixed a bug in the mosaicking of Planetary Computer Landsat Collection 2 Level-2 
   products (`data_id = "landsat-c2-l2"`).
 - Add opening parameter `tile_size` for Sentinel-3 data access.
+- Fixed a bug in the stac-pc-ardc store for data IDs `landsat-c2-l2`, `hls2-l30`, 
+  and `hls2-s30`. When requesting a cube in UTM with a bounding box within a single
+  UTM zone, the resulting cube could be smaller than the requested bounding box 
+  because only available data was processed. The cube is now padded with fill
+  values to match the requested bounding box.
 
 ## Changes in 1.4.3
 

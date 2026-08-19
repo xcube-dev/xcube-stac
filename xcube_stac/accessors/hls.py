@@ -373,6 +373,10 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
 
+        crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
+        if crs.to_dict().get("proj") == "utm":
+            ds_final = _extend_to_bbox(ds_final, open_params["bbox"])
+
         for key, fill_value in self._fill_values.items():
             if key in ds_final:
                 ds_final[key] = (
@@ -646,3 +650,52 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
         tile_size = (tile_size, tile_size)
     ds_final = ds_final.chunk({x_dim: tile_size[0], y_dim: tile_size[1], "time": 1})
     return ds_final
+
+
+def _extend_to_bbox(
+    ds: xr.Dataset,
+    bbox: tuple[float, float, float, float],
+) -> xr.Dataset:
+    """Extend a dataset to cover the requested bounding box.
+
+    The dataset is assumed to have regular ``x`` and ``y`` coordinates.
+    The requested bounding box may differ from the dataset extent by less
+    than one pixel. Missing pixels are padded with NaN.
+
+    Args:
+        ds: Dataset with ``x`` and ``y`` coordinates in the target CRS.
+        bbox: Bounding box ``(xmin, ymin, xmax, ymax)`` in the same CRS.
+
+    Returns:
+        Dataset extended to cover ``bbox``.
+    """
+    xmin, ymin, xmax, ymax = bbox
+
+    x = ds.x.values
+    y = ds.y.values
+
+    if x.size < 2 or y.size < 2:
+        return ds
+
+    x_res = abs(x[1] - x[0])
+    y_res = abs(y[1] - y[0])
+
+    # Check whether the dataset already covers the requested bbox.
+    needs_xmin = xmin < x[0] - x_res
+    needs_xmax = xmax > x[-1] + x_res
+    needs_ymin = ymin < y[-1] - y_res
+    needs_ymax = ymax > y[0] + y_res
+
+    if not any((needs_xmin, needs_xmax, needs_ymin, needs_ymax)):
+        return ds
+
+    # Build the target coordinate vectors by extending the existing ones
+    x_start = x[0] - x_res * ((x[0] - xmin) // x_res)
+    x_end = x[-1] + x_res * ((xmax - x[-1]) // x_res)
+    y_start = y[0] + y_res * ((ymax - y[0]) // y_res)
+    y_end = y[-1] - y_res * ((y[-1] - ymin) // y_res)
+
+    new_x = np.arange(x_start, x_end, x_res)
+    new_y = np.arange(y_start, y_end, -y_res)
+
+    return ds.reindex(x=new_x, y=new_y)
