@@ -83,6 +83,11 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
             "qa_radsat": 65535,
             "qa_aerosol": 1,
         }
+        self._dtypes = {
+            "qa_pixel": np.uint16,
+            "qa_radsat": np.uint16,
+            "qa_aerosol": np.uint16,
+        }
 
     def _combiner_function(
         self,
@@ -166,8 +171,6 @@ class LandsatC2L2StacArdcAccessor(LandsatC2L2StacItemAccessor, Sen2HlsStacArdcAc
     ) -> xr.Dataset:
         grouped_items = self._group_items(items)
         ds = self._generate_cube(grouped_items, **open_params)
-        if "qa_pixel" in ds:
-            ds["qa_pixel"] = ds["qa_pixel"].fillna(1).astype(np.uint16)
         ds.attrs.pop("stac_item_id", None)
         ds = add_attributes(
             data_id, self._catalog.get_self_href(), ds, grouped_items, **open_params

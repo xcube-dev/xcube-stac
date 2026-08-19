@@ -2,6 +2,7 @@
 
 - Fixed a bug in the mosaicking of Planetary Computer Landsat Collection 2 Level-2 
   products (`data_id = "landsat-c2-l2"`).
+- Add opening parameter `tile_size` for Sentinel-3 data access.
 
 ## Changes in 1.4.3
 

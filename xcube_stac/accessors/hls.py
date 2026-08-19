@@ -129,6 +129,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             title="Names of assets (spectral bands)",
         )
         self._fill_values = {"Fmask": 255}
+        self._dtypes = {"Fmask": np.uint8}
 
     @staticmethod
     # noinspection PyUnusedLocal
@@ -372,6 +373,12 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
 
+        for key, fill_value in self._fill_values.items():
+            if key in ds_final:
+                ds_final[key] = (
+                    ds_final[key].fillna(fill_value).astype(self._dtypes[key])
+                )
+
         ds_final["time"].encoding = {
             "units": "days since 1970-01-01T00:00:00",
             "calendar": "standard",
@@ -519,12 +526,6 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         )
         ds_final = ds_final.reindex(time=grouped_items.time)
 
-        for key, fill_value in self._fill_values.items():
-            if key in ds_final:
-                ds_final[key] = (
-                    ds_final[key].fillna(fill_value).astype(ds_ref[key].dtype)
-                )
-
         return ds_final
 
 
@@ -598,6 +599,7 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
           its grid mapping is reused unless resolution mismatches are found.
         - Overlapping regions are resolved by selecting the first non-NaN value.
     """
+    tile_size = open_params.get("tile_size", _CHUNK_SIZE.values())
     # get correct target gridmapping
     crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
     target_crs = pyproj.CRS.from_string(open_params["crs"])
@@ -617,14 +619,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
-                tile_size=open_params.get("tile_size", _CHUNK_SIZE.values()),
+                tile_size=tile_size,
             )
     else:
         target_gm = GridMapping.regular_from_bbox(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
-            tile_size=open_params.get("tile_size", _CHUNK_SIZE.values()),
+            tile_size=tile_size,
         )
 
     resampled_list_ds = []
@@ -634,22 +636,13 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 ds,
                 target_gm=target_gm,
                 prevent_nan_propagations=True,
-                fill_values={"Fmask": 255},
             )
         )
 
     var_names = list(resampled_list_ds[0].keys())
-    var_ref = var_names[0]
-    fill_value = np.nan
-    if var_names[0] == "Fmask":
-        if len(var_names) == 1:
-            fill_value = 255
-        else:
-            var_ref = var_names[1]
-
-    ds_final = mosaic_spatial_take_first(resampled_list_ds, var_ref, fill_value)
+    ds_final = mosaic_spatial_take_first(resampled_list_ds, var_names[0], np.nan)
     x_dim, y_dim = target_gm.xy_var_names
-    ds_final = ds_final.chunk(
-        {x_dim: _CHUNK_SIZE["x"], y_dim: _CHUNK_SIZE["y"], "time": 1}
-    )
+    if isinstance(tile_size, int):
+        tile_size = (tile_size, tile_size)
+    ds_final = ds_final.chunk({x_dim: tile_size[0], y_dim: tile_size[0], "time": 1})
     return ds_final
