@@ -78,6 +78,11 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
             unique_items=True,
             title="Names of assets (spectral and ancillary bands)",
         )
+        self._fill_values = {
+            "qa_pixel": 1,
+            "qa_radsat": 65535,
+            "qa_aerosol": 1,
+        }
 
     def _combiner_function(
         self,

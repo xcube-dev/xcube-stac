@@ -1,3 +1,8 @@
+## Changes in 1.4.4
+
+- Fixed a bug in the mosaicking of Planetary Computer Landsat Collection 2 Level-2 
+  products (`data_id = "landsat-c2-l2"`).
+
 ## Changes in 1.4.3
 
 - Added access to the Sentinel-3 SLSTR LST near-real-time (`sentinel-3-sl-2-lst-nrt`) 

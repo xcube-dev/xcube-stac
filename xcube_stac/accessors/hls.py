@@ -128,6 +128,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             unique_items=True,
             title="Names of assets (spectral bands)",
         )
+        self._fill_values = {"Fmask": 255}
 
     @staticmethod
     # noinspection PyUnusedLocal
@@ -258,7 +259,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             source_gm=source_gm,
             target_gm=target_gm,
             prevent_nan_propagations=True,
-            fill_values={"Fmask": 255},
+            fill_values=self._fill_values,
         )
         return ds
 
@@ -474,17 +475,11 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             "asset_names": open_params.get("asset_names", self._asset_names_default),
             "apply_scaling": open_params.get("apply_scaling", True),
         }
-
         var_names = open_params.get("asset_names", [self._asset_names_default])
-        fill_value = np.nan
-        var_ref = var_names[0]
-        if var_names[0] == "Fmask":
-            if len(var_names) == 1:
-                fill_value = 255
-            else:
-                var_ref = var_names[1]
+
         dss = []
         idxs_dt = []
+        ds_ref = None
         for dt_idx, dt in enumerate(grouped_items.time.values):
             dss_dt = []
             for tile_id in grouped_items.tile_id.values:
@@ -492,11 +487,18 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
                 multi_tiles = []
                 for item in items:
                     ds = self.open_item(item, **open_item_open_params)
+                    if ds_ref is None:
+                        ds_ref = ds.copy()
+                    for key, fill_value in self._fill_values.items():
+                        if key in ds:
+                            ds[key] = (
+                                ds[key].where(ds[key] != fill_value).astype(np.float32)
+                            )
                     multi_tiles.append(ds)
                 if not multi_tiles:
                     continue
                 dss_dt.append(
-                    mosaic_spatial_take_first(multi_tiles, var_ref, fill_value)
+                    mosaic_spatial_take_first(multi_tiles, var_names[0], np.nan)
                 )
             if not dss_dt:
                 continue
@@ -508,14 +510,20 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             dss.append(mosaic)
             idxs_dt.append(dt_idx)
 
-        ds_final = xr.concat(dss, dim="time", join="outer", fill_value={"Fmask": 255})
+        ds_final = xr.concat(dss, dim="time", join="outer")
         ds_final = ds_final.assign_coords({"time": grouped_items.time[idxs_dt]})
         ds_final = ds_final.sortby("y", ascending=False)
         ds_final = ds_final.sel(
             x=slice(final_bbox[0], final_bbox[2]),
             y=slice(final_bbox[3], final_bbox[1]),
         )
-        ds_final = ds_final.reindex(time=grouped_items.time, fill_value={"Fmask": 255})
+        ds_final = ds_final.reindex(time=grouped_items.time)
+
+        for key, fill_value in self._fill_values.items():
+            if key in ds_final:
+                ds_final[key] = (
+                    ds_final[key].fillna(fill_value).astype(ds_ref[key].dtype)
+                )
 
         return ds_final
 
