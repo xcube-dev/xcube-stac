@@ -127,7 +127,7 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
         crs = open_params.get("crs")
         bbox = open_params.get("bbox")
         spatial_res = open_params.get("spatial_res")
-        tile_size = open_params.get("tile_size", _CHUNK_SIZE.values())
+        tile_size = open_params.get("tile_size", (_CHUNK_SIZE["x"], _CHUNK_SIZE["y"]))
         if crs is None and bbox is None and spatial_res is None:
             return ds
 

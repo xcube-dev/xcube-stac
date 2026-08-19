@@ -234,7 +234,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         crs = open_params.get("crs")
         bbox = open_params.get("bbox")
         spatial_res = open_params.get("spatial_res")
-        tile_size = open_params.get("tile_size", _CHUNK_SIZE.values())
+        tile_size = open_params.get("tile_size", (_CHUNK_SIZE["x"], _CHUNK_SIZE["y"]))
         if crs is None and bbox is None and spatial_res is None:
             return ds
 
@@ -599,7 +599,7 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
           its grid mapping is reused unless resolution mismatches are found.
         - Overlapping regions are resolved by selecting the first non-NaN value.
     """
-    tile_size = open_params.get("tile_size", _CHUNK_SIZE.values())
+    tile_size = open_params.get("tile_size", (_CHUNK_SIZE["x"], _CHUNK_SIZE["y"]))
     # get correct target gridmapping
     crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
     target_crs = pyproj.CRS.from_string(open_params["crs"])
@@ -644,5 +644,5 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
     x_dim, y_dim = target_gm.xy_var_names
     if isinstance(tile_size, int):
         tile_size = (tile_size, tile_size)
-    ds_final = ds_final.chunk({x_dim: tile_size[0], y_dim: tile_size[0], "time": 1})
+    ds_final = ds_final.chunk({x_dim: tile_size[0], y_dim: tile_size[1], "time": 1})
     return ds_final
