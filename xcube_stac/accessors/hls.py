@@ -128,6 +128,8 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             unique_items=True,
             title="Names of assets (spectral bands)",
         )
+        self._fill_values = {"Fmask": 255}
+        self._dtypes = {"Fmask": np.uint8}
 
     @staticmethod
     # noinspection PyUnusedLocal
@@ -232,7 +234,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         crs = open_params.get("crs")
         bbox = open_params.get("bbox")
         spatial_res = open_params.get("spatial_res")
-        tile_size = open_params.get("tile_size", _CHUNK_SIZE.values())
+        tile_size = open_params.get("tile_size", (_CHUNK_SIZE["x"], _CHUNK_SIZE["y"]))
         if crs is None and bbox is None and spatial_res is None:
             return ds
 
@@ -258,7 +260,7 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             source_gm=source_gm,
             target_gm=target_gm,
             prevent_nan_propagations=True,
-            fill_values={"Fmask": 255},
+            fill_values=self._fill_values,
         )
         return ds
 
@@ -371,6 +373,16 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
 
+        crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
+        if crs.to_dict().get("proj") == "utm":
+            ds_final = _extend_to_bbox(ds_final, open_params["bbox"])
+
+        for key, fill_value in self._fill_values.items():
+            if key in ds_final:
+                ds_final[key] = (
+                    ds_final[key].fillna(fill_value).astype(self._dtypes[key])
+                )
+
         ds_final["time"].encoding = {
             "units": "days since 1970-01-01T00:00:00",
             "calendar": "standard",
@@ -474,17 +486,11 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             "asset_names": open_params.get("asset_names", self._asset_names_default),
             "apply_scaling": open_params.get("apply_scaling", True),
         }
-
         var_names = open_params.get("asset_names", [self._asset_names_default])
-        fill_value = np.nan
-        var_ref = var_names[0]
-        if var_names[0] == "Fmask":
-            if len(var_names) == 1:
-                fill_value = 255
-            else:
-                var_ref = var_names[1]
+
         dss = []
         idxs_dt = []
+        ds_ref = None
         for dt_idx, dt in enumerate(grouped_items.time.values):
             dss_dt = []
             for tile_id in grouped_items.tile_id.values:
@@ -492,11 +498,18 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
                 multi_tiles = []
                 for item in items:
                     ds = self.open_item(item, **open_item_open_params)
+                    if ds_ref is None:
+                        ds_ref = ds.copy()
+                    for key, fill_value in self._fill_values.items():
+                        if key in ds:
+                            ds[key] = (
+                                ds[key].where(ds[key] != fill_value).astype(np.float32)
+                            )
                     multi_tiles.append(ds)
                 if not multi_tiles:
                     continue
                 dss_dt.append(
-                    mosaic_spatial_take_first(multi_tiles, var_ref, fill_value)
+                    mosaic_spatial_take_first(multi_tiles, var_names[0], np.nan)
                 )
             if not dss_dt:
                 continue
@@ -508,14 +521,14 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             dss.append(mosaic)
             idxs_dt.append(dt_idx)
 
-        ds_final = xr.concat(dss, dim="time", join="outer", fill_value={"Fmask": 255})
+        ds_final = xr.concat(dss, dim="time", join="outer")
         ds_final = ds_final.assign_coords({"time": grouped_items.time[idxs_dt]})
         ds_final = ds_final.sortby("y", ascending=False)
         ds_final = ds_final.sel(
             x=slice(final_bbox[0], final_bbox[2]),
             y=slice(final_bbox[3], final_bbox[1]),
         )
-        ds_final = ds_final.reindex(time=grouped_items.time, fill_value={"Fmask": 255})
+        ds_final = ds_final.reindex(time=grouped_items.time)
 
         return ds_final
 
@@ -590,6 +603,7 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
           its grid mapping is reused unless resolution mismatches are found.
         - Overlapping regions are resolved by selecting the first non-NaN value.
     """
+    tile_size = open_params.get("tile_size", (_CHUNK_SIZE["x"], _CHUNK_SIZE["y"]))
     # get correct target gridmapping
     crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
     target_crs = pyproj.CRS.from_string(open_params["crs"])
@@ -609,14 +623,14 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 open_params["bbox"],
                 open_params["spatial_res"],
                 open_params["crs"],
-                tile_size=open_params.get("tile_size", _CHUNK_SIZE.values()),
+                tile_size=tile_size,
             )
     else:
         target_gm = GridMapping.regular_from_bbox(
             open_params["bbox"],
             open_params["spatial_res"],
             open_params["crs"],
-            tile_size=open_params.get("tile_size", _CHUNK_SIZE.values()),
+            tile_size=tile_size,
         )
 
     resampled_list_ds = []
@@ -626,22 +640,62 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
                 ds,
                 target_gm=target_gm,
                 prevent_nan_propagations=True,
-                fill_values={"Fmask": 255},
             )
         )
 
     var_names = list(resampled_list_ds[0].keys())
-    var_ref = var_names[0]
-    fill_value = np.nan
-    if var_names[0] == "Fmask":
-        if len(var_names) == 1:
-            fill_value = 255
-        else:
-            var_ref = var_names[1]
-
-    ds_final = mosaic_spatial_take_first(resampled_list_ds, var_ref, fill_value)
+    ds_final = mosaic_spatial_take_first(resampled_list_ds, var_names[0], np.nan)
     x_dim, y_dim = target_gm.xy_var_names
-    ds_final = ds_final.chunk(
-        {x_dim: _CHUNK_SIZE["x"], y_dim: _CHUNK_SIZE["y"], "time": 1}
-    )
+    if isinstance(tile_size, int):
+        tile_size = (tile_size, tile_size)
+    ds_final = ds_final.chunk({x_dim: tile_size[0], y_dim: tile_size[1], "time": 1})
     return ds_final
+
+
+def _extend_to_bbox(
+    ds: xr.Dataset,
+    bbox: tuple[float, float, float, float],
+) -> xr.Dataset:
+    """Extend a dataset to cover the requested bounding box.
+
+    The dataset is assumed to have regular ``x`` and ``y`` coordinates.
+    The requested bounding box may differ from the dataset extent by less
+    than one pixel. Missing pixels are padded with NaN.
+
+    Args:
+        ds: Dataset with ``x`` and ``y`` coordinates in the target CRS.
+        bbox: Bounding box ``(xmin, ymin, xmax, ymax)`` in the same CRS.
+
+    Returns:
+        Dataset extended to cover ``bbox``.
+    """
+    xmin, ymin, xmax, ymax = bbox
+
+    x = ds.x.values
+    y = ds.y.values
+
+    if x.size < 2 or y.size < 2:
+        return ds
+
+    x_res = abs(x[1] - x[0])
+    y_res = abs(y[1] - y[0])
+
+    # Check whether the dataset already covers the requested bbox.
+    needs_xmin = xmin < x[0] - x_res
+    needs_xmax = xmax > x[-1] + x_res
+    needs_ymin = ymin < y[-1] - y_res
+    needs_ymax = ymax > y[0] + y_res
+
+    if not any((needs_xmin, needs_xmax, needs_ymin, needs_ymax)):
+        return ds
+
+    # Build the target coordinate vectors by extending the existing ones
+    x_start = x[0] - x_res * ((x[0] - xmin) // x_res)
+    x_end = x[-1] + x_res * ((xmax - x[-1]) // x_res)
+    y_start = y[0] + y_res * ((ymax - y[0]) // y_res)
+    y_end = y[-1] - y_res * ((y[-1] - ymin) // y_res)
+
+    new_x = np.arange(x_start, x_end, x_res)
+    new_y = np.arange(y_start, y_end, -y_res)
+
+    return ds.reindex(x=new_x, y=new_y)

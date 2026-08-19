@@ -49,6 +49,7 @@ from xcube_stac.constants import (
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
     SCHEMA_TIME_RANGE,
+    SCHEMA_TILE_SIZE,
     TILE_SIZE,
 )
 from xcube_stac.utils import (
@@ -215,6 +216,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         # clip dataset based on STAC items geometry footprint
         crs = open_params.get("crs", _CRS_WGS84)
         bbox = open_params.get("bbox", None)
+        tile_size = open_params.get("tile_size", TILE_SIZE)
         if bbox:
             bbox_wgs84 = reproject_bbox(bbox, crs, _CRS_WGS84)
             rel_bbox = find_relative_bbox(item, bbox_wgs84)
@@ -230,7 +232,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 bbox = source_gm.xy_bbox
             spatial_res = open_params.get("spatial_res", source_gm.xy_res)
             target_gm = GridMapping.regular_from_bbox(
-                bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=TILE_SIZE
+                bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=tile_size
             )
             ds = rectify_dataset(
                 ds,
@@ -259,6 +261,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
+                "tile_size": SCHEMA_TILE_SIZE,
             },
             required=[],
             additional_properties=True,
@@ -318,6 +321,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         # clip dataset based on STAC items geometry footprint
         crs = open_params.get("crs", _CRS_WGS84)
         bbox = open_params.get("bbox", None)
+        tile_size = open_params.get("tile_size", TILE_SIZE)
         bbox_idx = None
         if bbox:
             bbox_wgs84 = reproject_bbox(bbox, crs, _CRS_WGS84)
@@ -345,7 +349,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
                 bbox = source_gm.xy_bbox
             spatial_res = open_params.get("spatial_res", source_gm.xy_res)
             target_gm = GridMapping.regular_from_bbox(
-                bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=TILE_SIZE
+                bbox=bbox, xy_res=spatial_res, crs=crs, tile_size=tile_size
             )
             ds = rectify_dataset(
                 ds,
@@ -373,6 +377,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
+                "tile_size": SCHEMA_TILE_SIZE,
             },
             required=[],
             additional_properties=True,
@@ -421,6 +426,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 "query": SCHEMA_ADDITIONAL_QUERY,
                 "add_error_bands": _SCHEMA_ADD_ERROR_BANDS,
                 "add_flags": _SCHEMA_ADD_FLAGS,
+                "tile_size": SCHEMA_TILE_SIZE,
             },
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,
@@ -494,6 +500,7 @@ class Sen3LstCdseStacArdcAccessor(
                 "crs": SCHEMA_CRS,
                 "query": SCHEMA_ADDITIONAL_QUERY,
                 "add_flags": _SCHEMA_ADD_FLAGS,
+                "tile_size": SCHEMA_TILE_SIZE,
             },
             required=["time_range", "bbox", "spatial_res", "crs"],
             additional_properties=False,

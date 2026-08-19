@@ -342,11 +342,11 @@ class HlsStacCoverageTest(unittest.TestCase):
             )
 
         self.assertEqual(result_single.sizes["time"], 2)
-        self.assertTrue(np.all(result_single["Fmask"].isel(time=1).values == 255))
         self.assertIn("B01", result_pair)
+        self.assertIn("Fmask", result_pair)
         self.assertEqual(mosaic_mock.call_args_list[0].args[1], "Fmask")
-        self.assertEqual(mosaic_mock.call_args_list[0].args[2], 255)
-        self.assertEqual(mosaic_mock.call_args_list[1].args[1], "B01")
+        self.assertTrue(np.isnan(mosaic_mock.call_args_list[0].args[2]))
+        self.assertEqual(mosaic_mock.call_args_list[1].args[1], "Fmask")
         self.assertTrue(np.isnan(mosaic_mock.call_args_list[1].args[2]))
         self.assertEqual(open_item_mock.call_count, 2)
         self.assertEqual(reproject_bbox_mock.call_count, 2)
@@ -401,8 +401,8 @@ class HlsStacCoverageTest(unittest.TestCase):
 
         single_args = run_merge(("Fmask",))
         self.assertEqual(single_args.args[1], "Fmask")
-        self.assertEqual(single_args.args[2], 255)
+        self.assertTrue(np.isnan(single_args.args[2]))
 
         paired_args = run_merge(("Fmask", "B01"))
-        self.assertEqual(paired_args.args[1], "B01")
+        self.assertEqual(paired_args.args[1], "Fmask")
         self.assertTrue(np.isnan(paired_args.args[2]))
