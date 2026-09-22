@@ -695,7 +695,7 @@ def _extend_to_bbox(
     y_start = y[0] + y_res * ((ymax - y[0]) // y_res)
     y_end = y[-1] - y_res * ((y[-1] - ymin) // y_res)
 
-    new_x = np.arange(x_start, x_end, x_res)
-    new_y = np.arange(y_start, y_end, -y_res)
+    new_x = np.arange(x_start, x_end + (x_res / 2), x_res)
+    new_y = np.arange(y_start, y_end - (y_res / 2), -y_res)
 
     return ds.reindex(x=new_x, y=new_y)

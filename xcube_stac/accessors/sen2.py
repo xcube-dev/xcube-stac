@@ -44,7 +44,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
-from xcube_resampling import resample_in_space
+from xcube_resampling import resample_in_space, mosaic_datasets, extend_dataset
 from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox
 
@@ -386,11 +386,19 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         grouped_items = self._group_items(items)
 
         if "point" in open_params:
-            # apply only stacking
-            ds = self._generate_cube_single_tile(grouped_items, **open_params)
-        else:
-            # apply mosaicking and stacking
-            ds = self._generate_cube(grouped_items, **open_params)
+            # find tile closest to the given point
+            centers = np.zeros((2, grouped_items.sizes["tile_id"]))
+            for idx_tile_id in range(grouped_items.shape[1]):
+                item = np.sum(grouped_items.isel(tile_id=idx_tile_id).values)[0]
+                centers[0, idx_tile_id] = (item.bbox[0] + item.bbox[2]) / 2
+                centers[1, idx_tile_id] = (item.bbox[1] + item.bbox[3]) / 2
+            idx_min = np.argmin(
+                (centers[0] - open_params["point"][0]) ** 2
+                + (centers[1] - open_params["point"][1]) ** 2
+            )
+            grouped_items = grouped_items[:, [idx_min]]
+        # apply mosaicking and stacking
+        ds = self._generate_cube(grouped_items, **open_params)
         ds["time"].encoding = {
             "units": "days since 1970-01-01T00:00:00",
             "calendar": "standard",
@@ -479,86 +487,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         if open_params.get("add_angles", False):
             ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
 
-        return ds_final
-
-    def _generate_cube_single_tile(
-        self, grouped_items: xr.DataArray, **open_params
-    ) -> xr.Dataset:
-        # find tile closest to the given point
-        centers = np.zeros((2, grouped_items.sizes["tile_id"]))
-        for idx_tile_id in range(grouped_items.shape[1]):
-            item = np.sum(grouped_items.isel(tile_id=idx_tile_id).values)[0]
-            centers[0, idx_tile_id] = (item.bbox[0] + item.bbox[2]) / 2
-            centers[1, idx_tile_id] = (item.bbox[1] + item.bbox[3]) / 2
-        idx_min = np.argmin(
-            (centers[0] - open_params["point"][0]) ** 2
-            + (centers[1] - open_params["point"][1]) ** 2
-        )
-        grouped_items = grouped_items[:, [idx_min]]
-
-        # Open data and stack along time axis
-        tile_size = _get_tile_size(open_params)
-        open_item_open_params = {
-            "asset_names": open_params.get("asset_names"),
-            "spatial_res": open_params.get("spatial_res", 10),
-            "apply_scaling": open_params.get("apply_scaling", True),
-            "add_angles": False,
-            "tile_size": tile_size,
-        }
-        item_ref = np.sum(grouped_items.values)[0]
-        dss = []
-        idx_remove_dt = []
-        var_names = self._list_assets_names(item_ref, **open_item_open_params)
-        fill_value = np.nan
-        var_ref = var_names[0]
-        if var_names[0] == "SCL":
-            if len(var_names) == 1:
-                fill_value = 0
-            else:
-                fill_value = np.nan
-                var_ref = var_names[1]
-
-        for dt_idx, dt in enumerate(grouped_items.time.values):
-            items = grouped_items.isel(time=dt_idx, tile_id=0).item()
-            multi_tiles = []
-            for item in items:
-                ds = self.open_item(item, **open_item_open_params)
-                multi_tiles.append(ds)
-            if not multi_tiles:
-                idx_remove_dt.append(dt_idx)
-                continue
-            dss.append(mosaic_spatial_take_first(multi_tiles, var_ref, fill_value))
-        ds_final = xr.concat(dss, dim="time", join="override")
-        np_datetimes_sel = [
-            value
-            for idx, value in enumerate(grouped_items.time.values)
-            if idx not in idx_remove_dt
-        ]
-        ds_final = ds_final.assign_coords(coords={"time": np_datetimes_sel})
-
-        # clip dataset
-        crs_data = self._get_item_crs(item_ref)
-        t = pyproj.Transformer.from_crs("EPSG:4326", crs_data, always_xy=True)
-        point_data = t.transform(open_params["point"][0], open_params["point"][1])
-        bbox_width = open_params["bbox_width"] / 2
-        bbox_data = [
-            point_data[0] - bbox_width,
-            point_data[1] - bbox_width,
-            point_data[0] + bbox_width,
-            point_data[1] + bbox_width,
-        ]
-        ds_final = ds_final.sel(
-            x=slice(bbox_data[0], bbox_data[2]),
-            y=slice(bbox_data[3], bbox_data[1]),
-        )
-        ds_final = chunk_dataset(
-            ds_final,
-            chunk_sizes={"x": tile_size[0], "y": tile_size[1]},
-            format_name="zarr",
-        )
-
-        if open_params.get("add_angles", False):
-            ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
         return ds_final
 
     def _group_items(self, items: Sequence[pystac.Item]) -> xr.DataArray:
@@ -668,60 +596,44 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             A dataset containing mosaicked and stacked 3d datacubes
             (time, y, x) for all assets within the specified UTM zone.
         """
-        items_bbox = _get_bounding_box(grouped_items)
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
         spatial_res = _get_spatial_res(open_params)
+
+        final_bbox = (
+            final_bbox[0] - spatial_res,
+            final_bbox[1] - spatial_res,
+            final_bbox[2] + spatial_res,
+            final_bbox[3] + spatial_res,
+        )
+        tile_size = _get_tile_size(open_params)
         open_item_open_params = {
             "asset_names": open_params.get("asset_names"),
             "spatial_res": spatial_res,
             "apply_scaling": open_params.get("apply_scaling", True),
             "add_angles": False,
-            "tile_size": open_params.get("tile_size", TILE_SIZE),
+            "tile_size": tile_size,
         }
-        final_ds = None
 
-        var_names = self._list_assets_names(
-            np.sum(grouped_items.isel(time=0).values)[0], **open_item_open_params
-        )
-        fill_value = np.nan
-        var_ref = var_names[0]
-        if var_names[0] == "SCL":
-            if len(var_names) == 1:
-                fill_value = 0
-            else:
-                fill_value = np.nan
-                var_ref = var_names[1]
-
+        dss = []
+        idxs_dt = []
         for dt_idx, dt in enumerate(grouped_items.time.values):
-            for tile_id in grouped_items.tile_id.values:
-                items = grouped_items.sel(tile_id=tile_id, time=dt).item()
-                multi_tiles = []
-                for item in items:
-                    ds = self.open_item(item, **open_item_open_params)
-                    ds = ds.sel(
-                        x=slice(final_bbox[0], final_bbox[2]),
-                        y=slice(final_bbox[3], final_bbox[1]),
-                    )
-                    if any(size == 0 for size in ds.sizes.values()):
-                        continue
-                    multi_tiles.append(ds)
-                if not multi_tiles:
-                    continue
-                mosaicked_ds = mosaic_spatial_take_first(
-                    multi_tiles, var_ref, fill_value
-                )
-                if final_ds is None:
-                    final_ds = _create_empty_dataset(
-                        mosaicked_ds,
-                        grouped_items,
-                        items_bbox,
-                        final_bbox,
-                        spatial_res,
-                        tile_size=open_params.get("tile_size", TILE_SIZE),
-                    )
-                final_ds = _insert_tile_data(final_ds, mosaicked_ds, dt_idx)
+            items = np.sum(grouped_items.sel(time=dt).values)
+            dt_dss = []
+            for item in items:
+                dt_dss.append(self.open_item(item, **open_item_open_params))
+            if not dt_dss:
+                continue
+            elif len(dt_dss) == 1:
+                dt_ds = dt_dss[0]
+            else:
+                dt_ds = mosaic_datasets(dt_dss, fill_values={"SCL": 0})
+            dss.append(extend_dataset(dt_ds, final_bbox, tile_size=tile_size))
+            idxs_dt.append(dt_idx)
+        ds_final = xr.concat(dss, dim="time", join="outer")
+        ds_final = ds_final.assign_coords({"time": grouped_items.time[idxs_dt]})
+        ds_final = ds_final.reindex(time=grouped_items.time)
 
-        return final_ds
+        return ds_final
 
     def add_sen2_angles_stack(
         self,
@@ -749,7 +661,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         list_ds_tiles = []
         for tile_id in grouped_items.tile_id.values:
             list_ds_time = []
-            idx_remove_dt = []
+            idxs_dt = []
             for dt_idx, dt in enumerate(grouped_items.time.values):
                 items = grouped_items.sel(tile_id=tile_id, time=dt).item()
                 multi_tiles = []
@@ -757,7 +669,6 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                     ds = self.get_sen2_angles(item, ds_final)
                     multi_tiles.append(ds)
                 if not multi_tiles:
-                    idx_remove_dt.append(dt_idx)
                     continue
                 else:
                     var_ref = next(
@@ -769,13 +680,9 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                         multi_tiles, str(var_ref), np.nan
                     )
                     list_ds_time.append(ds_time)
+                    idxs_dt.append(dt_idx)
             ds_tile = xr.concat(list_ds_time, dim="time", join="override").chunk(-1)
-            np_datetimes_sel = [
-                value
-                for idx, value in enumerate(grouped_items.time.values)
-                if idx not in idx_remove_dt
-            ]
-            ds_tile = ds_tile.assign_coords(coords={"time": np_datetimes_sel})
+            ds_tile = ds_tile.assign_coords({"time": grouped_items.time[idxs_dt]})
             ds_tile = resample_in_space(
                 ds_tile,
                 target_gm=target_gm,
@@ -783,10 +690,7 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 prevent_nan_propagations=True,
             )
             ds_tile = ds_tile.chunk({"time": 1})
-            if len(idx_remove_dt) > 0:
-                ds_tile = _fill_nan_slices(
-                    ds_tile, grouped_items.time.values, idx_remove_dt
-                )
+            ds_tile = ds_tile.reindex(time=grouped_items.time)
             list_ds_tiles.append(ds_tile)
         var_ref = next(
             var_name for var_name in ds if var_name.startswith("viewing_angle")
@@ -1166,34 +1070,6 @@ def _add_angles(ds: xr.Dataset, ds_angles: xr.Dataset) -> xr.Dataset:
     return ds
 
 
-def _get_bounding_box(items: xr.DataArray) -> list[float | int]:
-    """Compute the overall bounding box that covers all tiles in the given access
-    parameters.
-
-    Iterates through each tile in `access_params` to extract the bounding box
-    from its metadata and calculates the minimum bounding rectangle encompassing all
-    tiles.
-
-    Parameters:
-        items: An array containing STAC items from which the native UTM bounding box
-            can be derived.
-
-    Returns:
-        A list with four elements [xmin, ymin, xmax, ymax] representing the
-        bounding box that encloses all tiles.
-    """
-    xmin, ymin, xmax, ymax = np.inf, np.inf, -np.inf, -np.inf
-    for tile_id in items.tile_id.values:
-        item = np.sum(items.sel(tile_id=tile_id).values)[0]
-        asset = next(iter(item.assets.values()))
-        bbox = asset.extra_fields["proj:bbox"]
-        xmin = min(xmin, bbox[0])
-        ymin = min(ymin, bbox[1])
-        xmax = max(xmax, bbox[2])
-        ymax = max(ymax, bbox[3])
-    return [xmin, ymin, xmax, ymax]
-
-
 def _get_spatial_res(open_params: dict) -> int:
     """Determine the appropriate Sentinel-2 spatial resolution based on the CRS.
 
@@ -1223,102 +1099,6 @@ def _get_spatial_res(open_params: dict) -> int:
         spatial_res = int(_SEN2_SPATIAL_RES[idxs[0]])
 
     return spatial_res
-
-
-def _create_empty_dataset(
-    sample_ds: xr.Dataset,
-    grouped_items: xr.DataArray,
-    items_bbox: list[float | int] | tuple[float | int],
-    final_bbox: list[float | int] | tuple[float | int],
-    spatial_res: float,
-    tile_size: int | tuple[int] | None = None,
-) -> xr.Dataset:
-    """Create an empty xarray Dataset with spatial and temporal dimensions matching
-    the given bounding boxes and grouped items.
-
-    The dataset is constructed using the data variables and types from `sample_ds`,
-    creating arrays filled with NaNs. It conforms to the native pixel grid and spatial
-    resolution of the Sentinel-2 product, while covering the spatial extent defined
-    by the input bounding boxes. The temporal dimension and coordinate values are
-    derived from `grouped_items`. The resulting dataset includes coordinates for
-    time, y, and x dimensions, along with a matching spatial reference coordinate
-    system.
-
-    Args:
-        sample_ds: A sample dataset whose data variable names and dtypes will be used.
-        grouped_items: A 2D DataArray (time, tile_id) containing grouped STAC items.
-        items_bbox: The bounding box covering all input items (minx, miny, maxx, maxy).
-        final_bbox: The target bounding box to define the spatial extent of the final
-            datacube (minx, miny, maxx, maxy).
-        spatial_res: The spatial resolution in CRS units (e.g., meters or degrees).
-        tile_size: Optional user defined spatial chunk size of final dataset
-
-    Returns:
-        A dataset with shape (time, y, x), filled with NaNs and ready to be populated
-        with mosaicked data.
-    """
-    half_res = spatial_res / 2
-    y_start = items_bbox[3] - spatial_res * (
-        (items_bbox[3] - final_bbox[3]) // spatial_res
-    )
-    y_end = items_bbox[1] + spatial_res * (
-        (final_bbox[1] - items_bbox[1]) // spatial_res
-    )
-    y = np.arange(y_start - half_res, y_end, -spatial_res)
-    x_end = items_bbox[2] - spatial_res * (
-        (items_bbox[2] - final_bbox[2]) // spatial_res
-    )
-    x_start = items_bbox[0] + spatial_res * (
-        (final_bbox[0] - items_bbox[0]) // spatial_res
-    )
-    x = np.arange(x_start + half_res, x_end, spatial_res)
-
-    if isinstance(tile_size, int):
-        tile_size = (tile_size, tile_size)
-    chunks = (1, tile_size[1], tile_size[0])
-    shape = (grouped_items.sizes["time"], len(y), len(x))
-    return xr.Dataset(
-        {
-            key: (
-                ("time", "y", "x"),
-                da.full(shape, np.nan, dtype=var.dtype, chunks=chunks),
-            )
-            for (key, var) in sample_ds.data_vars.items()
-        },
-        coords={
-            "x": x,
-            "y": y,
-            "time": grouped_items.time,
-            "spatial_ref": sample_ds.spatial_ref,
-        },
-    )
-
-
-def _insert_tile_data(final_ds: xr.Dataset, ds: xr.Dataset, dt_idx: int) -> xr.Dataset:
-    """Insert spatial data from a smaller dataset into a larger asset dataset at
-    the correct spatiotemporal indices.
-
-    This method locates the spatial coordinates of the input dataset `ds` within
-    the larger `final_ds` along the 'x' and 'y' dimensions, then inserts the data
-    from `ds` into the corresponding slice of `final_ds` for the specified time
-    index `dt_idx`.
-
-    Args:
-        final_ds: The larger dataset representing the final data cube for one UTM zone.
-        ds: The smaller xarray Dataset containing data to be inserted.
-        dt_idx: The time index in `final_ds` at which to insert the data.
-
-    Returns:
-        The updated `final_ds` with data from `ds` inserted at the appropriate
-        spatial location.
-    """
-    xmin = final_ds.indexes["x"].get_loc(ds.x[0].item())
-    xmax = final_ds.indexes["x"].get_loc(ds.x[-1].item())
-    ymin = final_ds.indexes["y"].get_loc(ds.y[0].item())
-    ymax = final_ds.indexes["y"].get_loc(ds.y[-1].item())
-    for var in ds.data_vars:
-        final_ds[var][dt_idx, ymin : ymax + 1, xmin : xmax + 1] = ds[var]
-    return final_ds
 
 
 def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
@@ -1397,64 +1177,3 @@ def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset
             var_ref = var_names[1]
 
     return mosaic_spatial_take_first(resampled_list_ds, var_ref, fill_value)
-
-
-def _fill_nan_slices(
-    ds: xr.Dataset, times: np.ndarray, idx_nan: list[int]
-) -> xr.Dataset:
-    """Insert NaN-filled time slices into a dataset at specified indices along
-    the time axis.
-
-    This function takes a dataset and a list of time indices (`idx_nan`) where
-    NaN-filled slices should be inserted. It constructs a dataset by
-    concatenating segments of the original dataset and NaN-filled slices such that
-    the resulting Dataset includes placeholders at the specified positions.
-
-    Parameters:
-        ds: The input dataset with a "time" dimension.
-        times: array of datetime-like values corresponding to the full time range,
-            including positions for NaNs.
-        idx_nan: Indices in `times` where NaN slices should be inserted.
-
-    Returns:
-        A new dataset with NaN-filled slices inserted at the specified indices,
-        maintaining alignment with `times`.
-    """
-    ds_nan = _create_nan_slice(ds)
-    list_ds = []
-    if idx_nan[0] > 0:
-        list_ds.append(ds.isel(time=slice(None, idx_nan[0])))
-    for i, idx in enumerate(idx_nan):
-        list_ds.append(ds_nan.assign_coords(coords={"time": [times[idx]]}))
-        if i < len(idx_nan) - 1:
-            list_ds.append(ds.isel(time=slice(idx - i, idx_nan[i + 1] - i - 1)))
-    if idx_nan[-1] < len(times) - 1:
-        list_ds.append(ds.isel(time=slice(idx_nan[-1] - (len(idx_nan) - 1), None)))
-    return xr.concat(list_ds, dim="time", join="override")
-
-
-def _create_nan_slice(ds: xr.Dataset) -> xr.Dataset:
-    """Create a NaN-filled slice of the input dataset for a single time step.
-
-    This function generates a new dataset with the same structure, dimensions,
-    coordinates, and attributes as the first time step of the input dataset,
-    but replaces all data values with NaNs. This is useful for inserting placeholder
-    time steps into time-series datasets.
-
-    Parameters:
-        ds: The input dataset with a "time" dimension.
-
-    Returns:
-        A dataset with one time step where all variable values are NaN,
-        matching the shape and metadata of the original dataset.
-    """
-    nan_ds = xr.Dataset()
-    for var_name, array in ds.data_vars.items():
-        array = array.isel(time=slice(0, 1))
-        nan_data = da.full(
-            array.shape, np.nan, dtype=array.dtype, chunks=array.data.chunksize
-        )
-        nan_ds[var_name] = xr.DataArray(
-            nan_data, dims=array.dims, coords=array.coords, attrs=array.attrs
-        )
-    return nan_ds
