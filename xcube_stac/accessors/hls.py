@@ -24,7 +24,6 @@ from collections.abc import Sequence
 
 import numpy as np
 import planetary_computer
-import pyproj
 import pystac
 import rioxarray
 import xarray as xr
@@ -34,7 +33,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
-from xcube_resampling import resample_in_space
+from xcube_resampling import resample_in_space, extend_dataset, mosaic_datasets
 from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
@@ -48,10 +47,11 @@ from xcube_stac.constants import (
     SCHEMA_TIME_RANGE,
 )
 from xcube_stac.utils import (
+    _get_tile_size,
     _remove_fill_value_encoding,
+    _merge_utm_zones,
     add_attributes,
     add_nominal_datetime,
-    mosaic_spatial_take_first,
     rename_dataset,
 )
 from xcube_stac.version import version
@@ -310,6 +310,11 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
 
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
+        ds["time"].encoding = {
+            "units": "days since 1970-01-01T00:00:00",
+            "calendar": "standard",
+            "dtype": "float32",
+        }
 
         ds.attrs.pop("stac_item_id", None)
         ds = add_attributes(
@@ -372,22 +377,8 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         # Reproject datasets from different UTM zones to a common grid reference system
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
-
-        crs = pyproj.CRS.from_cf(ds_final.spatial_ref.attrs)
-        if crs.to_dict().get("proj") == "utm":
-            ds_final = _extend_to_bbox(ds_final, open_params["bbox"])
-
-        for key, fill_value in self._fill_values.items():
-            if key in ds_final:
-                ds_final[key] = (
-                    ds_final[key].fillna(fill_value).astype(self._dtypes[key])
-                )
-
-        ds_final["time"].encoding = {
-            "units": "days since 1970-01-01T00:00:00",
-            "calendar": "standard",
-            "dtype": "float32",
-        }
+        tile_size = _get_tile_size(open_params)
+        ds_final = extend_dataset(ds_final, open_params["bbox"], tile_size=tile_size)
 
         return ds_final
 
@@ -482,52 +473,35 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
             (time, y, x) for all assets within the specified UTM zone.
         """
         final_bbox = reproject_bbox(open_params["bbox"], open_params["crs"], crs_utm)
+        final_bbox = (
+            final_bbox[0] - _SPATIAL_RES,
+            final_bbox[1] - _SPATIAL_RES,
+            final_bbox[2] + _SPATIAL_RES,
+            final_bbox[3] + _SPATIAL_RES,
+        )
         open_item_open_params = {
             "asset_names": open_params.get("asset_names", self._asset_names_default),
             "apply_scaling": open_params.get("apply_scaling", True),
         }
-        var_names = open_params.get("asset_names", [self._asset_names_default])
 
         dss = []
         idxs_dt = []
-        ds_ref = None
         for dt_idx, dt in enumerate(grouped_items.time.values):
-            dss_dt = []
-            for tile_id in grouped_items.tile_id.values:
-                items = grouped_items.sel(tile_id=tile_id, time=dt).item()
-                multi_tiles = []
-                for item in items:
-                    ds = self.open_item(item, **open_item_open_params)
-                    if ds_ref is None:
-                        ds_ref = ds.copy()
-                    for key, fill_value in self._fill_values.items():
-                        if key in ds:
-                            ds[key] = (
-                                ds[key].where(ds[key] != fill_value).astype(np.float32)
-                            )
-                    multi_tiles.append(ds)
-                if not multi_tiles:
-                    continue
-                dss_dt.append(
-                    mosaic_spatial_take_first(multi_tiles, var_names[0], np.nan)
-                )
-            if not dss_dt:
+            items = np.sum(grouped_items.sel(time=dt).values)
+            dt_dss = []
+            for item in items:
+                dt_dss.append(self.open_item(item, **open_item_open_params))
+            if not dt_dss:
                 continue
-
-            # apply mosiacking in spatial domain
-            mosaic = dss_dt[-1]
-            for ds in reversed(dss_dt[:-1]):
-                mosaic = ds.combine_first(mosaic)
-            dss.append(mosaic)
+            elif len(dt_dss) == 1:
+                dt_ds = dt_dss[0]
+            else:
+                dt_ds = mosaic_datasets(dt_dss, fill_values=self._fill_values)
+            dss.append(extend_dataset(dt_ds, final_bbox))
             idxs_dt.append(dt_idx)
 
         ds_final = xr.concat(dss, dim="time", join="outer")
         ds_final = ds_final.assign_coords({"time": grouped_items.time[idxs_dt]})
-        ds_final = ds_final.sortby("y", ascending=False)
-        ds_final = ds_final.sel(
-            x=slice(final_bbox[0], final_bbox[2]),
-            y=slice(final_bbox[3], final_bbox[1]),
-        )
         ds_final = ds_final.reindex(time=grouped_items.time)
 
         return ds_final
@@ -576,126 +550,3 @@ def fix_utm_hemisphere(items: Sequence[pystac.Item]) -> Sequence[pystac.Item]:
             item.properties["proj:code"] = f"EPSG:{correct_epsg}"
 
     return items
-
-
-def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
-    """Merge multiple Sentinel-2 datacubes for different UTM zones into a
-    single dataset.
-
-    This function takes a list of Sentinel-2 datasets (each in a different UTM zone),
-    resamples them to a common grid defined by a target CRS and spatial resolution,
-    and mosaics them into a single output using a "take first" strategy for overlaps.
-
-    Parameters:
-        list_ds_utm: A list of xarray Datasets, one for each UTM zone.
-        open_params: Dictionary of parameters required for constructing the target grid,
-            including:
-            - crs: Target coordinate reference system (string or EPSG code).
-            - spatial_res: Spatial resolution as a single value or tuple (x_res, y_res).
-            - bbox: Bounding box for the output grid (minx, miny, maxx, maxy).
-
-    Returns:
-        A single xarray Dataset reprojected to the target CRS and resolution,
-        containing merged data from all input UTM zones.
-
-    Notes:
-        - If one input dataset already matches the target CRS and resolution,
-          its grid mapping is reused unless resolution mismatches are found.
-        - Overlapping regions are resolved by selecting the first non-NaN value.
-    """
-    tile_size = open_params.get("tile_size", (_CHUNK_SIZE["x"], _CHUNK_SIZE["y"]))
-    # get correct target gridmapping
-    crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
-    target_crs = pyproj.CRS.from_string(open_params["crs"])
-    crss_equal = [target_crs == crs for crs in crss]
-    if any(crss_equal):
-        true_index = crss_equal.index(True)
-        ds = list_ds_utm[true_index]
-        target_gm = GridMapping.from_dataset(ds)
-        spatial_res = open_params["spatial_res"]
-        if not isinstance(spatial_res, tuple):
-            spatial_res = (spatial_res, spatial_res)
-        if (
-            ds.x[1] - ds.x[0] != spatial_res[0]
-            or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
-        ):
-            target_gm = GridMapping.regular_from_bbox(
-                open_params["bbox"],
-                open_params["spatial_res"],
-                open_params["crs"],
-                tile_size=tile_size,
-            )
-    else:
-        target_gm = GridMapping.regular_from_bbox(
-            open_params["bbox"],
-            open_params["spatial_res"],
-            open_params["crs"],
-            tile_size=tile_size,
-        )
-
-    resampled_list_ds = []
-    for ds in list_ds_utm:
-        resampled_list_ds.append(
-            resample_in_space(
-                ds,
-                target_gm=target_gm,
-                prevent_nan_propagations=True,
-            )
-        )
-
-    var_names = list(resampled_list_ds[0].keys())
-    ds_final = mosaic_spatial_take_first(resampled_list_ds, var_names[0], np.nan)
-    x_dim, y_dim = target_gm.xy_var_names
-    if isinstance(tile_size, int):
-        tile_size = (tile_size, tile_size)
-    ds_final = ds_final.chunk({x_dim: tile_size[0], y_dim: tile_size[1], "time": 1})
-    return ds_final
-
-
-def _extend_to_bbox(
-    ds: xr.Dataset,
-    bbox: tuple[float, float, float, float],
-) -> xr.Dataset:
-    """Extend a dataset to cover the requested bounding box.
-
-    The dataset is assumed to have regular ``x`` and ``y`` coordinates.
-    The requested bounding box may differ from the dataset extent by less
-    than one pixel. Missing pixels are padded with NaN.
-
-    Args:
-        ds: Dataset with ``x`` and ``y`` coordinates in the target CRS.
-        bbox: Bounding box ``(xmin, ymin, xmax, ymax)`` in the same CRS.
-
-    Returns:
-        Dataset extended to cover ``bbox``.
-    """
-    xmin, ymin, xmax, ymax = bbox
-
-    x = ds.x.values
-    y = ds.y.values
-
-    if x.size < 2 or y.size < 2:
-        return ds
-
-    x_res = abs(x[1] - x[0])
-    y_res = abs(y[1] - y[0])
-
-    # Check whether the dataset already covers the requested bbox.
-    needs_xmin = xmin < x[0] - x_res
-    needs_xmax = xmax > x[-1] + x_res
-    needs_ymin = ymin < y[-1] - y_res
-    needs_ymax = ymax > y[0] + y_res
-
-    if not any((needs_xmin, needs_xmax, needs_ymin, needs_ymax)):
-        return ds
-
-    # Build the target coordinate vectors by extending the existing ones
-    x_start = x[0] - x_res * ((x[0] - xmin) // x_res)
-    x_end = x[-1] + x_res * ((xmax - x[-1]) // x_res)
-    y_start = y[0] + y_res * ((ymax - y[0]) // y_res)
-    y_end = y[-1] - y_res * ((y[-1] - ymin) // y_res)
-
-    new_x = np.arange(x_start, x_end + (x_res / 2), x_res)
-    new_y = np.arange(y_start, y_end - (y_res / 2), -y_res)
-
-    return ds.reindex(x=new_x, y=new_y)

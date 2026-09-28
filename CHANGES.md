@@ -1,3 +1,5 @@
+## Changes in 1.4.5 (in development)
+
 ## Changes in 1.4.4
 
 - Fixed a bug in the mosaicking of Planetary Computer Landsat Collection 2 Level-2 

@@ -25,7 +25,6 @@ from collections import defaultdict
 from collections.abc import Sequence
 
 import boto3
-import dask.array as da
 import numpy as np
 import planetary_computer
 import pyproj
@@ -34,7 +33,6 @@ import requests
 import rioxarray
 import xarray as xr
 import xmltodict
-from xcube.core.chunk import chunk_dataset
 from xcube.core.store import DataStoreError
 from xcube.util.jsonschema import (
     JsonArraySchema,
@@ -67,6 +65,7 @@ from xcube_stac.utils import (
     add_attributes,
     add_nominal_datetime,
     merge_datasets,
+    _merge_utm_zones,
     mosaic_spatial_take_first,
     normalize_crs,
     rename_dataset,
@@ -154,6 +153,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             "tile_id": "grid:code",
             "processing_version": "processing:version",
         }
+        self._fill_values = {"SCL": 0}
 
     @staticmethod
     # noinspection PyUnusedLocal
@@ -268,8 +268,8 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
                 asset_names = _SENTINEL2_BANDS
         return asset_names
 
-    @staticmethod
     def _combiner_function(
+        self,
         dss: Sequence[xr.Dataset],
         item: pystac.Item,
         catalog: pystac.Catalog,
@@ -295,7 +295,7 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             target_gm = GridMapping.regular_from_bbox(
                 bbox=assets[0].extra_fields["proj:bbox"],
                 xy_res=open_params["spatial_res"],
-                crs=assets[0].extra_fields["proj:code"],
+                crs=self._get_item_crs(item),
                 tile_size=open_params.get("tile_size", TILE_SIZE),
             )
             ds = merge_datasets(dss, target_gm=target_gm, fill_values={"SCL": 0})
@@ -397,6 +397,20 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 + (centers[1] - open_params["point"][1]) ** 2
             )
             grouped_items = grouped_items[:, [idx_min]]
+            open_params["spatial_res"] = open_params.get("spatial_res", 10)
+            item = np.sum(grouped_items.values)[0]
+            open_params["crs"] = self._get_item_crs(item)
+            t = pyproj.Transformer.from_crs(
+                "EPSG:4326", open_params["crs"], always_xy=True
+            )
+            point_data = t.transform(open_params["point"][0], open_params["point"][1])
+            bbox_width = open_params["bbox_width"] / 2
+            open_params["bbox"] = [
+                point_data[0] - bbox_width,
+                point_data[1] - bbox_width,
+                point_data[0] + bbox_width,
+                point_data[1] + bbox_width,
+            ]
         # apply mosaicking and stacking
         ds = self._generate_cube(grouped_items, **open_params)
         ds["time"].encoding = {
@@ -483,6 +497,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
         # Reproject datasets from different UTM zones to a common grid reference system
         # and merge them into a single unified dataset for seamless spatial analysis.
         ds_final = _merge_utm_zones(list_ds_utm, **open_params)
+        tile_size = _get_tile_size(open_params)
+        ds_final = extend_dataset(ds_final, open_params["bbox"], tile_size=tile_size)
 
         if open_params.get("add_angles", False):
             ds_final = self.add_sen2_angles_stack(ds_final, grouped_items)
@@ -605,13 +621,11 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             final_bbox[2] + spatial_res,
             final_bbox[3] + spatial_res,
         )
-        tile_size = _get_tile_size(open_params)
         open_item_open_params = {
             "asset_names": open_params.get("asset_names"),
             "spatial_res": spatial_res,
             "apply_scaling": open_params.get("apply_scaling", True),
             "add_angles": False,
-            "tile_size": tile_size,
         }
 
         dss = []
@@ -626,8 +640,8 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             elif len(dt_dss) == 1:
                 dt_ds = dt_dss[0]
             else:
-                dt_ds = mosaic_datasets(dt_dss, fill_values={"SCL": 0})
-            dss.append(extend_dataset(dt_ds, final_bbox, tile_size=tile_size))
+                dt_ds = mosaic_datasets(dt_dss, fill_values=self._fill_values)
+            dss.append(extend_dataset(dt_ds, final_bbox))
             idxs_dt.append(dt_idx)
         ds_final = xr.concat(dss, dim="time", join="outer")
         ds_final = ds_final.assign_coords({"time": grouped_items.time[idxs_dt]})
@@ -671,15 +685,9 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
                 if not multi_tiles:
                     continue
                 else:
-                    var_ref = next(
-                        var_name
-                        for var_name in ds
-                        if var_name.startswith("viewing_angle")
+                    list_ds_time.append(
+                        mosaic_datasets(multi_tiles, x_dim="x", y_dim="y")
                     )
-                    ds_time = mosaic_spatial_take_first(
-                        multi_tiles, str(var_ref), np.nan
-                    )
-                    list_ds_time.append(ds_time)
                     idxs_dt.append(dt_idx)
             ds_tile = xr.concat(list_ds_time, dim="time", join="override").chunk(-1)
             ds_tile = ds_tile.assign_coords({"time": grouped_items.time[idxs_dt]})
@@ -692,10 +700,11 @@ class Sen2CdseStacArdcAccessor(Sen2CdseStacItemAccessor, StacArdcAccessor):
             ds_tile = ds_tile.chunk({"time": 1})
             ds_tile = ds_tile.reindex(time=grouped_items.time)
             list_ds_tiles.append(ds_tile)
-        var_ref = next(
-            var_name for var_name in ds if var_name.startswith("viewing_angle")
+        ds_angles = mosaic_datasets(
+            list_ds_tiles,
+            x_dim=target_gm.xy_var_names[0],
+            y_dim=target_gm.xy_var_names[1],
         )
-        ds_angles = mosaic_spatial_take_first(list_ds_tiles, str(var_ref), np.nan)
         ds_final = _add_angles(ds_final, ds_angles)
         return ds_final
 
@@ -711,6 +720,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             "tile_id": "s2:mgrs_tile",
             "processing_version": "s2:processing_baseline",
         }
+        self._fill_values = {"SCL": 0}
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset:
         if not self._is_pc_signed(item):
@@ -1099,81 +1109,3 @@ def _get_spatial_res(open_params: dict) -> int:
         spatial_res = int(_SEN2_SPATIAL_RES[idxs[0]])
 
     return spatial_res
-
-
-def _merge_utm_zones(list_ds_utm: list[xr.Dataset], **open_params) -> xr.Dataset:
-    """Merge multiple Sentinel-2 datacubes for different UTM zones into a
-    single dataset.
-
-    This function takes a list of Sentinel-2 datasets (each in a different UTM zone),
-    resamples them to a common grid defined by a target CRS and spatial resolution,
-    and mosaics them into a single output using a "take first" strategy for overlaps.
-
-    Parameters:
-        list_ds_utm: A list of xarray Datasets, one for each UTM zone.
-        open_params: Dictionary of parameters required for constructing the target grid,
-            including:
-            - crs: Target coordinate reference system (string or EPSG code).
-            - spatial_res: Spatial resolution as a single value or tuple (x_res, y_res).
-            - bbox: Bounding box for the output grid (minx, miny, maxx, maxy).
-
-    Returns:
-        A single xarray Dataset reprojected to the target CRS and resolution,
-        containing merged data from all input UTM zones.
-
-    Notes:
-        - If one input dataset already matches the target CRS and resolution,
-          its grid mapping is reused unless resolution mismatches are found.
-        - Overlapping regions are resolved by selecting the first non-NaN value.
-    """
-    # get correct target gridmapping
-    crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in list_ds_utm]
-    target_crs = pyproj.CRS.from_string(open_params["crs"])
-    crss_equal = [target_crs == crs for crs in crss]
-    if any(crss_equal):
-        true_index = crss_equal.index(True)
-        ds = list_ds_utm[true_index]
-        target_gm = GridMapping.from_dataset(ds)
-        spatial_res = open_params["spatial_res"]
-        if not isinstance(spatial_res, tuple):
-            spatial_res = (spatial_res, spatial_res)
-        if (
-            ds.x[1] - ds.x[0] != spatial_res[0]
-            or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
-        ):
-            target_gm = GridMapping.regular_from_bbox(
-                open_params["bbox"],
-                open_params["spatial_res"],
-                open_params["crs"],
-                tile_size=open_params.get("tile_size", TILE_SIZE),
-            )
-    else:
-        target_gm = GridMapping.regular_from_bbox(
-            open_params["bbox"],
-            open_params["spatial_res"],
-            open_params["crs"],
-            tile_size=open_params.get("tile_size", TILE_SIZE),
-        )
-
-    resampled_list_ds = []
-    for ds in list_ds_utm:
-        resampled_list_ds.append(
-            resample_in_space(
-                ds,
-                target_gm=target_gm,
-                fill_values={"SCL": 0},
-                prevent_nan_propagations=True,
-            )
-        )
-
-    var_names = list(resampled_list_ds[0].keys())
-    fill_value = np.nan
-    var_ref = var_names[0]
-    if var_names[0] == "SCL":
-        if len(var_names) == 1:
-            fill_value = 0
-        else:
-            fill_value = np.nan
-            var_ref = var_names[1]
-
-    return mosaic_spatial_take_first(resampled_list_ds, var_ref, fill_value)

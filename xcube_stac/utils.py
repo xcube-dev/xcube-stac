@@ -40,7 +40,11 @@ import xarray as xr
 from scipy.interpolate import RBFInterpolator
 from shapely.geometry import box
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
-from xcube_resampling import affine_transform_dataset
+from xcube_resampling import (
+    affine_transform_dataset,
+    mosaic_datasets,
+    resample_in_space,
+)
 from xcube_resampling.constants import FillValues
 from xcube_resampling.gridmapping import GridMapping
 
@@ -703,6 +707,87 @@ def merge_datasets(
             )
         ds = _update_datasets(datasets_resampled)
     return ds
+
+
+def _merge_utm_zones(
+    dss: list[xr.Dataset],
+    fill_values: FillValues | None = None,
+    **open_params,
+) -> xr.Dataset:
+    """Merge multiple datacubes for different UTM zones into a single dataset.
+
+    This function takes a list of datasets (each in a different UTM zone),
+    resamples them to a common grid defined by a target CRS and spatial resolution,
+    and mosaics them into a single output using a "take first" strategy for overlaps.
+
+    Parameters:
+        dss: A list of xarray Datasets, one for each UTM zone.
+        fill_values: Optional fill value(s). This will be propagated to
+            [xcube_resampling.mosaic_datasets](https://xcube-dev.github.io/xcube-resampling/api/#xcube_resampling.mosaic_datasets)
+        open_params: Dictionary of parameters required for constructing the target grid,
+            including:
+            - crs: Target coordinate reference system (string or EPSG code).
+            - spatial_res: Spatial resolution as a single value or tuple (x_res, y_res).
+            - bbox: Bounding box for the output grid (minx, miny, maxx, maxy).
+
+    Returns:
+        A single xarray Dataset reprojected to the target CRS and resolution,
+        containing merged data from all input UTM zones.
+
+    Notes:
+        - If one input dataset already matches the target CRS and resolution,
+          its grid mapping is reused unless resolution mismatches are found.
+        - Overlapping regions are resolved by selecting the first non-NaN value.
+    """
+    tile_size = _get_tile_size(open_params)
+    # get correct target gridmapping
+    crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in dss]
+    target_crs = pyproj.CRS.from_string(open_params["crs"])
+    crss_equal = [target_crs == crs for crs in crss]
+    if any(crss_equal):
+        true_index = crss_equal.index(True)
+        ds = dss[true_index]
+        target_gm = GridMapping.from_dataset(ds)
+        spatial_res = open_params["spatial_res"]
+        if not isinstance(spatial_res, tuple):
+            spatial_res = (spatial_res, spatial_res)
+        if (
+            ds.x[1] - ds.x[0] != spatial_res[0]
+            or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
+        ):
+            target_gm = GridMapping.regular_from_bbox(
+                open_params["bbox"],
+                open_params["spatial_res"],
+                open_params["crs"],
+                tile_size=tile_size,
+            )
+    else:
+        target_gm = GridMapping.regular_from_bbox(
+            open_params["bbox"],
+            open_params["spatial_res"],
+            open_params["crs"],
+            tile_size=tile_size,
+        )
+
+    resampled_list_ds = []
+    for ds in dss:
+        resampled_list_ds.append(
+            resample_in_space(
+                ds,
+                target_gm=target_gm,
+                prevent_nan_propagations=True,
+            )
+        )
+
+    if len(resampled_list_ds) == 1:
+        return resampled_list_ds[0]
+    else:
+        return mosaic_datasets(
+            resampled_list_ds,
+            x_dim=target_gm.xy_var_names[0],
+            y_dim=target_gm.xy_var_names[1],
+            fill_values=fill_values,
+        )
 
 
 def _get_tile_size(open_params: dict) -> tuple[int, int]:
