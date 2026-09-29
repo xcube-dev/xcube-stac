@@ -619,7 +619,7 @@ class UtilsTest(unittest.TestCase):
 
         with self.assertRaises(DataStoreError) as cm:
             access_collection(url, catalog)
-        self.assertIn("Failed to parse SATC collection JSON", str(cm.exception))
+        self.assertIn("Failed to parse STAC collection", str(cm.exception))
 
     def test_rename_dataset(self):
         ds = xr.Dataset(

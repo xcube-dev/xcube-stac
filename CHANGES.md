@@ -1,8 +1,9 @@
 ## Changes in 1.4.5 (in development)
 
-- Uses the functions `xcube_resampling.mosiac_datasets` and `xcube_resampling.extend_dataset`
-  in the ARDC processing from individual tiles to 3d datacubes for Sentinel-2
-  Harmonized Landsat Sentinel-2 and Landsat. 
+- Use `xcube_resampling.mosaic_datasets` and `xcube_resampling.extend_dataset` 
+  in the ARDC processing workflow to create 3D data cubes from individual
+  tiles for Sentinel-2, Harmonized Landsat Sentinel-2, and Landsat.
+
 
 ## Changes in 1.4.4
 

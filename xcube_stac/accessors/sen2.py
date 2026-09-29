@@ -257,16 +257,6 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             )
         return assets_sel
 
-    @staticmethod
-    def _list_assets_names(item: pystac.Item, **open_params) -> list[str]:
-        asset_names = open_params.get("asset_names")
-        if not asset_names:
-            if item.collection_id == "sentinel-2-l2a":
-                asset_names = _SENTINEL2_L2A_BANDS
-            elif item.collection_id == "sentinel-2-l1c":
-                asset_names = _SENTINEL2_BANDS
-        return asset_names
-
     def _combiner_function(
         self,
         dss: Sequence[xr.Dataset],

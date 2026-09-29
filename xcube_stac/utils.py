@@ -546,7 +546,7 @@ def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
             preserve_dict=False,
         )
     except (json.JSONDecodeError, pystac.STACError) as e:
-        raise DataStoreError(f"Failed to parse SATC collection at {url}: {e}") from e
+        raise DataStoreError(f"Failed to parse STAC collection at {url}: {e}") from e
 
 
 def is_mldataset_available(
