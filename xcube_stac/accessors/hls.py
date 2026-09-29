@@ -24,6 +24,7 @@ from collections.abc import Sequence
 
 import numpy as np
 import planetary_computer
+import pyproj
 import pystac
 import rioxarray
 import xarray as xr
@@ -33,7 +34,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
-from xcube_resampling import resample_in_space, extend_dataset, mosaic_datasets
+from xcube_resampling import extend_dataset, mosaic_datasets, resample_in_space
 from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
@@ -48,8 +49,8 @@ from xcube_stac.constants import (
 )
 from xcube_stac.utils import (
     _get_tile_size,
-    _remove_fill_value_encoding,
     _merge_utm_zones,
+    _remove_integer_encoding,
     add_attributes,
     add_nominal_datetime,
     rename_dataset,
@@ -228,7 +229,19 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             xcube_stac_version=version,
         )
         # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_fill_value_encoding(ds)
+        ds = _remove_integer_encoding(ds)
+
+        # Normalize CRS, using the item projection metadata when the asset has
+        # incomplete or non-EPSG CF metadata.
+        try:
+            crs = pyproj.CRS.from_cf(ds["spatial_ref"].attrs)
+        except pyproj.exceptions.CRSError:
+            crs = None
+        if crs is None or crs.to_epsg() is None:
+            item_crs = self._get_item_crs(item)
+            if item_crs is not None:
+                crs = pyproj.CRS.from_user_input(item_crs)
+                ds["spatial_ref"].attrs.update(crs.to_cf())
 
         # resample dataset if requested
         crs = open_params.get("crs")
@@ -274,6 +287,11 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
         ds[var] *= attrs["scale_factor"]
         ds[var] += attrs["add_offset"]
         return ds
+
+    @staticmethod
+    def _get_item_crs(item: pystac.Item) -> str | None:
+        crs = item.properties.get("proj:epsg", item.properties.get("proj:code"))
+        return f"EPSG:{crs}" if isinstance(crs, int) else crs
 
 
 class LandsatHlsStacItemAccessor(Sen2HlsStacItemAccessor):
@@ -361,9 +379,7 @@ class Sen2HlsStacArdcAccessor(Sen2HlsStacItemAccessor, StacArdcAccessor):
         utm_tile_id = defaultdict(list)
         for tile_id in grouped_items.tile_id.values:
             item = np.sum(grouped_items.sel(tile_id=tile_id).values)[0]
-            crs = item.properties.get("proj:epsg", item.properties.get("proj:code"))
-            if isinstance(crs, int):
-                crs = f"EPSG:{crs}"
+            crs = self._get_item_crs(item)
             utm_tile_id[crs].append(tile_id)
 
         # Insert the tile data per UTM zone

@@ -29,7 +29,6 @@ import time
 from collections.abc import Container, Iterator, Sequence
 from typing import Any
 
-import dask.array as da
 import numpy as np
 import pandas as pd
 import pyproj
@@ -546,8 +545,8 @@ def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
             root=catalog,
             preserve_dict=False,
         )
-    except Exception as e:
-        raise DataStoreError(f"Failed to parse SATC collection JSON at {url}: {e}")
+    except (json.JSONDecodeError, pystac.STACError) as e:
+        raise DataStoreError(f"Failed to parse SATC collection at {url}: {e}") from e
 
 
 def is_mldataset_available(
@@ -804,52 +803,6 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     return ds
 
 
-def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], var_ref: str, fill_value: float
-) -> xr.Dataset:
-    """Creates a spatial mosaic from a list of datasets by taking the first
-    non-fill value encountered across datasets at each pixel location.
-
-    The function assumes all datasets share the same spatial dimensions and coordinate
-    system. Only variables with 2D spatial dimensions are processed. At each
-    spatial location, the first non-fill (or non-NaN) value across the dataset stack
-    is selected.
-
-    Args:
-        list_ds: A list of datasets to be mosaicked.
-        var_ref: reference variable used for the index selection
-        fill_value: The value considered as missing data in the reference variable
-
-    Returns:
-        A new dataset representing the mosaicked result, using the first valid
-        value encountered across the input datasets for each spatial position.
-    """
-    if len(list_ds) == 1:
-        return list_ds[0]
-
-    arr_ref = da.stack([ds[var_ref].data for ds in list_ds], axis=0)
-    if np.isnan(fill_value):
-        nonnan_mask = ~da.isnan(arr_ref)
-    else:
-        nonnan_mask = arr_ref != fill_value
-    first_non_nan_index = nonnan_mask.argmax(axis=0)
-
-    ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
-    for key in list_ds[0]:
-        # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
-        if list_ds[0][key].ndim >= 2:
-            da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            da_arr_select = da.choose(first_non_nan_index, da_arr)
-            ds_mosaic[key] = xr.DataArray(
-                da_arr_select,
-                dims=list_ds[0][key].dims,
-                coords=list_ds[0][key].coords,
-                attrs=list_ds[0][key].attrs,
-            )
-
-    return ds_mosaic
-
-
 def build_footprint_uv_mapping(
     points: np.ndarray,
     orbit_state: str,
@@ -1060,15 +1013,17 @@ def make_json_serializable(obj: Any) -> Any:
     return obj
 
 
-def _remove_fill_value_encoding(ds: xr.Dataset) -> xr.Dataset:
-    """Remove _FillValue from integer variables.
+def _remove_integer_encoding(ds: xr.Dataset) -> xr.Dataset:
+    """Remove fill-value and packing metadata from integer variables.
 
-    Integer variables with a _FillValue can be decoded as floating-point
-    arrays when the dataset is written to and subsequently read from Zarr.
+    Removes `_FillValue`, `scale_factor`, and `add_offset` from integer
+    variables to prevent them from being encoded as packed floating-point
+    data when the dataset is written to and subsequently read from Zarr.
     """
     for variable in ds.variables.values():
         if np.issubdtype(variable.dtype, np.integer):
-            variable.encoding.pop("_FillValue", None)
-            variable.attrs.pop("_FillValue", None)
+            for key in ("_FillValue", "scale_factor", "add_offset"):
+                variable.encoding.pop(key, None)
+                variable.attrs.pop(key, None)
 
     return ds

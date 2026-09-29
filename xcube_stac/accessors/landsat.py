@@ -32,7 +32,7 @@ from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
 from xcube_stac.stac_extension.raster import apply_offset_scaling
 from xcube_stac.utils import (
-    _remove_fill_value_encoding,
+    _remove_integer_encoding,
     add_attributes,
     add_nominal_datetime,
     rename_dataset,
@@ -110,9 +110,8 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
                 array = add_stac_asset_attributes(ds[name], asset)
                 if name == "lwir11":
                     array.attrs["units"] = "K"
-                if apply_scaling:
-                    if "qa" not in name:
-                        array = apply_offset_scaling(array, asset, "v1")
+                if apply_scaling and "qa_" not in name:
+                    array = apply_offset_scaling(array, asset, "v1")
                 ds[name] = array
         ds.attrs.update(
             stac_url=catalog.get_self_href(),
@@ -121,7 +120,7 @@ class LandsatC2L2StacItemAccessor(Sen2HlsStacItemAccessor):
         )
 
         # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_fill_value_encoding(ds)
+        ds = _remove_integer_encoding(ds)
 
         # resample dataset if requested
         crs = open_params.get("crs")
@@ -229,10 +228,7 @@ class LandsatC2L2StacArdcAccessor(LandsatC2L2StacItemAccessor, Sen2HlsStacArdcAc
         return grouped_items
 
 
-def add_stac_asset_attributes(
-    da: xr.DataArray,
-    asset: pystac.Asset,
-) -> xr.DataArray:
+def add_stac_asset_attributes(da: xr.DataArray, asset: pystac.Asset) -> xr.DataArray:
     """Add CF-style metadata from a STAC asset to an xarray DataArray."""
     attrs = da.attrs
 

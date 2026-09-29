@@ -42,7 +42,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
-from xcube_resampling import resample_in_space, mosaic_datasets, extend_dataset
+from xcube_resampling import extend_dataset, mosaic_datasets, resample_in_space
 from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox
 
@@ -61,12 +61,11 @@ from xcube_stac.constants import (
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
     _get_tile_size,
-    _remove_fill_value_encoding,
+    _merge_utm_zones,
+    _remove_integer_encoding,
     add_attributes,
     add_nominal_datetime,
     merge_datasets,
-    _merge_utm_zones,
-    mosaic_spatial_take_first,
     normalize_crs,
     rename_dataset,
 )
@@ -308,10 +307,11 @@ class Sen2CdseStacItemAccessor(StacItemAccessor):
             xcube_stac_version=version,
         )
         # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_fill_value_encoding(ds)
+        ds = _remove_integer_encoding(ds)
         return ds
 
-    def _get_item_crs(self, item: pystac.Item) -> str | None:
+    @staticmethod
+    def _get_item_crs(item: pystac.Item) -> str | None:
         asset = next(iter(item.assets.values()))
         crs = asset.extra_fields.get("proj:code", asset.extra_fields.get("proj:epsg"))
         if crs is None:
@@ -768,7 +768,7 @@ class Sen2PlanetaryComputerStacItemAccessor(Sen2CdseStacItemAccessor):
             xcube_stac_version=version,
         )
         # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_fill_value_encoding(ds)
+        ds = _remove_integer_encoding(ds)
         return ds
 
     @staticmethod

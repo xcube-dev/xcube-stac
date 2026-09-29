@@ -296,7 +296,10 @@ class LandsatC2L2StacItemAccessorTest(unittest.TestCase):
         self.assertEqual(result.attrs["full_width_half_max"], 0.03)
         self.assertEqual(result.attrs["flag_masks"], [3, 3, 4])
         self.assertEqual(result.attrs["flag_values"], [0, 1, 4])
-        self.assertEqual(result.attrs["flag_meanings"], "QA_PIXEL_clear QA_PIXEL_cloud QA_PIXEL_water")
+        self.assertEqual(
+            result.attrs["flag_meanings"],
+            "QA_PIXEL_clear QA_PIXEL_cloud QA_PIXEL_water",
+        )
 
     def test_add_stac_asset_attributes_is_noop_without_optional_metadata(self):
         da = xr.DataArray(np.array([[1]], dtype=np.uint16), dims=("y", "x"))
