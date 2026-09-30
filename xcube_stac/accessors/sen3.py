@@ -200,11 +200,8 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
         asset_names = open_params.get(
-            "asset_values",
-            open_params.get(
-                "asset_names",
-                [*self._asset_var_names.keys(), *_SENTINEL3_SYN_FLAG_VAR_NAMES],
-            ),
+            "asset_names",
+            [*self._asset_var_names.keys(), *_SENTINEL3_SYN_FLAG_VAR_NAMES],
         )
         flag_names = [name for name in asset_names if name in _SENTINEL3_SYN_FLAG_VAR_NAMES]
         asset_names = [name for name in asset_names if name in self._asset_var_names]
@@ -293,7 +290,6 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         return JsonObjectSchema(
             properties={
                 "asset_names": self._asset_names_schema,
-                "asset_values": self._asset_names_schema,
                 "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
                 "add_error_bands": _SCHEMA_ADD_ERROR_BANDS,
                 "bbox": SCHEMA_BBOX,
@@ -332,13 +328,10 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         ds = _clean_masks(ds)
         ds = _apply_scaling(ds)
 
-        asset_values = open_params.get(
-            "asset_values",
-            open_params.get("asset_names", _SENTINEL3_LST_VAR_NAME),
-        )
+        asset_names = open_params.get("asset_names", _SENTINEL3_LST_VAR_NAME)
         selected_flags = [
             var
-            for var in asset_values
+            for var in asset_names
             if var in _SENTINEL3_LST_VAR_NAME and var not in ds.data_vars
         ]
         if selected_flags:
@@ -346,7 +339,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             selected_flags = [var for var in selected_flags if var in flags.data_vars]
             if selected_flags:
                 ds.update(_clean_masks(flags[selected_flags]))
-        ds = ds[[var for var in asset_values if var in ds.data_vars]]
+        ds = ds[[var for var in asset_names if var in ds.data_vars]]
         ds.attrs.update(
             stac_url=self._catalog.get_self_href(),
             stac_item_id=item.id,
@@ -414,7 +407,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             properties={
                 "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
                 "apply_geo_orthorectification": _SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
-                "asset_values": _SCHEMA_LST_ASSET_NAMES,
+                "asset_names": _SCHEMA_LST_ASSET_NAMES,
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
@@ -460,7 +453,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         return JsonObjectSchema(
             properties={
                 "asset_names": self._asset_names_schema,
-                "asset_values": self._asset_names_schema,
                 "time_range": SCHEMA_TIME_RANGE,
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
@@ -475,7 +467,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
         dss_time = []
-        asset_names = open_params.get("asset_values", open_params.get("asset_names"))
+        asset_names = open_params.get("asset_names")
         for dt_idx, dt in enumerate(grouped_items.time.values):
             items = grouped_items.sel(time=dt).item()
             dss_spatial = []
@@ -483,7 +475,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 ds = self.open_item(
                     item,
                     add_error_bands=open_params.get("add_error_bands", True),
-                    **({"asset_values": asset_names} if asset_names is not None else {}),
+                    **({"asset_names": asset_names} if asset_names is not None else {}),
                     apply_rectification=True,
                     crs=open_params.get("crs", _CRS_WGS84),
                     spatial_res=open_params["spatial_res"],
@@ -530,7 +522,7 @@ class Sen3LstCdseStacArdcAccessor(
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
                 "query": SCHEMA_ADDITIONAL_QUERY,
-                "asset_values": _SCHEMA_LST_ASSET_NAMES,
+                "asset_names": _SCHEMA_LST_ASSET_NAMES,
                 "tile_size": SCHEMA_TILE_SIZE,
             },
             required=["time_range", "bbox", "spatial_res", "crs"],
