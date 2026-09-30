@@ -96,6 +96,23 @@ _SENTINEL3_SYN_PC_ASSETS_VAR_NAME = {
     key.replace("_", "-").lower(): value
     for (key, value) in _SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME.items()
 }
+_SENTINEL3_SYN_FLAG_VAR_NAMES = [
+    "CLOUD_flags",
+    "OLC_flags",
+    "SLN_flags",
+    "SLO_flags",
+    "SYN_flags",
+]
+_SENTINEL3_LST_VAR_NAME = [
+    "LST",
+    "LST_uncertainty",
+    "exception",
+    "bayes_in",
+    "cloud_in",
+    "confidence_in",
+    "counter_water_in",
+    "pointing_in",
+]
 _ATTRS_TOBE_REMOVED = [
     "absolute_orbit_number",
     "comment",
@@ -112,12 +129,6 @@ _ATTRS_TOBE_REMOVED = [
     "track_offset",
     "title",
 ]
-QUALITY_VARIABLES_TO_REMOVE = [
-    "probability_cloud_dual_in",
-    "probability_cloud_single_in",
-]
-
-
 _SENTINEL3_SLSTR_LST_CDSE_ASSETS_VAR_NAME = {"LST_in": "LST"}
 _SENTINEL3_SLSTR_LST_PC_ASSETS_VAR_NAME = {"lst-in": "LST"}
 
@@ -134,23 +145,33 @@ _SCHEMA_APPLY_GEO_ORTHORECTIFICATION = JsonBooleanSchema(
     ),
     default=True,
 )
-_SCHEMA_ADD_FLAGS = JsonBooleanSchema(
-    title="Add flags",
-    description="If True, flags are added.",
-    default=True,
-)
 _SCHEMA_CDSE_ASSET_NAMES = JsonArraySchema(
     items=(
         JsonStringSchema(
-            min_length=1, enum=list(_SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME.keys())
+            min_length=1,
+            enum=[
+                *list(_SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME.keys()),
+                *_SENTINEL3_SYN_FLAG_VAR_NAMES,
+            ],
         )
     ),
     unique_items=True,
     title="Names of assets (spectral bands).",
 )
+_SCHEMA_LST_ASSET_NAMES = JsonArraySchema(
+    items=(JsonStringSchema(min_length=1, enum=_SENTINEL3_LST_VAR_NAME)),
+    unique_items=True,
+    title="Names of Sen3 SLSTR LST variables.",
+)
 _SCHEMA_PC_ASSET_NAMES = JsonArraySchema(
     items=(
-        JsonStringSchema(min_length=1, enum=list(_SENTINEL3_SYN_PC_ASSETS_VAR_NAME))
+        JsonStringSchema(
+            min_length=1,
+            enum=[
+                *list(_SENTINEL3_SYN_PC_ASSETS_VAR_NAME),
+                *_SENTINEL3_SYN_FLAG_VAR_NAMES,
+            ],
+        )
     ),
     unique_items=True,
     title="Names of assets (spectral bands).",
@@ -178,8 +199,16 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         return rioxarray.open_rasterio(asset.href, chunks={}, driver="netCDF").squeeze()
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
-        asset_names = open_params.get("asset_names", list(self._asset_var_names.keys()))
-        assets = list_assets_from_item(item, asset_names=asset_names)
+        asset_names = open_params.get(
+            "asset_values",
+            open_params.get(
+                "asset_names",
+                [*self._asset_var_names.keys(), *_SENTINEL3_SYN_FLAG_VAR_NAMES],
+            ),
+        )
+        flag_names = [name for name in asset_names if name in _SENTINEL3_SYN_FLAG_VAR_NAMES]
+        asset_names = [name for name in asset_names if name in self._asset_var_names]
+        assets = list_assets_from_item(item, asset_names=asset_names) if asset_names else []
         ds = None
         for asset in assets:
             ds_asset = self.open_asset(asset, **open_params)
@@ -187,6 +216,13 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 ds = ds_asset
             else:
                 ds.update(ds_asset)
+        if ds is None and flag_names:
+            flags = self.open_asset(item.assets[self._flags])
+            selected_flags = [name for name in flag_names if name in flags.data_vars]
+            if selected_flags:
+                ds = flags[selected_flags]
+        if ds is None:
+            return None
         var_names = list(ds.data_vars)
         if not open_params.get("add_error_bands", True):
             var_names = [
@@ -196,9 +232,12 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         ds = _apply_scaling(ds)
 
         # add flags and attributes
-        if open_params.get("add_flags", True):
+        selected_flag_names = [name for name in flag_names if name not in ds.data_vars]
+        if selected_flag_names:
             flags = self.open_asset(item.assets[self._flags])
-            ds.update(flags)
+            ds.update(
+                flags[[name for name in selected_flag_names if name in flags.data_vars]]
+            )
         ds.attrs.update(
             stac_url=self._catalog.get_self_href(),
             stac_item_id=item.id,
@@ -254,9 +293,9 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         return JsonObjectSchema(
             properties={
                 "asset_names": self._asset_names_schema,
+                "asset_values": self._asset_names_schema,
                 "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
                 "add_error_bands": _SCHEMA_ADD_ERROR_BANDS,
-                "add_flags": _SCHEMA_ADD_FLAGS,
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
@@ -290,21 +329,29 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
         # get LST data
         ds = self.open_asset(item.assets[next(iter(self._asset_var_names.keys()))])
-        ds = _apply_scaling(ds[["LST"]])
+        ds = _clean_masks(ds)
+        ds = _apply_scaling(ds)
 
-        if open_params.get("add_flags", True):
+        asset_values = open_params.get(
+            "asset_values",
+            open_params.get("asset_names", _SENTINEL3_LST_VAR_NAME),
+        )
+        selected_flags = [
+            var
+            for var in asset_values
+            if var in _SENTINEL3_LST_VAR_NAME and var not in ds.data_vars
+        ]
+        if selected_flags:
             flags = self.open_asset(item.assets[self._flags])
-            flags = flags.drop_vars(
-                [var for var in QUALITY_VARIABLES_TO_REMOVE if var in flags]
-            )
-            ds.update(flags)
+            selected_flags = [var for var in selected_flags if var in flags.data_vars]
+            if selected_flags:
+                ds.update(_clean_masks(flags[selected_flags]))
+        ds = ds[[var for var in asset_values if var in ds.data_vars]]
         ds.attrs.update(
             stac_url=self._catalog.get_self_href(),
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
-        # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_integer_encoding(ds)
 
         # get geolocation
         geo = self.open_asset(item.assets[self._geo_asset])
@@ -356,13 +403,8 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
                 target_gm=target_gm,
             )
 
-        for var in ds.data_vars:
-            # Remove CF scaling attributes if present
-            ds[var].attrs.pop("scale_factor", None)
-            ds[var].attrs.pop("add_offset", None)
-            fill = ds[var].attrs.pop("_FillValue", None)
-            if fill is not None:
-                ds[var].encoding["_FillValue"] = fill
+        ds = _remove_integer_encoding(ds)
+
         return ds
 
     def get_open_data_params_schema(
@@ -372,7 +414,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             properties={
                 "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
                 "apply_geo_orthorectification": _SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
-                "add_flags": _SCHEMA_ADD_FLAGS,
+                "asset_values": _SCHEMA_LST_ASSET_NAMES,
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
@@ -418,13 +460,13 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         return JsonObjectSchema(
             properties={
                 "asset_names": self._asset_names_schema,
+                "asset_values": self._asset_names_schema,
                 "time_range": SCHEMA_TIME_RANGE,
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
                 "query": SCHEMA_ADDITIONAL_QUERY,
                 "add_error_bands": _SCHEMA_ADD_ERROR_BANDS,
-                "add_flags": _SCHEMA_ADD_FLAGS,
                 "tile_size": SCHEMA_TILE_SIZE,
             },
             required=["time_range", "bbox", "spatial_res", "crs"],
@@ -433,16 +475,15 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
 
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
         dss_time = []
-        asset_names = open_params.get("asset_names", list(self._asset_var_names.keys()))
+        asset_names = open_params.get("asset_values", open_params.get("asset_names"))
         for dt_idx, dt in enumerate(grouped_items.time.values):
             items = grouped_items.sel(time=dt).item()
             dss_spatial = []
             for item in items:
                 ds = self.open_item(
                     item,
-                    asset_names=asset_names,
                     add_error_bands=open_params.get("add_error_bands", True),
-                    add_flags=open_params.get("add_flags", True),
+                    **({"asset_values": asset_names} if asset_names is not None else {}),
                     apply_rectification=True,
                     crs=open_params.get("crs", _CRS_WGS84),
                     spatial_res=open_params["spatial_res"],
@@ -489,7 +530,7 @@ class Sen3LstCdseStacArdcAccessor(
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
                 "query": SCHEMA_ADDITIONAL_QUERY,
-                "add_flags": _SCHEMA_ADD_FLAGS,
+                "asset_values": _SCHEMA_LST_ASSET_NAMES,
                 "tile_size": SCHEMA_TILE_SIZE,
             },
             required=["time_range", "bbox", "spatial_res", "crs"],
@@ -677,6 +718,23 @@ def orthorectify_geolocation(
         attrs=dataset.lon.attrs,
     )
     return dataset.assign_coords(lat=final_lat, lon=final_lon)
+
+
+def _clean_masks(ds: xr.Dataset) -> xr.Dataset:
+    for variable in ds.variables.values():
+        if (
+            np.issubdtype(variable.dtype, np.integer)
+            and "flag_masks" in variable.attrs.keys()
+            and "flag_meanings" in variable.attrs.keys()
+            and "_FillValue" in variable.attrs.keys()
+        ):
+            variable.attrs["flag_masks"] = np.append(
+                variable.attrs["flag_masks"], variable.attrs["_FillValue"]
+            )
+            variable.attrs["flag_meanings"] += " _FillValue"
+            for key in ("_FillValue", "scale_factor", "add_offset"):
+                variable.attrs.pop(key, None)
+    return ds
 
 
 def _apply_scaling(ds: xr.Dataset) -> xr.Dataset:
