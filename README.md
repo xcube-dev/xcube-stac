@@ -1,3 +1,24 @@
+
+
+<xarray.Dataset> Size: 71MB
+Dimensions:           (time: 2, lat: 1336, lon: 1782)
+Coordinates:
+  * time              (time) datetime64[s] 16B 2026-08-17T09:56:38 2026-08-17...
+  * lat               (lat) float64 11kB 55.0 55.0 54.99 ... 52.01 52.0 52.0
+  * lon               (lon) float64 14kB 8.001 8.003 8.006 ... 12.0 12.0 12.0
+    spatial_ref       int64 8B 0
+Data variables:
+    LST               (time, lat, lon) float64 38MB dask.array<chunksize=(1, 1336, 1782), meta=np.ndarray>
+    bayes_in          (time, lat, lon) uint8 5MB dask.array<chunksize=(1, 1336, 1782), meta=np.ndarray>
+    cloud_in          (time, lat, lon) uint16 10MB dask.array<chunksize=(1, 1336, 1782), meta=np.ndarray>
+    confidence_in     (time, lat, lon) uint16 10MB dask.array<chunksize=(1, 1336, 1782), meta=np.ndarray>
+    counter_water_in  (time, lat, lon) int8 5MB dask.array<chunksize=(1, 1336, 1782), meta=np.ndarray>
+    pointing_in       (time, lat, lon) uint8 5MB dask.array<chunksize=(1, 1336, 1782), meta=np.ndarray>
+Attributes: (8)
+
+
+
+
 # xcube-stac
 
 [![Build Status](https://github.com/xcube-dev/xcube-stac/actions/workflows/unittest-workflow.yml/badge.svg?branch=main)](https://github.com/xcube-dev/xcube-stac/actions)

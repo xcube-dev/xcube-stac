@@ -53,7 +53,6 @@ from xcube_stac.constants import (
     TILE_SIZE,
 )
 from xcube_stac.utils import (
-    _remove_integer_encoding,
     add_attributes,
     add_nominal_datetime,
     clip_dataset_relative_bbox,
@@ -64,37 +63,37 @@ from xcube_stac.version import version
 
 warnings.filterwarnings("ignore", category=NotGeoreferencedWarning)
 
-_SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME = {
-    "syn_S1N_reflectance": "SDR_S1N",
-    "syn_S1O_reflectance": "SDR_S1O",
-    "syn_S2N_reflectance": "SDR_S2N",
-    "syn_S2O_reflectance": "SDR_S2O",
-    "syn_S3N_reflectance": "SDR_S3N",
-    "syn_S3O_reflectance": "SDR_S3O",
-    "syn_S5N_reflectance": "SDR_S5N",
-    "syn_S5O_reflectance": "SDR_S5O",
-    "syn_S6N_reflectance": "SDR_S6N",
-    "syn_S6O_reflectance": "SDR_S6O",
-    "syn_Oa01_reflectance": "SDR_Oa01",
-    "syn_Oa02_reflectance": "SDR_Oa02",
-    "syn_Oa03_reflectance": "SDR_Oa03",
-    "syn_Oa04_reflectance": "SDR_Oa04",
-    "syn_Oa05_reflectance": "SDR_Oa05",
-    "syn_Oa06_reflectance": "SDR_Oa06",
-    "syn_Oa07_reflectance": "SDR_Oa07",
-    "syn_Oa08_reflectance": "SDR_Oa08",
-    "syn_Oa09_reflectance": "SDR_Oa09",
-    "syn_Oa10_reflectance": "SDR_Oa10",
-    "syn_Oa11_reflectance": "SDR_Oa11",
-    "syn_Oa12_reflectance": "SDR_Oa12",
-    "syn_Oa16_reflectance": "SDR_Oa16",
-    "syn_Oa17_reflectance": "SDR_Oa17",
-    "syn_Oa18_reflectance": "SDR_Oa18",
-    "syn_Oa21_reflectance": "SDR_Oa21",
+_SENTINEL3_SYN_CDSE_VAR_NAMES = {
+    "SDR_S1N": "syn_S1N_reflectance",
+    "SDR_S1O": "syn_S1O_reflectance",
+    "SDR_S2N": "syn_S2N_reflectance",
+    "SDR_S2O": "syn_S2O_reflectance",
+    "SDR_S3N": "syn_S3N_reflectance",
+    "SDR_S3O": "syn_S3O_reflectance",
+    "SDR_S5N": "syn_S5N_reflectance",
+    "SDR_S5O": "syn_S5O_reflectance",
+    "SDR_S6N": "syn_S6N_reflectance",
+    "SDR_S6O": "syn_S6O_reflectance",
+    "SDR_Oa01": "syn_Oa01_reflectance",
+    "SDR_Oa02": "syn_Oa02_reflectance",
+    "SDR_Oa03": "syn_Oa03_reflectance",
+    "SDR_Oa04": "syn_Oa04_reflectance",
+    "SDR_Oa05": "syn_Oa05_reflectance",
+    "SDR_Oa06": "syn_Oa06_reflectance",
+    "SDR_Oa07": "syn_Oa07_reflectance",
+    "SDR_Oa08": "syn_Oa08_reflectance",
+    "SDR_Oa09": "syn_Oa09_reflectance",
+    "SDR_Oa10": "syn_Oa10_reflectance",
+    "SDR_Oa11": "syn_Oa11_reflectance",
+    "SDR_Oa12": "syn_Oa12_reflectance",
+    "SDR_Oa16": "syn_Oa16_reflectance",
+    "SDR_Oa17": "syn_Oa17_reflectance",
+    "SDR_Oa18": "syn_Oa18_reflectance",
+    "SDR_Oa21": "syn_Oa21_reflectance",
 }
-_SENTINEL3_SYN_PC_ASSETS_VAR_NAME = {
-    key.replace("_", "-").lower(): value
-    for (key, value) in _SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME.items()
+_SENTINEL3_SYN_PC_VAR_NAMES = {
+    key: value.replace("_", "-").lower()
+    for (key, value) in _SENTINEL3_SYN_CDSE_VAR_NAMES.items()
 }
 _SENTINEL3_SYN_FLAG_VAR_NAMES = [
     "CLOUD_flags",
@@ -107,6 +106,15 @@ _SENTINEL3_LST_VAR_NAME = [
     "LST",
     "LST_uncertainty",
     "exception",
+]
+_SENTINEL3_LST_NTC_FLAG_VAR_NAMES = [
+    "bayes_in",
+    "bayes_orphan_in",
+    "cloud_in",
+    "confidence_in",
+    "pointing_in",
+]
+_SENTINEL3_LST_NRT_FLAG_VAR_NAMES = [
     "bayes_in",
     "cloud_in",
     "confidence_in",
@@ -129,8 +137,6 @@ _ATTRS_TOBE_REMOVED = [
     "track_offset",
     "title",
 ]
-_SENTINEL3_SLSTR_LST_CDSE_ASSETS_VAR_NAME = {"LST_in": "LST"}
-_SENTINEL3_SLSTR_LST_PC_ASSETS_VAR_NAME = {"lst-in": "LST"}
 
 _SCHEMA_APPLY_RECTIFICATION = JsonBooleanSchema(
     title="Apply rectification algorithm.",
@@ -150,31 +156,52 @@ _SCHEMA_CDSE_ASSET_NAMES = JsonArraySchema(
         JsonStringSchema(
             min_length=1,
             enum=[
-                *list(_SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME.keys()),
+                *list(_SENTINEL3_SYN_CDSE_VAR_NAMES.keys()),
                 *_SENTINEL3_SYN_FLAG_VAR_NAMES,
             ],
         )
     ),
     unique_items=True,
-    title="Names of assets (spectral bands).",
-)
-_SCHEMA_LST_ASSET_NAMES = JsonArraySchema(
-    items=(JsonStringSchema(min_length=1, enum=_SENTINEL3_LST_VAR_NAME)),
-    unique_items=True,
-    title="Names of Sen3 SLSTR LST variables.",
+    title="Names of Sen3 SYN variables.",
 )
 _SCHEMA_PC_ASSET_NAMES = JsonArraySchema(
     items=(
         JsonStringSchema(
             min_length=1,
             enum=[
-                *list(_SENTINEL3_SYN_PC_ASSETS_VAR_NAME),
+                *list(_SENTINEL3_SYN_PC_VAR_NAMES.keys()),
                 *_SENTINEL3_SYN_FLAG_VAR_NAMES,
             ],
         )
     ),
     unique_items=True,
-    title="Names of assets (spectral bands).",
+    title="Names of Sen3 SYN variables.",
+)
+_SCHEMA_LST_NRT_ASSET_NAMES = JsonArraySchema(
+    items=(
+        JsonStringSchema(
+            min_length=1,
+            enum=[
+                *_SENTINEL3_LST_VAR_NAME,
+                *_SENTINEL3_LST_NRT_FLAG_VAR_NAMES,
+            ],
+        )
+    ),
+    unique_items=True,
+    title="Names of Sen3 SLSTR LST NRT variables.",
+)
+_SCHEMA_LST_NTC_ASSET_NAMES = JsonArraySchema(
+    items=(
+        JsonStringSchema(
+            min_length=1,
+            enum=[
+                *_SENTINEL3_LST_VAR_NAME,
+                *_SENTINEL3_LST_NTC_FLAG_VAR_NAMES,
+            ],
+        )
+    ),
+    unique_items=True,
+    title="Names of Sen3 SLSTR LST NTC variables.",
 )
 _SCHEMA_ADD_ERROR_BANDS = JsonBooleanSchema(
     title="Add error bands.",
@@ -190,7 +217,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
-        self._asset_var_names = _SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME
+        self._asset_var_names = _SENTINEL3_SYN_CDSE_VAR_NAMES
         self._asset_names_schema = _SCHEMA_CDSE_ASSET_NAMES
         self._flags = "flags"
         self._storage_option_s3 = storage_options_s3
@@ -199,13 +226,21 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         return rioxarray.open_rasterio(asset.href, chunks={}, driver="netCDF").squeeze()
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
-        asset_names = open_params.get(
+        variable_names = open_params.get(
             "asset_names",
-            [*self._asset_var_names.keys(), *_SENTINEL3_SYN_FLAG_VAR_NAMES],
+            [*list(self._asset_var_names.keys()), *_SENTINEL3_SYN_FLAG_VAR_NAMES],
         )
-        flag_names = [name for name in asset_names if name in _SENTINEL3_SYN_FLAG_VAR_NAMES]
-        asset_names = [name for name in asset_names if name in self._asset_var_names]
-        assets = list_assets_from_item(item, asset_names=asset_names) if asset_names else []
+        flag_names = [
+            name for name in variable_names if name in _SENTINEL3_SYN_FLAG_VAR_NAMES
+        ]
+        asset_names = [
+            self._asset_var_names[name]
+            for name in variable_names
+            if name in list(self._asset_var_names.keys())
+        ]
+        assets = (
+            list_assets_from_item(item, asset_names=asset_names) if asset_names else []
+        )
         ds = None
         for asset in assets:
             ds_asset = self.open_asset(asset, **open_params)
@@ -213,13 +248,15 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 ds = ds_asset
             else:
                 ds.update(ds_asset)
-        if ds is None and flag_names:
+        if flag_names:
             flags = self.open_asset(item.assets[self._flags])
             selected_flags = [name for name in flag_names if name in flags.data_vars]
             if selected_flags:
-                ds = flags[selected_flags]
-        if ds is None:
-            return None
+                flags = flags[selected_flags]
+                if ds is None:
+                    ds = flags
+                else:
+                    ds.update(flags)
         var_names = list(ds.data_vars)
         if not open_params.get("add_error_bands", True):
             var_names = [
@@ -227,21 +264,11 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             ]
             ds = ds[var_names]
         ds = _apply_scaling(ds)
-
-        # add flags and attributes
-        selected_flag_names = [name for name in flag_names if name not in ds.data_vars]
-        if selected_flag_names:
-            flags = self.open_asset(item.assets[self._flags])
-            ds.update(
-                flags[[name for name in selected_flag_names if name in flags.data_vars]]
-            )
         ds.attrs.update(
             stac_url=self._catalog.get_self_href(),
             stac_item_id=item.id,
             xcube_stac_version=version,
         )
-        # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_integer_encoding(ds)
 
         # add geolocation
         geo = self.open_asset(item.assets["geolocation"])
@@ -302,18 +329,19 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
         )
 
 
-class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
+class Sen3LstNtcCdseStacItemAccessor(Sen3CdseStacItemAccessor):
     """Provides methods for accessing the data of a CDSE Sentinel-3
-    SLSTR Level-2 Land Surface Temperature products STAC Item.
+    SLSTR Level-2 Land Surface Temperature no-time-critical (NTC) products STAC Item.
     """
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         super().__init__(catalog, **storage_options_s3)
-        self._asset_var_names = _SENTINEL3_SLSTR_LST_CDSE_ASSETS_VAR_NAME
+        self._lst_name = "LST_in"
         self._geo_asset = "geodetic_in"
         self._angles = "geometry_tn"
         self._angles_geo = "geodetic_tx"
         self._flags = "flags_in"
+        self._flag_names = _SENTINEL3_LST_NTC_FLAG_VAR_NAMES
 
     def open_asset(self, asset: pystac.Asset, **open_params) -> xr.Dataset:
         ds = rioxarray.open_rasterio(asset.href, chunks={}, driver="netCDF")
@@ -323,23 +351,30 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
         return ds
 
     def open_item(self, item: pystac.Item, **open_params) -> xr.Dataset | None:
-        # get LST data
-        ds = self.open_asset(item.assets[next(iter(self._asset_var_names.keys()))])
-        ds = _clean_masks(ds)
-        ds = _apply_scaling(ds)
+        asset_names = open_params.get(
+            "asset_names", [*_SENTINEL3_LST_VAR_NAME, *self._flag_names]
+        )
+        flag_names = [name for name in asset_names if name in self._flag_names]
+        lst_names = [name for name in asset_names if name in _SENTINEL3_LST_VAR_NAME]
 
-        asset_names = open_params.get("asset_names", _SENTINEL3_LST_VAR_NAME)
-        selected_flags = [
-            var
-            for var in asset_names
-            if var in _SENTINEL3_LST_VAR_NAME and var not in ds.data_vars
-        ]
-        if selected_flags:
+        # get LST data
+        ds = None
+        if lst_names:
+            ds = self.open_asset(item.assets[self._lst_name])
+            ds = ds[lst_names]
+            ds = _clean_masks(ds)
+            ds = _apply_scaling(ds)
+
+        # get flag variables
+        if flag_names:
             flags = self.open_asset(item.assets[self._flags])
-            selected_flags = [var for var in selected_flags if var in flags.data_vars]
-            if selected_flags:
-                ds.update(_clean_masks(flags[selected_flags]))
-        ds = ds[[var for var in asset_names if var in ds.data_vars]]
+            flags = flags[flag_names]
+            flags = _clean_masks(flags)
+            if ds is None:
+                ds = flags
+            else:
+                ds.update(flags)
+
         ds.attrs.update(
             stac_url=self._catalog.get_self_href(),
             stac_item_id=item.id,
@@ -396,8 +431,6 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
                 target_gm=target_gm,
             )
 
-        ds = _remove_integer_encoding(ds)
-
         return ds
 
     def get_open_data_params_schema(
@@ -407,7 +440,39 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             properties={
                 "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
                 "apply_geo_orthorectification": _SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
-                "asset_names": _SCHEMA_LST_ASSET_NAMES,
+                "asset_names": _SCHEMA_LST_NTC_ASSET_NAMES,
+                "bbox": SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
+            required=[],
+            additional_properties=True,
+        )
+
+
+class Sen3LstNrtCdseStacItemAccessor(Sen3LstNtcCdseStacItemAccessor):
+    """Provides methods for accessing the data of a CDSE Sentinel-3
+    SLSTR Level-2 Land Surface Temperature near-real-time (NRT) products STAC Item.
+    """
+
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        super().__init__(catalog, **storage_options_s3)
+        self._lst_name = "LST_in"
+        self._geo_asset = "geodetic_in"
+        self._angles = "geometry_tn"
+        self._angles_geo = "geodetic_tx"
+        self._flags = "flags_in"
+        self._flag_names = _SENTINEL3_LST_NRT_FLAG_VAR_NAMES
+
+    def get_open_data_params_schema(
+        self, data_id: str | None = None, opener_id: str | None = None
+    ) -> JsonObjectSchema:
+        return JsonObjectSchema(
+            properties={
+                "apply_rectification": _SCHEMA_APPLY_RECTIFICATION,
+                "apply_geo_orthorectification": _SCHEMA_APPLY_GEO_ORTHORECTIFICATION,
+                "asset_names": _SCHEMA_LST_NRT_ASSET_NAMES,
                 "bbox": SCHEMA_BBOX,
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
@@ -424,7 +489,7 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         super().__init__(catalog, **storage_options_s3)
-        self._asset_var_names = _SENTINEL3_SYN_CDSE_ASSETS_VAR_NAME
+        self._asset_var_names = _SENTINEL3_SYN_CDSE_VAR_NAMES
         self._flags = "flags"
 
     def open_ardc(
@@ -500,17 +565,18 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
         return ds_final
 
 
-class Sen3LstCdseStacArdcAccessor(
-    Sen3CdseStacArdcAccessor, Sen3LstCdseStacItemAccessor
+class Sen3LstNtcCdseStacArdcAccessor(
+    Sen3CdseStacArdcAccessor, Sen3LstNtcCdseStacItemAccessor
 ):
-    """Provides methods for access multiple Sentinel-3 SLSTR Level-2 Land Surface
+    """Provides methods for access multiple Sentinel-3 SLSTR Level-2 NTC Land Surface
     Temperature STAC Items from the CDSE STAC API and build an analysis ready
     data cube."""
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         super().__init__(catalog, **storage_options_s3)
-        self._asset_var_names = _SENTINEL3_SLSTR_LST_CDSE_ASSETS_VAR_NAME
+        self._lst_name = "LST_in"
         self._flags = "flags_in"
+        self._flag_names = _SENTINEL3_LST_NTC_FLAG_VAR_NAMES
 
     def get_open_data_params_schema(
         self, data_id: str | None = None, opener_id: str | None = None
@@ -522,7 +588,38 @@ class Sen3LstCdseStacArdcAccessor(
                 "spatial_res": SCHEMA_SPATIAL_RES,
                 "crs": SCHEMA_CRS,
                 "query": SCHEMA_ADDITIONAL_QUERY,
-                "asset_names": _SCHEMA_LST_ASSET_NAMES,
+                "asset_names": _SCHEMA_LST_NTC_ASSET_NAMES,
+                "tile_size": SCHEMA_TILE_SIZE,
+            },
+            required=["time_range", "bbox", "spatial_res", "crs"],
+            additional_properties=False,
+        )
+
+
+class Sen3LstNrtCdseStacArdcAccessor(
+    Sen3CdseStacArdcAccessor, Sen3LstNrtCdseStacItemAccessor
+):
+    """Provides methods for access multiple Sentinel-3 SLSTR Level-2 NRT Land Surface
+    Temperature STAC Items from the CDSE STAC API and build an analysis ready
+    data cube."""
+
+    def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
+        super().__init__(catalog, **storage_options_s3)
+        self._lst_name = "LST_in"
+        self._flags = "flags_in"
+        self._flag_names = _SENTINEL3_LST_NRT_FLAG_VAR_NAMES
+
+    def get_open_data_params_schema(
+        self, data_id: str | None = None, opener_id: str | None = None
+    ) -> JsonObjectSchema:
+        return JsonObjectSchema(
+            properties={
+                "time_range": SCHEMA_TIME_RANGE,
+                "bbox": SCHEMA_BBOX,
+                "spatial_res": SCHEMA_SPATIAL_RES,
+                "crs": SCHEMA_CRS,
+                "query": SCHEMA_ADDITIONAL_QUERY,
+                "asset_names": _SCHEMA_LST_NRT_ASSET_NAMES,
                 "tile_size": SCHEMA_TILE_SIZE,
             },
             required=["time_range", "bbox", "spatial_res", "crs"],
@@ -537,7 +634,7 @@ class Sen3PlanetaryComputerStacItemAccessor(Sen3CdseStacItemAccessor):
     # noinspection PyMissingConstructor
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
-        self._asset_var_names = _SENTINEL3_SYN_PC_ASSETS_VAR_NAME
+        self._asset_var_names = _SENTINEL3_SYN_PC_VAR_NAMES
         self._asset_names_schema = _SCHEMA_PC_ASSET_NAMES
         self._flags = "syn-flags"
 
@@ -554,20 +651,21 @@ class Sen3PlanetaryComputerStacItemAccessor(Sen3CdseStacItemAccessor):
         return False
 
 
-class Sen3LstPlanetaryComputerStacItemAccessor(
-    Sen3PlanetaryComputerStacItemAccessor, Sen3LstCdseStacItemAccessor
+class Sen3LstNtcPlanetaryComputerStacItemAccessor(
+    Sen3PlanetaryComputerStacItemAccessor, Sen3LstNtcCdseStacItemAccessor
 ):
     """Provides methods for accessing a Sentinel-3 SLSTR Level-2 Land Surface
-    Temperature product via a Planetary Computer STAC Item.
+    Temperature no-time-critical (NTC) product via a Planetary Computer STAC Item.
     """
 
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         super().__init__(catalog, **storage_options_s3)
-        self._asset_var_names = _SENTINEL3_SLSTR_LST_PC_ASSETS_VAR_NAME
+        self._lst_name = "lst-in"
         self._geo_asset = "slstr-geodetic-in"
         self._angles = "slstr-geometry-tn"
         self._angles_geo = "slstr-geodetic-tx"
         self._flags = "slstr-flags-in"
+        self._flag_names = _SENTINEL3_LST_NTC_FLAG_VAR_NAMES
 
 
 class Sen3PlanetaryComputerStacArdcAccessor(
@@ -579,25 +677,26 @@ class Sen3PlanetaryComputerStacArdcAccessor(
     # noinspection PyMissingConstructor
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
-        self._asset_var_names = _SENTINEL3_SYN_PC_ASSETS_VAR_NAME
+        self._asset_var_names = _SENTINEL3_SYN_PC_VAR_NAMES
         self._asset_names_schema = _SCHEMA_PC_ASSET_NAMES
         self._flags = "syn-flags"
 
 
-class Sen3LstPlanetaryComputerStacArdcAccessor(
-    Sen3LstCdseStacArdcAccessor, Sen3LstPlanetaryComputerStacItemAccessor
+class Sen3LstNtcPlanetaryComputerStacArdcAccessor(
+    Sen3LstNtcCdseStacArdcAccessor, Sen3LstNtcPlanetaryComputerStacItemAccessor
 ):
-    """Provides methods for access multiple Sentinel-3 LST STAC Items from the
+    """Provides methods for access multiple Sentinel-3 LST NTC STAC Items from the
     Planetary Computer STAC API and build an analysis ready data cube."""
 
     # noinspection PyMissingConstructor
     def __init__(self, catalog: pystac.Catalog, **storage_options_s3):
         self._catalog = catalog
-        self._asset_var_names = _SENTINEL3_SLSTR_LST_PC_ASSETS_VAR_NAME
+        self._lst_name = "lst-in"
         self._geo_asset = "slstr-geodetic-in"
         self._angles = "slstr-geometry-tn"
         self._angles_geo = "slstr-geodetic-tx"
         self._flags = "slstr-flags-in"
+        self._flag_names = _SENTINEL3_LST_NTC_FLAG_VAR_NAMES
 
 
 def _group_items(items: list[pystac.Item]) -> xr.DataArray:

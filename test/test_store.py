@@ -734,7 +734,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset without rectification
         ds = store.open_data(
             data_id=data_id,
-            asset_names=["syn_Oa01_reflectance"],
+            asset_names=["SDR_Oa01", "CLOUD_flags"],
             apply_rectification=False,
         )
         self.assertIsInstance(ds, xr.Dataset)
@@ -764,7 +764,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset with rectification
         ds = store.open_data(
             data_id=data_id,
-            asset_names=["syn_Oa01_reflectance"],
+            asset_names=["SDR_Oa01", "CLOUD_flags"],
             apply_rectification=True,
             add_error_bands=False,
         )
@@ -792,7 +792,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data as dataset with rectification
-        ds = store.open_data(data_id=data_id)
+        ds = store.open_data(data_id=data_id, asset_names=["LST", "confidence_in"])
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
@@ -816,7 +816,7 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data as dataset with rectification
-        ds = store.open_data(data_id=data_id)
+        ds = store.open_data(data_id=data_id, asset_names=["LST", "confidence_in"])
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
@@ -1182,7 +1182,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=["2020-07-31", "2020-08-01"],
             spatial_res=300 / 111320,  # meter in degree
             crs="EPSG:4326",
-            asset_names=["syn_Oa01_reflectance"],
+            asset_names=["SDR_Oa01", "CLOUD_flags"],
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
@@ -1231,6 +1231,7 @@ class StacDataStoreTest(unittest.TestCase):
             bbox=[8.0, 52, 8.1, 52.1],
             time_range=["2020-08-01", "2020-08-01"],
             spatial_res=300 / 111320,  # meter in degree
+            asset_names=["LST", "confidence_in"],
             crs="EPSG:4326",
         )
         self.assertIsInstance(ds, xr.Dataset)
