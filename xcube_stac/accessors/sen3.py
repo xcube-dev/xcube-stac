@@ -302,13 +302,6 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
                 target_gm=target_gm,
             )
 
-        for var in ds.data_vars:
-            # Remove CF scaling attributes if present
-            ds[var].attrs.pop("scale_factor", None)
-            ds[var].attrs.pop("add_offset", None)
-            fill = ds[var].attrs.pop("_FillValue", None)
-            if fill is not None:
-                ds[var].encoding["_FillValue"] = fill
         return ds
 
     def get_open_data_params_schema(
@@ -819,10 +812,7 @@ def _clean_masks(ds: xr.Dataset) -> xr.Dataset:
             and "flag_meanings" in variable.attrs.keys()
             and "_FillValue" in variable.attrs.keys()
         ):
-            variable.attrs["flag_masks"] = np.append(
-                variable.attrs["flag_masks"], variable.attrs["_FillValue"]
-            )
-            variable.attrs["flag_meanings"] += " _FillValue"
+            variable.attrs["fill_value"] = variable.attrs["_FillValue"]
             for key in ("_FillValue", "scale_factor", "add_offset"):
                 variable.attrs.pop(key, None)
     return ds
