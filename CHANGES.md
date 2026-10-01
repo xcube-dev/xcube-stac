@@ -1,3 +1,10 @@
+## Changes in 1.4.5 (in development)
+
+- Use `xcube_resampling.mosaic_datasets` and `xcube_resampling.extend_dataset` 
+  in the ARDC processing workflow to create 3D data cubes from individual
+  tiles for Sentinel-2, Harmonized Landsat Sentinel-2, and Landsat.
+
+
 ## Changes in 1.4.4
 
 - Fixed a bug in the mosaicking of Planetary Computer Landsat Collection 2 Level-2 

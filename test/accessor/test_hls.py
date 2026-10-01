@@ -319,10 +319,6 @@ class HlsStacCoverageTest(unittest.TestCase):
             patch.object(
                 self.ardc_accessor, "open_item", return_value=raw_ds
             ) as open_item_mock,
-            patch(
-                "xcube_stac.accessors.hls.mosaic_spatial_take_first",
-                side_effect=lambda dss, var_ref, fill_value: dss[0],
-            ) as mosaic_mock,
         ):
             result_single = self.ardc_accessor._generate_utm_cube(
                 grouped_items,
@@ -344,65 +340,62 @@ class HlsStacCoverageTest(unittest.TestCase):
         self.assertEqual(result_single.sizes["time"], 2)
         self.assertIn("B01", result_pair)
         self.assertIn("Fmask", result_pair)
-        self.assertEqual(mosaic_mock.call_args_list[0].args[1], "Fmask")
-        self.assertTrue(np.isnan(mosaic_mock.call_args_list[0].args[2]))
-        self.assertEqual(mosaic_mock.call_args_list[1].args[1], "Fmask")
-        self.assertTrue(np.isnan(mosaic_mock.call_args_list[1].args[2]))
         self.assertEqual(open_item_mock.call_count, 2)
         self.assertEqual(reproject_bbox_mock.call_count, 2)
 
-    def test_merge_utm_zones_uses_matching_grid_and_fmask_fill_value(self):
+    def test_merge_utm_zones_uses_matching_grid_and_mosaics_all_variables(self):
         bbox = (0.0, 0.0, 1.0, 1.0)
         target_crs = pyproj.CRS.from_epsg(32632)
         source_gm = Mock()
-        source_gm.xy_var_names = ("x", "y")
         target_gm = Mock()
         target_gm.xy_var_names = ("x", "y")
+        datasets = [
+            self.make_time_cube_dataset(
+                var_names=("Fmask", "B01"), x=(0.0, 5.0), y=(5.0, 0.0)
+            ),
+            self.make_time_cube_dataset(
+                var_names=("Fmask", "B01"), x=(0.0, 5.0), y=(5.0, 0.0)
+            ),
+        ]
+        resampled = [ds.copy() for ds in datasets]
 
-        def run_merge(var_names):
-            ds = self.make_time_cube_dataset(
-                var_names=var_names, x=(0.0, 5.0), y=(5.0, 0.0)
+        with (
+            patch(
+                "xcube_stac.utils.pyproj.CRS.from_cf",
+                side_effect=[target_crs, target_crs],
+            ),
+            patch(
+                "xcube_stac.utils.GridMapping.from_dataset",
+                return_value=source_gm,
+            ) as from_dataset_mock,
+            patch(
+                "xcube_stac.utils.GridMapping.regular_from_bbox",
+                return_value=target_gm,
+            ) as regular_from_bbox_mock,
+            patch(
+                "xcube_stac.utils.resample_in_space",
+                side_effect=resampled,
+            ) as resample_mock,
+            patch(
+                "xcube_stac.utils.mosaic_datasets",
+                return_value=resampled[0],
+            ) as mosaic_mock,
+        ):
+            result = _merge_utm_zones(
+                datasets,
+                bbox=bbox,
+                crs=str(target_crs),
+                spatial_res=30.0,
             )
-            with (
-                patch(
-                    "xcube_stac.accessors.hls.pyproj.CRS.from_cf",
-                    side_effect=[target_crs],
-                ),
-                patch(
-                    "xcube_stac.accessors.hls.GridMapping.from_dataset",
-                    return_value=source_gm,
-                ) as from_dataset_mock,
-                patch(
-                    "xcube_stac.accessors.hls.GridMapping.regular_from_bbox",
-                    return_value=target_gm,
-                ) as regular_from_bbox_mock,
-                patch(
-                    "xcube_stac.accessors.hls.resample_in_space",
-                    side_effect=lambda ds, **kwargs: ds,
-                ) as resample_mock,
-                patch(
-                    "xcube_stac.accessors.hls.mosaic_spatial_take_first",
-                    side_effect=lambda dss, var_ref, fill_value: dss[0],
-                ) as mosaic_mock,
-            ):
-                result = _merge_utm_zones(
-                    [ds],
-                    bbox=bbox,
-                    crs=str(target_crs),
-                    spatial_res=30.0,
-                )
 
-            self.assertIn(var_names[0], result)
-            self.assertEqual(from_dataset_mock.call_count, 1)
-            self.assertEqual(regular_from_bbox_mock.call_count, 1)
-            self.assertEqual(resample_mock.call_count, 1)
-            self.assertEqual(mosaic_mock.call_count, 1)
-            return mosaic_mock.call_args
-
-        single_args = run_merge(("Fmask",))
-        self.assertEqual(single_args.args[1], "Fmask")
-        self.assertTrue(np.isnan(single_args.args[2]))
-
-        paired_args = run_merge(("Fmask", "B01"))
-        self.assertEqual(paired_args.args[1], "Fmask")
-        self.assertTrue(np.isnan(paired_args.args[2]))
+        self.assertIn("Fmask", result)
+        self.assertIn("B01", result)
+        self.assertEqual(from_dataset_mock.call_count, 1)
+        regular_from_bbox_mock.assert_called_once()
+        self.assertEqual(resample_mock.call_count, 2)
+        mosaic_mock.assert_called_once_with(
+            resampled,
+            x_dim="x",
+            y_dim="y",
+            fill_values=None,
+        )

@@ -36,7 +36,7 @@ from xcube.util.jsonschema import (
     JsonObjectSchema,
     JsonStringSchema,
 )
-from xcube_resampling import rectify_dataset
+from xcube_resampling import mosaic_datasets, rectify_dataset
 from xcube_resampling.gridmapping import GridMapping
 from xcube_resampling.utils import reproject_bbox
 
@@ -48,18 +48,17 @@ from xcube_stac.constants import (
     SCHEMA_BBOX,
     SCHEMA_CRS,
     SCHEMA_SPATIAL_RES,
-    SCHEMA_TIME_RANGE,
     SCHEMA_TILE_SIZE,
+    SCHEMA_TIME_RANGE,
     TILE_SIZE,
 )
 from xcube_stac.utils import (
-    _remove_fill_value_encoding,
+    _remove_integer_encoding,
     add_attributes,
     add_nominal_datetime,
     clip_dataset_relative_bbox,
     find_relative_bbox,
     list_assets_from_item,
-    mosaic_spatial_take_first,
 )
 from xcube_stac.version import version
 
@@ -206,7 +205,7 @@ class Sen3CdseStacItemAccessor(StacItemAccessor):
             xcube_stac_version=version,
         )
         # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_fill_value_encoding(ds)
+        ds = _remove_integer_encoding(ds)
 
         # add geolocation
         geo = self.open_asset(item.assets["geolocation"])
@@ -305,7 +304,7 @@ class Sen3LstCdseStacItemAccessor(Sen3CdseStacItemAccessor):
             xcube_stac_version=version,
         )
         # remove _FillValue from encoding and attrs for integer valued arrays
-        ds = _remove_fill_value_encoding(ds)
+        ds = _remove_integer_encoding(ds)
 
         # get geolocation
         geo = self.open_asset(item.assets[self._geo_asset])
@@ -435,7 +434,6 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
     def _generate_cube(self, grouped_items: xr.DataArray, **open_params) -> xr.Dataset:
         dss_time = []
         asset_names = open_params.get("asset_names", list(self._asset_var_names.keys()))
-        var_ref = self._asset_var_names[asset_names[0]]
         for dt_idx, dt in enumerate(grouped_items.time.values):
             items = grouped_items.sel(time=dt).item()
             dss_spatial = []
@@ -457,17 +455,9 @@ class Sen3CdseStacArdcAccessor(Sen3CdseStacItemAccessor, StacArdcAccessor):
                 dss_spatial.append(ds)
             if not dss_spatial:
                 continue
-            dss_time.append(mosaic_spatial_take_first(dss_spatial, var_ref, np.nan))
+            dss_time.append(mosaic_datasets(dss_spatial))
         ds_final = xr.concat(dss_time, dim="time", join="override")
         ds_final = ds_final.assign_coords({"time": grouped_items.time})
-
-        for var in ds_final.data_vars:
-            # Remove CF scaling attributes if present
-            ds_final[var].attrs.pop("scale_factor", None)
-            ds_final[var].attrs.pop("add_offset", None)
-            fill = ds_final[var].attrs.pop("_FillValue", None)
-            if fill is not None:
-                ds_final[var].encoding["_FillValue"] = fill
 
         ds_final["time"].encoding = {
             "units": "days since 1970-01-01T00:00:00",

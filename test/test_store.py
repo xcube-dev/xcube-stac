@@ -508,20 +508,41 @@ class StacDataStoreTest(unittest.TestCase):
 
     @pytest.mark.vcr()
     def test_open_data_netcdf(self):
-        store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
+        from tempfile import TemporaryDirectory
 
-        # open data without open_params
-        ds = store.open_data(self.data_id_netcdf, asset_names=["data"])
+        from netCDF4 import Dataset
+
+        store = new_data_store(DATA_STORE_ID, url=self.url_netcdf)
+        variable_names = [
+            "radiometric_cloud_fraction",
+            "radiometric_cloud_fraction_precision",
+            "number_of_observations",
+            "quality_flag",
+        ]
+
+        # Keep the STAC metadata request recorded, and use a local NetCDF asset
+        # because VCR does not record the remote binary asset response.
+        with TemporaryDirectory() as temp_dir:
+            netcdf_path = f"{temp_dir}/data.nc"
+            with Dataset(netcdf_path, "w") as netcdf:
+                netcdf.createDimension("lat", 1800)
+                netcdf.createDimension("lon", 3600)
+                netcdf.createVariable("lat", "f8", ("lat",))
+                netcdf.createVariable("lon", "f8", ("lon",))
+                for name in variable_names:
+                    netcdf.createVariable(name, "f4", ("lat", "lon"), zlib=True)
+
+            def open_local_netcdf(self, asset, **open_params):
+                return xr.open_dataset(netcdf_path)
+
+            with patch(
+                "xcube_stac.accessors.base.BaseStacItemAccessor.open_asset",
+                new=open_local_netcdf,
+            ):
+                ds = store.open_data(self.data_id_netcdf, asset_names=["data"])
+
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(
-            [
-                "radiometric_cloud_fraction",
-                "radiometric_cloud_fraction_precision",
-                "number_of_observations",
-                "quality_flag",
-            ],
-            list(ds.data_vars),
-        )
+        self.assertCountEqual(variable_names, list(ds.data_vars))
         self.assertCountEqual([1800, 3600], [ds.sizes["lat"], ds.sizes["lon"]])
 
     @pytest.mark.vcr()
@@ -871,7 +892,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 12, 13, 2, 1],
+            [4, 758, 902, 12, 13, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -883,7 +904,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 12, 13, 2, 1],
+            [1, 758, 902, 12, 13, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -916,7 +937,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 12, 13, 2, 1],
+            [4, 758, 902, 12, 13, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -928,7 +949,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 12, 13, 2, 1],
+            [1, 758, 902, 12, 13, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -999,7 +1020,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 741, 1482, 11, 13, 2, 1],
+            [4, 741, 1481, 11, 13, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -1011,7 +1032,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 741, 1482, 11, 13, 2, 1],
+            [1, 741, 1481, 11, 13, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -1067,7 +1088,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 759, 903, 12, 13, 2, 1],
+            [4, 758, 902, 12, 13, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["y"],
@@ -1079,7 +1100,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 759, 903, 12, 13, 2, 1],
+            [1, 758, 902, 12, 13, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["y"][0],
@@ -1109,7 +1130,7 @@ class StacDataStoreTest(unittest.TestCase):
             list(ds.data_vars),
         )
         self.assertEqual(
-            [4, 741, 1482, 11, 13, 2, 1],
+            [4, 741, 1481, 11, 13, 2, 1],
             [
                 ds.sizes["time"],
                 ds.sizes["lat"],
@@ -1121,7 +1142,7 @@ class StacDataStoreTest(unittest.TestCase):
             ],
         )
         self.assertEqual(
-            [1, 741, 1482, 11, 13, 2, 1],
+            [1, 741, 1481, 11, 13, 2, 1],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -1264,11 +1285,11 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
         self.assertEqual(
-            [4, 741, 1482],
+            [4, 741, 1481],
             [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
         )
         self.assertEqual(
-            [1, 741, 1482],
+            [1, 741, 1481],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],
@@ -1288,11 +1309,11 @@ class StacDataStoreTest(unittest.TestCase):
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
         self.assertEqual(
-            [2, 741, 1482],
+            [2, 741, 1481],
             [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
         )
         self.assertEqual(
-            [1, 741, 1482],
+            [1, 741, 1481],
             [
                 ds.chunksizes["time"][0],
                 ds.chunksizes["lat"][0],

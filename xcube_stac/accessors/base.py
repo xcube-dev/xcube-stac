@@ -32,7 +32,7 @@ from xcube_stac.constants import LOG, SCHEMA_APPLY_SCALING, SCHEMA_ASSET_NAMES
 from xcube_stac.href_parse import decode_href
 from xcube_stac.stac_extension.raster import apply_offset_scaling, get_stac_extension
 from xcube_stac.utils import (
-    _remove_fill_value_encoding,
+    _remove_integer_encoding,
     list_assets_from_item,
     rename_dataset,
     update_dict,
@@ -173,7 +173,7 @@ class BaseStacItemAccessor(StacItemAccessor):
             xcube_stac_version=version,
         )
         # remove _FillValue from encoding and attrs for integer valued arrays
-        combined_ds = _remove_fill_value_encoding(combined_ds)
+        combined_ds = _remove_integer_encoding(combined_ds)
 
         return combined_ds
 

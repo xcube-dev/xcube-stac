@@ -45,7 +45,6 @@ from xcube_stac.utils import (
     list_assets_from_item,
     make_json_serializable,
     merge_datasets,
-    mosaic_spatial_take_first,
     normalize_crs,
     rename_dataset,
     search_collections,
@@ -582,85 +581,6 @@ class UtilsTest(unittest.TestCase):
         ds_merged_expected["B03"] = ds3["B03"]
         xr.testing.assert_allclose(ds_merged_expected, ds_merged)
 
-    @staticmethod
-    def test_mosaic_spatial_take_first():
-        list_ds = []
-        # first tile
-        data = np.array(
-            [
-                [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                [[10, 11, 12], [13, 14, 0], [0, 0, 0]],
-                [[19, 20, 21], [0, 0, 0], [0, 0, 0]],
-            ],
-            dtype=float,
-        )
-        dims = ("time", "lat", "lon")
-        coords = {
-            "time": np.array(
-                ["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64"
-            ),
-            "lat": [10.0, 20.0, 30.0],
-            "lon": [100.0, 110.0, 120.0],
-        }
-        data_array = xr.DataArray(data, dims=dims, coords=coords)
-        list_ds.append(xr.Dataset({"B01": data_array}))
-        # second tile
-        data = np.array(
-            [
-                [[0, 0, 0], [0, 0, 106], [107, 108, 109]],
-                [[0, 0, 0], [113, 114, 115], [116, 117, 118]],
-                [[0, 0, 120], [121, 122, 123], [124, 125, 126]],
-            ],
-            dtype=float,
-        )
-        dims = ("time", "lat", "lon")
-        coords = {
-            "time": np.array(
-                ["2025-01-01", "2025-01-02", "2025-01-03"], dtype="datetime64"
-            ),
-            "lat": [10.0, 20.0, 30.0],
-            "lon": [100.0, 110.0, 120.0],
-        }
-        data_array = xr.DataArray(data, dims=dims, coords=coords)
-        list_ds.append(xr.Dataset({"B01": data_array}))
-
-        # test only one tile
-        ds_test = mosaic_spatial_take_first(list_ds[:1], "B01", 0)
-        xr.testing.assert_allclose(ds_test, list_ds[0])
-
-        # test two tiles
-        ds_test = mosaic_spatial_take_first(list_ds, "B01", 0)
-        data = np.array(
-            [
-                [[1, 2, 3], [4, 5, 6], [7, 8, 9]],
-                [[10, 11, 12], [13, 14, 115], [116, 117, 118]],
-                [[19, 20, 21], [121, 122, 123], [124, 125, 126]],
-            ],
-            dtype=float,
-        )
-        dims = ("time", "lat", "lon")
-        coords = {
-            "time": np.array(
-                ["2025-01-01", "2025-01-02", "2025-01-03"],
-                dtype="datetime64",
-            ),
-            "lat": [10.0, 20.0, 30.0],
-            "lon": [100.0, 110.0, 120.0],
-        }
-        data_array = xr.DataArray(data, dims=dims, coords=coords)
-        ds_expected = xr.Dataset({"B01": data_array})
-        xr.testing.assert_allclose(ds_test, ds_expected)
-
-        # test two tiles, where spatial ref is given in spatial_ref coord
-        spatial_ref = xr.DataArray(np.array(0), attrs={"crs_wkt": "testing"})
-        for i, ds in enumerate(list_ds):
-            ds.coords["spatial_ref"] = spatial_ref
-            list_ds[i] = ds
-        ds_expected = xr.Dataset({"B01": data_array})
-        ds_expected = ds_expected.assign_coords({"spatial_ref": spatial_ref})
-        ds_test = mosaic_spatial_take_first(list_ds, "B01", 0)
-        xr.testing.assert_allclose(ds_test, ds_expected)
-
     @patch("xcube_stac.utils.requests.get")
     def test_access_item_invalid_json(self, mock_get):
         mock_response = Mock()
@@ -699,7 +619,7 @@ class UtilsTest(unittest.TestCase):
 
         with self.assertRaises(DataStoreError) as cm:
             access_collection(url, catalog)
-        self.assertIn("Failed to parse SATC collection JSON", str(cm.exception))
+        self.assertIn("Failed to parse STAC collection", str(cm.exception))
 
     def test_rename_dataset(self):
         ds = xr.Dataset(

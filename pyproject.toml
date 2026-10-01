@@ -34,7 +34,7 @@ dependencies = [
     "xarray",
     "xmltodict",
     "xcube-core>=1.13.1",
-    "xcube-resampling>=0.3.2",
+    "xcube-resampling>=0.3.6",
 ]
 
 [tool.setuptools.dynamic]

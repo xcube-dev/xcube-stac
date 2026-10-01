@@ -29,7 +29,6 @@ import time
 from collections.abc import Container, Iterator, Sequence
 from typing import Any
 
-import dask.array as da
 import numpy as np
 import pandas as pd
 import pyproj
@@ -40,7 +39,11 @@ import xarray as xr
 from scipy.interpolate import RBFInterpolator
 from shapely.geometry import box
 from xcube.core.store import MULTI_LEVEL_DATASET_TYPE, DataStoreError, DataTypeLike
-from xcube_resampling import affine_transform_dataset
+from xcube_resampling import (
+    affine_transform_dataset,
+    mosaic_datasets,
+    resample_in_space,
+)
 from xcube_resampling.constants import FillValues
 from xcube_resampling.gridmapping import GridMapping
 
@@ -542,8 +545,8 @@ def access_collection(url: str, catalog: pystac.Catalog) -> pystac.Collection:
             root=catalog,
             preserve_dict=False,
         )
-    except Exception as e:
-        raise DataStoreError(f"Failed to parse SATC collection JSON at {url}: {e}")
+    except (json.JSONDecodeError, pystac.STACError) as e:
+        raise DataStoreError(f"Failed to parse STAC collection at {url}: {e}") from e
 
 
 def is_mldataset_available(
@@ -705,6 +708,87 @@ def merge_datasets(
     return ds
 
 
+def _merge_utm_zones(
+    dss: list[xr.Dataset],
+    fill_values: FillValues | None = None,
+    **open_params,
+) -> xr.Dataset:
+    """Merge multiple datacubes for different UTM zones into a single dataset.
+
+    This function takes a list of datasets (each in a different UTM zone),
+    resamples them to a common grid defined by a target CRS and spatial resolution,
+    and mosaics them into a single output using a "take first" strategy for overlaps.
+
+    Parameters:
+        dss: A list of xarray Datasets, one for each UTM zone.
+        fill_values: Optional fill value(s). This will be propagated to
+            [xcube_resampling.mosaic_datasets](https://xcube-dev.github.io/xcube-resampling/api/#xcube_resampling.mosaic_datasets)
+        open_params: Dictionary of parameters required for constructing the target grid,
+            including:
+            - crs: Target coordinate reference system (string or EPSG code).
+            - spatial_res: Spatial resolution as a single value or tuple (x_res, y_res).
+            - bbox: Bounding box for the output grid (minx, miny, maxx, maxy).
+
+    Returns:
+        A single xarray Dataset reprojected to the target CRS and resolution,
+        containing merged data from all input UTM zones.
+
+    Notes:
+        - If one input dataset already matches the target CRS and resolution,
+          its grid mapping is reused unless resolution mismatches are found.
+        - Overlapping regions are resolved by selecting the first non-NaN value.
+    """
+    tile_size = _get_tile_size(open_params)
+    # get correct target gridmapping
+    crss = [pyproj.CRS.from_cf(ds["spatial_ref"].attrs) for ds in dss]
+    target_crs = pyproj.CRS.from_string(open_params["crs"])
+    crss_equal = [target_crs == crs for crs in crss]
+    if any(crss_equal):
+        true_index = crss_equal.index(True)
+        ds = dss[true_index]
+        target_gm = GridMapping.from_dataset(ds)
+        spatial_res = open_params["spatial_res"]
+        if not isinstance(spatial_res, tuple):
+            spatial_res = (spatial_res, spatial_res)
+        if (
+            ds.x[1] - ds.x[0] != spatial_res[0]
+            or abs(ds.y[1] - ds.y[0]) != spatial_res[1]
+        ):
+            target_gm = GridMapping.regular_from_bbox(
+                open_params["bbox"],
+                open_params["spatial_res"],
+                open_params["crs"],
+                tile_size=tile_size,
+            )
+    else:
+        target_gm = GridMapping.regular_from_bbox(
+            open_params["bbox"],
+            open_params["spatial_res"],
+            open_params["crs"],
+            tile_size=tile_size,
+        )
+
+    resampled_list_ds = []
+    for ds in dss:
+        resampled_list_ds.append(
+            resample_in_space(
+                ds,
+                target_gm=target_gm,
+                prevent_nan_propagations=True,
+            )
+        )
+
+    if len(resampled_list_ds) == 1:
+        return resampled_list_ds[0]
+    else:
+        return mosaic_datasets(
+            resampled_list_ds,
+            x_dim=target_gm.xy_var_names[0],
+            y_dim=target_gm.xy_var_names[1],
+            fill_values=fill_values,
+        )
+
+
 def _get_tile_size(open_params: dict) -> tuple[int, int]:
     tile_size = open_params.get("tile_size", TILE_SIZE)
     if isinstance(tile_size, int):
@@ -717,52 +801,6 @@ def _update_datasets(datasets: list[xr.Dataset]) -> xr.Dataset:
     for ds_asset in datasets[1:]:
         ds.update(ds_asset)
     return ds
-
-
-def mosaic_spatial_take_first(
-    list_ds: list[xr.Dataset], var_ref: str, fill_value: float
-) -> xr.Dataset:
-    """Creates a spatial mosaic from a list of datasets by taking the first
-    non-fill value encountered across datasets at each pixel location.
-
-    The function assumes all datasets share the same spatial dimensions and coordinate
-    system. Only variables with 2D spatial dimensions are processed. At each
-    spatial location, the first non-fill (or non-NaN) value across the dataset stack
-    is selected.
-
-    Args:
-        list_ds: A list of datasets to be mosaicked.
-        var_ref: reference variable used for the index selection
-        fill_value: The value considered as missing data in the reference variable
-
-    Returns:
-        A new dataset representing the mosaicked result, using the first valid
-        value encountered across the input datasets for each spatial position.
-    """
-    if len(list_ds) == 1:
-        return list_ds[0]
-
-    arr_ref = da.stack([ds[var_ref].data for ds in list_ds], axis=0)
-    if np.isnan(fill_value):
-        nonnan_mask = ~da.isnan(arr_ref)
-    else:
-        nonnan_mask = arr_ref != fill_value
-    first_non_nan_index = nonnan_mask.argmax(axis=0)
-
-    ds_mosaic = xr.Dataset(attrs=list_ds[0].attrs)
-    for key in list_ds[0]:
-        # allow to also merge viewing angles of Sen2 with grid (angle_y, angle_x)
-        if list_ds[0][key].ndim >= 2:
-            da_arr = da.stack([ds[key].data for ds in list_ds], axis=0)
-            da_arr_select = da.choose(first_non_nan_index, da_arr)
-            ds_mosaic[key] = xr.DataArray(
-                da_arr_select,
-                dims=list_ds[0][key].dims,
-                coords=list_ds[0][key].coords,
-                attrs=list_ds[0][key].attrs,
-            )
-
-    return ds_mosaic
 
 
 def build_footprint_uv_mapping(
@@ -975,15 +1013,17 @@ def make_json_serializable(obj: Any) -> Any:
     return obj
 
 
-def _remove_fill_value_encoding(ds: xr.Dataset) -> xr.Dataset:
-    """Remove _FillValue from integer variables.
+def _remove_integer_encoding(ds: xr.Dataset) -> xr.Dataset:
+    """Remove fill-value and packing metadata from integer variables.
 
-    Integer variables with a _FillValue can be decoded as floating-point
-    arrays when the dataset is written to and subsequently read from Zarr.
+    Removes `_FillValue`, `scale_factor`, and `add_offset` from integer
+    variables to prevent them from being encoded as packed floating-point
+    data when the dataset is written to and subsequently read from Zarr.
     """
     for variable in ds.variables.values():
         if np.issubdtype(variable.dtype, np.integer):
-            variable.encoding.pop("_FillValue", None)
-            variable.attrs.pop("_FillValue", None)
+            for key in ("_FillValue", "scale_factor", "add_offset"):
+                variable.encoding.pop(key, None)
+                variable.attrs.pop(key, None)
 
     return ds

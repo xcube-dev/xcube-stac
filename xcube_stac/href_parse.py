@@ -67,7 +67,9 @@ AWS_REGION_NAMES = [
 ]
 
 
-def decode_href(href: str, storage_options: dict | None = None) -> tuple[str, str, str, dict]:
+def decode_href(
+    href: str, storage_options: dict | None = None
+) -> tuple[str, str, str, dict]:
     """Decodes a href into protocol, root, remaining file path,
     and region name if given.
 
