@@ -20,7 +20,7 @@ dependencies:
   - xarray
   - xmltodict
   - xcube >=1.13.1
-  - xcube-resampling >=0.3.6
+  - xcube-resampling >=0.3.5
   # Development Dependencies - Tools
   - black
   - isort
