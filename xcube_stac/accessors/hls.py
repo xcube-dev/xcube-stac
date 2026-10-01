@@ -40,6 +40,7 @@ from xcube_resampling.utils import reproject_bbox, resolution_meters_to_degrees
 
 from xcube_stac.accessor import StacArdcAccessor, StacItemAccessor
 from xcube_stac.constants import (
+    LOG,
     SCHEMA_ADDITIONAL_QUERY,
     SCHEMA_APPLY_SCALING,
     SCHEMA_CRS,
@@ -242,6 +243,8 @@ class Sen2HlsStacItemAccessor(StacItemAccessor):
             if item_crs is not None:
                 crs = pyproj.CRS.from_user_input(item_crs)
                 ds["spatial_ref"].attrs.update(crs.to_cf())
+        if crs is None:
+            LOG.warning("No CRS found for item %s", item.id)
 
         # resample dataset if requested
         crs = open_params.get("crs")
