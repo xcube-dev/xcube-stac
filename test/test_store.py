@@ -792,9 +792,14 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data as dataset with rectification
-        ds = store.open_data(data_id=data_id, asset_names=["LST", "confidence_in"])
+        ds = store.open_data(
+            data_id=data_id,
+            asset_names=["LST", "LST_uncertainty", "confidence_in"],
+        )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
+        self.assertCountEqual(
+            ["LST", "LST_uncertainty", "confidence_in"], list(ds.data_vars)
+        )
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
@@ -816,9 +821,14 @@ class StacDataStoreTest(unittest.TestCase):
         )
 
         # open data as dataset with rectification
-        ds = store.open_data(data_id=data_id, asset_names=["LST", "confidence_in"])
+        ds = store.open_data(
+            data_id=data_id,
+            asset_names=["LST", "LST_uncertainty", "confidence_in"],
+        )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
+        self.assertCountEqual(
+            ["LST", "LST_uncertainty", "confidence_in"], list(ds.data_vars)
+        )
         self.assertCountEqual([1437, 653], [ds.sizes["lat"], ds.sizes["lon"]])
         self.assertEqual(1, ds.lat.ndim)
         self.assertEqual(1, ds.lon.ndim)
@@ -1231,11 +1241,13 @@ class StacDataStoreTest(unittest.TestCase):
             bbox=[8.0, 52, 8.1, 52.1],
             time_range=["2020-08-01", "2020-08-01"],
             spatial_res=300 / 111320,  # meter in degree
-            asset_names=["LST", "confidence_in"],
+            asset_names=["LST", "LST_uncertainty", "confidence_in"],
             crs="EPSG:4326",
         )
         self.assertIsInstance(ds, xr.Dataset)
-        self.assertCountEqual(["LST", "confidence_in"], list(ds.data_vars))
+        self.assertCountEqual(
+            ["LST", "LST_uncertainty", "confidence_in"], list(ds.data_vars)
+        )
         self.assertEqual(
             [2, 38, 38],
             [ds.sizes["time"], ds.sizes["lat"], ds.sizes["lon"]],
