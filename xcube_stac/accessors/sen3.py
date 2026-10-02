@@ -805,6 +805,17 @@ def orthorectify_geolocation(
 
 
 def _clean_masks(ds: xr.Dataset) -> xr.Dataset:
+    """Remove encoding metadata from integer bit-mask variables.
+
+    Removes `_FillValue`, `scale_factor`, and `add_offset` from integer
+    variables that define `flag_masks` and `flag_meanings`. This prevents
+    bit-mask variables from being encoded as packed floating-point data when
+    the dataset is written to and subsequently read from Zarr.
+
+    The original `_FillValue` is preserved as the `fill_value` attribute
+    so that the fill value information is not lost while preventing it from
+    being interpreted as an encoding directive.
+    """
     for variable in ds.variables.values():
         if (
             np.issubdtype(variable.dtype, np.integer)
