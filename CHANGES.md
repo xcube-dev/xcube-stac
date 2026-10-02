@@ -6,8 +6,8 @@
 - Add an uncertainty layer for Sentinel-3 LST.
 - Support selecting flag variables via the `asset_names` opening parameter and 
   remove the `add_flags` opening parameter from all Sentinel-3 opening routines.
-- Change the Sentinel-3 SYN product variable names from `syn_S1N_reflectance` to 
-  `SDR_S1N`, matching the variable names exposed by the opened dataset.
+- Change the Sentinel-3 SYN product variable names from `syn_*_reflectance` to
+  `SDR_*`, matching the variable names exposed by the opened dataset.
 
 ## Changes in 1.4.4
 

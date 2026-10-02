@@ -819,9 +819,9 @@ def _clean_masks(ds: xr.Dataset) -> xr.Dataset:
     for variable in ds.variables.values():
         if (
             np.issubdtype(variable.dtype, np.integer)
-            and "flag_masks" in variable.attrs.keys()
-            and "flag_meanings" in variable.attrs.keys()
-            and "_FillValue" in variable.attrs.keys()
+            and "flag_masks" in variable.attrs
+            and "flag_meanings" in variable.attrs
+            and "_FillValue" in variable.attrs
         ):
             variable.attrs["fill_value"] = variable.attrs["_FillValue"]
             for key in ("_FillValue", "scale_factor", "add_offset"):
