@@ -1,9 +1,13 @@
-## Changes in 1.4.5 (in development)
+## Changes in 1.5.0 (in development)
 
 - Use `xcube_resampling.mosaic_datasets` and `xcube_resampling.extend_dataset` 
   in the ARDC processing workflow to create 3D data cubes from individual
   tiles for Sentinel-2, Harmonized Landsat Sentinel-2, and Landsat.
-
+- Add an uncertainty layer for Sentinel-3 LST.
+- Support selecting flag variables via the `asset_names` opening parameter and 
+  remove the `add_flags` opening parameter from all Sentinel-3 opening routines.
+- Change the Sentinel-3 SYN product variable names from `syn_*_reflectance` to
+  `SDR_*`, matching the variable names exposed by the opened dataset.
 
 ## Changes in 1.4.4
 

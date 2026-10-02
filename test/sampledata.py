@@ -296,7 +296,11 @@ def sentinel_3_lst_data():
         "LST": (
             ("band", "y", "x"),
             da.ones((1, 500, 500), chunks=(1, 500, 500), dtype=np.float32),
-        )
+        ),
+        "LST_uncertainty": (
+            ("band", "y", "x"),
+            da.full((1, 500, 500), 2, chunks=(1, 500, 500), dtype=np.float32),
+        ),
     }
     coords = {
         "spatial_ref": np.array([0]),
@@ -309,6 +313,10 @@ def sentinel_3_lst_data():
         "_FillValue": -10000,
         "scale_factor": 0.0001,
         "add_offset": 273.32,
+    }
+    ds["LST_uncertainty"].attrs = {
+        "_FillValue": -10000,
+        "scale_factor": 0.0001,
     }
     return ds
 
