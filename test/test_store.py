@@ -49,6 +49,7 @@ from xcube_stac.constants import (
     DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
 )
+from xcube_stac.store import _normalize_legacy_asset_names, _normalize_variable_names
 
 from .sampledata import (
     sentinel_2_band_data_10m,
@@ -374,13 +375,16 @@ class StacDataStoreTest(unittest.TestCase):
         schema = store.get_open_data_params_schema()
         # no optional arguments
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
+        schema.validate_instance({"variable_names": ["B04"]})
 
         # test opener_id argument
         schema = store.get_open_data_params_schema(opener_id="dataset:zarr:https")
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("group", schema.properties)
         self.assertIn("chunks", schema.properties)
@@ -388,7 +392,8 @@ class StacDataStoreTest(unittest.TestCase):
 
         # test data_id argument
         schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertNotIn("group", schema.properties)
         self.assertIn("overview_level", schema.properties)
@@ -397,20 +402,23 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID_CDSE)
         schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen2)
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("spatial_res", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("add_angles", schema.properties)
 
         schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen3)
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_rectification", schema.properties)
 
         # PC HLS
         store = new_data_store(DATA_STORE_ID_PC)
         schema = store.get_open_data_params_schema(data_id=self.data_id_pc_hls_sen2)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("spatial_res", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("crs", schema.properties)
@@ -426,13 +434,15 @@ class StacDataStoreTest(unittest.TestCase):
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonComplexSchema)
             self.assertEqual(2, len(schema.one_of))
-            self.assertIn("asset_names", schema.one_of[0].properties)
+            self.assertNotIn("asset_names", schema.one_of[0].properties)
+            self.assertIn("variable_names", schema.one_of[0].properties)
             self.assertIn("time_range", schema.one_of[0].properties)
             self.assertIn("bbox", schema.one_of[0].properties)
             self.assertIn("crs", schema.one_of[0].properties)
             self.assertIn("spatial_res", schema.one_of[0].properties)
             self.assertIn("query", schema.one_of[0].properties)
-            self.assertIn("asset_names", schema.one_of[1].properties)
+            self.assertNotIn("asset_names", schema.one_of[1].properties)
+            self.assertIn("variable_names", schema.one_of[1].properties)
             self.assertIn("time_range", schema.one_of[1].properties)
             self.assertIn("point", schema.one_of[1].properties)
             self.assertIn("bbox_width", schema.one_of[1].properties)
@@ -447,13 +457,15 @@ class StacDataStoreTest(unittest.TestCase):
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonComplexSchema)
             self.assertEqual(2, len(schema.one_of))
-            self.assertIn("asset_names", schema.one_of[0].properties)
+            self.assertNotIn("asset_names", schema.one_of[0].properties)
+            self.assertIn("variable_names", schema.one_of[0].properties)
             self.assertIn("time_range", schema.one_of[0].properties)
             self.assertIn("bbox", schema.one_of[0].properties)
             self.assertIn("crs", schema.one_of[0].properties)
             self.assertIn("spatial_res", schema.one_of[0].properties)
             self.assertIn("query", schema.one_of[0].properties)
-            self.assertIn("asset_names", schema.one_of[1].properties)
+            self.assertNotIn("asset_names", schema.one_of[1].properties)
+            self.assertIn("variable_names", schema.one_of[1].properties)
             self.assertIn("time_range", schema.one_of[1].properties)
             self.assertIn("point", schema.one_of[1].properties)
             self.assertIn("bbox_width", schema.one_of[1].properties)
@@ -464,7 +476,8 @@ class StacDataStoreTest(unittest.TestCase):
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonObjectSchema)
-            self.assertIn("asset_names", schema.properties)
+            self.assertNotIn("asset_names", schema.properties)
+            self.assertIn("variable_names", schema.properties)
             self.assertIn("time_range", schema.properties)
             self.assertIn("bbox", schema.properties)
             self.assertIn("crs", schema.properties)
@@ -472,6 +485,23 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("query", schema.properties)
             self.assertIn("apply_scaling", schema.properties)
             self.assertNotIn("add_angles", schema.properties)
+
+    def test_normalize_variable_names(self):
+        open_params = {"variable_names": ["B04"]}
+        _normalize_variable_names(open_params)
+        self.assertEqual(["B04"], open_params["asset_names"])
+        self.assertNotIn("variable_names", open_params)
+
+        open_params = {"asset_names": ["B04"]}
+        with pytest.warns(FutureWarning, match="asset_names.*deprecated"):
+            _normalize_legacy_asset_names(open_params)
+        self.assertEqual(["B04"], open_params["variable_names"])
+        self.assertNotIn("asset_names", open_params)
+
+        with self.assertRaises(DataStoreError):
+            _normalize_legacy_asset_names(
+                {"variable_names": ["B04"], "asset_names": ["B03"]}
+            )
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
@@ -539,7 +569,7 @@ class StacDataStoreTest(unittest.TestCase):
                 "xcube_stac.accessors.base.BaseStacItemAccessor.open_asset",
                 new=open_local_netcdf,
             ):
-                ds = store.open_data(self.data_id_netcdf, asset_names=["data"])
+                ds = store.open_data(self.data_id_netcdf, variable_names=["data"])
 
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(variable_names, list(ds.data_vars))
@@ -570,7 +600,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data without open_params
         data_id = "collections/era5-pds/items/era5-pds-2020-12-an"
         with self.assertRaises(DataStoreError) as cm:
-            _ = store.open_data(data_id, asset_names=["surface_air_pressure"])
+            _ = store.open_data(data_id, variable_names=["surface_air_pressure"])
         self.assertEqual(
             (
                 "Neither 's3' nor 'https' could be derived from href "
@@ -660,13 +690,13 @@ class StacDataStoreTest(unittest.TestCase):
         with self.assertRaises(DataStoreError) as cm:
             store.open_data(
                 "collections/datacubes/items/cog_local",
-                asset_names=["analytic", "analytic_multires"],
+                variable_names=["analytic", "analytic_multires"],
             )
         self.assertEqual(
             "Xcube server publishes data resources as 'dataset' and "
             "'mldataset' under the asset names 'analytic' and "
             "'analytic_multires'. Please select only one asset in "
-            "<asset_names> when opening the data.",
+            "<variable_names> when opening the data.",
             f"{cm.exception}",
         )
 
@@ -734,7 +764,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset without rectification
         ds = store.open_data(
             data_id=data_id,
-            asset_names=["SDR_Oa01", "CLOUD_flags"],
+            variable_names=["SDR_Oa01", "CLOUD_flags"],
             apply_rectification=False,
         )
         self.assertIsInstance(ds, xr.Dataset)
@@ -764,7 +794,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset with rectification
         ds = store.open_data(
             data_id=data_id,
-            asset_names=["SDR_Oa01", "CLOUD_flags"],
+            variable_names=["SDR_Oa01", "CLOUD_flags"],
             apply_rectification=True,
             add_error_bands=False,
         )
@@ -794,7 +824,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset with rectification
         ds = store.open_data(
             data_id=data_id,
-            asset_names=["LST", "LST_uncertainty", "confidence_in"],
+            variable_names=["LST", "LST_uncertainty", "confidence_in"],
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
@@ -823,7 +853,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open data as dataset with rectification
         ds = store.open_data(
             data_id=data_id,
-            asset_names=["LST", "LST_uncertainty", "confidence_in"],
+            variable_names=["LST", "LST_uncertainty", "confidence_in"],
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
@@ -862,7 +892,7 @@ class StacDataStoreTest(unittest.TestCase):
                 query={"constellation": {"eq": "sentinel-3"}},
                 spatial_res=10,
                 crs="EPSG:32635",
-                asset_names=["B02", "B03", "B04"],
+                variable_names=["B02", "B03", "B04"],
                 apply_scaling=True,
             )
         self.assertIsNone(ds)
@@ -891,7 +921,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=["2020-08-29", "2020-09-03"],
             spatial_res=60,
             crs=crs_target,
-            asset_names=["B04"],
+            variable_names=["B04"],
             apply_scaling=True,
             add_angles=True,
         )
@@ -936,7 +966,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=["2020-08-29", "2020-09-03"],
             spatial_res=60,
             crs=crs_target,
-            asset_names=["B04"],
+            variable_names=["B04"],
             apply_scaling=True,
             add_angles=True,
         )
@@ -974,7 +1004,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open timeseries
         ds = store.open_data(
             data_id="sentinel-2-l2a",
-            asset_names=["B04"],
+            variable_names=["B04"],
             point=(10.5, 53.5),
             bbox_width=6000,
             time_range=["2020-07-26", "2020-08-01"],
@@ -1015,7 +1045,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open dataset in WGS84
         ds = store.open_data(
             data_id="sentinel-2-l2a",
-            asset_names=["B04"],
+            variable_names=["B04"],
             bbox=bbox_wgs84,
             time_range=["2020-07-26", "2020-08-01"],
             spatial_res=0.00054,
@@ -1059,7 +1089,7 @@ class StacDataStoreTest(unittest.TestCase):
             _ = store.open_data(
                 data_id="sentinel-2-l2a",
                 data_type="mldataset",
-                asset_names=["B01", "B02", "B03"],
+                variable_names=["B01", "B02", "B03"],
                 bbox=bbox_wgs84,
                 time_range=["2023-11-01", "2023-11-10"],
                 spatial_res=0.00018,
@@ -1087,7 +1117,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=["2020-08-29", "2020-09-03"],
             spatial_res=60,
             crs=crs_target,
-            asset_names=["B04"],
+            variable_names=["B04"],
             apply_scaling=True,
             add_angles=True,
         )
@@ -1125,7 +1155,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open dataset in WGS84
         ds = store.open_data(
             data_id="sentinel-2-l2a",
-            asset_names=["B04"],
+            variable_names=["B04"],
             bbox=bbox_wgs84,
             time_range=["2020-07-26", "2020-08-01"],
             spatial_res=0.00054,
@@ -1192,7 +1222,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=["2020-07-31", "2020-08-01"],
             spatial_res=300 / 111320,  # meter in degree
             crs="EPSG:4326",
-            asset_names=["SDR_Oa01", "CLOUD_flags"],
+            variable_names=["SDR_Oa01", "CLOUD_flags"],
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(
@@ -1241,7 +1271,7 @@ class StacDataStoreTest(unittest.TestCase):
             bbox=[8.0, 52, 8.1, 52.1],
             time_range=["2020-08-01", "2020-08-01"],
             spatial_res=300 / 111320,  # meter in degree
-            asset_names=["LST", "LST_uncertainty", "confidence_in"],
+            variable_names=["LST", "LST_uncertainty", "confidence_in"],
             crs="EPSG:4326",
         )
         self.assertIsInstance(ds, xr.Dataset)
@@ -1274,7 +1304,7 @@ class StacDataStoreTest(unittest.TestCase):
             time_range=["2020-08-25", "2020-09-01"],
             spatial_res=30,
             crs=crs_target,
-            asset_names=["B04", "B03", "B02"],
+            variable_names=["B04", "B03", "B02"],
         )
         self.assertIsInstance(ds, xr.Dataset)
         self.assertCountEqual(["B04", "B03", "B02"], list(ds.data_vars))
@@ -1289,7 +1319,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open Sentinel-2 dataset in WGS84
         ds = store.open_data(
             data_id="hls2-s30",
-            asset_names=["B04", "B03", "B02"],
+            variable_names=["B04", "B03", "B02"],
             bbox=bbox_wgs84,
             time_range=["2020-08-25", "2020-09-01"],
             spatial_res=0.00054,
@@ -1313,7 +1343,7 @@ class StacDataStoreTest(unittest.TestCase):
         # open Landsat dataset in WGS84
         ds = store.open_data(
             data_id="hls2-l30",
-            asset_names=["B04", "B03", "B02"],
+            variable_names=["B04", "B03", "B02"],
             bbox=bbox_wgs84,
             time_range=["2020-08-20", "2020-09-01"],
             spatial_res=0.00054,

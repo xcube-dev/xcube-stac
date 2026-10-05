@@ -94,7 +94,7 @@ _SCHEMA_ANGLES_SENTINEL2 = JsonBooleanSchema(
     title="Add viewing and solar angles from Sentinel2 metadata.",
     description=(
         "Viewing and solar angles will be extracted for all spectral "
-        "bands defined in keyword `asset_name`."
+        "bands defined in keyword `variable_names`."
     ),
     default=False,
 )

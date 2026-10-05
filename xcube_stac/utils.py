@@ -345,7 +345,7 @@ def list_assets_from_item(
 
     if not assets:
         raise DataStoreError(
-            f"No valid assets found in item '{item.id}' for asset_names={asset_names}."
+            f"No valid assets found in item '{item.id}' for variable_names={asset_names}."
         )
 
     return assets
