@@ -310,7 +310,7 @@ ds = store.open_data(
     time_range=["2020-07-15", "2020-08-01"],
     spatial_res=10 / 111320, # meter in degree
     crs="EPSG:4326",
-    asset_names=["B02", "B03", "B04"],
+    variable_names=["B02", "B03", "B04"],
 )
 ```
 

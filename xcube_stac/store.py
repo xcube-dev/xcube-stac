@@ -20,6 +20,7 @@
 # SOFTWARE.
 
 from collections.abc import Container, Iterator
+import warnings
 from typing import Any
 
 import numpy as np
@@ -80,6 +81,42 @@ from .utils import (
     search_collections,
     search_items,
 )
+
+
+def _rename_asset_names_in_schema(schema):
+    """Expose only the common xcube ``variable_names`` schema parameter."""
+    if hasattr(schema, "properties") and "asset_names" in schema.properties:
+        schema.properties["variable_names"] = schema.properties.pop("asset_names")
+    if hasattr(schema, "one_of"):
+        for sub_schema in schema.one_of:
+            _rename_asset_names_in_schema(sub_schema)
+    return schema
+
+
+def _normalize_legacy_asset_names(open_params):
+    """Translate the deprecated public parameter before schema validation."""
+    variable_names = open_params.get("variable_names")
+    asset_names = open_params.pop("asset_names", None)
+    if variable_names is not None and asset_names is not None:
+        raise DataStoreError(
+            "Please specify only one of 'variable_names' and the deprecated "
+            "'asset_names' when opening STAC data."
+        )
+    if asset_names is not None:
+        warnings.warn(
+            "The 'asset_names' open parameter is deprecated and will be removed "
+            "in a future release; use 'variable_names' instead.",
+            FutureWarning,
+            stacklevel=3,
+        )
+        open_params["variable_names"] = asset_names
+
+
+def _normalize_variable_names(open_params):
+    """Translate the public parameter name to the internal STAC asset name."""
+    variable_names = open_params.pop("variable_names", None)
+    if variable_names is not None:
+        open_params["asset_names"] = variable_names
 
 
 # Data Stores for accessing single STAC items
@@ -187,8 +224,10 @@ class StacDataStore(DataStore):
                 opener_id = None
             else:
                 opener_id = opener_ids[0]
-        return accessor.get_open_data_params_schema(
-            data_id=data_id, opener_id=opener_id
+        return _rename_asset_names_in_schema(
+            accessor.get_open_data_params_schema(
+                data_id=data_id, opener_id=opener_id
+            )
         )
 
     def open_data(
@@ -201,8 +240,10 @@ class StacDataStore(DataStore):
         # check input parameter
         self._assert_valid_data_type(data_type)
         self._assert_valid_opener_id(opener_id)
+        _normalize_legacy_asset_names(open_params)
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
+        _normalize_variable_names(open_params)
 
         # access item and open with accessor
         url = f"{self._url}/{data_id}"
@@ -381,8 +422,10 @@ class StacXcubeDataStore(StacDataStore):
         # check input parameter
         self._assert_valid_data_type(data_type)
         self._assert_valid_opener_id(opener_id)
+        _normalize_legacy_asset_names(open_params)
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
+        _normalize_variable_names(open_params)
 
         # access item and open with accessor
         url = f"{self._url}/{data_id}"
@@ -558,8 +601,10 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         accessor = guess_ardc_accessor(self._store_id, data_id)(
             self._catalog, **self._storage_options_s3
         )
-        return accessor.get_open_data_params_schema(
-            data_id=data_id, opener_id=opener_id
+        return _rename_asset_names_in_schema(
+            accessor.get_open_data_params_schema(
+                data_id=data_id, opener_id=opener_id
+            )
         )
 
     def open_data(
@@ -572,8 +617,10 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         # check input parameter
         self._assert_valid_data_type(data_type)
         self._assert_valid_opener_id(opener_id)
+        _normalize_legacy_asset_names(open_params)
         schema = self.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         schema.validate_instance(open_params)
+        _normalize_variable_names(open_params)
 
         # search for items
         if "point" in open_params:

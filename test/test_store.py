@@ -49,6 +49,7 @@ from xcube_stac.constants import (
     DATA_STORE_ID_PC_ARDC,
     DATA_STORE_ID_XCUBE,
 )
+from xcube_stac.store import _normalize_legacy_asset_names, _normalize_variable_names
 
 from .sampledata import (
     sentinel_2_band_data_10m,
@@ -374,13 +375,16 @@ class StacDataStoreTest(unittest.TestCase):
         schema = store.get_open_data_params_schema()
         # no optional arguments
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
+        schema.validate_instance({"variable_names": ["B04"]})
 
         # test opener_id argument
         schema = store.get_open_data_params_schema(opener_id="dataset:zarr:https")
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("group", schema.properties)
         self.assertIn("chunks", schema.properties)
@@ -388,7 +392,8 @@ class StacDataStoreTest(unittest.TestCase):
 
         # test data_id argument
         schema = store.get_open_data_params_schema(data_id=self.data_id_nonsearchable)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertNotIn("group", schema.properties)
         self.assertIn("overview_level", schema.properties)
@@ -397,20 +402,23 @@ class StacDataStoreTest(unittest.TestCase):
         store = new_data_store(DATA_STORE_ID_CDSE)
         schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen2)
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("spatial_res", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("add_angles", schema.properties)
 
         schema = store.get_open_data_params_schema(data_id=self.data_id_cdse_sen3)
         self.assertIsInstance(schema, JsonObjectSchema)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("apply_rectification", schema.properties)
 
         # PC HLS
         store = new_data_store(DATA_STORE_ID_PC)
         schema = store.get_open_data_params_schema(data_id=self.data_id_pc_hls_sen2)
-        self.assertIn("asset_names", schema.properties)
+        self.assertNotIn("asset_names", schema.properties)
+        self.assertIn("variable_names", schema.properties)
         self.assertIn("spatial_res", schema.properties)
         self.assertIn("apply_scaling", schema.properties)
         self.assertIn("crs", schema.properties)
@@ -426,13 +434,15 @@ class StacDataStoreTest(unittest.TestCase):
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonComplexSchema)
             self.assertEqual(2, len(schema.one_of))
-            self.assertIn("asset_names", schema.one_of[0].properties)
+            self.assertNotIn("asset_names", schema.one_of[0].properties)
+            self.assertIn("variable_names", schema.one_of[0].properties)
             self.assertIn("time_range", schema.one_of[0].properties)
             self.assertIn("bbox", schema.one_of[0].properties)
             self.assertIn("crs", schema.one_of[0].properties)
             self.assertIn("spatial_res", schema.one_of[0].properties)
             self.assertIn("query", schema.one_of[0].properties)
-            self.assertIn("asset_names", schema.one_of[1].properties)
+            self.assertNotIn("asset_names", schema.one_of[1].properties)
+            self.assertIn("variable_names", schema.one_of[1].properties)
             self.assertIn("time_range", schema.one_of[1].properties)
             self.assertIn("point", schema.one_of[1].properties)
             self.assertIn("bbox_width", schema.one_of[1].properties)
@@ -447,13 +457,15 @@ class StacDataStoreTest(unittest.TestCase):
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonComplexSchema)
             self.assertEqual(2, len(schema.one_of))
-            self.assertIn("asset_names", schema.one_of[0].properties)
+            self.assertNotIn("asset_names", schema.one_of[0].properties)
+            self.assertIn("variable_names", schema.one_of[0].properties)
             self.assertIn("time_range", schema.one_of[0].properties)
             self.assertIn("bbox", schema.one_of[0].properties)
             self.assertIn("crs", schema.one_of[0].properties)
             self.assertIn("spatial_res", schema.one_of[0].properties)
             self.assertIn("query", schema.one_of[0].properties)
-            self.assertIn("asset_names", schema.one_of[1].properties)
+            self.assertNotIn("asset_names", schema.one_of[1].properties)
+            self.assertIn("variable_names", schema.one_of[1].properties)
             self.assertIn("time_range", schema.one_of[1].properties)
             self.assertIn("point", schema.one_of[1].properties)
             self.assertIn("bbox_width", schema.one_of[1].properties)
@@ -464,7 +476,8 @@ class StacDataStoreTest(unittest.TestCase):
         for data_id in data_ids:
             schema = store.get_open_data_params_schema(data_id=data_id)
             self.assertIsInstance(schema, JsonObjectSchema)
-            self.assertIn("asset_names", schema.properties)
+            self.assertNotIn("asset_names", schema.properties)
+            self.assertIn("variable_names", schema.properties)
             self.assertIn("time_range", schema.properties)
             self.assertIn("bbox", schema.properties)
             self.assertIn("crs", schema.properties)
@@ -472,6 +485,23 @@ class StacDataStoreTest(unittest.TestCase):
             self.assertIn("query", schema.properties)
             self.assertIn("apply_scaling", schema.properties)
             self.assertNotIn("add_angles", schema.properties)
+
+    def test_normalize_variable_names(self):
+        open_params = {"variable_names": ["B04"]}
+        _normalize_variable_names(open_params)
+        self.assertEqual(["B04"], open_params["asset_names"])
+        self.assertNotIn("variable_names", open_params)
+
+        open_params = {"asset_names": ["B04"]}
+        with pytest.warns(FutureWarning, match="asset_names.*deprecated"):
+            _normalize_legacy_asset_names(open_params)
+        self.assertEqual(["B04"], open_params["variable_names"])
+        self.assertNotIn("asset_names", open_params)
+
+        with self.assertRaises(DataStoreError):
+            _normalize_legacy_asset_names(
+                {"variable_names": ["B04"], "asset_names": ["B03"]}
+            )
 
     @pytest.mark.vcr()
     def test_open_data_tiff(self):
