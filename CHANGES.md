@@ -1,4 +1,4 @@
-## Changes in 1.5.0 (in development)
+## Changes in 1.5.0
 
 - Use `variable_names` as the preferred opening parameter for selecting STAC
   assets. The previous `asset_names` parameter remains supported for now and
