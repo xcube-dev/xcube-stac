@@ -225,9 +225,7 @@ class StacDataStore(DataStore):
             else:
                 opener_id = opener_ids[0]
         return _rename_asset_names_in_schema(
-            accessor.get_open_data_params_schema(
-                data_id=data_id, opener_id=opener_id
-            )
+            accessor.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         )
 
     def open_data(
@@ -449,7 +447,7 @@ class StacXcubeDataStore(StacDataStore):
                 "Xcube server publishes data resources as 'dataset' and "
                 "'mldataset' under the asset names 'analytic' and "
                 "'analytic_multires'. Please select only one asset in "
-                "<asset_names> when opening the data."
+                "<variable_names> when opening the data."
             )
         accessor = XcubeStacItemAccessor(self._catalog, **self._storage_options_s3)
         ds = accessor.open_item(
@@ -602,9 +600,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
             self._catalog, **self._storage_options_s3
         )
         return _rename_asset_names_in_schema(
-            accessor.get_open_data_params_schema(
-                data_id=data_id, opener_id=opener_id
-            )
+            accessor.get_open_data_params_schema(data_id=data_id, opener_id=opener_id)
         )
 
     def open_data(
@@ -644,7 +640,7 @@ class ArdcStacCdseDataStore(StacCdseDataStore):
         )
 
         if len(items) == 0:
-            LOG.warn(
+            LOG.warning(
                 f"No items found in collection {data_id!r} for the "
                 f"parameters bbox {bbox_wgs84!r}, time_range "
                 f"{open_params['time_range']!r} and "
