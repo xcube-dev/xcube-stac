@@ -138,6 +138,7 @@ Currently, we support the following collections and data IDs:
 - [`sentinel-3-slstr-lst-l2-netcdf`](https://planetarycomputer.microsoft.com/dataset/sentinel-3-slstr-lst-l2-netcdf)
 - [`hls2-l30`](https://planetarycomputer.microsoft.com/dataset/hls2-l30)
 - [`hls2-s30`](https://planetarycomputer.microsoft.com/dataset/hls2-s30)
+- [`landsat-c2-l2`](https://planetarycomputer.microsoft.com/dataset/landsat-c2-l2)
 
 > **Note:** The `hls2-l30` and `hls2-s30` products may contain tile gaps. Tiles 
 > located entirely outside the shoreline are not processed by the HLS processor 
