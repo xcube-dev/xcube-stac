@@ -1,7 +1,7 @@
 ## Changes in 1.5.1 (under development)
 
-- Updated the notebook `examples/notebooks/eoforeststac_catalog.ipynb` after source 
-  has changed. the catalog's url and data variable names of the datacubes.
+- Updated `examples/notebooks/eoforeststac_catalog.ipynb` to reflect changes 
+  to the catalog URL and datacube variable names.
 
 ## Changes in 1.5.0
 
