@@ -1,3 +1,8 @@
+## Changes in 1.5.1 (under development)
+
+- Updated the notebook `examples/notebooks/eoforeststac_catalog.ipynb` after source 
+  has changed. the catalog's url and data variable names of the datacubes.
+
 ## Changes in 1.5.0
 
 - Use `variable_names` as the preferred opening parameter for selecting STAC
